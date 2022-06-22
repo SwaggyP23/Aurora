@@ -27,6 +27,16 @@ void Shader::unBind() const
 	glUseProgram(0);
 }
 
+void Shader::setUniform1i(const GLchar* name, GLuint val) const
+{
+	glUniform1i(getUniformLocation(name), val);
+}
+
+void Shader::setUniform1f(const GLchar* name, GLfloat val) const
+{
+	glUniform1f(getUniformLocation(name), val);
+}
+
 GLint Shader::getUniformLocation(const GLchar* name) const
 {
 	return glGetUniformLocation(m_ShaderID, name);

@@ -17,6 +17,8 @@ public:
 	void unBind() const;
 
 	// Setting uniforms...
+	void setUniform1i(const GLchar* name, GLuint val) const;
+	void setUniform1f(const GLchar* name, GLfloat val) const;
 
 private:
 	enum class ShaderErrorType
