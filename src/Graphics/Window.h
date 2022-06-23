@@ -23,6 +23,8 @@ public:
 	Window(const char* title, unsigned int width, unsigned int height);
 	~Window();
 
+	void enable(GLenum type) const;
+	void disable(GLenum type) const;
 	bool closed() const;
 	void update() const;
 	void clear(float x = 0.0f, float y = 0.0f, float z = 0.0f, float w = 1.0f) const;

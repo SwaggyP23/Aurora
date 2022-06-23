@@ -34,6 +34,16 @@ Window::~Window()
 	glfwTerminate();
 }
 
+void Window::enable(GLenum type) const
+{
+	glEnable(type);
+}
+
+void Window::disable(GLenum type) const
+{
+	glEnable(type);
+}
+
 bool Window::closed() const
 {
 	return glfwWindowShouldClose(m_Window) == 1;
