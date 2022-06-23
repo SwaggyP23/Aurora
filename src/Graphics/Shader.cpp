@@ -1,6 +1,6 @@
 #include "Shader.h"
-#include <iostream>
 #include <vector>
+#include "Logging/Log.h"
 
 Shader::Shader(const std::string& filePath)
 {
@@ -84,12 +84,12 @@ void Shader::CheckShaderCompilation(GLuint shader, ShaderErrorType type) const
 		glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
 
 		if (type == ShaderErrorType::vertexShader)
-			std::cout << "Failed to compile Vertex Shader!!\n";
+			CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
 
 		else if (type == ShaderErrorType::fragmentShader)
-			std::cout << "Failed to compile Fragment Shader!!\n";
+			CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
 
-		std::cout << &errorMessage[0] << std::endl;
+		CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
 
 		glDeleteShader(shader);
 	}

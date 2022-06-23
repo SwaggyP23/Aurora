@@ -1,47 +1,15 @@
 #include "Graphics/Shader.h"
-#include <IMGUI/imgui.h>
-#include <IMGUI/imgui_impl_glfw.h>
-#include <IMGUI/imgui_impl_opengl3.h>
+#include "Graphics/Window.h"
 #include <glm/glm.hpp>
 #include <stb_image/stb_image.h>
 
 #include <iostream>
 #include <vector>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
-
 int main()
 {
-	if (!glfwInit()) {
-		std::cout << "Failed to initialize glfw" << std::endl;
-		return -1;
-	}
+	Window window("OpenGL", 1024, 576);
 
-	GLFWwindow* window = glfwCreateWindow(1024, 576, "OpenGL", NULL, NULL);
-
-	if (!window) {
-		glfwTerminate();
-		return -1;
-	}
-
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-	if (glewInit()) {
-		std::cout << "Failed to initialize glew" << std::endl;
-		return -1;
-	}
-
-	std::cout << glGetString(GL_VERSION) << std::endl;
-
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init();
-	glViewport(0, 0, 960, 580);
 	glm::vec4 color(0.2f, 0.7f, 0.8f, 1.0f); // Initial clear color.
 	glm::vec4 uniColor(0.5f);
 	std::vector<char> errorMessage;
@@ -141,15 +109,9 @@ int main()
 
 	float f = 0.0f;
 
-	while (!glfwWindowShouldClose(window)) // Render Loop.
+	while (!window.closed()) // Render Loop.
 	{
-		glfwPollEvents();
-		glClearColor(color.r, color.g, color.b, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		ImGui_ImplGlfw_NewFrame();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui::NewFrame();
+		window.clear(color.r, color.g, color.b, 1.0f);
 
 		ImGui::Begin("Colors");
 		ImGui::ColorEdit3("Clear Color:", (float*)&color);
@@ -171,20 +133,12 @@ int main()
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		glfwSwapBuffers(window);
+		window.update();
 	}
 	
 	glDeleteBuffers(1, &vertexArray);
 	glDeleteBuffers(1, &vertexBuffer);
 	glDeleteBuffers(1, &indexbuffer);
 
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-
-	glfwTerminate();
 	return 0;
-
 }
