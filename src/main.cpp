@@ -1,5 +1,6 @@
 #include "Graphics/Shader.h"
 #include "Graphics/Window.h"
+#include "Graphics/Buffer.h"
 #include <stb_image/stb_image.h>
 
 #include <iostream>
@@ -109,28 +110,34 @@ int main()
 	glGenVertexArrays(1, &vertexArray);
 	glBindVertexArray(vertexArray);
 
-	GLuint vertexBuffer;
-	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	BufferLayout layout = {
+		{ ShaderDataType::Float3, "a_Position" },
+		{ ShaderDataType::Float2, "a_TexCoord" }
+	};
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const void*)0/*0 * sizeof(GLfloat)*/);
-	// Stride is the size (in bytes) between instances of the same vertex attributes.
-	// offset is the poisition of where the data we are specifying begins in the buffer.
-	glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const void*)12/*3 * sizeof(GLfloat)*/);
-	//glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const void*)12/*7 * sizeof(GLfloat)*/);
-	glEnableVertexAttribArray(1);
+	VertexBuffer vertexBuffer(vertices, sizeof(vertices));
+	vertexBuffer.bind();
+	vertexBuffer.setLayout(layout);
 
-	GLuint indexbuffer;
-	glGenBuffers(1, &indexbuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	int index = 0;
+	for (const auto& element : layout.getElements())
+	{
+		glVertexAttribPointer(index,
+			element.getComponentCount(),
+			ShaderDataTypeToOpenGLType(element.type),
+			element.normalized ? GL_TRUE : GL_FALSE,
+			layout.getStride(), 
+			(const void*)element.offset);
+
+		glEnableVertexAttribArray(index++);
+	}
+
+	IndexBuffer indexBuffer(indices, sizeof(indices) / sizeof(GLuint));
+	indexBuffer.bind();
 
 	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	vertexBuffer.unBind();
+	indexBuffer.bind();
 
 	Shader shader("res/shaders/Basic.shader");
 
@@ -195,6 +202,7 @@ int main()
 	shader.setUniformMat4("vw_matrix", view);
 	shader.setUniformMat4("pr_matrix", projection);
 
+	float fov = 45.0f;
 	float f = 0.0f;
 	float ff = 0.0f;
 	glm::vec3 fff(0.0f, 0.0f, 0.0f);
@@ -206,6 +214,7 @@ int main()
 		ImGui::Begin("Colors");
 		ImGui::ColorEdit3("Clear Color:", (float*)&color);
 		ImGui::ColorEdit3("Uniform Color:", (float*)&uniColor);
+		ImGui::SliderFloat("FOV:", &fov, 10.0f, 110.0f);
 		ImGui::SliderFloat("Blend:", &f, 0.0f, 1.0f);
 		ImGui::SliderFloat("rotation:", &ff, -10.0f, 10.0f);
 		ImGui::SliderFloat3("tranlation:", &fff[0], 10.0f, -5.0f);
@@ -222,12 +231,13 @@ int main()
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i] + fff);
-			//model = glm::translate(model, fff);
-			//float angle = 20.0f * i;
-			model = glm::rotate(model, ff, glm::vec3(1.0f, 0.3f, 0.5f));
-			//ourShader.setMat4("model", model);
+			view = glm::translate(glm::mat4(1.0f), cubePositions[i] + fff);
+			shader.setUniformMat4("vw_matrix", view);
+
+			projection = glm::perspective(glm::radians(fov), 1024.0f / 576.0f, 0.1f, 100.0f);
+			shader.setUniformMat4("pr_matrix", projection);
+
+			model = glm::rotate(glm::mat4(1.0f), ff, glm::vec3(1.0f, 0.3f, 0.5f));
 			shader.setUniformMat4("ml_matrix", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -262,8 +272,6 @@ int main()
 	}
 	
 	glDeleteBuffers(1, &vertexArray);
-	glDeleteBuffers(1, &vertexBuffer);
-	glDeleteBuffers(1, &indexbuffer);
 
 	return 0;
 }
