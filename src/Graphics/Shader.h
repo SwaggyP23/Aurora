@@ -4,6 +4,9 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Utils/UtilFunctions.h"
 
@@ -17,8 +20,14 @@ public:
 	void unBind() const;
 
 	// Setting uniforms...
+
 	void setUniform1i(const GLchar* name, GLuint val) const;
 	void setUniform1f(const GLchar* name, GLfloat val) const;
+	void setUniform2f(const GLchar* name, const glm::vec2& vector) const;
+	void setUniform3f(const GLchar* name, const glm::vec3& vector) const;
+	void setUniform4f(const GLchar* name, const glm::vec4& vector) const;
+	void setUniformMat4(const GLchar* name, const glm::mat4& matrix) const;
+	void setUniformMat4(const GLchar* name, const float* matrix) const;
 
 private:
 	enum class ShaderErrorType

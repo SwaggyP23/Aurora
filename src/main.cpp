@@ -1,6 +1,5 @@
 #include "Graphics/Shader.h"
 #include "Graphics/Window.h"
-#include <glm/glm.hpp>
 #include <stb_image/stb_image.h>
 
 #include <iostream>
@@ -14,11 +13,11 @@ int main()
 	glm::vec4 uniColor(0.5f);
 	std::vector<char> errorMessage;
 
-	GLfloat vertices[4 * 8] = {
-		-0.7f, -0.7f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-	 	-0.7f,  0.7f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
-		 0.7f,  0.7f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-		 0.7f, -0.7f,    0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f
+	GLfloat vertices[8 * 8] = {
+		-0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+	 	-0.5f,  0.5f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
+		 0.5f,  0.5f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+		 0.5f, -0.5f,    0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f
 	};
 
 	GLuint indices[6] = { 0, 1, 2, 2, 3, 0 };
@@ -105,7 +104,16 @@ int main()
 	shader.setUniform1i("texture1", 0);
 	shader.setUniform1i("texture2", 1);
 
-	//glUniform4f(glGetUniformLocation(program, "color"), uniColor.r, uniColor.g, uniColor.b, uniColor.a);
+	//glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	//glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	//glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
+
+	//shader.setUniformMat4("scale", scale);
+	//shader.setUniformMat4("rotation", rotation);
+	//shader.setUniformMat4("translation", translation);
+	glm::mat4 scale;
+	glm::mat4 rotation;
+	glm::mat4 translation;
 
 	float f = 0.0f;
 
@@ -119,18 +127,34 @@ int main()
 		ImGui::SliderFloat("Blend:", &f, 0.0f, 1.0f);
 		ImGui::End();
 
-		//glUniform4f(glGetUniformLocation(program, "color"), uniColor.r, uniColor.g, uniColor.b, uniColor.a);
 		shader.setUniform1f("blend", f);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, text1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, text2);
+		
+		rotation = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
 
-		shader.bind();
+		shader.setUniformMat4("rotation", rotation);
+		shader.setUniformMat4("translation", translation);
+
 		glBindVertexArray(vertexArray);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer); // We do not need these since the index buffer is in the VA
+
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		float scaleAmount = static_cast<float>(sin(glfwGetTime()));
+		scale = glm::scale(glm::mat4(1.0f), glm::vec3(scaleAmount, scaleAmount, scaleAmount));
+
+		rotation = glm::mat4(1.0f);
+		translation = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
+
+		shader.setUniformMat4("scale", scale);
+		shader.setUniformMat4("rotation", rotation);
+		shader.setUniformMat4("translation", translation);
+
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
+
 		glBindVertexArray(0);
 
 		window.update();

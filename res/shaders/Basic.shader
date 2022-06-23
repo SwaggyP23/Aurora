@@ -8,9 +8,15 @@ layout (location = 2) in vec2 a_TexCoord;
 out vec4 v_Color;
 out vec2 v_TexCoord;
 
+uniform mat4 scale = mat4(1.0f);
+uniform mat4 rotation;
+uniform mat4 translation;
+//uniform mat4 transform;
+
 void main()
 {
-	gl_Position = vec4(a_Position, 1.0f);
+	gl_Position = translation * rotation * scale * vec4(a_Position, 1.0f);
+	//gl_Position = transform * vec4(a_Position, 1.0f);
 	v_Color = a_Color;
 	v_TexCoord = a_TexCoord;
 }
