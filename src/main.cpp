@@ -9,6 +9,15 @@
 #include <vector>
 #include <memory>
 
+// camera
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+
 int main()
 {
 	Window window("OpenGL", 1024, 576);
@@ -132,14 +141,14 @@ int main()
 
 	Shader shader("res/shaders/Basic.shader");
 
-	Texture text1("res/textures/lufi.png");
+	Texture text1("res/textures/Qiyana2.png");
 	text1.bind();
 	text1.setTextureWrapping(GL_REPEAT);
 	text1.setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text1.loadTextureData(GL_RGBA, GL_RGBA);
 	text1.unBind();
 
-	Texture text2("res/textures/Qiyana2.png");
+	Texture text2("res/textures/lufi.png");
 	text2.bind();
 	text2.setTextureWrapping(GL_REPEAT);
 	text2.setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -167,8 +176,14 @@ int main()
 	float rotation = 0.0f;
 	glm::vec3 translation(0.0f, 0.0f, 0.0f);
 
+	bool isBpressed = false;
+
 	while (!window.closed()) // Render Loop.
 	{
+		float currentFrame = (float)(glfwGetTime());
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		window.clear(color.r, color.g, color.b, 1.0f);
 
 		ImGui::Begin("Colors");
@@ -177,7 +192,7 @@ int main()
 		ImGui::SliderFloat("FOV:", &fov, 10.0f, 110.0f);
 		ImGui::SliderFloat("Blend:", &blend, 0.0f, 1.0f);
 		ImGui::SliderFloat("rotation:", &rotation, -10.0f, 10.0f);
-		ImGui::SliderFloat3("translation:", &translation[0], 10.0f, -5.0f);
+		ImGui::SliderFloat3("transforms:", &translation[0], 10.0f, -5.0f);
 		ImGui::End();
 
 		int i = 0;
@@ -188,16 +203,42 @@ int main()
 			i++;
 		}
 
+
 		shader.setUniform1f("blend", blend);
+
+		float cameraSpeed = static_cast<float>(2.5 * deltaTime);
+		if (window.isKeyPressed(GLFW_KEY_W))
+			cameraPos += cameraSpeed * cameraFront;
+		if (window.isKeyPressed(GLFW_KEY_S))
+			cameraPos -= cameraSpeed * cameraFront;
+		if (window.isKeyPressed(GLFW_KEY_A))
+			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		if (window.isKeyPressed(GLFW_KEY_D))
+			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		if (window.isKeyPressed(GLFW_KEY_Q))
+			cameraPos += cameraSpeed * cameraUp;
+		if (window.isKeyPressed(GLFW_KEY_E))
+			cameraPos -= cameraSpeed * cameraUp;
+
+		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		shader.setUniformMat4("vw_matrix", view);
+
+		if (window.isKeyPressed(GLFW_KEY_B))
+			isBpressed = !isBpressed;
+
 		vertexArray.bind();
 		for (unsigned int i = 0; i < 10; i++)
 		{
-			// calculate the MVP matrices for each object and pass them to shader before drawing
-			model = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(1.0f, 0.3f, 0.5f));
+			// calculate the model matrix for each object and pass it to shader before drawing
+			glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			if (isBpressed) {
+				model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
+			}
+			else
+				model = glm::rotate(model, rotation, glm::vec3(1.0f, 0.3f, 0.5f));
 			shader.setUniformMat4("ml_matrix", model);
-
-			view = glm::translate(glm::mat4(1.0f), cubePositions[i] + translation);
-			shader.setUniformMat4("vw_matrix", view);
 
 			projection = glm::perspective(glm::radians(fov), 1024.0f / 576.0f, 0.1f, 100.0f);
 			shader.setUniformMat4("pr_matrix", projection);
@@ -205,6 +246,23 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		vertexArray.unBind();
+
+		//vertexArray.bind();
+		//for (unsigned int i = 0; i < 10; i++)
+		//{
+		//	// calculate the MVP matrices for each object and pass them to shader before drawing
+		//	model = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(1.0f, 0.3f, 0.5f));
+		//	shader.setUniformMat4("ml_matrix", model);
+
+		//	view = glm::translate(glm::mat4(1.0f), cubePositions[i] + translation);
+		//	shader.setUniformMat4("vw_matrix", view);
+
+		//	projection = glm::perspective(glm::radians(fov), 1024.0f / 576.0f, 0.1f, 100.0f);
+		//	shader.setUniformMat4("pr_matrix", projection);
+
+		//	glDrawArrays(GL_TRIANGLES, 0, 36);
+		//}
+		//vertexArray.unBind();
 
 		window.update();
 	}

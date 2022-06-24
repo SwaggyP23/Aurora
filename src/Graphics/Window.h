@@ -18,6 +18,8 @@ private:
 	bool m_Closed;
 
 	static double m_X, m_Y;
+	static bool m_Keys[350];
+	static bool m_MouseButtons[10];
 
 public:
 	Window(const char* title, unsigned int width, unsigned int height);
@@ -33,6 +35,8 @@ public:
 	inline unsigned int getHeight() const { return m_Height; }
 	inline GLFWwindow* getWindowPointer() const { return m_Window; }
 
+	bool isKeyPressed(unsigned int keycode) const;
+	bool isMouseButtonPressed(unsigned int buttonCode) const;
 	void getCursorPosition(double& x, double& y) const;
 
 private:
@@ -40,6 +44,7 @@ private:
 
 	friend void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	friend void cursor_callback(GLFWwindow* window, double xpos, double ypos);
+	friend void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 };
 
 #endif

@@ -2,6 +2,8 @@
 #include "Logging/Log.h"
 
 double Window::m_X, Window::m_Y;
+bool Window::m_Keys[350];
+bool Window::m_MouseButtons[10];
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -15,6 +17,12 @@ void cursor_callback(GLFWwindow* window, double xpos, double ypos)
 	win->m_Y = ypos;
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	Window* win = (Window*)glfwGetWindowUserPointer(window);
+	win->m_Keys[key] = action != GLFW_RELEASE;
+}
+
 Window::Window(const char* title, unsigned int width, unsigned int height)
 	: m_Width(width), m_Height(height), m_Title(title), m_Closed(false)
 {
@@ -22,6 +30,12 @@ Window::Window(const char* title, unsigned int width, unsigned int height)
 
 	if (!Init())
 		glfwTerminate();
+
+	for (int i = 0; i < 350; i++)
+		m_Keys[i] = false;
+
+	for (int i = 0; i < 10; i++)
+		m_MouseButtons[i] = false;
 }
 
 Window::~Window()
@@ -73,6 +87,28 @@ void Window::clear(float x, float y, float z, float w) const
 	ImGui::NewFrame();
 }
 
+bool Window::isKeyPressed(unsigned int keycode) const
+{
+	if (keycode >= 350) {
+		CORE_LOG_ERROR("The keycode for the pressed key is greater than the max keycode!");
+
+		return false;
+	}
+
+	return m_Keys[keycode];
+}
+
+bool Window::isMouseButtonPressed(unsigned int buttonCode) const
+{
+	if (buttonCode >= 10) {
+		CORE_LOG_ERROR("The keycode for the pressed button is greater than the max keycode!");
+
+		return false;
+	}
+
+	return m_MouseButtons[buttonCode];
+}
+
 void Window::getCursorPosition(double& x, double& y) const
 {
 	x = m_X;
@@ -96,7 +132,9 @@ bool Window::Init()
 	}
 
 	glfwMakeContextCurrent(m_Window);
+	glfwSetWindowUserPointer(m_Window, this);
 	glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
+	glfwSetKeyCallback(m_Window, key_callback);
 	glfwSetCursorPosCallback(m_Window, cursor_callback);
 	glViewport(0, 0, m_Width, m_Height);
 
