@@ -1,10 +1,13 @@
 #include "Graphics/Shader.h"
 #include "Graphics/Window.h"
 #include "Graphics/Buffer.h"
-#include <stb_image/stb_image.h>
+#include "Graphics/VertexArray.h"
+#include "Graphics/Texture.h"
+#include "Utils/ImageLoader.h"
 
 #include <iostream>
 #include <vector>
+#include <memory>
 
 int main()
 {
@@ -106,9 +109,7 @@ int main()
 
 	GLuint indices[6] = { 0, 1, 2, 2, 3, 0 };
 
-	GLuint vertexArray;
-	glGenVertexArrays(1, &vertexArray);
-	glBindVertexArray(vertexArray);
+	VertexArray vertexArray;
 
 	BufferLayout layout = {
 		{ ShaderDataType::Float3, "a_Position" },
@@ -118,78 +119,37 @@ int main()
 	VertexBuffer vertexBuffer(vertices, sizeof(vertices));
 	vertexBuffer.bind();
 	vertexBuffer.setLayout(layout);
+	vertexArray.addVertexBuffer(vertexBuffer);
 
-	int index = 0;
-	for (const auto& element : layout.getElements())
-	{
-		glVertexAttribPointer(index,
-			element.getComponentCount(),
-			ShaderDataTypeToOpenGLType(element.type),
-			element.normalized ? GL_TRUE : GL_FALSE,
-			layout.getStride(), 
-			(const void*)element.offset);
-
-		glEnableVertexAttribArray(index++);
-	}
 
 	IndexBuffer indexBuffer(indices, sizeof(indices) / sizeof(GLuint));
 	indexBuffer.bind();
+	vertexArray.setIndexBuffer(indexBuffer);
 
-	glBindVertexArray(0);
+
 	vertexBuffer.unBind();
 	indexBuffer.bind();
 
 	Shader shader("res/shaders/Basic.shader");
 
-	GLuint text1, text2;
-	glGenTextures(1, &text1);
-	glBindTexture(GL_TEXTURE_2D, text1);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	Texture text1("res/textures/lufi.png");
+	text1.bind();
+	text1.setTextureWrapping(GL_REPEAT);
+	text1.setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	text1.loadTextureData(GL_RGBA, GL_RGBA);
+	text1.unBind();
 
-	// load image
-	int width, height, channels;
-	stbi_set_flip_vertically_on_load(true);
-	GLubyte* data = stbi_load("res/textures/lufi.png", &width, &height, &channels, 0);
+	Texture text2("res/textures/Qiyana2.png");
+	text2.bind();
+	text2.setTextureWrapping(GL_REPEAT);
+	text2.setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	text2.loadTextureData(GL_RGBA, GL_RGBA);
+	text2.unBind();
 
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "Failed to load texture" << std::endl;
-	}
-
-	stbi_image_free(data);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// Second texture
-	glGenTextures(1, &text2);
-	glBindTexture(GL_TEXTURE_2D, text2);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	data = stbi_load("res/textures/pack.png", &width, &height, &channels, 0);
-
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "Failed to load texture" << std::endl;
-	}
-
-	stbi_image_free(data);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
+	std::vector<std::unique_ptr<Texture>> textures;
+	textures.push_back(std::make_unique<Texture>(text1));
+	textures.push_back(std::make_unique<Texture>(text2));
+	
 	shader.bind();
 	shader.setUniform1i("texture1", 0);
 	shader.setUniform1i("texture2", 1);
@@ -203,9 +163,9 @@ int main()
 	shader.setUniformMat4("pr_matrix", projection);
 
 	float fov = 45.0f;
-	float f = 0.0f;
-	float ff = 0.0f;
-	glm::vec3 fff(0.0f, 0.0f, 0.0f);
+	float blend = 0.0f;
+	float rotation = 0.0f;
+	glm::vec3 translation(0.0f, 0.0f, 0.0f);
 
 	while (!window.closed()) // Render Loop.
 	{
@@ -215,63 +175,39 @@ int main()
 		ImGui::ColorEdit3("Clear Color:", (float*)&color);
 		ImGui::ColorEdit3("Uniform Color:", (float*)&uniColor);
 		ImGui::SliderFloat("FOV:", &fov, 10.0f, 110.0f);
-		ImGui::SliderFloat("Blend:", &f, 0.0f, 1.0f);
-		ImGui::SliderFloat("rotation:", &ff, -10.0f, 10.0f);
-		ImGui::SliderFloat3("tranlation:", &fff[0], 10.0f, -5.0f);
+		ImGui::SliderFloat("Blend:", &blend, 0.0f, 1.0f);
+		ImGui::SliderFloat("rotation:", &rotation, -10.0f, 10.0f);
+		ImGui::SliderFloat3("translation:", &translation[0], 10.0f, -5.0f);
 		ImGui::End();
 
-		shader.setUniform1f("blend", f);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, text1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, text2);
+		int i = 0;
+		for (const auto& texture : textures)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			texture->bind();
+			i++;
+		}
 
-		glBindVertexArray(vertexArray);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
+		shader.setUniform1f("blend", blend);
+		vertexArray.bind();
 		for (unsigned int i = 0; i < 10; i++)
 		{
-			// calculate the model matrix for each object and pass it to shader before drawing
-			view = glm::translate(glm::mat4(1.0f), cubePositions[i] + fff);
+			// calculate the MVP matrices for each object and pass them to shader before drawing
+			model = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(1.0f, 0.3f, 0.5f));
+			shader.setUniformMat4("ml_matrix", model);
+
+			view = glm::translate(glm::mat4(1.0f), cubePositions[i] + translation);
 			shader.setUniformMat4("vw_matrix", view);
 
 			projection = glm::perspective(glm::radians(fov), 1024.0f / 576.0f, 0.1f, 100.0f);
 			shader.setUniformMat4("pr_matrix", projection);
 
-			model = glm::rotate(glm::mat4(1.0f), ff, glm::vec3(1.0f, 0.3f, 0.5f));
-			shader.setUniformMat4("ml_matrix", model);
-
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		glBindVertexArray(0);
-
-		//rotation = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		//translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
-
-		//shader.setUniformMat4("rotation", rotation);
-		//shader.setUniformMat4("translation", translation);
-
-		//glBindVertexArray(vertexArray);
-
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
-
-		//float scaleAmount = static_cast<float>(sin(glfwGetTime()));
-		//scale = glm::scale(glm::mat4(1.0f), glm::vec3(scaleAmount, scaleAmount, scaleAmount));
-
-		//rotation = glm::mat4(1.0f);
-		//translation = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
-
-		//shader.setUniformMat4("scale", scale);
-		//shader.setUniformMat4("rotation", rotation);
-		//shader.setUniformMat4("translation", translation);
-
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
-		//glBindVertexArray(0);
-
+		vertexArray.unBind();
 
 		window.update();
 	}
-	
-	glDeleteBuffers(1, &vertexArray);
 
 	return 0;
 }

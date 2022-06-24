@@ -14,10 +14,8 @@ uniform mat4 pr_matrix;
 
 void main()
 {
-	//gl_Position = translation * rotation * scale * vec4(a_Position, 1.0f);
 	gl_Position = pr_matrix * vw_matrix * ml_matrix * vec4(a_Position, 1.0f);
-	//gl_Position = transform * vec4(a_Position, 1.0f);
-	//v_Color = a_Color;
+	//v_Color = a_Color; // since now with the current vertex buffer, no colors are specified
 	v_TexCoord = a_TexCoord;
 }
 

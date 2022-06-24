@@ -5,9 +5,10 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <Logging/Log.h>
+
 #include <string>
 #include <initializer_list>
-#include <Logging/Log.h>
 
 enum class ShaderDataType
 {
@@ -115,6 +116,7 @@ private:
 class VertexBuffer
 {
 public:
+	VertexBuffer() = default;
 	VertexBuffer(GLfloat* vertices, size_t size);
 	~VertexBuffer();
 
@@ -137,6 +139,7 @@ private:
 class IndexBuffer
 {
 public:
+	IndexBuffer() = default;
 	IndexBuffer(GLuint* indices, GLuint count);
 	~IndexBuffer();
 
