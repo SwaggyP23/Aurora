@@ -5,6 +5,7 @@
 #include "Graphics/Texture.h"
 #include "Utils/ImageLoader.h"
 #include "Graphics/Camera.h"
+#include "Events/ApplicationEvents.h"
 
 #include <iostream>
 #include <vector>
@@ -13,6 +14,7 @@
 bool firstMouse = true;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
+bool running = true;
 
 // camera
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -20,8 +22,16 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 Camera camera(cameraPos);
 
+bool onWindowCloseEvent(WindowCloseEvent& e)
+{
+	running = false;
+	return true;
+}
+
 void onEvent(Event& e)
 {
+	EventDispatcher dispatcher(e);
+	dispatcher.dispatch<WindowCloseEvent>(std::bind(onWindowCloseEvent, std::placeholders::_1));
 	LOG_INFO("{0}", e);
 }
 
@@ -205,7 +215,7 @@ int main()
 	float lastFrame = 0.0f;
 	bool isRpressed = false;
 
-	while (!window.closed()) // Render Loop.
+	while (running) // Render Loop.
 	{
 		float currentFrame = (float)(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
