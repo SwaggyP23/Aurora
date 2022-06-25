@@ -20,63 +20,17 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 Camera camera(cameraPos);
 
-//void cursor_callback(GLFWwindow* window, double xposIn, double yposIn)
-//{
-//	Window* win = (Window*)glfwGetWindowUserPointer(window);
-//	win->m_X = xposIn;
-//	win->m_Y = yposIn;
-//
-//	float xpos = static_cast<float>(xposIn);
-//	float ypos = static_cast<float>(yposIn);
-//
-//	if (firstMouse)
-//	{
-//		lastX = win->getWidth() / 2.0f;
-//		lastY = win->getHeight() / 2.0f;
-//		firstMouse = false;
-//	}
-//
-//	float xoffset = xpos - lastX;
-//	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-//
-//	lastX = xpos;
-//	lastY = ypos;
-//
-//	camera.ProcessMouseMovement(xoffset, yoffset);
-//}
-
-//void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-//{
-//	Window* win = (Window*)glfwGetWindowUserPointer(window);
-//	win->m_Xoff = xoffset;
-//	win->m_Yoff = yoffset;
-//
-//	camera.ProcessMouseScroll(static_cast<float>(yoffset));
-//}
-//
-//void processInput(GLFWwindow* window, float deltaTime)
-//{
-//	Window* win = (Window*)glfwGetWindowUserPointer(window);
-//
-//	if (win->isKeyPressed(GLFW_KEY_W))
-//		camera.ProcessKeyboard(FORWARD, deltaTime);
-//	if (win->isKeyPressed(GLFW_KEY_S))
-//		camera.ProcessKeyboard(BACKWARD, deltaTime);
-//	if (win->isKeyPressed(GLFW_KEY_A))
-//		camera.ProcessKeyboard(LEFT, deltaTime);
-//	if (win->isKeyPressed(GLFW_KEY_D))
-//		camera.ProcessKeyboard(RIGHT, deltaTime);
-//	if (win->isKeyPressed(GLFW_KEY_Q))
-//		camera.ProcessKeyboard(UP, deltaTime);
-//	if (win->isKeyPressed(GLFW_KEY_E))
-//		camera.ProcessKeyboard(DOWN, deltaTime);
-//}
+void onEvent(Event& e)
+{
+	LOG_INFO("{0}", e);
+}
 
 int main()
 {
 	Window window("OpenGL", 1280, 720);
 	window.enable(GL_DEPTH_TEST);
 	window.SetVSync(false);
+	window.SetEventCallback(std::bind(&onEvent, std::placeholders::_1));
 
 	glm::vec4 color(0.2f, 0.7f, 0.8f, 1.0f); // Initial clear color.
 	glm::vec4 uniColor(0.5f);

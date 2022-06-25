@@ -25,7 +25,7 @@ public:
 	std::string toString() const override
 	{
 		std::stringstream ss;
-		ss << "Key Pressed Event" << m_KeyCode << "(" << m_RepeatCount << ")";
+		ss << "Key Pressed Event: " << m_KeyCode << " (" << m_RepeatCount << ")";
 		return ss.str();
 	}
 
@@ -45,7 +45,7 @@ public:
 	std::string toString() const override
 	{
 		std::stringstream ss;
-		ss << "Key Released Event" << m_KeyCode;
+		ss << "Key Released Event: " << m_KeyCode;
 		return ss.str();
 	}
 
