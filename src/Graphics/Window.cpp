@@ -2,6 +2,7 @@
 #include "Logging/Log.h"
 
 double Window::m_X, Window::m_Y;
+double Window::m_Xoff, Window::m_Yoff;
 bool Window::m_Keys[350];
 bool Window::m_MouseButtons[10];
 
@@ -10,11 +11,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void cursor_callback(GLFWwindow* window, double xpos, double ypos)
+//void cursor_callback(GLFWwindow* window, double xpos, double ypos)
+//{
+//	Window* win = (Window*)glfwGetWindowUserPointer(window);
+//	win->m_X = xpos;
+//	win->m_Y = ypos;
+//
+//}
+
+//void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+//{
+//	Window* win = (Window*)glfwGetWindowUserPointer(window);
+//	win->m_Xoff = xoffset;
+//	win->m_Yoff = yoffset;
+//}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_X = xpos;
-	win->m_Y = ypos;
+	win->m_MouseButtons[button] = action != GLFW_RELEASE;
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -23,8 +38,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	win->m_Keys[key] = action != GLFW_RELEASE;
 }
 
-Window::Window(const char* title, unsigned int width, unsigned int height)
-	: m_Width(width), m_Height(height), m_Title(title), m_Closed(false)
+Window::Window(const char* title, unsigned int width, unsigned int height, void(*func)(GLFWwindow*, double, double), void(*funcS)(GLFWwindow*, double, double))
+	: m_Width(width), m_Height(height), m_Title(title), m_Closed(false), m_Function(func), m_FunctionS(funcS)
 {
 	logger::Log::Init();
 
@@ -56,6 +71,11 @@ void Window::enable(GLenum type) const
 void Window::disable(GLenum type) const
 {
 	glEnable(type);
+}
+
+void Window::SetVSync(bool var)
+{
+	glfwSwapInterval(var);
 }
 
 bool Window::closed() const
@@ -90,7 +110,7 @@ void Window::clear(float x, float y, float z, float w) const
 bool Window::isKeyPressed(unsigned int keycode) const
 {
 	if (keycode >= 350) {
-		CORE_LOG_ERROR("The keycode for the pressed key is greater than the max keycode!");
+		CORE_LOG_ERROR("Keycode: {0}, is greater than the max keycode: {1}", keycode, 350);
 
 		return false;
 	}
@@ -101,7 +121,7 @@ bool Window::isKeyPressed(unsigned int keycode) const
 bool Window::isMouseButtonPressed(unsigned int buttonCode) const
 {
 	if (buttonCode >= 10) {
-		CORE_LOG_ERROR("The keycode for the pressed button is greater than the max keycode!");
+		CORE_LOG_ERROR("Buttoncode {0}, is greater than the max buttoncode: {1}", buttonCode, 10);
 
 		return false;
 	}
@@ -113,6 +133,14 @@ void Window::getCursorPosition(double& x, double& y) const
 {
 	x = m_X;
 	y = m_Y;
+}
+
+void Window::getScrollPosition(double& xoff, double& yoff) const
+{
+	xoff = m_Xoff;
+	yoff = m_Yoff;
+	m_Xoff = 0.0f;
+	m_Yoff = 0.0f;
 }
 
 bool Window::Init()
@@ -135,7 +163,9 @@ bool Window::Init()
 	glfwSetWindowUserPointer(m_Window, this);
 	glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
 	glfwSetKeyCallback(m_Window, key_callback);
-	glfwSetCursorPosCallback(m_Window, cursor_callback);
+	glfwSetCursorPosCallback(m_Window, m_Function);
+	glfwSetScrollCallback(m_Window, m_FunctionS);
+	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
 	glViewport(0, 0, m_Width, m_Height);
 
 	if (glewInit() != GLEW_OK) {
@@ -150,6 +180,11 @@ bool Window::Init()
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
 	ImGui_ImplOpenGL3_Init();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.WantCaptureMouse = true;
+	io.WantCaptureKeyboard = true;
+
 
 	return true;
 }

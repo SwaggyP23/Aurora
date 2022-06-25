@@ -4,24 +4,79 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/Texture.h"
 #include "Utils/ImageLoader.h"
+#include "Graphics/Camera.h"
 
 #include <iostream>
 #include <vector>
 #include <memory>
 
+bool firstMouse = true;
+float lastX = 800.0f / 2.0;
+float lastY = 600.0 / 2.0;
+
 // camera
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+Camera camera(cameraPos);
 
-// timing
-float deltaTime = 0.0f;	// time between current frame and last frame
-float lastFrame = 0.0f;
+void cursor_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	Window* win = (Window*)glfwGetWindowUserPointer(window);
+	win->m_X = xposIn;
+	win->m_Y = yposIn;
+
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+	lastX = xpos;
+	lastY = ypos;
+
+	camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	Window* win = (Window*)glfwGetWindowUserPointer(window);
+	win->m_Xoff = xoffset;
+	win->m_Yoff = yoffset;
+
+	camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+void processInput(GLFWwindow* window, float deltaTime)
+{
+	Window* win = (Window*)glfwGetWindowUserPointer(window);
+
+	if (win->isKeyPressed(GLFW_KEY_W))
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	if (win->isKeyPressed(GLFW_KEY_S))
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (win->isKeyPressed(GLFW_KEY_A))
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	if (win->isKeyPressed(GLFW_KEY_D))
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (win->isKeyPressed(GLFW_KEY_Q))
+		camera.ProcessKeyboard(UP, deltaTime);
+	if (win->isKeyPressed(GLFW_KEY_E))
+		camera.ProcessKeyboard(DOWN, deltaTime);
+}
 
 int main()
 {
-	Window window("OpenGL", 1024, 576);
+	Window window("OpenGL", 1920, 1080, cursor_callback, mouse_scroll_callback);
 	window.enable(GL_DEPTH_TEST);
+	window.SetVSync(false);
 
 	glm::vec4 color(0.2f, 0.7f, 0.8f, 1.0f); // Initial clear color.
 	glm::vec4 uniColor(0.5f);
@@ -135,12 +190,12 @@ int main()
 	indexBuffer.bind();
 	vertexArray.setIndexBuffer(indexBuffer);
 
-
 	vertexBuffer.unBind();
-	indexBuffer.bind();
+	indexBuffer.unBind();
 
 	Shader shader("res/shaders/Basic.shader");
 
+	// Creating textures
 	Texture text1("res/textures/Qiyana2.png");
 	text1.bind();
 	text1.setTextureWrapping(GL_REPEAT);
@@ -155,6 +210,7 @@ int main()
 	text2.loadTextureData(GL_RGBA, GL_RGBA);
 	text2.unBind();
 
+	// Vector of textures for easily adding and binding textures in render loop
 	std::vector<std::unique_ptr<Texture>> textures;
 	textures.push_back(std::make_unique<Texture>(text1));
 	textures.push_back(std::make_unique<Texture>(text2));
@@ -163,6 +219,7 @@ int main()
 	shader.setUniform1i("texture1", 0);
 	shader.setUniform1i("texture2", 1);
 
+	// Just some hard coded program start MVP matrices
 	glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 576.0f, 0.1f, 100.0f);
@@ -171,12 +228,15 @@ int main()
 	shader.setUniformMat4("vw_matrix", view);
 	shader.setUniformMat4("pr_matrix", projection);
 
-	float fov = 45.0f;
+	//float fov = 45.0f;
 	float blend = 0.0f;
 	float rotation = 0.0f;
 	glm::vec3 translation(0.0f, 0.0f, 0.0f);
 
-	bool isBpressed = false;
+	// timing
+	float deltaTime = 0.0f;	// time between current frame and last frame
+	float lastFrame = 0.0f;
+	bool isRpressed = false;
 
 	while (!window.closed()) // Render Loop.
 	{
@@ -184,15 +244,18 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		processInput(window.getWindowPointer(), deltaTime);
+
 		window.clear(color.r, color.g, color.b, 1.0f);
 
 		ImGui::Begin("Colors");
 		ImGui::ColorEdit3("Clear Color:", (float*)&color);
 		ImGui::ColorEdit3("Uniform Color:", (float*)&uniColor);
-		ImGui::SliderFloat("FOV:", &fov, 10.0f, 110.0f);
+		ImGui::SliderFloat("FOV:", &(camera.getZoom()), 10.0f, 90.0f);
 		ImGui::SliderFloat("Blend:", &blend, 0.0f, 1.0f);
 		ImGui::SliderFloat("rotation:", &rotation, -10.0f, 10.0f);
 		ImGui::SliderFloat3("transforms:", &translation[0], 10.0f, -5.0f);
+		ImGui::Text("Average FrameRate: %.3f", ImGui::GetIO().Framerate);
 		ImGui::End();
 
 		int i = 0;
@@ -203,66 +266,39 @@ int main()
 			i++;
 		}
 
+		if (window.isKeyPressed(GLFW_KEY_B))
+			if(blend < 0.990f) blend += 0.01f;
+		if (window.isKeyPressed(GLFW_KEY_V))
+			if(blend > 0.010f) blend -= 0.01f;
 
 		shader.setUniform1f("blend", blend);
 
-		float cameraSpeed = static_cast<float>(2.5 * deltaTime);
-		if (window.isKeyPressed(GLFW_KEY_W))
-			cameraPos += cameraSpeed * cameraFront;
-		if (window.isKeyPressed(GLFW_KEY_S))
-			cameraPos -= cameraSpeed * cameraFront;
-		if (window.isKeyPressed(GLFW_KEY_A))
-			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-		if (window.isKeyPressed(GLFW_KEY_D))
-			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-		if (window.isKeyPressed(GLFW_KEY_Q))
-			cameraPos += cameraSpeed * cameraUp;
-		if (window.isKeyPressed(GLFW_KEY_E))
-			cameraPos -= cameraSpeed * cameraUp;
-
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		glm::mat4 view = camera.GetViewMatrix();
 		shader.setUniformMat4("vw_matrix", view);
 
-		if (window.isKeyPressed(GLFW_KEY_B))
-			isBpressed = !isBpressed;
+		projection = glm::perspective(glm::radians(camera.getZoom()), 1024.0f / 576.0f, 0.1f, 100.0f);
+		shader.setUniformMat4("pr_matrix", projection);
+
+		if (window.isKeyPressed(GLFW_KEY_R))
+			isRpressed = !isRpressed;
 
 		vertexArray.bind();
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-			model = glm::translate(model, cubePositions[i]);
+			model = glm::translate(model, cubePositions[i] + translation);
 			float angle = 20.0f * i;
-			if (isBpressed) {
+			if (isRpressed) {
 				model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
 			}
 			else
 				model = glm::rotate(model, rotation, glm::vec3(1.0f, 0.3f, 0.5f));
 			shader.setUniformMat4("ml_matrix", model);
 
-			projection = glm::perspective(glm::radians(fov), 1024.0f / 576.0f, 0.1f, 100.0f);
-			shader.setUniformMat4("pr_matrix", projection);
-
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		vertexArray.unBind();
-
-		//vertexArray.bind();
-		//for (unsigned int i = 0; i < 10; i++)
-		//{
-		//	// calculate the MVP matrices for each object and pass them to shader before drawing
-		//	model = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(1.0f, 0.3f, 0.5f));
-		//	shader.setUniformMat4("ml_matrix", model);
-
-		//	view = glm::translate(glm::mat4(1.0f), cubePositions[i] + translation);
-		//	shader.setUniformMat4("vw_matrix", view);
-
-		//	projection = glm::perspective(glm::radians(fov), 1024.0f / 576.0f, 0.1f, 100.0f);
-		//	shader.setUniformMat4("pr_matrix", projection);
-
-		//	glDrawArrays(GL_TRIANGLES, 0, 36);
-		//}
-		//vertexArray.unBind();
 
 		window.update();
 	}
