@@ -1,66 +1,30 @@
 #include "Window.h"
 #include "Logging/Log.h"
 
-double Window::m_X, Window::m_Y;
-double Window::m_Xoff, Window::m_Yoff;
-bool Window::m_Keys[350];
-bool Window::m_MouseButtons[10];
+#include "Events/ApplicationEvents.h"
+#include "Events/MouseEvents.h"
+#include "Events/KeyEvents.h"
+
+void error_callback(int error, const char* description)
+{
+	CORE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-//void cursor_callback(GLFWwindow* window, double xpos, double ypos)
-//{
-//	Window* win = (Window*)glfwGetWindowUserPointer(window);
-//	win->m_X = xpos;
-//	win->m_Y = ypos;
-//
-//}
-
-//void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-//{
-//	Window* win = (Window*)glfwGetWindowUserPointer(window);
-//	win->m_Xoff = xoffset;
-//	win->m_Yoff = yoffset;
-//}
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+Window::Window(std::string title, unsigned int width, unsigned int height)
 {
-	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_MouseButtons[button] = action != GLFW_RELEASE;
-}
+	logger::Log::Init(); // Move this to application constructor once the entrypoint is created
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_Keys[key] = action != GLFW_RELEASE;
-}
-
-Window::Window(const char* title, unsigned int width, unsigned int height, void(*func)(GLFWwindow*, double, double), void(*funcS)(GLFWwindow*, double, double))
-	: m_Width(width), m_Height(height), m_Title(title), m_Closed(false), m_Function(func), m_FunctionS(funcS)
-{
-	logger::Log::Init();
-
-	if (!Init())
-		glfwTerminate();
-
-	for (int i = 0; i < 350; i++)
-		m_Keys[i] = false;
-
-	for (int i = 0; i < 10; i++)
-		m_MouseButtons[i] = false;
+	Init(title, width, height);
 }
 
 Window::~Window()
 {
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-
-	glfwDestroyWindow(m_Window);
-	glfwTerminate();
+	ShutDown();
 }
 
 void Window::enable(GLenum type) const
@@ -73,9 +37,10 @@ void Window::disable(GLenum type) const
 	glEnable(type);
 }
 
-void Window::SetVSync(bool var)
+void Window::SetVSync(bool state)
 {
-	glfwSwapInterval(var);
+	glfwSwapInterval(state);
+	m_Data.VSync = state;
 }
 
 bool Window::closed() const
@@ -93,7 +58,7 @@ void Window::update() const
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	glfwPollEvents();
-	glfwGetFramebufferSize(m_Window, (int*)&m_Width, (int*)&m_Height);
+	glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
 	glfwSwapBuffers(m_Window);
 }
 
@@ -107,51 +72,22 @@ void Window::clear(float x, float y, float z, float w) const
 	ImGui::NewFrame();
 }
 
-bool Window::isKeyPressed(unsigned int keycode) const
+bool Window::Init(std::string title, unsigned int width, unsigned int height)
 {
-	if (keycode >= 350) {
-		CORE_LOG_ERROR("Keycode: {0}, is greater than the max keycode: {1}", keycode, 350);
+	m_Data.Title = title;
+	m_Data.Width = width;
+	m_Data.Height = height;
 
-		return false;
-	}
+	CORE_LOG_INFO("Creating window {0} ({1}, {2})", m_Data.Title, m_Data.Width, m_Data.Height);
 
-	return m_Keys[keycode];
-}
-
-bool Window::isMouseButtonPressed(unsigned int buttonCode) const
-{
-	if (buttonCode >= 10) {
-		CORE_LOG_ERROR("Buttoncode {0}, is greater than the max buttoncode: {1}", buttonCode, 10);
-
-		return false;
-	}
-
-	return m_MouseButtons[buttonCode];
-}
-
-void Window::getCursorPosition(double& x, double& y) const
-{
-	x = m_X;
-	y = m_Y;
-}
-
-void Window::getScrollPosition(double& xoff, double& yoff) const
-{
-	xoff = m_Xoff;
-	yoff = m_Yoff;
-	m_Xoff = 0.0f;
-	m_Yoff = 0.0f;
-}
-
-bool Window::Init()
-{
 	if (!glfwInit()) {
 		CORE_LOG_ERROR("Failed to initialize glfw!");
 		
 		return false;
 	}
+	glfwSetErrorCallback(error_callback);
 
-	m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, NULL, NULL);
+	m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), NULL, NULL);
 
 	if (!m_Window) {
 		CORE_LOG_ERROR("Failed to initialize the window!");
@@ -160,13 +96,91 @@ bool Window::Init()
 	}
 
 	glfwMakeContextCurrent(m_Window);
-	glfwSetWindowUserPointer(m_Window, this);
+	glfwSetWindowUserPointer(m_Window, &m_Data);
+
+	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Width = width;
+			data.Height = height;
+
+			WindowResizeEvent event(width, height);
+			data.EventCallback(event);
+		});
+
+	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowCloseEvent event;
+			data.EventCallback(event);
+		});
+
+	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				KeyPressedEvent event(key, 0);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				KeyReleasedEvent event(key);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_REPEAT:
+			{
+				KeyPressedEvent event(key, true);
+				data.EventCallback(event);
+				break;
+			}
+			}
+		});
+
+	glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				MouseButtonPressedEvent event(button);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				MouseButtonReleasedEvent event(button);
+				data.EventCallback(event);
+				break;
+			}
+			}
+		});
+
+	glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			MouseScrolledEvent event((float)xOffset, (float)yOffset);
+			data.EventCallback(event);
+		});
+
+	glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			MouseMovedEvent event((float)xPos, (float)yPos);
+			data.EventCallback(event);
+		});
+
 	glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
-	glfwSetKeyCallback(m_Window, key_callback);
-	glfwSetCursorPosCallback(m_Window, m_Function);
-	glfwSetScrollCallback(m_Window, m_FunctionS);
-	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
-	glViewport(0, 0, m_Width, m_Height);
+	glViewport(0, 0, m_Data.Width, m_Data.Height);
 
 	if (glewInit() != GLEW_OK) {
 		CORE_LOG_ERROR("Failed to initialize glew!");
@@ -187,4 +201,14 @@ bool Window::Init()
 
 
 	return true;
+}
+
+void Window::ShutDown()
+{
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	glfwDestroyWindow(m_Window);
+	glfwTerminate();
 }

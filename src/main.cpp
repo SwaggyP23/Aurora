@@ -20,61 +20,61 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 Camera camera(cameraPos);
 
-void cursor_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_X = xposIn;
-	win->m_Y = yposIn;
+//void cursor_callback(GLFWwindow* window, double xposIn, double yposIn)
+//{
+//	Window* win = (Window*)glfwGetWindowUserPointer(window);
+//	win->m_X = xposIn;
+//	win->m_Y = yposIn;
+//
+//	float xpos = static_cast<float>(xposIn);
+//	float ypos = static_cast<float>(yposIn);
+//
+//	if (firstMouse)
+//	{
+//		lastX = win->getWidth() / 2.0f;
+//		lastY = win->getHeight() / 2.0f;
+//		firstMouse = false;
+//	}
+//
+//	float xoffset = xpos - lastX;
+//	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+//
+//	lastX = xpos;
+//	lastY = ypos;
+//
+//	camera.ProcessMouseMovement(xoffset, yoffset);
+//}
 
-	float xpos = static_cast<float>(xposIn);
-	float ypos = static_cast<float>(yposIn);
-
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-	lastX = xpos;
-	lastY = ypos;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_Xoff = xoffset;
-	win->m_Yoff = yoffset;
-
-	camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}
-
-void processInput(GLFWwindow* window, float deltaTime)
-{
-	Window* win = (Window*)glfwGetWindowUserPointer(window);
-
-	if (win->isKeyPressed(GLFW_KEY_W))
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (win->isKeyPressed(GLFW_KEY_S))
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (win->isKeyPressed(GLFW_KEY_A))
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (win->isKeyPressed(GLFW_KEY_D))
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-	if (win->isKeyPressed(GLFW_KEY_Q))
-		camera.ProcessKeyboard(UP, deltaTime);
-	if (win->isKeyPressed(GLFW_KEY_E))
-		camera.ProcessKeyboard(DOWN, deltaTime);
-}
+//void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+//{
+//	Window* win = (Window*)glfwGetWindowUserPointer(window);
+//	win->m_Xoff = xoffset;
+//	win->m_Yoff = yoffset;
+//
+//	camera.ProcessMouseScroll(static_cast<float>(yoffset));
+//}
+//
+//void processInput(GLFWwindow* window, float deltaTime)
+//{
+//	Window* win = (Window*)glfwGetWindowUserPointer(window);
+//
+//	if (win->isKeyPressed(GLFW_KEY_W))
+//		camera.ProcessKeyboard(FORWARD, deltaTime);
+//	if (win->isKeyPressed(GLFW_KEY_S))
+//		camera.ProcessKeyboard(BACKWARD, deltaTime);
+//	if (win->isKeyPressed(GLFW_KEY_A))
+//		camera.ProcessKeyboard(LEFT, deltaTime);
+//	if (win->isKeyPressed(GLFW_KEY_D))
+//		camera.ProcessKeyboard(RIGHT, deltaTime);
+//	if (win->isKeyPressed(GLFW_KEY_Q))
+//		camera.ProcessKeyboard(UP, deltaTime);
+//	if (win->isKeyPressed(GLFW_KEY_E))
+//		camera.ProcessKeyboard(DOWN, deltaTime);
+//}
 
 int main()
 {
-	Window window("OpenGL", 1920, 1080, cursor_callback, mouse_scroll_callback);
+	Window window("OpenGL", 1280, 720);
 	window.enable(GL_DEPTH_TEST);
 	window.SetVSync(false);
 
@@ -158,17 +158,30 @@ int main()
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
+	//glm::vec3 cubePositions[] = {
+	//	glm::vec3(0.0f,  0.0f,  0.0f),
+	//	glm::vec3(2.0f,  5.0f, -15.0f),
+	//	glm::vec3(-1.5f, -2.2f, -2.5f),
+	//	glm::vec3(-3.8f, -2.0f, -12.3f),
+	//	glm::vec3(2.4f, -0.4f, -3.5f),
+	//	glm::vec3(-1.7f,  3.0f, -7.5f),
+	//	glm::vec3(1.3f, -2.0f, -2.5f),
+	//	glm::vec3(1.5f,  2.0f, -2.5f),
+	//	glm::vec3(1.5f,  0.2f, -1.5f),
+	//	glm::vec3(-1.3f,  1.0f, -1.5f)
+	//};
+
 	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
+		glm::vec3(0.0f,  0.0f, -1.0f),
+		glm::vec3(0.0f, 0.0f, -2.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec3(-1.0f, 0.0f, 0.0f),
+		glm::vec3(-1.0f,  0.0f, -1.0f),
+		glm::vec3(-1.0f, 0.0f, -2.0f),
+		glm::vec3(1.0f,  0.0f, -1.0f),
+		glm::vec3(1.0f,  0.0f, -2.0f),
+		glm::vec3(0.0f,  1.0f, -1.0f)
 	};
 
 	GLuint indices[6] = { 0, 1, 2, 2, 3, 0 };
@@ -196,14 +209,14 @@ int main()
 	Shader shader("res/shaders/Basic.shader");
 
 	// Creating textures
-	Texture text1("res/textures/Qiyana2.png");
+	Texture text1("res/textures/minecraftDirt.png");
 	text1.bind();
 	text1.setTextureWrapping(GL_REPEAT);
 	text1.setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	text1.loadTextureData(GL_RGBA, GL_RGBA);
+	text1.loadTextureData(GL_RGB, GL_RGB);
 	text1.unBind();
 
-	Texture text2("res/textures/lufi.png");
+	Texture text2("res/textures/minecraftTNT.png");
 	text2.bind();
 	text2.setTextureWrapping(GL_REPEAT);
 	text2.setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -244,7 +257,7 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		processInput(window.getWindowPointer(), deltaTime);
+		//processInput(window.getWindowPointer(), deltaTime);
 
 		window.clear(color.r, color.g, color.b, 1.0f);
 
@@ -266,10 +279,10 @@ int main()
 			i++;
 		}
 
-		if (window.isKeyPressed(GLFW_KEY_B))
-			if(blend < 0.990f) blend += 0.01f;
-		if (window.isKeyPressed(GLFW_KEY_V))
-			if(blend > 0.010f) blend -= 0.01f;
+		//if (window.isKeyPressed(GLFW_KEY_B))
+		//	if(blend < 0.990f) blend += 0.01f;
+		//if (window.isKeyPressed(GLFW_KEY_V))
+		//	if(blend > 0.010f) blend -= 0.01f;
 
 		shader.setUniform1f("blend", blend);
 
@@ -279,8 +292,8 @@ int main()
 		projection = glm::perspective(glm::radians(camera.getZoom()), 1024.0f / 576.0f, 0.1f, 100.0f);
 		shader.setUniformMat4("pr_matrix", projection);
 
-		if (window.isKeyPressed(GLFW_KEY_R))
-			isRpressed = !isRpressed;
+		//if (window.isKeyPressed(GLFW_KEY_R))
+		//	isRpressed = !isRpressed;
 
 		vertexArray.bind();
 		for (unsigned int i = 0; i < 10; i++)
