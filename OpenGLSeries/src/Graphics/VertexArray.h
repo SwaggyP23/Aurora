@@ -3,9 +3,7 @@
 #ifndef _VERTEX_ARRAY_H_
 #define _VERTEX_ARRAY_H_
 
-#include "OGLpch.h"
-
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "Buffer.h"

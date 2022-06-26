@@ -1,7 +1,5 @@
 #pragma once
 
-#include "OGLpch.h"
-
 struct ShaderSources
 {
 	std::string VertexSource;

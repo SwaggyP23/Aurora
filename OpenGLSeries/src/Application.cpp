@@ -1,3 +1,4 @@
+#include "OGLpch.h"
 #include "Application.h"
 
 #define SET_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)

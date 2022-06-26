@@ -1,7 +1,5 @@
 #pragma once
 
-#include "OGLpch.h"
-
 enum class EventType
 {
 	None = 0,

@@ -1,3 +1,4 @@
+#include "../OGLpch.h"
 #include "Log.h"
 
 namespace logger {
