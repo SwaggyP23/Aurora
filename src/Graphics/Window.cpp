@@ -1,21 +1,11 @@
 #include "Window.h"
-#include "Logging/Log.h"
-
-#include "Events/ApplicationEvents.h"
-#include "Events/MouseEvents.h"
-#include "Events/KeyEvents.h"
 
 void error_callback(int error, const char* description)
 {
 	CORE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
-
-Window::Window(std::string title, unsigned int width, unsigned int height)
+Window::Window(const std::string& title, unsigned int width, unsigned int height)
 {
 	logger::Log::Init(); // Move this to application constructor once the entrypoint is created
 
@@ -72,7 +62,7 @@ void Window::clear(float x, float y, float z, float w) const
 	ImGui::NewFrame();
 }
 
-bool Window::Init(std::string title, unsigned int width, unsigned int height)
+bool Window::Init(const std::string& title, unsigned int width, unsigned int height)
 {
 	m_Data.Title = title;
 	m_Data.Width = width;
@@ -179,7 +169,6 @@ bool Window::Init(std::string title, unsigned int width, unsigned int height)
 			data.EventCallback(event);
 		});
 
-	glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
 	glViewport(0, 0, m_Data.Width, m_Data.Height);
 
 	if (glewInit() != GLEW_OK) {

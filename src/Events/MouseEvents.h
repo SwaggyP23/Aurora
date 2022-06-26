@@ -14,7 +14,7 @@ public:
 	std::string toString() const override
 	{
 		std::stringstream ss;
-		ss << "Mouse Moved Event: " << m_Mx << '\t' << m_My;
+		ss << "Mouse Moved Event: X: " << m_Mx << "  Y: " << m_My;
 		return ss.str();
 	}
 

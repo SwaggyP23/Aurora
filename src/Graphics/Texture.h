@@ -1,10 +1,9 @@
 #pragma once
 
+#include "OGLpch.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <Logging/Log.h>
-
-#include <string>
 
 class Texture
 {

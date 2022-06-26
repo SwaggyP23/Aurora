@@ -3,15 +3,17 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include "OGLpch.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <IMGUI/imgui.h>
 #include <IMGUI/imgui_impl_glfw.h>
 #include <IMGUI/imgui_impl_opengl3.h>
 
-#include "Events/Events.h"
-
-#include <functional>
+#include "Events/ApplicationEvents.h"
+#include "Events/MouseEvents.h"
+#include "Events/KeyEvents.h"
 
 // The reasom the app crashes now is because the callbacks for the events are not set so functional throws
 
@@ -19,7 +21,7 @@ class Window
 {
 	using EventCallbackFn = std::function<void(Event&)>;
 public:
-	Window(std::string title, unsigned int width, unsigned int height);
+	Window(const std::string& title, unsigned int width, unsigned int height);
 	~Window();
 
 	void enable(GLenum type) const;
@@ -39,7 +41,7 @@ public:
 	inline GLFWwindow* getWindowPointer() const { return m_Window; }
 
 private:
-	bool Init(std::string title, unsigned int width, unsigned int height);
+	bool Init(const std::string& title, unsigned int width, unsigned int height);
 	void ShutDown();
 
 	friend void framebuffer_size_callback(GLFWwindow* window, int width, int height);

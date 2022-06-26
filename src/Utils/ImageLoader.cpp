@@ -1,7 +1,5 @@
 #include "ImageLoader.h"
 
-#include <stb_image/stb_image.h>
-
 unsigned char* ImageLoader::m_Data;
 uint32_t ImageLoader::m_Width, ImageLoader::m_Height, ImageLoader::m_Channels;
 

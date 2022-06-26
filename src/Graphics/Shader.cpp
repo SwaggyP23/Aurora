@@ -1,6 +1,4 @@
 #include "Shader.h"
-#include <vector>
-#include "Logging/Log.h"
 
 Shader::Shader(const std::string& filePath)
 {

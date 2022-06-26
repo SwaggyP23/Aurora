@@ -21,13 +21,13 @@ void VertexArray::unBind() const
 	glBindVertexArray(0);
 }
 
-void VertexArray::addVertexBuffer(const VertexBuffer& vertexbuffer)
+void VertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
 {
 	glBindVertexArray(m_ArrayId);
-	vertexbuffer.bind();
+	vertexBuffer->bind();
 
 	int index = 0;
-	const auto& layout = vertexbuffer.getBufferLayout();
+	const auto& layout = vertexBuffer->getBufferLayout();
 	for (const auto& element : layout)
 	{
 		glVertexAttribPointer(index,
@@ -40,15 +40,15 @@ void VertexArray::addVertexBuffer(const VertexBuffer& vertexbuffer)
 		glEnableVertexAttribArray(index++);
 	}
 
-	m_VertexBuffers.push_back(vertexbuffer);
+	m_VertexBuffers.push_back(vertexBuffer);
 	glBindVertexArray(0);
 }
 
-void VertexArray::setIndexBuffer(const IndexBuffer& indexbuffer)
+void VertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
 {
 	glBindVertexArray(m_ArrayId);
-	indexbuffer.bind();
+	indexBuffer->bind();
 
-	m_IndexBuffer = indexbuffer;
+	m_IndexBuffer = indexBuffer;
 	glBindVertexArray(0);
 }

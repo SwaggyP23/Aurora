@@ -1,7 +1,5 @@
 #include "Texture.h"
 
-#include "Utils/ImageLoader.h"
-
 Texture::Texture(std::string filePath)
 	: m_Path(filePath), m_Width(0), m_Height(0)
 {

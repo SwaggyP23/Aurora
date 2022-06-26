@@ -3,12 +3,10 @@
 #ifndef _BUFFER_H_
 #define _BUFFER_H_
 
+#include "OGLpch.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <Logging/Log.h>
-
-#include <string>
-#include <initializer_list>
 
 enum class ShaderDataType
 {
@@ -140,7 +138,7 @@ class IndexBuffer
 {
 public:
 	IndexBuffer() = default;
-	IndexBuffer(GLuint* indices, GLuint count);
+	IndexBuffer(uint32_t* indices, uint32_t count);
 	~IndexBuffer();
 
 	void bind() const;

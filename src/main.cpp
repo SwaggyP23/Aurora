@@ -1,15 +1,4 @@
-#include "Graphics/Shader.h"
-#include "Graphics/Window.h"
-#include "Graphics/Buffer.h"
-#include "Graphics/VertexArray.h"
-#include "Graphics/Texture.h"
-#include "Utils/ImageLoader.h"
-#include "Graphics/Camera.h"
-#include "Events/ApplicationEvents.h"
 
-#include <iostream>
-#include <vector>
-#include <memory>
 
 bool firstMouse = true;
 float lastX = 800.0f / 2.0;
