@@ -1,7 +1,7 @@
 .vs/
 .git/
 bin/
-OpenGLSeries/deps/GLFW/Build
+OpenGLSeries/deps/GLFW/Build/
 
 OpenGLSeries.sln
 OpenGLSeries.vcxproj
