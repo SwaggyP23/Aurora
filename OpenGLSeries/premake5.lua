@@ -7,40 +7,41 @@ project "OpenGLSeries"
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
 
-        files
-	    {
-            "src/**.h",
-            "src/**.cpp",
-            "deps/stb_image/**.h",
-            "deps/stb_image/**.cpp",
-            "deps/glm/glm/**.hpp",
-            "deps/glm/glm/**.inl"
-	    }
-		
-		defines
-		{
-			"_CRT_SECURE_NO_WARNINGS",
-			"GLFW_INCLUDE_NONE"
-		}
+	pchheader "OGLpch.h"
+	pchsource "src/OGLpch.cpp"
 
-        includedirs
-	    {
-            "src",
-            "deps/spdlog/include",
-            "%{IncludeDir.GLFW}",
-            "%{IncludeDir.Glad}",
-            "%{IncludeDir.ImGui}",
-            "%{IncludeDir.glm}",
-            "%{IncludeDir.stb_image}"
-	    }
-
-	    links
-	    {
-            "GLFW",
-            "Glad",
-            "ImGui",
-            "opengl32.lib"
-	    }
+    files
+	{
+        "src/**.h",
+        "src/**.cpp",
+        "deps/stb_image/**.h",
+        "deps/stb_image/**.cpp",
+        "deps/glm/glm/**.hpp",
+        "deps/glm/glm/**.inl"
+	}
+	
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE"
+	}
+    includedirs
+	{
+        "src",
+        "deps/spdlog/include",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.stb_image}"
+	}
+	links
+	{
+        "GLFW",
+        "Glad",
+        "ImGui",
+        "opengl32.lib"
+	}
 
 	filter "system:windows"
 		systemversion "latest"

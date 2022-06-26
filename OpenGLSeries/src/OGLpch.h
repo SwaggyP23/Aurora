@@ -1,5 +1,7 @@
 #pragma once
 
+#define SET_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
+
 #include <Windows.h>
 
 #include <iostream>

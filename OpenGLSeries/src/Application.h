@@ -9,6 +9,8 @@
 #include "Utils/ImageLoader.h"
 #include "Graphics/Camera.h"
 #include "Events/ApplicationEvents.h" // This includes Events.h file
+#include "Layers/LayerStack.h"
+#include "ImGui/ImGuiLayer.h"
 
 class Application
 {
@@ -19,7 +21,12 @@ public:
 	void Run();
 	void onEvent(Event& e);
 	
+	inline Window& getWindow() const { return *m_Window; }
+	inline static Application& getApp() { return *s_Instance; }
+
 private:
+	void pushLayer(Layer* layer);
+	void pushOverlay(Layer* layer);
 	bool onWindowClose(WindowCloseEvent& e);
 	bool onKeyPressed(KeyPressedEvent& e);
 	//bool onKeyReleased(KeyReleasedEvent& e);
@@ -33,6 +40,7 @@ private:
 	std::shared_ptr<Shader> m_Shader;
 	std::shared_ptr<Camera> m_Camera;
 	BufferLayout m_Layout;
+	LayerStack m_LayerStack;
 
 	float m_DeltaTime = 0.0f;
 	bool m_Running = true;
@@ -45,4 +53,6 @@ private:
 
 	glm::vec3 m_CubePositions[10];
 	glm::mat4 m_Projection;
+
+	static Application* s_Instance;
 };

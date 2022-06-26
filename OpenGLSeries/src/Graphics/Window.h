@@ -8,8 +8,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_glfw.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
+//#include <imgui/backends/imgui_impl_glfw.h>
+//#include <imgui/backends/imgui_impl_opengl3.h>
 
 #include "Events/ApplicationEvents.h"
 #include "Events/MouseEvents.h"
@@ -43,8 +43,6 @@ public:
 private:
 	bool Init(const std::string& title, unsigned int width, unsigned int height);
 	void ShutDown();
-
-	friend void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 private:
 	GLFWwindow* m_Window;

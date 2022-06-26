@@ -1,3 +1,4 @@
+#include "OGLpch.h"
 #include "Window.h"
 
 void error_callback(int error, const char* description)
@@ -44,8 +45,8 @@ void Window::update() const
 	if (error != GL_NO_ERROR)
 		CORE_LOG_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
 
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	//ImGui::Render();
+	//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	glfwPollEvents();
 	glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
@@ -57,9 +58,9 @@ void Window::clear(float x, float y, float z, float w) const
 	glClearColor(x, y, z, w);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	ImGui_ImplGlfw_NewFrame();
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui::NewFrame();
+	//ImGui_ImplGlfw_NewFrame();
+	//ImGui_ImplOpenGL3_NewFrame();
+	//ImGui::NewFrame();
 }
 
 bool Window::Init(const std::string& title, unsigned int width, unsigned int height)
@@ -138,6 +139,14 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 			}
 		});
 
+	glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			KeyTypedEvent event(keycode);
+			data.EventCallback(event);
+		});
+
 	glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -179,14 +188,14 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 
 	CORE_LOG_INFO("OpenGL Version: {0}", (const char*)glGetString(GL_VERSION));
 
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
-	ImGui_ImplOpenGL3_Init();
+	//ImGui::CreateContext();
+	//ImGui::StyleColorsDark();
+	//ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+	//ImGui_ImplOpenGL3_Init();
 
-	ImGuiIO& io = ImGui::GetIO();
-	io.WantCaptureMouse = true;
-	io.WantCaptureKeyboard = true;
+	//ImGuiIO& io = ImGui::GetIO();
+	//io.WantCaptureMouse = true;
+	//io.WantCaptureKeyboard = true;
 
 
 	return true;
@@ -194,9 +203,9 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 
 void Window::ShutDown()
 {
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
+	//ImGui_ImplOpenGL3_Shutdown();
+	//ImGui_ImplGlfw_Shutdown();
+	//ImGui::DestroyContext();
 
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
