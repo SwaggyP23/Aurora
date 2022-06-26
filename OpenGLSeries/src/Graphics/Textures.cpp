@@ -1,4 +1,3 @@
-#include "../OGLpch.h"
 #include "Texture.h"
 
 Texture::Texture(std::string filePath)

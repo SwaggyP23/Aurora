@@ -1,4 +1,3 @@
-#include "OGLpch.h"
 #include "Application.h"
 
 #define SET_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
@@ -139,17 +138,17 @@ Application::Application(const std::string& name)
 	m_VertexBuffer->unBind();
 	m_IndexBuffer->unBind();
 
-	m_Shader = std::make_shared<Shader>("res/shaders/Basic.shader");
+	m_Shader = std::make_shared<Shader>("resources/shaders/Basic.shader");
 
 	// Creating textures
-	std::shared_ptr<Texture> text1 = std::make_shared<Texture>("res/textures/minecraftDirt.png");
+	std::shared_ptr<Texture> text1 = std::make_shared<Texture>("resources/textures/minecraftDirt.png");
 	text1->bind();
 	text1->setTextureWrapping(GL_REPEAT);
 	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text1->loadTextureData(GL_RGB, GL_RGB);
 	text1->unBind();
 
-	std::shared_ptr<Texture> text2 = std::make_shared<Texture>("res/textures/minecraftTNT.png");
+	std::shared_ptr<Texture> text2 = std::make_shared<Texture>("resources/textures/minecraftTNT.png");
 	text2->bind();
 	text2->setTextureWrapping(GL_REPEAT);
 	text2->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);

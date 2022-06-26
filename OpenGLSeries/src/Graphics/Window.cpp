@@ -1,4 +1,3 @@
-#include "../OGLpch.h"
 #include "Window.h"
 
 void error_callback(int error, const char* description)
@@ -87,6 +86,12 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 	}
 
 	glfwMakeContextCurrent(m_Window);
+
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		CORE_LOG_ERROR("Failed to initialize glad!!");
+
+		return false;
+	}
 	glfwSetWindowUserPointer(m_Window, &m_Data);
 
 	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -171,12 +176,6 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 		});
 
 	glViewport(0, 0, m_Data.Width, m_Data.Height);
-
-	if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		CORE_LOG_ERROR("Failed to initialize glad!!");
-
-		return false;
-	}
 
 	CORE_LOG_INFO("OpenGL Version: {0}", (const char*)glGetString(GL_VERSION));
 

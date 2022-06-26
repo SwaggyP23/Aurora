@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OGLpch.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Window.h"
 #include "Graphics/Buffer.h"

@@ -1,4 +1,3 @@
-#include "../OGLpch.h"
 #include "Shader.h"
 
 Shader::Shader(const std::string& filePath)

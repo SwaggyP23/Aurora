@@ -1,5 +1,7 @@
 #pragma once
 
+#include "OGLpch.h"
+
 class ImageLoader
 {
 public:

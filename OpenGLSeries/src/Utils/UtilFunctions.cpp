@@ -1,4 +1,3 @@
-#include "../OGLpch.h"
 #include "UtilFunctions.h"
 
 std::ifstream FileReader::m_Stream;

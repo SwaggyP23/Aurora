@@ -1,5 +1,7 @@
 #pragma once
 
+#include "OGLpch.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 

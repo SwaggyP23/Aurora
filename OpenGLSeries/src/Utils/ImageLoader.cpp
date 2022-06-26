@@ -1,4 +1,3 @@
-#include "../OGLpch.h"
 #include "ImageLoader.h"
 
 unsigned char* ImageLoader::m_Data;

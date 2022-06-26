@@ -3,15 +3,17 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include "OGLpch.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-#include "../Events/ApplicationEvents.h"
-#include "../Events/MouseEvents.h"
-#include "../Events/KeyEvents.h"
+#include "Events/ApplicationEvents.h"
+#include "Events/MouseEvents.h"
+#include "Events/KeyEvents.h"
 
 // The reasom the app crashes now is because the callbacks for the events are not set so functional throws
 

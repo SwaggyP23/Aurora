@@ -1,4 +1,3 @@
-#include "../OGLpch.h"
 #include "VertexArray.h"
 
 VertexArray::VertexArray()

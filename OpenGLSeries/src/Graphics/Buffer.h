@@ -3,6 +3,8 @@
 #ifndef _BUFFER_H_
 #define _BUFFER_H_
 
+#include "OGLpch.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 

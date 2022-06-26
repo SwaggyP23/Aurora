@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <functional>
+#include <sstream>
+
 enum class EventType
 {
 	None = 0,
