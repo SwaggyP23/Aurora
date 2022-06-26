@@ -1,9 +1,19 @@
 .vs/
 .git/
 bin/
-deps/
+OpenGLSeries/deps/GLFW/Build
 
 OpenGLSeries.sln
 OpenGLSeries.vcxproj
 OpenGLSeries.vcxproj.filters
 OpenGLSeries.vcxproj.user
+
+ImGui.vcxproj
+ImGui.vcxproj.filters
+
+GLFW.vcxproj
+GLFW.vcxproj.user
+GLFW.vcxproj.filters
+
+Glad.vcxproj
+Glad.vcxproj.filters
