@@ -13,12 +13,10 @@
 ImGuiLayer::ImGuiLayer()
 	: Layer("ImGui")
 {
-
 }
 
 ImGuiLayer::~ImGuiLayer()
 {
-
 }
 
 void ImGuiLayer::onAttach()
@@ -27,10 +25,12 @@ void ImGuiLayer::onAttach()
 	ImGui::StyleColorsDark();
 
 	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
-	// Keymap code supposed to be here
 	
 	Application& app = Application::getApp();
 	GLFWwindow* window = (GLFWwindow*)app.getWindow().getWindowPointer();
@@ -60,8 +60,15 @@ void ImGuiLayer::onUpdate()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui::NewFrame();
 
-	bool show = true;
-	ImGui::ShowDemoWindow(&show);
+	ImGui::Begin("Colors");
+	//ImGui::ColorEdit3("Clear Color:", (float*)&color);
+	//ImGui::ColorEdit3("Uniform Color:", (float*)&uniColor);
+	//ImGui::SliderFloat("FOV:", &(m_Camera->getZoom()), 10.0f, 90.0f);
+	ImGui::SliderFloat("Blend:", &blend, 0.0f, 1.0f);
+	//ImGui::SliderFloat("rotation:", &rotation, -10.0f, 10.0f);
+	//ImGui::SliderFloat3("transforms:", &translation[0], 10.0f, -5.0f);
+	ImGui::Text("Average FrameRate: %.3f", ImGui::GetIO().Framerate);
+	ImGui::End();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

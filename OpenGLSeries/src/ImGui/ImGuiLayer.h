@@ -16,6 +16,8 @@ public:
 	void onUpdate();
 	void onEvent(Event& e);
 
+	float getBlend() const { return blend; }
+
 private:
 	bool onMouseMovedEvent(MouseMovedEvent& e);
 	bool onMouseScrolledEvent(MouseScrolledEvent& e);
@@ -27,6 +29,7 @@ private:
 	bool onWindowResizeEvent(WindowResizeEvent& e);
 
 private:
+	float blend = 0.0f;
 	float m_Time = 0.0f;
 
 };

@@ -166,7 +166,8 @@ Application::Application(const std::string& name)
 	m_Shader->setUniform1i("texture1", 0);
 	m_Shader->setUniform1i("texture2", 1);
 
-	pushOverlay(new ImGuiLayer());
+	m_ImGuiLayer = new ImGuiLayer();
+	pushOverlay(m_ImGuiLayer);
 
 	// Just some hard coded program start MVP matrices
 	//glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -212,30 +213,17 @@ void Application::onEvent(Event& e)
 
 void Application::Run()
 {
-	float lastFrame = 0.0f;
-
 	//float fov = 45.0f;
-	float blend = 0.0f;
 	float rotation = 0.0f;
 	glm::vec3 translation(0.0f, 0.0f, 0.0f);
 
 	while(m_Running) // Render Loop.
 	{
 		float currentFrame = (float)(glfwGetTime());
-		m_DeltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		float deltaTime = currentFrame - m_LastFrame;
+		m_LastFrame = currentFrame;
 
 		m_Window->clear(color.r, color.g, color.b, 1.0f);
-
-		//ImGui::Begin("Colors");
-		//ImGui::ColorEdit3("Clear Color:", (float*)&color);
-		//ImGui::ColorEdit3("Uniform Color:", (float*)&uniColor);
-		//ImGui::SliderFloat("FOV:", &(m_Camera->getZoom()), 10.0f, 90.0f);
-		//ImGui::SliderFloat("Blend:", &blend, 0.0f, 1.0f);
-		//ImGui::SliderFloat("rotation:", &rotation, -10.0f, 10.0f);
-		//ImGui::SliderFloat3("transforms:", &translation[0], 10.0f, -5.0f);
-		//ImGui::Text("Average FrameRate: %.3f", ImGui::GetIO().Framerate);
-		//ImGui::End();
 
 		int i = 0;
 		for (const auto& texture : m_Textures)
@@ -245,7 +233,7 @@ void Application::Run()
 			i++;
 		}
 
-		m_Shader->setUniform1f("blend", blend);
+		m_Shader->setUniform1f("blend", m_ImGuiLayer->getBlend());
 
 		glm::mat4 view = m_Camera->GetViewMatrix();
 		m_Shader->setUniformMat4("vw_matrix", view);
@@ -285,17 +273,9 @@ bool Application::onWindowClose(WindowCloseEvent& e)
 
 bool Application::onKeyPressed(KeyPressedEvent& e)
 {
-	m_IsRPressed = !m_IsRPressed;
+	if (Input::isKeyPressed(GLFW_KEY_R))
+		m_IsRPressed = !m_IsRPressed;
+
+
 	return true;
 }
-
-//bool Application::onMouseMove(MouseMovedEvent& e)
-//{
-//
-//}
-
-//bool Application::onKeyReleased(KeyReleasedEvent& e)
-//{
-//	m_IsRPressed = false;
-//	return true;
-//}

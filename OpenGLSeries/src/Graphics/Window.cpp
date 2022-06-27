@@ -50,6 +50,7 @@ void Window::update() const
 
 	glfwPollEvents();
 	glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
+	glViewport(0, 0, m_Data.Width, m_Data.Height);
 	glfwSwapBuffers(m_Window);
 }
 

@@ -19,6 +19,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(MouseMoved)
+	EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 private:
 	float m_Mx, m_My;
@@ -42,6 +43,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(MouseScrolled)
+	EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 private:
 	float m_Xoffset, m_Yoffset;
@@ -51,6 +53,8 @@ class MouseButtonEvent : public Event
 {
 public:
 	inline int getButtonCode() const { return m_ButtonCode; }
+
+	EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 
 protected:
 	MouseButtonEvent(int buttoncode)

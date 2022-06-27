@@ -11,6 +11,7 @@
 #include "Events/ApplicationEvents.h" // This includes Events.h file
 #include "Layers/LayerStack.h"
 #include "ImGui/ImGuiLayer.h"
+#include "Input/Input.h"
 
 class Application
 {
@@ -28,6 +29,7 @@ private:
 	void pushLayer(Layer* layer);
 	void pushOverlay(Layer* layer);
 	bool onWindowClose(WindowCloseEvent& e);
+	//bool onWindowResize(WindowResizeEvent& e);
 	bool onKeyPressed(KeyPressedEvent& e);
 	//bool onKeyReleased(KeyReleasedEvent& e);
 	//bool onMouseMove(MouseMovedEvent& e);
@@ -39,10 +41,11 @@ private:
 	std::shared_ptr<IndexBuffer> m_IndexBuffer;
 	std::shared_ptr<Shader> m_Shader;
 	std::shared_ptr<Camera> m_Camera;
+	ImGuiLayer* m_ImGuiLayer;
 	BufferLayout m_Layout;
 	LayerStack m_LayerStack;
 
-	float m_DeltaTime = 0.0f;
+	float m_LastFrame = 0.0f;
 	bool m_Running = true;
 	bool m_IsRPressed = false;
 
