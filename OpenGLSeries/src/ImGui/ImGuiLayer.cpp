@@ -82,6 +82,9 @@ void ImGuiLayer::onImGuiRender()
 	ImGui::ShowDemoWindow(&show);
 
 	ImGui::Begin("Editing");
+	ImGui::ColorEdit3("Clear Color:", (float*)&m_Color);
 	ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::Text("Framerate: %.f", io.Framerate);
 	ImGui::End();
 }

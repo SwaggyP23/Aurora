@@ -138,17 +138,17 @@ class IndexBuffer
 {
 public:
 	IndexBuffer() = default;
-	IndexBuffer(uint32_t* indices, uint32_t count);
+	IndexBuffer(size_t* indices, size_t count);
 	~IndexBuffer();
 
 	void bind() const;
 	void unBind() const;
 
-	inline GLuint getCount() const { return m_Count; }
+	inline size_t getCount() const { return m_Count; }
 
 private:
 	GLuint m_BufferId;
-	GLuint m_Count;
+	size_t m_Count;
 };
 
 #endif // !_BUFFER_H_

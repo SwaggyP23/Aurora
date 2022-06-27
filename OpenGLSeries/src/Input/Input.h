@@ -7,7 +7,7 @@ class Input
 public:
 
 	inline static bool isMouseButtonPressed(int button) { return s_Instance->isMouseButtonPressedImpl(button); }
-	inline static std::pair<float, float> getMousePosition(int button) { return s_Instance->getMousePositionImpl(); }
+	inline static std::pair<float, float> getMousePosition() { return s_Instance->getMousePositionImpl(); }
 	inline static float getMouseX() { return s_Instance->getMouseXImpl(); }
 	inline static float getMouseY() { return s_Instance->getMouseYImpl(); }
 

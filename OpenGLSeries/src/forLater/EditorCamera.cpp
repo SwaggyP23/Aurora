@@ -1,4 +1,7 @@
+#include "OGLpch.h"
 #include "EditorCamera.h"
+
+#include "Input/Input.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -52,32 +55,34 @@ float EditorCamera::ZoomSpeed() const
 	return speed;
 }
 
-void EditorCamera::OnUpdate(float ts, GLFWwindow* window)
+void EditorCamera::OnUpdate()
 {
-	Window* win = (Window*)glfwGetWindowUserPointer(window);
+	if (Input::isKeyPressed(GLFW_KEY_LEFT_ALT))
+	{
+		const glm::vec2& mouse{ Input::getMouseX(), Input::getMouseY() };
+		glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+		m_InitialMousePosition = mouse;
 
-	double mx, my;
-	win->getCursorPosition(mx, my);
-	const glm::vec2& mouse{ mx, my };
-	glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-	m_InitialMousePosition = mouse;
-	double xoff = 0.0f, yoff = 0.0f;
-
-	if (win->isKeyPressed(GLFW_KEY_LEFT_SHIFT) && win->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
-		MousePan(delta);
-	else if (win->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
-		MouseRotate(delta);
-
-	win->getScrollPosition(xoff, yoff);
-	glm::vec2 offsets{ xoff, yoff };
-	MouseZoom(yoff);
+		if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+			MousePan(delta);
+		else if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+			MouseRotate(delta);
+		else if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
+			MouseZoom(delta.y);
+	}
 
 	UpdateView();
 }
 
-bool EditorCamera::OnMouseScroll(double xoff, double yoff)
+void EditorCamera::OnEvent(Event& e)
 {
-	float delta = yoff * 0.1f;
+	EventDispatcher dispatcher(e);
+	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(EditorCamera::OnMouseScroll));
+}
+
+bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
+{
+	float delta = e.getYOffset() * 0.1f;
 	MouseZoom(delta);
 	UpdateView();
 	return false;

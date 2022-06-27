@@ -14,8 +14,6 @@ Application::Application(const std::string& name)
 
 
 	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	m_Camera = std::make_shared<Camera>(cameraPos);
 
@@ -119,7 +117,7 @@ Application::Application(const std::string& name)
 	m_CubePositions[8] = glm::vec3(1.0f,  0.0f, -2.0f);
 	m_CubePositions[9] = glm::vec3(0.0f,  1.0f, -1.0f);
 
-	uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
+	size_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 
 	m_VertexArray = std::make_shared<VertexArray>();
 
@@ -134,7 +132,7 @@ Application::Application(const std::string& name)
 	m_VertexArray->addVertexBuffer(m_VertexBuffer);
 
 	// the 2nd arg here should be sizeof(indices) / sizeof(uint32_t) but it gives warning
-	m_IndexBuffer = std::make_shared<IndexBuffer>(indices, sizeof(indices) / sizeof(uint32_t));
+	m_IndexBuffer = std::make_shared<IndexBuffer>(indices, sizeof(indices) / sizeof(size_t));
 	m_IndexBuffer->bind();
 	m_VertexArray->setIndexBuffer(m_IndexBuffer);
 
@@ -200,8 +198,9 @@ void Application::onEvent(Event& e)
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<WindowCloseEvent>(SET_EVENT_FN(Application::onWindowClose));
 	dispatcher.dispatch<KeyPressedEvent>(SET_EVENT_FN(Application::onKeyPressed));
+	dispatcher.dispatch<MouseMovedEvent>(SET_EVENT_FN(Application::onMouseMove));
 	//dispatcher.dispatch<KeyReleasedEvent>(SET_EVENT_FN(Application::onKeyReleased));
-	LOG_INFO("{0}", e);
+	//LOG_INFO("{0}", e);
 
 	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 	{
@@ -220,9 +219,10 @@ void Application::Run()
 	while(m_Running) // Render Loop.
 	{
 		float currentFrame = (float)(glfwGetTime());
-		float deltaTime = currentFrame - m_LastFrame;
+		m_DeltaTime = currentFrame - m_LastFrame;
 		m_LastFrame = currentFrame;
 
+		glm::vec4 color = m_ImGuiLayer->getClearColor();
 		m_Window->clear(color.r, color.g, color.b, 1.0f);
 
 		for (Layer* layer : m_LayerStack)
@@ -289,7 +289,39 @@ bool Application::onKeyPressed(KeyPressedEvent& e)
 {
 	if (Input::isKeyPressed(GLFW_KEY_R))
 		m_IsRPressed = !m_IsRPressed;
+	if (Input::isKeyPressed(GLFW_KEY_W))
+		m_Camera->ProcessKeyboard(FORWARD, m_DeltaTime);
+	if (Input::isKeyPressed(GLFW_KEY_S))
+		m_Camera->ProcessKeyboard( BACKWARD, m_DeltaTime);
+	if (Input::isKeyPressed(GLFW_KEY_A))
+		m_Camera->ProcessKeyboard(LEFT, m_DeltaTime);
+	if (Input::isKeyPressed(GLFW_KEY_D))
+		m_Camera->ProcessKeyboard(RIGHT, m_DeltaTime);
+	if (Input::isKeyPressed(GLFW_KEY_Q))
+		m_Camera->ProcessKeyboard(DOWNWARD, m_DeltaTime);
+	if (Input::isKeyPressed(GLFW_KEY_E))
+		m_Camera->ProcessKeyboard(UPWARD, m_DeltaTime);
 
+	return true;
+}
+
+bool Application::onMouseMove(MouseMovedEvent& e)
+{
+	auto [x, y] = Input::getMousePosition();
+	if (m_Camera->getFirstMouse()) {
+		m_Camera->setLastx((float)(m_Window->getWidth() / 2));
+		m_Camera->setLasty((float)(m_Window->getHeight() / 2));
+		m_Camera->setFirstMouse(false);
+	}
+
+	float xoffset = x - m_Camera->getLastx();
+	float yoffset = m_Camera->getLasty() - y;
+
+	m_Camera->setLastx(x);
+	m_Camera->setLasty(y);
+
+	if(Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
+		m_Camera->ProcessMouseMovement(xoffset, yoffset);
 
 	return true;
 }

@@ -77,7 +77,7 @@ void VertexBuffer::setLayout(const BufferLayout& layout)
 // INDEX BUFFER!!
 //////////////////////////
 
-IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
+IndexBuffer::IndexBuffer(size_t* indices, size_t count)
 	: m_Count(count)
 {
 	glCreateBuffers(1, &m_BufferId);

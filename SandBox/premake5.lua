@@ -1,5 +1,5 @@
-project "OpenGLSeries"
-    kind "StaticLib"
+project "SandBox"
+    kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
     staticruntime "on"
@@ -7,40 +7,25 @@ project "OpenGLSeries"
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "OGLpch.h"
-	pchsource "src/OGLpch.cpp"
-
     files
 	{
         "src/**.h",
-        "src/**.cpp",
-        "deps/stb_image/**.h",
-        "deps/stb_image/**.cpp",
-        "deps/glm/glm/**.hpp",
-        "deps/glm/glm/**.inl"
+        "src/**.cpp"
 	}
-	
-	defines
-	{
-		"_CRT_SECURE_NO_WARNINGS",
-		"GLFW_INCLUDE_NONE"
-	}
+
     includedirs
 	{
-        "src",
-        "deps/spdlog/include",
+		"%{wks.location}/OpenGLSeries/deps/spdlog/include",
+		"%{wks.location}/OpenGLSeries/src",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.glm}",
-        "%{IncludeDir.stb_image}"
+        "%{IncludeDir.stb_image}",
+		"%{IncludeDir.glm}"
 	}
 	links
 	{
-        "GLFW",
-        "Glad",
-        "ImGui",
-        "opengl32.lib"
+        "OpenGLSeries"
 	}
 
 	filter "system:windows"

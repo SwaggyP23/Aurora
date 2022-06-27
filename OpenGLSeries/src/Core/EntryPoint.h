@@ -1,3 +1,5 @@
+#pragma once
+
 #include "OGLpch.h"
 #include "Application.h"
 

@@ -9,6 +9,7 @@
 #include "Utils/ImageLoader.h"
 #include "Graphics/Camera.h"
 #include "Events/ApplicationEvents.h" // This includes Events.h file
+#include "Events/MouseEvents.h"
 #include "Layers/LayerStack.h"
 #include "ImGui/ImGuiLayer.h"
 #include "Input/Input.h"
@@ -16,7 +17,7 @@
 class Application
 {
 public:
-	Application(const std::string& name);
+	Application(const std::string& name = "OpenGLSeries App");
 	~Application();
 
 	void Run();
@@ -31,8 +32,7 @@ private:
 	bool onWindowClose(WindowCloseEvent& e);
 	//bool onWindowResize(WindowResizeEvent& e);
 	bool onKeyPressed(KeyPressedEvent& e);
-	//bool onKeyReleased(KeyReleasedEvent& e);
-	//bool onMouseMove(MouseMovedEvent& e);
+	bool onMouseMove(MouseMovedEvent& e);
 
 private:
 	std::shared_ptr<Window> m_Window;
@@ -46,6 +46,7 @@ private:
 	LayerStack m_LayerStack;
 
 	float m_LastFrame = 0.0f;
+	float m_DeltaTime = 0.0f;
 	bool m_Running = true;
 	bool m_IsRPressed = false;
 

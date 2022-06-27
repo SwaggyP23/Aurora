@@ -24,3 +24,4 @@ group "Dependencies"
 group ""
 
 include "OpenGLSeries"
+include "SandBox"

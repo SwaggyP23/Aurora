@@ -36,14 +36,19 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
         m_Position -= m_Right * velocity;
     if (direction == RIGHT)
         m_Position += m_Right * velocity;
-    if (direction == UP)
+    if (direction == UPWARD)
         m_Position += m_Up * velocity;
-    if (direction == DOWN)
+    if (direction == DOWNWARD)
         m_Position -= m_Up * velocity;
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch)
 {
+    if (m_FirstMouse) {
+        xoffset = 1280 / 2;
+        yoffset = 720 / 2;
+        m_FirstMouse = false;
+    }
     xoffset *= m_MouseSensitivity;
     yoffset *= m_MouseSensitivity;
 
