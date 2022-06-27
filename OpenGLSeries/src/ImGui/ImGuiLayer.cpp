@@ -21,16 +21,21 @@ ImGuiLayer::~ImGuiLayer()
 
 void ImGuiLayer::onAttach()
 {
+	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+	ImGui::StyleColorsDark();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
 	
 	Application& app = Application::getApp();
 	GLFWwindow* window = (GLFWwindow*)app.getWindow().getWindowPointer();
@@ -46,115 +51,37 @@ void ImGuiLayer::onDetach()
 	ImGui::DestroyContext();
 }
 
-void ImGuiLayer::onUpdate()
+void ImGuiLayer::begin()
+{
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+}
+
+void ImGuiLayer::end()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	Application& app = Application::getApp();
-	io.DisplaySize = ImVec2(app.getWindow().getWidth(), app.getWindow().getHeight());
-
-	float delta = (float)glfwGetTime();
-	io.DeltaTime = m_Time > 0.0f ? (delta - m_Time) : (1/ 60.0f);
-	m_Time = delta;
-
-	ImGui_ImplGlfw_NewFrame();
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui::NewFrame();
-
-	ImGui::Begin("Colors");
-	//ImGui::ColorEdit3("Clear Color:", (float*)&color);
-	//ImGui::ColorEdit3("Uniform Color:", (float*)&uniColor);
-	//ImGui::SliderFloat("FOV:", &(m_Camera->getZoom()), 10.0f, 90.0f);
-	ImGui::SliderFloat("Blend:", &blend, 0.0f, 1.0f);
-	//ImGui::SliderFloat("rotation:", &rotation, -10.0f, 10.0f);
-	//ImGui::SliderFloat3("transforms:", &translation[0], 10.0f, -5.0f);
-	ImGui::Text("Average FrameRate: %.3f", ImGui::GetIO().Framerate);
-	ImGui::End();
+	io.DisplaySize = ImVec2((float)app.getWindow().getWidth(), (float)app.getWindow().getHeight());
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		glfwMakeContextCurrent(backup_current_context);
+	}
 }
 
-void ImGuiLayer::onEvent(Event& e)
+void ImGuiLayer::onImGuiRender()
 {
-	EventDispatcher dispatcher(e);
-	dispatcher.dispatch<MouseMovedEvent>(SET_EVENT_FN(ImGuiLayer::onMouseMovedEvent));
-	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(ImGuiLayer::onMouseScrolledEvent));
-	dispatcher.dispatch<MouseButtonPressedEvent>(SET_EVENT_FN(ImGuiLayer::onMouseButtonPressedEvent));
-	dispatcher.dispatch<MouseButtonReleasedEvent>(SET_EVENT_FN(ImGuiLayer::onMouseButtonReleasedEvent));
-	dispatcher.dispatch<KeyPressedEvent>(SET_EVENT_FN(ImGuiLayer::onKeyPressedEvent));
-	dispatcher.dispatch<KeyReleasedEvent>(SET_EVENT_FN(ImGuiLayer::onKeyReleasedEvent));
-	dispatcher.dispatch<KeyTypedEvent>(SET_EVENT_FN(ImGuiLayer::onKeyTypedEvent));
-	dispatcher.dispatch<WindowResizeEvent>(SET_EVENT_FN(ImGuiLayer::onWindowResizeEvent));
-}
+	static bool show = true;
+	ImGui::ShowDemoWindow(&show);
 
-bool ImGuiLayer::onMouseMovedEvent(MouseMovedEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.MousePos = ImVec2(e.getMouseX(), e.getMouseY());
-
-	return false;
-}
-
-bool ImGuiLayer::onMouseScrolledEvent(MouseScrolledEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.MouseWheel += e.getYoffset();
-
-	return false;
-}
-
-bool ImGuiLayer::onMouseButtonPressedEvent(MouseButtonPressedEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.MouseDown[e.getButtonCode()] = true;
-
-	return false;
-}
-
-bool ImGuiLayer::onMouseButtonReleasedEvent(MouseButtonReleasedEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.MouseDown[e.getButtonCode()] = false;
-
-	return false;
-}
-
-bool ImGuiLayer::onKeyPressedEvent(KeyPressedEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.KeysDown[e.getKeyCode()] = true;
-
-	return false;
-}
-
-bool ImGuiLayer::onKeyReleasedEvent(KeyReleasedEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.KeysDown[e.getKeyCode()] = false;
-
-	io.KeyCtrl = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
-	io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT] || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
-	io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
-	io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
-
-	return false;
-}
-
-bool ImGuiLayer::onKeyTypedEvent(KeyTypedEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	int keycode = e.getKeyCode();
-	if (keycode > 0 && keycode < 0x100000)
-		io.AddInputCharacter((unsigned short)keycode);
-
-	return false;
-}
-
-bool ImGuiLayer::onWindowResizeEvent(WindowResizeEvent& e)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2(e.getWidth(), e.getHeight());
-	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-
-	return false;
+	ImGui::Begin("Editing");
+	ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
+	ImGui::End();
 }

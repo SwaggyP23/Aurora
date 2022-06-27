@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * The ImGuiLayer and Layers and Events system is all thanks to The Cherno which infact this whole thing 
+ * is in thanks to him since he is the main reference and then there is also the LearnOpenGL Book
+ */
+
 #include "Layers/Layer.h"
 #include "Events/ApplicationEvents.h"
 #include "Events/MouseEvents.h"
@@ -11,25 +16,18 @@ public:
 	ImGuiLayer();
 	~ImGuiLayer();
 
-	void onAttach();
-	void onDetach();
-	void onUpdate();
-	void onEvent(Event& e);
+	virtual void onAttach() override;
+	virtual void onDetach() override;
+	virtual void onImGuiRender() override;
 
-	float getBlend() const { return blend; }
+	void begin();
+	void end();
 
-private:
-	bool onMouseMovedEvent(MouseMovedEvent& e);
-	bool onMouseScrolledEvent(MouseScrolledEvent& e);
-	bool onMouseButtonPressedEvent(MouseButtonPressedEvent& e);
-	bool onMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
-	bool onKeyPressedEvent(KeyPressedEvent& e);
-	bool onKeyReleasedEvent(KeyReleasedEvent& e);
-	bool onKeyTypedEvent(KeyTypedEvent& e);
-	bool onWindowResizeEvent(WindowResizeEvent& e);
+	inline float getBlend() const { return m_Blend; }
+	inline void setBlend(float blend) { m_Blend = blend; }
 
 private:
-	float blend = 0.0f;
 	float m_Time = 0.0f;
+	float m_Blend = 0.0f;
 
 };

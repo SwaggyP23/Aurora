@@ -134,7 +134,7 @@ Application::Application(const std::string& name)
 	m_VertexArray->addVertexBuffer(m_VertexBuffer);
 
 	// the 2nd arg here should be sizeof(indices) / sizeof(uint32_t) but it gives warning
-	m_IndexBuffer = std::make_shared<IndexBuffer>(indices, 6);
+	m_IndexBuffer = std::make_shared<IndexBuffer>(indices, sizeof(indices) / sizeof(uint32_t));
 	m_IndexBuffer->bind();
 	m_VertexArray->setIndexBuffer(m_IndexBuffer);
 
@@ -225,12 +225,29 @@ void Application::Run()
 
 		m_Window->clear(color.r, color.g, color.b, 1.0f);
 
+		for (Layer* layer : m_LayerStack)
+			layer->onUpdate();
+
+		m_ImGuiLayer->begin();
+		for (Layer* layer : m_LayerStack)
+			layer->onImGuiRender();
+		m_ImGuiLayer->end();
+
 		int i = 0;
 		for (const auto& texture : m_Textures)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 			texture->bind();
 			i++;
+		}
+
+		if (Input::isKeyPressed(GLFW_KEY_V)) {
+			if (m_ImGuiLayer->getBlend() > 0.01f)
+				m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() - 0.01f);
+		}
+		if (Input::isKeyPressed(GLFW_KEY_B)) {
+			if (m_ImGuiLayer->getBlend() < 0.990f)
+				m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() + 0.01f);
 		}
 
 		m_Shader->setUniform1f("blend", m_ImGuiLayer->getBlend());
@@ -257,9 +274,6 @@ void Application::Run()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		m_VertexArray->unBind();
-
-		for (Layer* layer : m_LayerStack)
-			layer->onUpdate();
 
 		m_Window->update();
 	}

@@ -8,8 +8,6 @@ void error_callback(int error, const char* description)
 
 Window::Window(const std::string& title, unsigned int width, unsigned int height)
 {
-	logger::Log::Init(); // Move this to application constructor once the entrypoint is created
-
 	Init(title, width, height);
 }
 
@@ -45,9 +43,6 @@ void Window::update() const
 	if (error != GL_NO_ERROR)
 		CORE_LOG_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
 
-	//ImGui::Render();
-	//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 	glfwPollEvents();
 	glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
 	glViewport(0, 0, m_Data.Width, m_Data.Height);
@@ -58,10 +53,6 @@ void Window::clear(float x, float y, float z, float w) const
 {
 	glClearColor(x, y, z, w);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//ImGui_ImplGlfw_NewFrame();
-	//ImGui_ImplOpenGL3_NewFrame();
-	//ImGui::NewFrame();
 }
 
 bool Window::Init(const std::string& title, unsigned int width, unsigned int height)
@@ -189,25 +180,11 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 
 	CORE_LOG_INFO("OpenGL Version: {0}", (const char*)glGetString(GL_VERSION));
 
-	//ImGui::CreateContext();
-	//ImGui::StyleColorsDark();
-	//ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
-	//ImGui_ImplOpenGL3_Init();
-
-	//ImGuiIO& io = ImGui::GetIO();
-	//io.WantCaptureMouse = true;
-	//io.WantCaptureKeyboard = true;
-
-
 	return true;
 }
 
 void Window::ShutDown()
 {
-	//ImGui_ImplOpenGL3_Shutdown();
-	//ImGui_ImplGlfw_Shutdown();
-	//ImGui::DestroyContext();
-
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
 }

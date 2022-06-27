@@ -3,7 +3,6 @@
 
 LayerStack::LayerStack()
 {
-	m_InsertIterator = m_Layers.begin();
 }
 
 LayerStack::~LayerStack()
@@ -14,7 +13,8 @@ LayerStack::~LayerStack()
 
 void LayerStack::pushLayer(Layer* layer)
 {
-	m_InsertIterator = m_Layers.emplace(m_InsertIterator, layer);
+	m_Layers.emplace(m_Layers.begin() + m_InsertIndex, layer);
+	m_InsertIndex++;
 }
 
 void LayerStack::pushOverlay(Layer* layer)
@@ -28,7 +28,7 @@ void LayerStack::popLayer(Layer* layer)
 	if (it != m_Layers.end())
 	{
 		m_Layers.erase(it);
-		m_InsertIterator--;
+		m_InsertIndex--;
 	}
 }
 
