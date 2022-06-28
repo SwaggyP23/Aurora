@@ -15,7 +15,7 @@ Application::Application(const std::string& name)
 
 	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 
-	m_Camera = std::make_shared<Camera>(cameraPos);
+	m_Camera = std::make_shared<Hazel::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 100.0f);
 
 	std::vector<char> errorMessage;
 
@@ -52,35 +52,35 @@ Application::Application(const std::string& name)
 	//};
 
 	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f
+		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+							   
+		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+							   
+		-0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+							   
+		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f
 	};
 
 	//m_CubePositions[0] = glm::vec3(0.0f,  0.0f,  0.0f);
@@ -116,6 +116,7 @@ Application::Application(const std::string& name)
 
 	m_Layout = {
 		{ ShaderDataType::Float3, "a_Position" },
+		{ ShaderDataType::Float4, "a_Color" },
 		{ ShaderDataType::Float2, "a_TexCoord" }
 	};
 
@@ -188,14 +189,13 @@ void Application::pushOverlay(Layer* layer)
 
 void Application::onEvent(Event& e)
 {
+	m_Camera->OnEvent(e);
 	m_Window->SetVSync(m_VSync);
 
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<WindowCloseEvent>(SET_EVENT_FN(Application::onWindowClose));
+	//dispatcher.dispatch<WindowResizeEvent>(SET_EVENT_FN(Application::onWindowResize));
 	dispatcher.dispatch<KeyPressedEvent>(SET_EVENT_FN(Application::onKeyPressed));
-	dispatcher.dispatch<MouseMovedEvent>(SET_EVENT_FN(Application::onMouseMove));
-	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(Application::onMouseScroll));
-	//dispatcher.dispatch<KeyReleasedEvent>(SET_EVENT_FN(Application::onKeyReleased));
 	//LOG_INFO("{0}", e);
 
 	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
@@ -239,11 +239,13 @@ void Application::Run()
 		}
 
 		m_Shader->setUniform1f("blend", m_ImGuiLayer->getBlend());
+		m_Shader->setUniform4f("un_color", m_ImGuiLayer->getUniColor());
 
 		glm::mat4 view = m_Camera->GetViewMatrix();
 		m_Shader->setUniformMat4("vw_matrix", view);
 
-		m_Projection = glm::perspective(glm::radians(m_Camera->getZoom()), 1024.0f / 576.0f, 0.1f, 100.0f);
+		//m_Projection = glm::perspective(glm::radians(m_Camera->getZoom()), 1024.0f / 576.0f, 0.1f, 100.0f);
+		m_Projection = m_Camera->GetProjection();
 		m_Shader->setUniformMat4("pr_matrix", m_Projection);
 
 		m_VertexArray->bind();
@@ -263,8 +265,16 @@ void Application::Run()
 		}
 		m_VertexArray->unBind();
 
+		m_Camera->OnUpdate();
 		m_Window->update();
 	}
+}
+
+bool Application::onWindowResize(WindowResizeEvent& e)
+{
+	glViewport(0, 0, e.getWidth(), e.getHeight());
+
+	return true;
 }
 
 bool Application::onWindowClose(WindowCloseEvent& e)
@@ -277,18 +287,6 @@ bool Application::onKeyPressed(KeyPressedEvent& e)
 {
 	if (Input::isKeyPressed(GLFW_KEY_R))
 		m_IsRPressed = !m_IsRPressed;
-	if (Input::isKeyPressed(GLFW_KEY_W))
-		m_Camera->ProcessKeyboard(FORWARD, m_DeltaTime);
-	if (Input::isKeyPressed(GLFW_KEY_S))
-		m_Camera->ProcessKeyboard( BACKWARD, m_DeltaTime);
-	if (Input::isKeyPressed(GLFW_KEY_A))
-		m_Camera->ProcessKeyboard(LEFT, m_DeltaTime);
-	if (Input::isKeyPressed(GLFW_KEY_D))
-		m_Camera->ProcessKeyboard(RIGHT, m_DeltaTime);
-	if (Input::isKeyPressed(GLFW_KEY_Q))
-		m_Camera->ProcessKeyboard(DOWNWARD, m_DeltaTime);
-	if (Input::isKeyPressed(GLFW_KEY_E))
-		m_Camera->ProcessKeyboard(UPWARD, m_DeltaTime);
 
 	if (Input::isKeyPressed(GLFW_KEY_V)) {
 		if (m_ImGuiLayer->getBlend() > 0.01f)
@@ -298,35 +296,6 @@ bool Application::onKeyPressed(KeyPressedEvent& e)
 		if (m_ImGuiLayer->getBlend() < 0.990f)
 			m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() + 0.01f);
 	}
-
-	return true;
-}
-
-bool Application::onMouseMove(MouseMovedEvent& e)
-{
-	auto [x, y] = Input::getMousePosition();
-	if (m_Camera->getFirstMouse()) {
-		m_Camera->setLastx((float)(m_Window->getWidth() / 2));
-		m_Camera->setLasty((float)(m_Window->getHeight() / 2));
-		m_Camera->setFirstMouse(false);
-	}
-
-	float xoffset = x - m_Camera->getLastx();
-	float yoffset = m_Camera->getLasty() - y;
-
-	m_Camera->setLastx(x);
-	m_Camera->setLasty(y);
-
-	if(Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
-		m_Camera->ProcessMouseMovement(xoffset, yoffset);
-
-	return true;
-}
-
-bool Application::onMouseScroll(MouseScrolledEvent& e)
-{
-	float yoff = e.getYOffset();
-	m_Camera->ProcessMouseScroll(yoff);
 
 	return true;
 }

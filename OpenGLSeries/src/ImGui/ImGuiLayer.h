@@ -25,6 +25,7 @@ public:
 	void end();
 
 	inline float getBlend() const { return m_Blend; }
+	inline glm::vec4 getUniColor() const { return m_UniColor; }
 	inline void setBlend(float blend) { m_Blend = blend; }
 	inline glm::vec4 getClearColor() const { return m_Color; }
 
@@ -32,5 +33,6 @@ private:
 	float m_Time = 0.0f;
 	float m_Blend = 0.0f;
 	glm::vec4 m_Color = glm::vec4(0.2f, 0.7f, 0.8f, 1.0f); // Initial clear color.
+	glm::vec4 m_UniColor = glm::vec4(1.0f);
 
 };

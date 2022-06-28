@@ -67,3 +67,6 @@ project "OpenGLSeries"
 		links
 		{
 		}
+
+	filter { "system:windows", "configurations:Release" }
+	buildoptions "/O2"

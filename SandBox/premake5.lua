@@ -52,3 +52,6 @@ project "SandBox"
 		links
 		{
 		}
+
+	filter { "system:windows", "configurations:Release" }
+	buildoptions "/O2"

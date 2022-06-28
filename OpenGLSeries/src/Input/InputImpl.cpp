@@ -33,14 +33,14 @@ std::pair<float, float> InputImplementation::getMousePositionImpl() const
 	return { (float)x, (float)y };
 }
 
-float InputImplementation::getMouseXOffImpl() const
+float InputImplementation::getMouseXImpl() const
 {
 	auto[x, y] = getMousePositionImpl();
 
 	return x;
 }
 
-float InputImplementation::getMouseYOffImpl() const
+float InputImplementation::getMouseYImpl() const
 {
 	auto[x, y] = getMousePositionImpl();
 

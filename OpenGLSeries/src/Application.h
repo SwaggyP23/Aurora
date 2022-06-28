@@ -1,6 +1,8 @@
 #pragma once
 
 #include "OGLpch.h"
+#include "Graphics/EditorCamera.h"
+//#include "Graphics/Camera.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Window.h"
 #include "Graphics/Buffer.h"
@@ -8,7 +10,6 @@
 #include "Graphics/Texture.h"
 #include "Utils/ImageLoader.h"
 #include "Core/TimeStep.h"
-#include "Graphics/Camera.h"
 #include "Events/ApplicationEvents.h" // This includes Events.h file
 #include "Events/MouseEvents.h"
 #include "Layers/LayerStack.h"
@@ -32,10 +33,8 @@ private:
 	void pushLayer(Layer* layer);
 	void pushOverlay(Layer* layer);
 	bool onWindowClose(WindowCloseEvent& e);
-	//bool onWindowResize(WindowResizeEvent& e);
+	bool onWindowResize(WindowResizeEvent& e);
 	bool onKeyPressed(KeyPressedEvent& e);
-	bool onMouseMove(MouseMovedEvent& e);
-	bool onMouseScroll(MouseScrolledEvent& e);
 
 private:
 	std::shared_ptr<Window> m_Window;
@@ -43,7 +42,8 @@ private:
 	std::shared_ptr<VertexBuffer> m_VertexBuffer;
 	std::shared_ptr<IndexBuffer> m_IndexBuffer;
 	std::shared_ptr<Shader> m_Shader;
-	std::shared_ptr<Camera> m_Camera;
+	//std::shared_ptr<Camera> m_Camera;
+	std::shared_ptr<Hazel::EditorCamera> m_Camera;
 	ImGuiLayer* m_ImGuiLayer;
 	BufferLayout m_Layout;
 	LayerStack m_LayerStack;
