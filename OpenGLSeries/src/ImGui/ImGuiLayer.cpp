@@ -81,10 +81,12 @@ void ImGuiLayer::onImGuiRender()
 	static bool show = true;
 	ImGui::ShowDemoWindow(&show);
 
+	Application& app = Application::getApp();
+
 	ImGui::Begin("Editing");
 	ImGui::ColorEdit3("Clear Color:", (float*)&m_Color);
 	ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
-	ImGuiIO& io = ImGui::GetIO();
-	ImGui::Text("Framerate: %.f", io.Framerate);
+	ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
+	ImGui::Checkbox("V Sync: ", &(app.getVSync()));
 	ImGui::End();
 }

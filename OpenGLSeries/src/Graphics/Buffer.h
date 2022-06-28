@@ -138,7 +138,7 @@ class IndexBuffer
 {
 public:
 	IndexBuffer() = default;
-	IndexBuffer(size_t* indices, size_t count);
+	IndexBuffer(GLuint* indices, size_t count);
 	~IndexBuffer();
 
 	void bind() const;

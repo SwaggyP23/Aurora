@@ -9,7 +9,7 @@ Application::Application(const std::string& name)
 
 	m_Window = std::make_shared<Window>(name, 1280, 720);
 	m_Window->enable(GL_DEPTH_TEST);
-	m_Window->SetVSync(false);
+	m_Window->SetVSync(true);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
 
 
@@ -55,44 +55,32 @@ Application::Application(const std::string& name)
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
 		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
 		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
 		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
 		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
 		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
 		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
 		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
 		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
 		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
 		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
 		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
 		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
 		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f
 	};
 
 	//m_CubePositions[0] = glm::vec3(0.0f,  0.0f,  0.0f);
@@ -117,7 +105,12 @@ Application::Application(const std::string& name)
 	m_CubePositions[8] = glm::vec3(1.0f,  0.0f, -2.0f);
 	m_CubePositions[9] = glm::vec3(0.0f,  1.0f, -1.0f);
 
-	size_t indices[6] = { 0, 1, 2, 2, 3, 0 };
+	GLuint indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
+							  4, 5, 6, 6, 7, 4,
+							  8, 9, 10, 10 ,11, 8,
+							  12, 13, 14, 14, 15, 12,
+							  16, 17, 18, 18, 19, 16,
+							  20, 21, 22, 22, 23, 20 };
 
 	m_VertexArray = std::make_shared<VertexArray>();
 
@@ -132,7 +125,7 @@ Application::Application(const std::string& name)
 	m_VertexArray->addVertexBuffer(m_VertexBuffer);
 
 	// the 2nd arg here should be sizeof(indices) / sizeof(uint32_t) but it gives warning
-	m_IndexBuffer = std::make_shared<IndexBuffer>(indices, sizeof(indices) / sizeof(size_t));
+	m_IndexBuffer = std::make_shared<IndexBuffer>(indices, sizeof(indices) / sizeof(GLuint));
 	m_IndexBuffer->bind();
 	m_VertexArray->setIndexBuffer(m_IndexBuffer);
 
@@ -195,10 +188,13 @@ void Application::pushOverlay(Layer* layer)
 
 void Application::onEvent(Event& e)
 {
+	m_Window->SetVSync(m_VSync);
+
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<WindowCloseEvent>(SET_EVENT_FN(Application::onWindowClose));
 	dispatcher.dispatch<KeyPressedEvent>(SET_EVENT_FN(Application::onKeyPressed));
 	dispatcher.dispatch<MouseMovedEvent>(SET_EVENT_FN(Application::onMouseMove));
+	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(Application::onMouseScroll));
 	//dispatcher.dispatch<KeyReleasedEvent>(SET_EVENT_FN(Application::onKeyReleased));
 	//LOG_INFO("{0}", e);
 
@@ -219,19 +215,20 @@ void Application::Run()
 	while(m_Running) // Render Loop.
 	{
 		float currentFrame = (float)(glfwGetTime());
-		m_DeltaTime = currentFrame - m_LastFrame;
+		TimeStep time = currentFrame - m_LastFrame;
 		m_LastFrame = currentFrame;
+		m_DeltaTime = time.getSeconds();
 
 		glm::vec4 color = m_ImGuiLayer->getClearColor();
 		m_Window->clear(color.r, color.g, color.b, 1.0f);
-
-		for (Layer* layer : m_LayerStack)
-			layer->onUpdate();
 
 		m_ImGuiLayer->begin();
 		for (Layer* layer : m_LayerStack)
 			layer->onImGuiRender();
 		m_ImGuiLayer->end();
+
+		for (Layer* layer : m_LayerStack)
+			layer->onUpdate();
 
 		int i = 0;
 		for (const auto& texture : m_Textures)
@@ -239,15 +236,6 @@ void Application::Run()
 			glActiveTexture(GL_TEXTURE0 + i);
 			texture->bind();
 			i++;
-		}
-
-		if (Input::isKeyPressed(GLFW_KEY_V)) {
-			if (m_ImGuiLayer->getBlend() > 0.01f)
-				m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() - 0.01f);
-		}
-		if (Input::isKeyPressed(GLFW_KEY_B)) {
-			if (m_ImGuiLayer->getBlend() < 0.990f)
-				m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() + 0.01f);
 		}
 
 		m_Shader->setUniform1f("blend", m_ImGuiLayer->getBlend());
@@ -271,7 +259,7 @@ void Application::Run()
 				model = glm::rotate(model, rotation, glm::vec3(1.0f, 0.3f, 0.5f));
 			m_Shader->setUniformMat4("ml_matrix", model);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		}
 		m_VertexArray->unBind();
 
@@ -302,6 +290,15 @@ bool Application::onKeyPressed(KeyPressedEvent& e)
 	if (Input::isKeyPressed(GLFW_KEY_E))
 		m_Camera->ProcessKeyboard(UPWARD, m_DeltaTime);
 
+	if (Input::isKeyPressed(GLFW_KEY_V)) {
+		if (m_ImGuiLayer->getBlend() > 0.01f)
+			m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() - 0.01f);
+	}
+	if (Input::isKeyPressed(GLFW_KEY_B)) {
+		if (m_ImGuiLayer->getBlend() < 0.990f)
+			m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() + 0.01f);
+	}
+
 	return true;
 }
 
@@ -322,6 +319,14 @@ bool Application::onMouseMove(MouseMovedEvent& e)
 
 	if(Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
 		m_Camera->ProcessMouseMovement(xoffset, yoffset);
+
+	return true;
+}
+
+bool Application::onMouseScroll(MouseScrolledEvent& e)
+{
+	float yoff = e.getYOffset();
+	m_Camera->ProcessMouseScroll(yoff);
 
 	return true;
 }

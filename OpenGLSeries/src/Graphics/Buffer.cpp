@@ -77,11 +77,10 @@ void VertexBuffer::setLayout(const BufferLayout& layout)
 // INDEX BUFFER!!
 //////////////////////////
 
-IndexBuffer::IndexBuffer(size_t* indices, size_t count)
+IndexBuffer::IndexBuffer(GLuint* indices, size_t count)
 	: m_Count(count)
 {
-	glCreateBuffers(1, &m_BufferId);
-
+	glGenBuffers(1, &m_BufferId);
 	// Since we specified here that is is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
 	// otherwise it will not work
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);

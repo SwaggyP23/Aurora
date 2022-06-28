@@ -7,6 +7,7 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/Texture.h"
 #include "Utils/ImageLoader.h"
+#include "Core/TimeStep.h"
 #include "Graphics/Camera.h"
 #include "Events/ApplicationEvents.h" // This includes Events.h file
 #include "Events/MouseEvents.h"
@@ -23,6 +24,7 @@ public:
 	void Run();
 	void onEvent(Event& e);
 	
+	inline bool& getVSync() { return m_VSync; }
 	inline Window& getWindow() const { return *m_Window; }
 	inline static Application& getApp() { return *s_Instance; }
 
@@ -33,6 +35,7 @@ private:
 	//bool onWindowResize(WindowResizeEvent& e);
 	bool onKeyPressed(KeyPressedEvent& e);
 	bool onMouseMove(MouseMovedEvent& e);
+	bool onMouseScroll(MouseScrolledEvent& e);
 
 private:
 	std::shared_ptr<Window> m_Window;
@@ -47,8 +50,10 @@ private:
 
 	float m_LastFrame = 0.0f;
 	float m_DeltaTime = 0.0f;
+
 	bool m_Running = true;
 	bool m_IsRPressed = false;
+	bool m_VSync = true;
 
 	glm::vec4 color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f); // Initial clear color.
 	glm::vec4 uniColor = glm::vec4(0.5f);
