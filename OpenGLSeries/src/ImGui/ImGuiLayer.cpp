@@ -86,8 +86,9 @@ void ImGuiLayer::onImGuiRender()
 	ImGui::Begin("Editing");
 	ImGui::ColorEdit3("Clear Color:", (float*)&m_Color);
 	ImGui::ColorEdit3("Uniform Color:", (float*)&m_UniColor);
+	ImGui::SliderFloat4("Translations: ", (float*)&m_Transalations, 0.0f, 2.0f);
 	ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
 	ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
-	ImGui::Checkbox("V Sync: ", &(app.getVSync()));
+	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 	ImGui::End();
 }

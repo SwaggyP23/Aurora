@@ -15,6 +15,8 @@ public:
 	void setTextureFiltering(GLenum minFilter, GLenum magFilter) const;
 
 	void loadTextureData(GLint internalFormat, GLenum format);
+	// Internal format specifies in what format the texture is to be stored on the GPU
+	// format Specifies the format of the pixel data.
 
 	void bind() const;
 	void unBind() const;

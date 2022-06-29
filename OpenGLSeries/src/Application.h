@@ -42,26 +42,23 @@ private:
 	std::shared_ptr<VertexBuffer> m_VertexBuffer;
 	std::shared_ptr<IndexBuffer> m_IndexBuffer;
 	std::shared_ptr<Shader> m_Shader;
-	//std::shared_ptr<Camera> m_Camera;
+	//std::shared_ptr<Camera> m_Camera; // This is the old camera
 	std::shared_ptr<Hazel::EditorCamera> m_Camera;
 	ImGuiLayer* m_ImGuiLayer;
 	BufferLayout m_Layout;
 	LayerStack m_LayerStack;
 
 	float m_LastFrame = 0.0f;
-	float m_DeltaTime = 0.0f;
 
 	bool m_Running = true;
-	bool m_IsRPressed = false;
 	bool m_VSync = true;
+	bool m_IsRPressed = false;
 
-	glm::vec4 color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f); // Initial clear color.
 	glm::vec4 uniColor = glm::vec4(0.5f);
 
 	std::vector<std::shared_ptr<Texture>> m_Textures;
 
-	glm::vec3 m_CubePositions[10];
-	glm::mat4 m_Projection;
+	std::array<glm::vec3, 10> m_CubePositions;
 
 	static Application* s_Instance;
 };

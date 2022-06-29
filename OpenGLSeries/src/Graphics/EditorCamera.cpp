@@ -84,9 +84,11 @@ namespace Hazel {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		float delta = e.getYOffset() * 0.1f;
-		MouseZoom(delta);
-		UpdateView();
+		if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL)) {
+			float delta = e.getYOffset() * 0.1f;
+			MouseZoom(delta);
+			UpdateView();
+		}
 		return false;
 	}
 

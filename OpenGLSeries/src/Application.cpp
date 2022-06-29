@@ -12,44 +12,9 @@ Application::Application(const std::string& name)
 	m_Window->SetVSync(true);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
 
-
-	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-
 	m_Camera = std::make_shared<Hazel::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 100.0f);
 
 	std::vector<char> errorMessage;
-
-	//GLfloat vertices[4 * 6 * 9] = {
-	//	-0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 0
-	// 	-0.5f,  0.5f, -0.5f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f, // 1
-	//	 0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f, // 2
-	//	 0.5f, -0.5f, -0.5f,	0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f, // 3
-
-	//    -0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 4
-	//    -0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f, // 5
-	//    -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f, // 6
-	//    -0.5f,  0.5f,  0.5f,	0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f, // 7
-
-	//    -0.5f, -0.5f,  0.5f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 8
-	//    -0.5f,  0.5f,  0.5f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f, // 9
-	//     0.5f,  0.5f,  0.5f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f, // 10
-	//     0.5f, -0.5f,  0.5f,	0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f, // 11
-
-	//	 0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 12
-	//	 0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f, // 13
-	//	 0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f, // 14
-	//	 0.5f,  0.5f,  0.5f,	0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f, // 15
-
-	//    -0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 16
-	//     0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f, // 17
-	//    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f, // 18
-	//     0.5f, -0.5f, -0.5f,	0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f, // 19
-
-	//	-0.5f, -0.5f,  0.5f,    1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 20
-	//	 0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f, // 21
-	//	-0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f, // 22
-	//	 0.5f, -0.5f,  0.5f,	0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f  // 23
-	//};
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f,
@@ -83,16 +48,16 @@ Application::Application(const std::string& name)
 		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f
 	};
 
-	//m_CubePositions[0] = glm::vec3(0.0f,  0.0f,  0.0f);
-	//m_CubePositions[1] = glm::vec3(2.0f,  5.0f, -15.0f);
+	//m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
+	//m_CubePositions[1] = glm::vec3(2.0f, 5.0f, -15.0f);
 	//m_CubePositions[2] = glm::vec3(-1.5f, -2.2f, -2.5f);
 	//m_CubePositions[3] = glm::vec3(-3.8f, -2.0f, -12.3f);
 	//m_CubePositions[4] = glm::vec3(2.4f, -0.4f, -3.5f);
-	//m_CubePositions[5] = glm::vec3(-1.7f,  3.0f, -7.5f);
+	//m_CubePositions[5] = glm::vec3(-1.7f, 3.0f, -7.5f);
 	//m_CubePositions[6] = glm::vec3(1.3f, -2.0f, -2.5f);
-	//m_CubePositions[7] = glm::vec3(1.5f,  2.0f, -2.5f);
-	//m_CubePositions[8] = glm::vec3(1.5f,  0.2f, -1.5f);
-	//m_CubePositions[9] = glm::vec3(-1.3f,  1.0f, -1.5f);
+	//m_CubePositions[7] = glm::vec3(1.5f, 2.0f, -2.5f);
+	//m_CubePositions[8] = glm::vec3(1.5f, 0.2f, -1.5f);
+	//m_CubePositions[9] = glm::vec3(-1.3f, 1.0f, -1.5f);
 
 	m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
 	m_CubePositions[1] = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -190,7 +155,7 @@ void Application::pushOverlay(Layer* layer)
 void Application::onEvent(Event& e)
 {
 	m_Camera->OnEvent(e);
-	m_Window->SetVSync(m_VSync);
+	m_Window->SetVSync(m_VSync);	
 
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<WindowCloseEvent>(SET_EVENT_FN(Application::onWindowClose));
@@ -210,25 +175,16 @@ void Application::Run()
 {
 	//float fov = 45.0f;
 	float rotation = 0.0f;
-	glm::vec3 translation(0.0f, 0.0f, 0.0f);
+	glm::vec4 translation;
 
 	while(m_Running) // Render Loop.
 	{
 		float currentFrame = (float)(glfwGetTime());
 		TimeStep time = currentFrame - m_LastFrame;
 		m_LastFrame = currentFrame;
-		m_DeltaTime = time.getSeconds();
 
 		glm::vec4 color = m_ImGuiLayer->getClearColor();
 		m_Window->clear(color.r, color.g, color.b, 1.0f);
-
-		m_ImGuiLayer->begin();
-		for (Layer* layer : m_LayerStack)
-			layer->onImGuiRender();
-		m_ImGuiLayer->end();
-
-		for (Layer* layer : m_LayerStack)
-			layer->onUpdate();
 
 		int i = 0;
 		for (const auto& texture : m_Textures)
@@ -245,25 +201,38 @@ void Application::Run()
 		m_Shader->setUniformMat4("vw_matrix", view);
 
 		//m_Projection = glm::perspective(glm::radians(m_Camera->getZoom()), 1024.0f / 576.0f, 0.1f, 100.0f);
-		m_Projection = m_Camera->GetProjection();
-		m_Shader->setUniformMat4("pr_matrix", m_Projection);
+		glm::mat4 projection = m_Camera->GetProjection();
+		m_Shader->setUniformMat4("pr_matrix", projection);
+
+		translation = m_ImGuiLayer->getTransalations();
 
 		m_VertexArray->bind();
-		for (unsigned int i = 0; i < 10; i++)
+		for (unsigned int i = 0; i < m_CubePositions.size(); i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-			model = glm::translate(model, m_CubePositions[i] + translation);
+			model = glm::translate(model, m_CubePositions[i] + glm::vec3(translation));
 
 			if (m_IsRPressed)
 				model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
 			else
-				model = glm::rotate(model, rotation, glm::vec3(1.0f, 0.3f, 0.5f));
+				model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.3f, 0.5f));
+
+			model = glm::scale(model, glm::vec3(translation.w));
+
 			m_Shader->setUniformMat4("ml_matrix", model);
 
 			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		}
 		m_VertexArray->unBind();
+
+		for (Layer* layer : m_LayerStack)
+			layer->onUpdate();
+
+		m_ImGuiLayer->begin();
+		for (Layer* layer : m_LayerStack)
+			layer->onImGuiRender();
+		m_ImGuiLayer->end();
 
 		m_Camera->OnUpdate();
 		m_Window->update();
@@ -287,15 +256,6 @@ bool Application::onKeyPressed(KeyPressedEvent& e)
 {
 	if (Input::isKeyPressed(GLFW_KEY_R))
 		m_IsRPressed = !m_IsRPressed;
-
-	if (Input::isKeyPressed(GLFW_KEY_V)) {
-		if (m_ImGuiLayer->getBlend() > 0.01f)
-			m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() - 0.01f);
-	}
-	if (Input::isKeyPressed(GLFW_KEY_B)) {
-		if (m_ImGuiLayer->getBlend() < 0.990f)
-			m_ImGuiLayer->setBlend(m_ImGuiLayer->getBlend() + 0.01f);
-	}
 
 	return true;
 }
