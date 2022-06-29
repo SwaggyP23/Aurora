@@ -25,16 +25,25 @@ public:
 	void end();
 
 	inline float getBlend() const { return m_Blend; }
-	inline void setBlend(float blend) { m_Blend = blend; }
+	//inline void setBlend(float blend) { m_Blend = blend; }
+	inline float getAmbLight() const { return m_AmbLight; }
+	//inline void setAmbLight(float ambLight) { m_AmbLight = ambLight; }
 	inline const glm::vec4& getTransalations() const { return m_Transalations; }
+	inline const glm::vec4& getLightTranslations() const { return m_LightTransalations; }
 	inline const glm::vec4& getUniColor() const { return m_UniColor; }
+	inline const glm::vec4& getLightColor() const { return m_LightColor; }
 	inline const glm::vec4& getClearColor() const { return m_Color; }
 
 private:
 	float m_Time = 0.0f;
 	float m_Blend = 0.0f;
+	float m_AmbLight = 1.0f;
+
 	glm::vec4 m_Transalations = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	glm::vec4 m_Color = glm::vec4(0.2f, 0.6f, 0.6f, 1.0f); // Initial clear color.
+	glm::vec4 m_LightTransalations = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	//glm::vec4 m_Color = glm::vec4(0.2f, 0.6f, 0.6f, 1.0f); // Initial clear color.
+	glm::vec4 m_Color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Initial clear color for lighting.
+	glm::vec4 m_LightColor = glm::vec4(1.0f); // Initial clear color for lighting.
 	glm::vec4 m_UniColor = glm::vec4(1.0f);
 
 };

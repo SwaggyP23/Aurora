@@ -26,14 +26,17 @@ void main()
 
 layout (location = 0) out vec4 color;
 
-in vec4 v_Color;
+in vec4 v_Color; // Object color
 in vec2 v_TexCoord;
 
 uniform float blend;
+uniform float ambientStrength = 0.1f;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
+uniform vec4 src_color = vec4(1.0f); // Light color
 
 void main()
 {
-	color = mix(texture(texture1, v_TexCoord), texture(texture2, v_TexCoord), blend) * v_Color;
+	vec4 ambientLight = src_color * ambientStrength;
+	color = mix(texture(texture1, v_TexCoord), texture(texture2, v_TexCoord), blend) * (v_Color * ambientLight);
 }

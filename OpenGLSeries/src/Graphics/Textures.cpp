@@ -41,7 +41,7 @@ void Texture::loadTextureData(GLint internalFormat, GLenum format)
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
-		CORE_LOG_ERROR("Failed to load Texture!!");
+		CORE_LOG_ERROR("Failed to load Texture!! {0}", m_Path);
 	}
 
 	ImageLoader::Get().FreeImage();

@@ -88,6 +88,21 @@ GLuint Shader::createShaderProgram() const
 	glAttachShader(program, fs);
 	glLinkProgram(program);
 
+	GLint result;
+	glGetProgramiv(program, GL_LINK_STATUS, &result);
+	if (!result)
+	{
+		GLint length;
+
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+		std::vector<char> errorMessage(length);
+
+		glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
+		CORE_LOG_ERROR("Failed to link program, {0}", &errorMessage[0]);
+
+		glDeleteProgram(program);
+	}
+
 	glValidateProgram(program);
 	glDeleteShader(vs);
 	glDeleteShader(fs);

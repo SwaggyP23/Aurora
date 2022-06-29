@@ -3,7 +3,7 @@
 #include <string>
 #include "Events/Events.h"
 
-class Layer
+class Layer // This is an interface
 {
 public:
 	Layer(const std::string& name = "Default layer");

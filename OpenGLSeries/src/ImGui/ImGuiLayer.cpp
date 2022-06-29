@@ -78,17 +78,32 @@ void ImGuiLayer::end()
 
 void ImGuiLayer::onImGuiRender()
 {
-	static bool show = true;
-	ImGui::ShowDemoWindow(&show);
+	//static bool show = true;
+	//ImGui::ShowDemoWindow(&show);
 
 	Application& app = Application::getApp();
 
-	ImGui::Begin("Editing");
-	ImGui::ColorEdit3("Clear Color:", (float*)&m_Color);
-	ImGui::ColorEdit3("Uniform Color:", (float*)&m_UniColor);
-	ImGui::SliderFloat4("Translations: ", (float*)&m_Transalations, 0.0f, 2.0f);
-	ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
-	ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
-	ImGui::Checkbox("V Sync ", &(app.getVSync()));
+	ImGui::Begin("Editing Panel");
+	if (ImGui::BeginMenu("Cube")) {
+		//ImGui::Begin("Editing");
+		ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
+		ImGui::ColorEdit3("Uniform Color", (float*)&m_UniColor);
+		ImGui::SliderFloat4("Translations", (float*)&m_Transalations, 0.0f, 2.0f);
+		ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
+		ImGui::SliderFloat("Ambient Light", &m_AmbLight, 0.0f, 1.0f);
+		ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
+		ImGui::Checkbox("V Sync ", &(app.getVSync()));
+		//ImGui::End();
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginMenu("Light Source")) {
+		//ImGui::Begin("Editing");
+		ImGui::ColorEdit3("Light Color", (float*)&m_LightColor);
+		ImGui::SliderFloat4("Translations", (float*)&m_LightTransalations, 0.0f, 2.0f);
+		//ImGui::End();
+		ImGui::EndMenu();
+	}
+
 	ImGui::End();
 }

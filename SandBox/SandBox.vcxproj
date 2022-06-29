@@ -99,6 +99,9 @@
       <Project>{75EC7B9B-614F-0B40-0AD5-43F6F616D7C2}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shaders\Light.shader" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

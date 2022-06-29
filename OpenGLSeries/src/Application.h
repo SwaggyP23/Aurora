@@ -39,9 +39,11 @@ private:
 private:
 	std::shared_ptr<Window> m_Window;
 	std::shared_ptr<VertexArray> m_VertexArray;
+	std::shared_ptr<VertexArray> m_LightVertexArray;
 	std::shared_ptr<VertexBuffer> m_VertexBuffer;
 	std::shared_ptr<IndexBuffer> m_IndexBuffer;
 	std::shared_ptr<Shader> m_Shader;
+	std::shared_ptr<Shader> m_LightShader;
 	//std::shared_ptr<Camera> m_Camera; // This is the old camera
 	std::shared_ptr<Hazel::EditorCamera> m_Camera;
 	ImGuiLayer* m_ImGuiLayer;
@@ -58,7 +60,7 @@ private:
 
 	std::vector<std::shared_ptr<Texture>> m_Textures;
 
-	std::array<glm::vec3, 10> m_CubePositions;
+	std::array<glm::vec3, 1> m_CubePositions;
 
 	static Application* s_Instance;
 };

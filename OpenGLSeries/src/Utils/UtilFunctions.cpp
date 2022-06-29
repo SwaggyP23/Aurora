@@ -15,29 +15,31 @@ FileReader& FileReader::Get()
 
 ShaderSources FileReader::ReadShaderFile(const std::string& filePath)
 {
-	m_Stream.open(filePath, std::ios::in);
-
-	if (m_Stream.is_open()) {
-		std::stringstream ss[2];
-		std::string line;
-		ShaderType type = ShaderType::None;
-
-		while (std::getline(m_Stream, line))
+	std::string result;
+	std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
+	if (in)
+	{
+		in.seekg(0, std::ios::end);
+		size_t size = in.tellg();
+		if (size != -1)
 		{
-			if (line.find("shader") != std::string::npos) {
-				if (line.find("vertex") != std::string::npos)
-					type = ShaderType::Vertex;
-				else if (line.find("fragment") != std::string::npos)
-					type = ShaderType::Fragment;
-			}
-			else {
-				ss[(int)type] << line << '\n';
-			}
+			result.resize(size);
+			in.seekg(0, std::ios::beg);
+			in.read(&result[0], size);
 		}
-		return { ss[0].str(), ss[1].str() };
+		else
+		{
+			CORE_LOG_ERROR("Could not read from file '{0}'", filePath);
+		}
 	}
-	else {
-		std::cout << "File could not be opened!" << std::endl;
-		return { };
+	else
+	{
+		CORE_LOG_ERROR("Could not open file '{0}'", filePath);
 	}
+
+	size_t ind = result.find("#shader fragment", 0);
+	std::string vertex = result.substr(15, ind - 16);
+	std::string fragment = result.substr(ind + 16, result.size() - 1);
+
+	return { vertex, fragment };
 }
