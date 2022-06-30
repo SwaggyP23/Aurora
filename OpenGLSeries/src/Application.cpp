@@ -17,35 +17,35 @@ Application::Application(const std::string& name)
 	std::vector<char> errorMessage;
 
 	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
 														   
-		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
 
-		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
 							   
-		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
 							   
-		-0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
 							   
-		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f, 0.0f,      1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f, 0.0f,      1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f, 0.0f,      1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f, 0.0f,      1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f
 	};
 
 	//m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -82,6 +82,7 @@ Application::Application(const std::string& name)
 
 	m_Layout = {
 		{ ShaderDataType::Float3, "a_Position" },
+		{ ShaderDataType::Float3, "a_Normals" },
 		{ ShaderDataType::Float4, "a_Color" },
 		{ ShaderDataType::Float2, "a_TexCoord" }
 	};
@@ -113,14 +114,14 @@ Application::Application(const std::string& name)
 	m_IndexBuffer->unBind();
 
 	// Creating textures
-	std::shared_ptr<Texture> text1 = std::make_shared<Texture>("resources/textures/ice.png");
+	std::shared_ptr<Texture> text1 = std::make_shared<Texture>("resources/textures/awesomeface.png");
 	text1->bind();
 	text1->setTextureWrapping(GL_REPEAT);
 	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text1->loadTextureData(GL_RGBA, GL_RGBA);
 	text1->unBind();
 
-	std::shared_ptr<Texture> text2 = std::make_shared<Texture>("resources/textures/minecraftGrass.png");
+	std::shared_ptr<Texture> text2 = std::make_shared<Texture>("resources/textures/ice.png");
 	text2->bind();
 	text2->setTextureWrapping(GL_REPEAT);
 	text2->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -187,8 +188,6 @@ void Application::onEvent(Event& e)
 void Application::Run()
 {
 	//float fov = 45.0f;
-	float rotation = 0.0f;
-	glm::vec4 translation;
 	glm::mat4 model;
 
 	while(m_Running) // Render Loop.
@@ -211,6 +210,7 @@ void Application::Run()
 		m_Shader->bind();
 		m_Shader->setUniform1f("blend", m_ImGuiLayer->getBlend());
 		m_Shader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight());
+		m_Shader->setUniform3f("src_pos", m_ImGuiLayer->getLightTranslations());
 		m_Shader->setUniform4f("src_color", m_ImGuiLayer->getLightColor());
 		m_Shader->setUniform4f("un_color", m_ImGuiLayer->getUniColor());
 
@@ -220,37 +220,34 @@ void Application::Run()
 		glm::mat4 projection = m_Camera->GetProjection();
 		m_Shader->setUniformMat4("pr_matrix", projection);
 
-		translation = m_ImGuiLayer->getTransalations();
-
 		m_VertexArray->bind();
 		for (unsigned int i = 0; i < m_CubePositions.size(); i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-			model = glm::translate(model, /*m_CubePositions[i] +*/ glm::vec3(translation));
+			model = glm::translate(model, /*m_CubePositions[i] +*/ m_ImGuiLayer->getTransalations());
 
 			if (m_IsRPressed)
 				model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
 			else
-				model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.3f, 0.5f));
+				model = glm::rotate(model, m_ImGuiLayer->getRotation(), glm::vec3(1.0f, 0.3f, 0.5f));
 
-			model = glm::scale(model, glm::vec3(translation.w));
+			model = glm::scale(model, m_ImGuiLayer->getScales());
 
 			m_Shader->setUniformMat4("ml_matrix", model);
+			m_Shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		}
 		//m_VertexArray->unBind(); // Not necessary
-
-		glm::vec4 lightTranslation = m_ImGuiLayer->getLightTranslations();
 		
 		m_LightShader->bind();
 		m_LightShader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight());
 		m_LightShader->setUniform4f("lightColor", m_ImGuiLayer->getLightColor());
 		m_LightShader->setUniformMat4("pr_matrix", projection);
 		m_LightShader->setUniformMat4("vw_matrix", view);
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(lightTranslation + 2.0f));
-		model = glm::scale(model, glm::vec3(lightTranslation.w - 0.5));
+		model = glm::translate(glm::mat4(1.0f), m_ImGuiLayer->getLightTranslations());
+		model = glm::scale(model, m_ImGuiLayer->getLightScales());
 		m_LightShader->setUniformMat4("ml_matrix", model);
 
 		m_LightVertexArray->bind();

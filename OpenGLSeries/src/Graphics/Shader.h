@@ -27,6 +27,8 @@ public:
 	void setUniform2f(const GLchar* name, const glm::vec2& vector) const;
 	void setUniform3f(const GLchar* name, const glm::vec3& vector) const;
 	void setUniform4f(const GLchar* name, const glm::vec4& vector) const;
+	void setUniformMat3(const GLchar* name, const glm::mat3& matrix) const;
+	void setUniformMat3(const GLchar* name, const float* matrix) const;
 	void setUniformMat4(const GLchar* name, const glm::mat4& matrix) const;
 	void setUniformMat4(const GLchar* name, const float* matrix) const;
 

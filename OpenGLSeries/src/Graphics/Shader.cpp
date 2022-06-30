@@ -51,6 +51,16 @@ void Shader::setUniform4f(const GLchar* name, const glm::vec4& vector) const
 	glUniform4f(getUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
 }
 
+void Shader::setUniformMat3(const GLchar* name, const glm::mat3& matrix) const
+{
+	glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void Shader::setUniformMat3(const GLchar* name, const float* matrix) const
+{
+	glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, matrix);
+}
+
 void Shader::setUniformMat4(const GLchar* name, const glm::mat4& matrix) const
 {
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
