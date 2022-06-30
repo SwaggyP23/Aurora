@@ -84,28 +84,39 @@ void ImGuiLayer::onImGuiRender()
 	Application& app = Application::getApp();
 
 	ImGui::Begin("Editing Panel");
-	if (ImGui::BeginMenu("Cube")) {
+	if (ImGui::CollapsingHeader("Cube")) {
 		//ImGui::Begin("Editing");
-		ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
 		ImGui::ColorEdit3("Uniform Color", (float*)&m_UniColor);
 		ImGui::SliderFloat3("Translation", (float*)&m_Transalations, 0.0f, 5.0f);
 		ImGui::SliderFloat("Rotation", (float*)&m_Rotation, 0.0f, 2.0f);
 		ImGui::SliderFloat3("Scale", (float*)&m_Scale, 0.0f, 3.0f);
 		ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
-		ImGui::SliderFloat("Ambient Light", &m_AmbLight, 0.0f, 1.0f);
 		//ImGui::End();
-		ImGui::EndMenu();
 	}
 
-	if (ImGui::BeginMenu("Light Source")) {
+	ImGui::Separator();
+
+	if (ImGui::CollapsingHeader("Light Source")) {
 		//ImGui::Begin("Editing");
 		ImGui::ColorEdit3("Light Color", (float*)&m_LightColor);
-		ImGui::SliderFloat3("Translation", (float*)&m_LightTransalations, -5.0f, 5.0f);
-		ImGui::SliderFloat3("Scale", (float*)&m_LightScale, 0.0f, 3.0f);
+		ImGui::SliderFloat3("Light Translation", (float*)&m_LightTransalations, -30.0f, 30.0f);
+		ImGui::SliderFloat3("Light Scale", (float*)&m_LightScale, 0.0f, 3.0f);
 		//ImGui::End();
-		ImGui::EndMenu();
 	}
 
+	ImGui::Separator();
+
+	if (ImGui::CollapsingHeader("Ground")) {
+		//ImGui::Begin("Editing");
+		ImGui::SliderFloat3("Ground Translation", (float*)&m_GroundTransalations, -5.0f, 5.0f);
+		ImGui::SliderFloat3("Ground Scale", (float*)&m_GroundScale, 0.0f, 3.0f);
+		//ImGui::End();
+	}
+
+	ImGui::Separator();
+
+	ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
+	ImGui::SliderFloat("Ambient Light", &m_AmbLight, 0.0f, 1.0f);
 	ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
 	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 

@@ -178,7 +178,7 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 
 	glViewport(0, 0, m_Data.Width, m_Data.Height);
 
-	CORE_LOG_INFO("OpenGL Version: {0}", (const char*)glGetString(GL_VERSION));
+	std::cout << "OpenGL Version: " << (const char*)glGetString(GL_VERSION) << std::endl;
 
 	return true;
 }

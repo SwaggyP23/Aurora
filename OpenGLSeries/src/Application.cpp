@@ -12,9 +12,38 @@ Application::Application(const std::string& name)
 	m_Window->SetVSync(true);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
 
-	m_Camera = std::make_shared<Hazel::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 100.0f);
+	m_Camera = std::make_shared<Hazel::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 
 	std::vector<char> errorMessage;
+
+	float groundVertices[] = {
+		-50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 0.0f,
+		 50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   1.0f, 0.0f,
+		 50.0f, -5.0f,  50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+		-50.0f, -5.0f,  50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+	};
+
+	uint32_t groundIndices[] = { 0, 1, 2, 2, 3, 0 };
+
+	m_GroundLayout = {
+		{ ShaderDataType::Float3, "a_Position" },
+		{ ShaderDataType::Float3, "a_Normals" },
+		{ ShaderDataType::Float4, "a_Color" },
+		{ ShaderDataType::Float2, "a_TexCoord" }
+	};
+
+	// For ground...
+	m_GroundVertexArray = std::make_shared<VertexArray>();
+	m_GroundVertexBuffer = std::make_shared<VertexBuffer>(groundVertices, sizeof(groundVertices));
+	m_GroundVertexBuffer->bind();
+	m_GroundVertexBuffer->setLayout(m_GroundLayout);
+	m_GroundVertexArray->addVertexBuffer(m_GroundVertexBuffer);
+	m_GroundIndexBuffer = std::make_shared<IndexBuffer>(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
+	m_GroundIndexBuffer->bind();
+	m_GroundVertexArray->setIndexBuffer(m_GroundIndexBuffer);
+
+	m_GroundVertexBuffer->unBind();
+	m_GroundIndexBuffer->unBind();
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
@@ -59,19 +88,20 @@ Application::Application(const std::string& name)
 	//m_CubePositions[8] = glm::vec3(1.5f, 0.2f, -1.5f);
 	//m_CubePositions[9] = glm::vec3(-1.3f, 1.0f, -1.5f);
 	// Currently i dont want to use any of these since i only want to draw the first box and then the light src
-	//m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
-	//m_CubePositions[1] = glm::vec3(0.0f, 0.0f, -1.0f);
-	//m_CubePositions[2] = glm::vec3(0.0f, 0.0f, -2.0f);
-	//m_CubePositions[3] = glm::vec3(1.0f, 0.0f, 0.0f);
-	//m_CubePositions[4] = glm::vec3(-1.0f, 0.0f, 0.0f);
-	//m_CubePositions[5] = glm::vec3(-1.0f,  0.0f, -1.0f);
-	//m_CubePositions[6] = glm::vec3(-1.0f, 0.0f, -2.0f);
-	//m_CubePositions[7] = glm::vec3(1.0f,  0.0f, -1.0f);
-	//m_CubePositions[8] = glm::vec3(1.0f,  0.0f, -2.0f);
-	//m_CubePositions[9] = glm::vec3(0.0f,  1.0f, -1.0f);
+	m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_CubePositions[1] = glm::vec3(0.0f, 0.0f, -1.0f);
+	m_CubePositions[2] = glm::vec3(0.0f, 0.0f, -2.0f);
+	m_CubePositions[3] = glm::vec3(1.0f, 0.0f, 0.0f);
+	m_CubePositions[4] = glm::vec3(-1.0f, 0.0f, 0.0f);
+	m_CubePositions[5] = glm::vec3(-1.0f,  0.0f, -1.0f);
+	m_CubePositions[6] = glm::vec3(-1.0f, 0.0f, -2.0f);
+	m_CubePositions[7] = glm::vec3(1.0f,  0.0f, -1.0f);
+	m_CubePositions[8] = glm::vec3(1.0f,  0.0f, -2.0f);
+	m_CubePositions[9] = glm::vec3(0.0f,  1.0f, -1.0f);
 
 	m_Shader = std::make_shared<Shader>("resources/shaders/Basic.shader");
 	m_LightShader = std::make_shared<Shader>("resources/shaders/Light.shader");
+	m_GroundShader = std::make_shared<Shader>("resources/shaders/Ground.shader");
 
 	GLuint indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
 							  4, 5, 6, 6, 7, 4,
@@ -114,40 +144,43 @@ Application::Application(const std::string& name)
 	m_IndexBuffer->unBind();
 
 	// Creating textures
-	std::shared_ptr<Texture> text1 = std::make_shared<Texture>("resources/textures/awesomeface.png");
+	std::shared_ptr<Texture> text1 = std::make_shared<Texture>("resources/textures/ice.png");
 	text1->bind();
 	text1->setTextureWrapping(GL_REPEAT);
 	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text1->loadTextureData(GL_RGBA, GL_RGBA);
 	text1->unBind();
 
-	std::shared_ptr<Texture> text2 = std::make_shared<Texture>("resources/textures/ice.png");
+	std::shared_ptr<Texture> text2 = std::make_shared<Texture>("resources/textures/Qiyana.jpg");
 	text2->bind();
 	text2->setTextureWrapping(GL_REPEAT);
 	text2->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	text2->loadTextureData(GL_RGBA, GL_RGBA);
+	text2->loadTextureData(GL_RGB, GL_RGB);
 	text2->unBind();
+
+	std::shared_ptr<Texture> text3 = std::make_shared<Texture>("resources/textures/checkerboard.png");
+	text3->bind();
+	text3->setTextureWrapping(GL_REPEAT);
+	text3->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	text3->loadTextureData(GL_RGBA, GL_RGBA);
+	text3->unBind();
 
 	// Vector of textures for easily adding and binding textures in render loop	
 	m_Textures.push_back(text1);
 	m_Textures.push_back(text2);
+	m_Textures.push_back(text3);
 
 	m_Shader->bind();
 	m_Shader->setUniform1i("texture1", 0);
 	m_Shader->setUniform1i("texture2", 1);
 	m_Shader->unBind();
 
+	m_GroundShader->bind();
+	m_GroundShader->setUniform1i("Groundtexture1", 2);
+	m_GroundShader->unBind();
+
 	m_ImGuiLayer = new ImGuiLayer();
 	pushOverlay(m_ImGuiLayer);
-
-	// Just some hard coded program start MVP matrices
-	//glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	//glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-	//m_Projection = glm::perspective(glm::radians(45.0f), 1024.0f / 576.0f, 0.1f, 100.0f);
-
-	//m_Shader->setUniformMat4("ml_matrix", model);
-	//m_Shader->setUniformMat4("vw_matrix", view);
-	//m_Shader->setUniformMat4("pr_matrix", m_Projection);
 }
 
 Application::~Application()
@@ -209,8 +242,9 @@ void Application::Run()
 
 		m_Shader->bind();
 		m_Shader->setUniform1f("blend", m_ImGuiLayer->getBlend());
-		m_Shader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight());
+		m_Shader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight() - 0.3f);
 		m_Shader->setUniform3f("src_pos", m_ImGuiLayer->getLightTranslations());
+		m_Shader->setUniform3f("view_pos", m_Camera->GetPosition());
 		m_Shader->setUniform4f("src_color", m_ImGuiLayer->getLightColor());
 		m_Shader->setUniform4f("un_color", m_ImGuiLayer->getUniColor());
 
@@ -225,7 +259,7 @@ void Application::Run()
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-			model = glm::translate(model, /*m_CubePositions[i] +*/ m_ImGuiLayer->getTransalations());
+			model = glm::translate(model, m_CubePositions[i] + m_ImGuiLayer->getTransalations());
 
 			if (m_IsRPressed)
 				model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
@@ -241,6 +275,20 @@ void Application::Run()
 		}
 		//m_VertexArray->unBind(); // Not necessary
 		
+		m_GroundShader->bind();
+		m_GroundShader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight() - 0.5f);
+		m_GroundShader->setUniform3f("src_pos", m_ImGuiLayer->getLightTranslations());
+		m_GroundShader->setUniform3f("view_pos", m_Camera->GetPosition());
+		m_GroundShader->setUniform4f("src_color", m_ImGuiLayer->getLightColor());
+		m_GroundShader->setUniformMat4("pr_matrix", projection);
+		m_GroundShader->setUniformMat4("vw_matrix", view);
+		model = glm::translate(glm::mat4(1.0f), m_ImGuiLayer->getGroundTranslations());
+		model = glm::scale(model, m_ImGuiLayer->getGroundScales());
+		m_GroundShader->setUniformMat4("ml_matrix", model);
+		m_GroundShader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+		m_GroundVertexArray->bind();
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 		m_LightShader->bind();
 		m_LightShader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight());
 		m_LightShader->setUniform4f("lightColor", m_ImGuiLayer->getLightColor());
