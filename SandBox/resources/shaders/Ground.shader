@@ -54,14 +54,14 @@ void main()
 	vec4 diffuse = diffuseImpact * src_color;
 
 	// Specular
-	float specularIntensity = 0.5f;
-	vec3 viewDir = normalize(view_pos - v_FragPos);
-	vec3 reflectionDir = reflect(-lightDirection, norm);
+	//float specularIntensity = 0.5f;
+	//vec3 viewDir = normalize(view_pos - v_FragPos);
+	//vec3 reflectionDir = reflect(-lightDirection, norm);
 
-	float spec = pow(max(dot(viewDir, reflectionDir), 0.0f), 32);
-	vec4 specular = specularIntensity * spec * src_color;
+	//float spec = pow(max(dot(viewDir, reflectionDir), 0.0f), 32);
+	//vec4 specular = specularIntensity * spec * src_color;
 
 
-	vec4 result = v_Color * (ambientLight + diffuse + specular);
+	vec4 result = v_Color * (ambientLight + diffuse /* + specular*/);
 	color = texture(Groundtexture1, v_TexCoord * 20.0f) * result;
 }
