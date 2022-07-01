@@ -93,6 +93,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\SandBoxApp.cpp" />
+    <ClCompile Include="src\SandBoxLayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OpenGLSeries\OpenGLSeries.vcxproj">
@@ -100,9 +101,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\Ground.shader" />
-    <None Include="resources\shaders\Light.shader" />
-    <None Include="resources\shaders\Sphere.shader" />
+    <ClInclude Include="src\SandBoxLayer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

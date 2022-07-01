@@ -14,6 +14,7 @@ public:
 	void setTextureWrapping(GLenum wrapMode) const;
 	void setTextureFiltering(GLenum minFilter, GLenum magFilter) const;
 
+	void flipTextureVertically(bool state);
 	void loadTextureData(GLint internalFormat, GLenum format);
 	// Internal format specifies in what format the texture is to be stored on the GPU
 	// format Specifies the format of the pixel data.

@@ -24,11 +24,16 @@ void Texture::setTextureFiltering(GLenum minFilter, GLenum magFilter) const
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 }
 
+void Texture::flipTextureVertically(bool state)
+{
+	ImageLoader::Get().setFlipVertically(state);
+}
+
 void Texture::loadTextureData(GLint internalFormat, GLenum format)
 {
 	// load image
 	const char* path = m_Path.c_str();
-	ImageLoader::Get().setFlipVertically(true);
+	//ImageLoader::Get().setFlipVertically(true);
 	ImageLoader::Get().LoadImageFile(path);
 
 	m_Width = ImageLoader::Get().getWidth();

@@ -8,14 +8,13 @@ layout (location = 2) in vec2 a_TexCoord;
 //out vec4 v_Color;
 //out vec2 v_TexCoord;
 
-uniform mat4 ml_matrix = mat4(1.0f);
-uniform mat4 vw_matrix = mat4(1.0f);
-uniform mat4 pr_matrix = mat4(1.0f);
+uniform mat4 vw_pr_matrix;
+uniform mat4 ml_matrix;
 //uniform vec4 un_color = vec4(1.0f);
 
 void main()
 {
-	gl_Position = pr_matrix * vw_matrix * ml_matrix * vec4(a_Position, 1.0f);
+	gl_Position = vw_pr_matrix * ml_matrix * vec4(a_Position, 1.0f);
 	//v_Color = a_Color * un_color; // since now with the current vertex buffer, no colors are specified
 	//v_TexCoord = a_TexCoord;
 }

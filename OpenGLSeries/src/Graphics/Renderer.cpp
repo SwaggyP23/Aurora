@@ -3,15 +3,11 @@
 #include "RenderCommand.h"
 #include "Application.h"
 
-glm::mat4 Renderer::m_Projection;
-glm::mat4 Renderer::m_View;
-glm::vec3 Renderer::m_CamPos;
+glm::mat4 Renderer::m_ViewProjection;
 
 void Renderer::BeginScene(const std::shared_ptr<EditorCamera>& camera)
 {
-	m_Projection = camera->GetProjection();
-	m_View = camera->GetViewMatrix();
-	m_CamPos = camera->GetPosition();
+	m_ViewProjection = camera->GetProjection() * camera->GetViewMatrix();
 }
 
 void Renderer::EndScene()
@@ -19,21 +15,15 @@ void Renderer::EndScene()
 	// ????
 }
 
+void Renderer::onWindowResize(uint32_t width, uint32_t height)
+{
+	RenderCommand::SetViewport(0, 0, width, height);
+}
+
 // For i will not take in the shader since i am already setting uniform outside the renderer
 void Renderer::DrawQuad(const std::shared_ptr<Shader>& shader, const glm::mat4& model, const std::shared_ptr<VertexArray>& VAO)
-{
-	ImGuiLayer* imgui = Application::getApp().getImGuiLayer();
-
-	shader->bind();
-	shader->setUniform4f("lightColor", imgui->getLightColor());
-	shader->setUniform1f("blend", imgui->getBlend());
-	shader->setUniform1f("ambientStrength", imgui->getAmbLight());
-	shader->setUniform3f("src_pos", imgui->getLightTranslations());
-	shader->setUniform3f("view_pos", m_CamPos);
-	shader->setUniform4f("src_color", imgui->getLightColor());
-	shader->setUniform4f("un_color", imgui->getUniColor());
-	shader->setUniformMat4("pr_matrix", m_Projection);
-	shader->setUniformMat4("vw_matrix", m_View);
+{	
+	shader->setUniformMat4("vw_pr_matrix", m_ViewProjection);
 	shader->setUniformMat4("ml_matrix", model);
 	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
@@ -43,10 +33,9 @@ void Renderer::DrawQuad(const std::shared_ptr<Shader>& shader, const glm::mat4& 
 
 void Renderer::DrawSphere(const std::shared_ptr<Shader>& shader, const glm::mat4& model, const std::shared_ptr<VertexArray>& VAO)
 {
-	shader->bind();
-	shader->setUniformMat4("pr_matrix", m_Projection);
-	shader->setUniformMat4("vw_matrix", m_View);
+	shader->setUniformMat4("vw_pr_matrix", m_ViewProjection);
 	shader->setUniformMat4("ml_matrix", model);
+	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 	VAO->bind();
 	RenderCommand::DrawIndexed(VAO, true);

@@ -12,13 +12,12 @@ out vec3 v_Normals;
 out vec2 v_TexCoord;
 
 uniform mat4 ml_matrix = mat4(1.0f);
-uniform mat4 vw_matrix;
-uniform mat4 pr_matrix;
+uniform mat4 vw_pr_matrix;
 uniform mat3 normalMatrix;
 
 void main()
 {
-	gl_Position = pr_matrix * vw_matrix * ml_matrix * vec4(a_Position, 1.0f);
+	gl_Position = vw_pr_matrix * ml_matrix * vec4(a_Position, 1.0f);
 	v_Color = a_Color; //* un_color; // since now with the current vertex buffer, no colors are specified
 	v_FragPos = vec3(ml_matrix * vec4(a_Position, 1.0f));
 	v_FragPos = a_Position;
@@ -47,10 +46,10 @@ void main()
 	// Ambient
 	vec4 ambientLight = src_color * ambientStrength - 0.4f;
 
+	// Diffuse
 	vec3 norm = normalize(v_Normals);
 	vec3 lightDirection = normalize(src_pos - v_FragPos);
 
-	// Diffuse
 	float diffuseImpact = max(dot(norm, lightDirection), 0.0f);
 	vec4 diffuse = diffuseImpact * src_color;
 

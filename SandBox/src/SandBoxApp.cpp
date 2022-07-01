@@ -1,12 +1,14 @@
 #include <OpenGLSeries.h>
+#include "SandBoxLayer.h"
 #include <Core/EntryPoint.h>
 
 class Sandbox : public Application
 {
 public:
-	Sandbox()
+	Sandbox(const std::string& name)
+		:	Application(name)
 	{
-		// PushLayer(new ExampleLayer());
+		pushLayer(new SandBoxLayer());
 	}
 
 	~Sandbox()
@@ -14,7 +16,7 @@ public:
 	}
 };
 
-Application* CreateApplication()
+Application* CreateApplication(const std::string& name)
 {
-	return new Sandbox();
+	return new Sandbox(name);
 }
