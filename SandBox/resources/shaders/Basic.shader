@@ -28,7 +28,7 @@ void main()
 }
 
 
-#shader fragment 
+#shader fragment
 #version 330 core
 
 layout (location = 0) out vec4 color;
@@ -39,7 +39,7 @@ in vec3 v_Normals;
 in vec2 v_TexCoord;
 
 uniform float blend;
-uniform float ambientStrength;
+uniform float ambientStrength = -0.3f;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform vec4 src_color = vec4(1.0f); // Light color
@@ -64,7 +64,7 @@ void main()
 	vec3 reflectionDir = reflect(-lightDirection, norm);
 	float specularIntensity = max(dot(reflectionDir, viewDir), 0.0f);
 
-	float spec = pow(max(dot(viewDir, reflectionDir), 0.0f), 32);
+	float spec = pow(specularIntensity, 32);
 	vec4 specular = specularIntensity * spec * src_color;
 
 	color = mix(texture(texture1, v_TexCoord), texture(texture2, v_TexCoord), blend) * (v_Color * (ambientLight + diffuse + specular));

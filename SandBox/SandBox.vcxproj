@@ -102,6 +102,7 @@
   <ItemGroup>
     <None Include="resources\shaders\Ground.shader" />
     <None Include="resources\shaders\Light.shader" />
+    <None Include="resources\shaders\Sphere.shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -49,12 +49,6 @@ void Window::update() const
 	glfwSwapBuffers(m_Window);
 }
 
-void Window::clear(float x, float y, float z, float w) const
-{
-	glClearColor(x, y, z, w);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
 bool Window::Init(const std::string& title, unsigned int width, unsigned int height)
 {
 	m_Data.Title = title;

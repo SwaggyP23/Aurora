@@ -106,6 +106,15 @@ void ImGuiLayer::onImGuiRender()
 
 	ImGui::Separator();
 
+	if (ImGui::CollapsingHeader("Ball")) {
+		//ImGui::Begin();
+		ImGui::SliderFloat3("Sphere Translation", (float*)&m_SphereTransalations, -5.0f, 5.0f);
+		ImGui::SliderFloat3("Sphere Scale", (float*)&m_SphereScale, 0.0f, 3.0f);
+		//ImGui::End();
+	}
+
+	ImGui::Separator();
+
 	if (ImGui::CollapsingHeader("Ground")) {
 		//ImGui::Begin("Editing");
 		ImGui::SliderFloat3("Ground Translation", (float*)&m_GroundTransalations, -5.0f, 5.0f);

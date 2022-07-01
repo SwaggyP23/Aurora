@@ -45,7 +45,7 @@ uniform vec3 view_pos;
 void main()
 {
 	// Ambient
-	vec4 ambientLight = src_color * ambientStrength;
+	vec4 ambientLight = src_color * ambientStrength - 0.4f;
 
 	vec3 norm = normalize(v_Normals);
 	vec3 lightDirection = normalize(src_pos - v_FragPos);

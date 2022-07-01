@@ -32,7 +32,6 @@ public:
 
 	bool closed() const;
 	void update() const;
-	void clear(float x = 0.0f, float y = 0.0f, float z = 0.0f, float w = 1.0f) const;
 
 	inline unsigned int getWidth() const { return m_Data.Width; }
 	inline unsigned int getHeight() const { return m_Data.Height; }

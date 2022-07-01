@@ -12,7 +12,7 @@ Application::Application(const std::string& name)
 	m_Window->SetVSync(true);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
 
-	m_Camera = std::make_shared<Hazel::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+	m_Camera = std::make_shared<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 
 	std::vector<char> errorMessage;
 
@@ -25,7 +25,7 @@ Application::Application(const std::string& name)
 
 	uint32_t groundIndices[] = { 0, 1, 2, 2, 3, 0 };
 
-	m_GroundLayout = {
+	BufferLayout m_GroundLayout = {
 		{ ShaderDataType::Float3, "a_Position" },
 		{ ShaderDataType::Float3, "a_Normals" },
 		{ ShaderDataType::Float4, "a_Color" },
@@ -44,6 +44,101 @@ Application::Application(const std::string& name)
 
 	m_GroundVertexBuffer->unBind();
 	m_GroundIndexBuffer->unBind();
+
+	// For sphere..
+	std::vector<glm::vec3> positions;
+	std::vector<glm::vec2> uv;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec4> colors;
+	std::vector<uint32_t> Sphereindices;
+
+	const unsigned int X_SEGMENTS = 64;
+	const unsigned int Y_SEGMENTS = 64;
+	const float PI = 3.14159265359f;
+	for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
+	{
+		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
+		{
+			float xSegment = (float)x / (float)X_SEGMENTS;
+			float ySegment = (float)y / (float)Y_SEGMENTS;
+			float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+			float yPos = std::cos(ySegment * PI);
+			float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+
+			positions.push_back(glm::vec3(xPos, yPos, zPos));
+			uv.push_back(glm::vec2(xSegment, ySegment));
+			normals.push_back(glm::vec3(xPos, yPos, zPos));
+			colors.push_back(glm::vec4(xPos, yPos, zPos, 1.0f));
+		}
+	}
+
+	bool oddRow = false;
+	for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
+	{
+		if (!oddRow) // even rows: y == 0, y == 2; and so on
+		{
+			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
+			{
+				Sphereindices.push_back(y * (X_SEGMENTS + 1) + x);
+				Sphereindices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+			}
+		}
+		else
+		{
+			for (int x = X_SEGMENTS; x >= 0; --x)
+			{
+				Sphereindices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+				Sphereindices.push_back(y * (X_SEGMENTS + 1) + x);
+			}
+		}
+		oddRow = !oddRow;
+	}
+
+	std::vector<float> data;
+	for (unsigned int i = 0; i < positions.size(); ++i)
+	{
+		data.push_back(positions[i].x);
+		data.push_back(positions[i].y);
+		data.push_back(positions[i].z);
+		if (normals.size() > 0)
+		{
+			data.push_back(normals[i].x);
+			data.push_back(normals[i].y);
+			data.push_back(normals[i].z);
+		}
+		if (uv.size() > 0)
+		{
+			data.push_back(uv[i].x);
+			data.push_back(uv[i].y);
+		}
+		if (colors.size() > 0)
+		{
+			data.push_back(colors[i].r);
+			data.push_back(colors[i].g);
+			data.push_back(colors[i].b);
+			data.push_back(colors[i].w);
+		}
+	}
+
+	BufferLayout m_SphereLayout = {
+			{ShaderDataType::Float3, "aPos" },
+			{ShaderDataType::Float3, "aNormal" },
+			{ShaderDataType::Float2, "aTexCoords" },
+			{ShaderDataType::Float4, "aColor" }
+	};
+
+	m_SphereVertexArray = std::make_shared<VertexArray>();
+	m_SphereVertexBuffer = std::make_shared<VertexBuffer>(&data[0], data.size() * sizeof(float));
+	m_SphereVertexBuffer->bind();
+	m_SphereVertexBuffer->setLayout(m_SphereLayout);
+	m_SphereVertexArray->addVertexBuffer(m_SphereVertexBuffer);
+
+	m_SphereIndexBuffer = std::make_shared<IndexBuffer>(&Sphereindices[0], Sphereindices.size());
+	m_SphereIndexBuffer->bind();
+	m_SphereVertexArray->setIndexBuffer(m_SphereIndexBuffer);
+
+	m_SphereVertexBuffer->unBind();
+	m_SphereIndexBuffer->unBind();
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
@@ -102,6 +197,7 @@ Application::Application(const std::string& name)
 	m_Shader = std::make_shared<Shader>("resources/shaders/Basic.shader");
 	m_LightShader = std::make_shared<Shader>("resources/shaders/Light.shader");
 	m_GroundShader = std::make_shared<Shader>("resources/shaders/Ground.shader");
+	m_SphereShader = std::make_shared<Shader>("resources/shaders/Sphere.shader");
 
 	GLuint indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
 							  4, 5, 6, 6, 7, 4,
@@ -110,7 +206,7 @@ Application::Application(const std::string& name)
 							  16, 17, 18, 18, 19, 16,
 							  20, 21, 22, 22, 23, 20 };
 
-	m_Layout = {
+	BufferLayout m_Layout = {
 		{ ShaderDataType::Float3, "a_Position" },
 		{ ShaderDataType::Float3, "a_Normals" },
 		{ ShaderDataType::Float4, "a_Color" },
@@ -229,32 +325,22 @@ void Application::Run()
 		TimeStep time = currentFrame - m_LastFrame;
 		m_LastFrame = currentFrame;
 
-		glm::vec4 color = m_ImGuiLayer->getClearColor();
-		m_Window->clear(color.r, color.g, color.b, 1.0f);
+		RenderCommand::setClearColor(m_ImGuiLayer->getClearColor());
+		RenderCommand::Clear();
 
-		int i = 0;
-		for (const auto& texture : m_Textures)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			texture->bind();
-			i++;
-		}
+		RenderCommand::ActivateTextures(m_Textures);
 
-		m_Shader->bind();
-		m_Shader->setUniform1f("blend", m_ImGuiLayer->getBlend());
-		m_Shader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight() - 0.3f);
-		m_Shader->setUniform3f("src_pos", m_ImGuiLayer->getLightTranslations());
-		m_Shader->setUniform3f("view_pos", m_Camera->GetPosition());
-		m_Shader->setUniform4f("src_color", m_ImGuiLayer->getLightColor());
-		m_Shader->setUniform4f("un_color", m_ImGuiLayer->getUniColor());
+		Renderer::BeginScene(m_Camera);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, m_ImGuiLayer->getSphereTranslations());
+		model = glm::scale(model, m_ImGuiLayer->getSphereScales());
+		Renderer::DrawSphere(m_SphereShader, model, m_SphereVertexArray);
 
-		glm::mat4 view = m_Camera->GetViewMatrix();
-		m_Shader->setUniformMat4("vw_matrix", view);
 
-		glm::mat4 projection = m_Camera->GetProjection();
-		m_Shader->setUniformMat4("pr_matrix", projection);
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, { 2.0f, 2.0f, 2.0f });
+		//Renderer::DrawSphere(m_SphereShader, model, m_SphereVertexArray);
 
-		m_VertexArray->bind();
 		for (unsigned int i = 0; i < m_CubePositions.size(); i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
@@ -268,39 +354,20 @@ void Application::Run()
 
 			model = glm::scale(model, m_ImGuiLayer->getScales());
 
-			m_Shader->setUniformMat4("ml_matrix", model);
-			m_Shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
-
-			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			Renderer::DrawQuad(m_Shader, model, m_VertexArray);
 		}
-		//m_VertexArray->unBind(); // Not necessary
 		
-		m_GroundShader->bind();
-		m_GroundShader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight() - 0.5f);
-		m_GroundShader->setUniform3f("src_pos", m_ImGuiLayer->getLightTranslations());
-		m_GroundShader->setUniform3f("view_pos", m_Camera->GetPosition());
-		m_GroundShader->setUniform4f("src_color", m_ImGuiLayer->getLightColor());
-		m_GroundShader->setUniformMat4("pr_matrix", projection);
-		m_GroundShader->setUniformMat4("vw_matrix", view);
+
 		model = glm::translate(glm::mat4(1.0f), m_ImGuiLayer->getGroundTranslations());
 		model = glm::scale(model, m_ImGuiLayer->getGroundScales());
-		m_GroundShader->setUniformMat4("ml_matrix", model);
-		m_GroundShader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
-		m_GroundVertexArray->bind();
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		m_LightShader->bind();
-		m_LightShader->setUniform1f("ambientStrength", m_ImGuiLayer->getAmbLight());
-		m_LightShader->setUniform4f("lightColor", m_ImGuiLayer->getLightColor());
-		m_LightShader->setUniformMat4("pr_matrix", projection);
-		m_LightShader->setUniformMat4("vw_matrix", view);
+		Renderer::DrawQuad(m_GroundShader, model, m_GroundVertexArray);
+
 		model = glm::translate(glm::mat4(1.0f), m_ImGuiLayer->getLightTranslations());
 		model = glm::scale(model, m_ImGuiLayer->getLightScales());
-		m_LightShader->setUniformMat4("ml_matrix", model);
+		Renderer::DrawQuad(m_LightShader, model, m_LightVertexArray);
 
-		m_LightVertexArray->bind();
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		//m_LightVertexArray->unBind();
+		Renderer::EndScene();
 
 		for (Layer* layer : m_LayerStack)
 			layer->onUpdate();
