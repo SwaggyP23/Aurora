@@ -171,16 +171,27 @@ SandBoxLayer::SandBoxLayer()
 	//m_CubePositions[8] = glm::vec3(1.5f, 0.2f, -1.5f);
 	//m_CubePositions[9] = glm::vec3(-1.3f, 1.0f, -1.5f);
 	// Currently i dont want to use any of these since i only want to draw the first box and then the light src
-	m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
-	m_CubePositions[1] = glm::vec3(0.0f, 0.0f, -1.0f);
-	m_CubePositions[2] = glm::vec3(0.0f, 0.0f, -2.0f);
-	m_CubePositions[3] = glm::vec3(1.0f, 0.0f, 0.0f);
-	m_CubePositions[4] = glm::vec3(-1.0f, 0.0f, 0.0f);
-	m_CubePositions[5] = glm::vec3(-1.0f, 0.0f, -1.0f);
-	m_CubePositions[6] = glm::vec3(-1.0f, 0.0f, -2.0f);
-	m_CubePositions[7] = glm::vec3(1.0f, 0.0f, -1.0f);
-	m_CubePositions[8] = glm::vec3(1.0f, 0.0f, -2.0f);
-	m_CubePositions[9] = glm::vec3(0.0f, 1.0f, -1.0f);
+	//m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
+	//m_CubePositions[1] = glm::vec3(0.0f, 0.0f, -1.0f);
+	//m_CubePositions[2] = glm::vec3(0.0f, 0.0f, -2.0f);
+	//m_CubePositions[3] = glm::vec3(1.0f, 0.0f, 0.0f);
+	//m_CubePositions[4] = glm::vec3(-1.0f, 0.0f, 0.0f);
+	//m_CubePositions[5] = glm::vec3(-1.0f, 0.0f, -1.0f);
+	//m_CubePositions[6] = glm::vec3(-1.0f, 0.0f, -2.0f);
+	//m_CubePositions[7] = glm::vec3(1.0f, 0.0f, -1.0f);
+	//m_CubePositions[8] = glm::vec3(1.0f, 0.0f, -2.0f);
+	//m_CubePositions[9] = glm::vec3(0.0f, 1.0f, -1.0f);
+
+	m_CubePositions[0] = glm::vec3(0.0f, 0.0f,  9.0f);
+	m_CubePositions[1] = glm::vec3(0.0f, 0.0f,  7.0f);
+	m_CubePositions[2] = glm::vec3(0.0f, 0.0f,  5.0f);
+	m_CubePositions[3] = glm::vec3(0.0f, 0.0f,  3.0f);
+	m_CubePositions[4] = glm::vec3(0.0f, 0.0f,  1.0f);
+	m_CubePositions[5] = glm::vec3(0.0f, 0.0f, -1.0f);
+	m_CubePositions[6] = glm::vec3(0.0f, 0.0f, -3.0f);
+	m_CubePositions[7] = glm::vec3(0.0f, 0.0f, -5.0f);
+	m_CubePositions[8] = glm::vec3(0.0f, 0.0f, -7.0f);
+	m_CubePositions[9] = glm::vec3(0.0f, 0.0f, -9.0f);
 
 	m_Shader = std::make_shared<Shader>("resources/shaders/Basic.shader");
 	m_LightShader = std::make_shared<Shader>("resources/shaders/Light.shader");
@@ -254,7 +265,7 @@ SandBoxLayer::SandBoxLayer()
 
 	std::shared_ptr<Texture> text4 = std::make_shared<Texture>("resources/textures/map.jpg");
 	text4->bind();
-	text4->flipTextureVertically(false);
+	text4->flipTextureVertically(true);
 	text4->setTextureWrapping(GL_REPEAT);
 	text4->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text4->loadTextureData(GL_RGB, GL_RGB);
@@ -310,7 +321,7 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 	glm::vec3 angle = m_SphereRotations;
 	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle.x), { 1.0f, 0.0f, 0.0f })
 		* glm::rotate(glm::mat4(1.0f), glm::radians(angle.y), { 0.0f, 1.0f, 0.0f })
-		* glm::rotate(glm::mat4(1.0f), glm::radians(angle.z), { 0.0f, 0.0f, 1.0f });
+		* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f + angle.z), { 0.0f, 0.0f, 1.0f });
 	model *= rotation;
 
 	model = glm::scale(model, m_SphereScales);
@@ -400,7 +411,7 @@ void SandBoxLayer::onImGuiRender()
 	if (ImGui::CollapsingHeader("Light Source")) {
 		//ImGui::Begin("Editing");
 		ImGui::ColorEdit3("Light Color", (float*)&m_LightColor);
-		ImGui::SliderFloat3("Light Translation", (float*)&m_LightTranslations, -30.0f, 35.0f);
+		ImGui::SliderFloat3("Light Translation", (float*)&m_LightTranslations, -30.0f, 135.0f);
 		ImGui::SliderFloat3("Light Scale", (float*)&m_LightScales, 0.0f, 3.0f);
 		//ImGui::End();
 	}
@@ -409,9 +420,9 @@ void SandBoxLayer::onImGuiRender()
 
 	if (ImGui::CollapsingHeader("Ball")) {
 		//ImGui::Begin();
-		ImGui::SliderFloat3("Sphere Translation", (float*)&m_SphereTransalations, -5.0f, 5.0f);
+		ImGui::SliderFloat3("Sphere Translation", (float*)&m_SphereTransalations, -50.0f, 50.0f);
 		ImGui::SliderFloat3("Sphere Rotations", (float*)&m_SphereRotations, 0.0f, 360.0f);
-		ImGui::SliderFloat3("Sphere Scale", (float*)&m_SphereScales, 0.0f, 3.0f);
+		ImGui::SliderFloat3("Sphere Scale", (float*)&m_SphereScales, 0.0f, 50.0f);
 		//ImGui::End();
 	}
 

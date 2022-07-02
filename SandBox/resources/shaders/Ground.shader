@@ -44,7 +44,7 @@ uniform vec3 view_pos;
 void main()
 {
 	// Ambient
-	vec4 ambientLight = src_color * ambientStrength - 0.4f;
+	vec4 ambientLight = src_color * (ambientStrength - 0.2f);
 
 	// Diffuse
 	vec3 norm = normalize(v_Normals);
