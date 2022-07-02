@@ -1,6 +1,11 @@
 #include "OGLpch.h"
 #include "VertexArray.h"
 
+Ref<VertexArray> VertexArray::Create()
+{
+	return CreateRef<VertexArray>();
+}
+
 VertexArray::VertexArray()
 	: m_IndexBuffer()
 {

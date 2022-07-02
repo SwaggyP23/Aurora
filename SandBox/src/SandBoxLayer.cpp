@@ -20,12 +20,12 @@ SandBoxLayer::SandBoxLayer()
 	};
 
 	// For ground...
-	m_GroundVertexArray = CreateRef<VertexArray>();
-	Ref<VertexBuffer> m_GroundVertexBuffer = CreateRef<VertexBuffer>(groundVertices, sizeof(groundVertices));
+	m_GroundVertexArray = VertexArray::Create();
+	Ref<VertexBuffer> m_GroundVertexBuffer = VertexBuffer::Create(groundVertices, sizeof(groundVertices));
 	m_GroundVertexBuffer->bind();
 	m_GroundVertexBuffer->setLayout(m_GroundLayout);
 	m_GroundVertexArray->addVertexBuffer(m_GroundVertexBuffer);
-	Ref<IndexBuffer> m_GroundIndexBuffer = CreateRef<IndexBuffer>(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
+	Ref<IndexBuffer> m_GroundIndexBuffer = IndexBuffer::Create(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
 	m_GroundIndexBuffer->bind();
 	m_GroundVertexArray->setIndexBuffer(m_GroundIndexBuffer);
 
@@ -115,13 +115,13 @@ SandBoxLayer::SandBoxLayer()
 			{ShaderDataType::Float4, "a_Color" }
 	};
 
-	m_SphereVertexArray = CreateRef<VertexArray>();
-	Ref<VertexBuffer> m_SphereVertexBuffer = CreateRef<VertexBuffer>(&data[0], data.size() * sizeof(float));
+	m_SphereVertexArray = VertexArray::Create();
+	Ref<VertexBuffer> m_SphereVertexBuffer = VertexBuffer::Create(&data[0], data.size() * sizeof(float));
 	m_SphereVertexBuffer->bind();
 	m_SphereVertexBuffer->setLayout(m_SphereLayout);
 	m_SphereVertexArray->addVertexBuffer(m_SphereVertexBuffer);
 
-	Ref<IndexBuffer> m_SphereIndexBuffer = CreateRef<IndexBuffer>(&Sphereindices[0], Sphereindices.size());
+	Ref<IndexBuffer> m_SphereIndexBuffer = IndexBuffer::Create(&Sphereindices[0], Sphereindices.size());
 	m_SphereIndexBuffer->bind();
 	m_SphereVertexArray->setIndexBuffer(m_SphereIndexBuffer);
 
@@ -193,10 +193,15 @@ SandBoxLayer::SandBoxLayer()
 	m_CubePositions[8] = glm::vec3(0.0f, 0.0f, -7.0f);
 	m_CubePositions[9] = glm::vec3(0.0f, 0.0f, -9.0f);
 
-	m_Shader = CreateRef<Shader>("resources/shaders/Basic.shader");
-	m_LightShader = CreateRef<Shader>("resources/shaders/Light.shader");
-	m_GroundShader = CreateRef<Shader>("resources/shaders/Ground.shader");
-	m_SphereShader = CreateRef<Shader>("resources/shaders/Sphere.shader");
+	m_Shaders->Load("resources/shaders/Basic.shader");
+	m_Shaders->Load("resources/shaders/Light.shader");
+	m_Shaders->Load("resources/shaders/Ground.shader");
+	m_Shaders->Load("resources/shaders/Sphere.shader");
+
+	//m_Shader = Shader::Create("resources/shaders/Basic.shader");
+	//m_LightShader = Shader::Create("resources/shaders/Light.shader");
+	//m_GroundShader = Shader::Create("resources/shaders/Ground.shader");
+	//m_SphereShader = Shader::Create("resources/shaders/Sphere.shader");
 
 	GLuint indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
 							  4, 5, 6, 6, 7, 4,
@@ -213,15 +218,15 @@ SandBoxLayer::SandBoxLayer()
 	};
 
 	// For main cube
-	m_VertexArray = CreateRef<VertexArray>();
+	m_VertexArray = VertexArray::Create();
 
-	Ref<VertexBuffer> m_VertexBuffer = CreateRef<VertexBuffer>(vertices, sizeof(vertices));
+	Ref<VertexBuffer> m_VertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
 	m_VertexBuffer->bind();
 	m_VertexBuffer->setLayout(m_Layout);
 	m_VertexArray->addVertexBuffer(m_VertexBuffer);
 
 	// the 2nd arg here should be sizeof(indices) / sizeof(uint32_t) but it gives warning
-	Ref<IndexBuffer> m_IndexBuffer = CreateRef<IndexBuffer>(indices, sizeof(indices) / sizeof(GLuint));
+	Ref<IndexBuffer> m_IndexBuffer = IndexBuffer::Create(indices, sizeof(indices) / sizeof(GLuint));
 	m_IndexBuffer->bind();
 	m_VertexArray->setIndexBuffer(m_IndexBuffer);
 
@@ -229,7 +234,7 @@ SandBoxLayer::SandBoxLayer()
 	m_IndexBuffer->unBind();
 
 	// for light source
-	m_LightVertexArray = CreateRef<VertexArray>();
+	m_LightVertexArray = VertexArray::Create();
 	m_VertexBuffer->bind();
 	m_LightVertexArray->addVertexBuffer(m_VertexBuffer);
 	m_IndexBuffer->bind();
@@ -239,7 +244,7 @@ SandBoxLayer::SandBoxLayer()
 	m_IndexBuffer->unBind();
 
 	// Creating textures
-	Ref<Texture> text1 = CreateRef<Texture>("resources/textures/NewYork.png");
+	Ref<Texture> text1 = Texture::Create("resources/textures/NewYork.png");
 	text1->bind();
 	text1->flipTextureVertically(true);
 	text1->setTextureWrapping(GL_REPEAT);
@@ -247,7 +252,7 @@ SandBoxLayer::SandBoxLayer()
 	text1->loadTextureData(GL_RGB, GL_RGB);
 	text1->unBind();
 
-	Ref<Texture> text2 = CreateRef<Texture>("resources/textures/Pepsi.png");
+	Ref<Texture> text2 = Texture::Create("resources/textures/Pepsi.png");
 	text2->bind();
 	text2->flipTextureVertically(true);
 	text2->setTextureWrapping(GL_REPEAT);
@@ -255,7 +260,7 @@ SandBoxLayer::SandBoxLayer()
 	text2->loadTextureData(GL_RGB, GL_RGB);
 	text2->unBind();
 
-	Ref<Texture> text3 = CreateRef<Texture>("resources/textures/checkerboard.png");
+	Ref<Texture> text3 = Texture::Create("resources/textures/checkerboard.png");
 	text3->bind();
 	text2->flipTextureVertically(true);
 	text3->setTextureWrapping(GL_REPEAT);
@@ -263,7 +268,7 @@ SandBoxLayer::SandBoxLayer()
 	text3->loadTextureData(GL_RGBA, GL_RGBA);
 	text3->unBind();
 
-	Ref<Texture> text4 = CreateRef<Texture>("resources/textures/map.jpg");
+	Ref<Texture> text4 = Texture::Create("resources/textures/map.jpg");
 	text4->bind();
 	text4->flipTextureVertically(true);
 	text4->setTextureWrapping(GL_REPEAT);
@@ -277,18 +282,18 @@ SandBoxLayer::SandBoxLayer()
 	m_Textures.push_back(text3);
 	m_Textures.push_back(text4);
 
-	m_Shader->bind();
-	m_Shader->setUniform1i("texture1", 0);
-	m_Shader->setUniform1i("texture2", 1);
-	m_Shader->unBind();
+	m_Shaders->Get("Basic")->bind();
+	m_Shaders->Get("Basic")->setUniform1i("texture1", 0);
+	m_Shaders->Get("Basic")->setUniform1i("texture2", 1);
+	m_Shaders->Get("Basic")->unBind();
 
-	m_GroundShader->bind();
-	m_GroundShader->setUniform1i("Groundtexture1", 2);
-	m_GroundShader->unBind();
+	m_Shaders->Get("Ground")->bind();
+	m_Shaders->Get("Ground")->setUniform1i("Groundtexture1", 2);
+	m_Shaders->Get("Ground")->unBind();
 
-	m_SphereShader->bind();
-	m_SphereShader->setUniform1i("SphereTexture1", 3);
-	m_SphereShader->unBind();
+	m_Shaders->Get("Sphere")->bind();
+	m_Shaders->Get("Sphere")->setUniform1i("SphereTexture1", 3);
+	m_Shaders->Get("Sphere")->unBind();
 }
 
 void SandBoxLayer::onAttach()
@@ -308,14 +313,14 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 
 	Renderer::BeginScene(m_Camera);
 
-	m_SphereShader->bind();
-	m_SphereShader->setUniform4f("lightColor", m_LightColor);
-	m_SphereShader->setUniform1f("blend", m_Blend);
-	m_SphereShader->setUniform1f("ambientStrength", m_AmbLight);
-	m_SphereShader->setUniform3f("src_pos", m_LightTranslations);
-	m_SphereShader->setUniform3f("view_pos", m_Camera->GetPosition());
-	m_SphereShader->setUniform4f("src_color", m_LightColor);
-	m_SphereShader->setUniform4f("un_color", m_UniColor);
+	m_Shaders->Get("Sphere")->bind();
+	m_Shaders->Get("Sphere")->setUniform4f("lightColor", m_LightColor);
+	m_Shaders->Get("Sphere")->setUniform1f("blend", m_Blend);
+	m_Shaders->Get("Sphere")->setUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders->Get("Sphere")->setUniform3f("src_pos", m_LightTranslations);
+	m_Shaders->Get("Sphere")->setUniform3f("view_pos", m_Camera->GetPosition());
+	m_Shaders->Get("Sphere")->setUniform4f("src_color", m_LightColor);
+	m_Shaders->Get("Sphere")->setUniform4f("un_color", m_UniColor);
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, m_SphereTransalations);
 	glm::vec3 angle = m_SphereRotations;
@@ -326,16 +331,16 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 
 	model = glm::scale(model, m_SphereScales);
 
-	Renderer::DrawSphere(m_SphereShader, model, m_SphereVertexArray);
+	Renderer::DrawSphere(m_Shaders->Get("Sphere"), model, m_SphereVertexArray);
 
-	m_Shader->bind();
-	m_Shader->setUniform4f("lightColor", m_LightColor);
-	m_Shader->setUniform1f("blend", m_Blend);
-	m_Shader->setUniform1f("ambientStrength", m_AmbLight);
-	m_Shader->setUniform3f("src_pos", m_LightTranslations);
-	m_Shader->setUniform3f("view_pos", m_Camera->GetPosition());
-	m_Shader->setUniform4f("src_color", m_LightColor);
-	m_Shader->setUniform4f("un_color", m_UniColor);
+	m_Shaders->Get("Basic")->bind();
+	m_Shaders->Get("Basic")->setUniform4f("lightColor", m_LightColor);
+	m_Shaders->Get("Basic")->setUniform1f("blend", m_Blend);
+	m_Shaders->Get("Basic")->setUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders->Get("Basic")->setUniform3f("src_pos", m_LightTranslations);
+	m_Shaders->Get("Basic")->setUniform3f("view_pos", m_Camera->GetPosition());
+	m_Shaders->Get("Basic")->setUniform4f("src_color", m_LightColor);
+	m_Shaders->Get("Basic")->setUniform4f("un_color", m_UniColor);
 	for (unsigned int i = 0; i < m_CubePositions.size(); i++)
 	{
 		// calculate the model matrix for each object and pass it to shader before drawing
@@ -349,34 +354,34 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 
 		model = glm::scale(model, m_Scales);
 
-		Renderer::DrawQuad(m_Shader, model, m_VertexArray);
+		Renderer::DrawQuad(m_Shaders->Get("Basic"), model, m_VertexArray);
 	}
 
-	m_GroundShader->bind();
-	m_GroundShader->setUniform4f("lightColor", m_LightColor);
-	m_GroundShader->setUniform1f("blend", m_Blend);
-	m_GroundShader->setUniform1f("ambientStrength", m_AmbLight);
-	m_GroundShader->setUniform3f("src_pos", m_LightTranslations);
-	m_GroundShader->setUniform3f("view_pos", m_Camera->GetPosition());
-	m_GroundShader->setUniform4f("src_color", m_LightColor);
-	m_GroundShader->setUniform4f("un_color", m_UniColor);
+	m_Shaders->Get("Ground")->bind();
+	m_Shaders->Get("Ground")->setUniform4f("lightColor", m_LightColor);
+	m_Shaders->Get("Ground")->setUniform1f("blend", m_Blend);
+	m_Shaders->Get("Ground")->setUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders->Get("Ground")->setUniform3f("src_pos", m_LightTranslations);
+	m_Shaders->Get("Ground")->setUniform3f("view_pos", m_Camera->GetPosition());
+	m_Shaders->Get("Ground")->setUniform4f("src_color", m_LightColor);
+	m_Shaders->Get("Ground")->setUniform4f("un_color", m_UniColor);
 	model = glm::translate(glm::mat4(1.0f), m_GroundTranslations);
 	model = glm::scale(model, m_GroundScales);
 
-	Renderer::DrawQuad(m_GroundShader, model, m_GroundVertexArray);
+	Renderer::DrawQuad(m_Shaders->Get("Ground"), model, m_GroundVertexArray);
 
-	m_LightShader->bind();
-	m_LightShader->setUniform4f("lightColor", m_LightColor);
-	m_LightShader->setUniform1f("blend", m_Blend);
-	m_LightShader->setUniform1f("ambientStrength", m_AmbLight);
-	m_LightShader->setUniform3f("src_pos", m_LightTranslations);
-	m_LightShader->setUniform3f("view_pos", m_Camera->GetPosition());
-	m_LightShader->setUniform4f("src_color", m_LightColor);
-	m_LightShader->setUniform4f("un_color", m_UniColor);
+	m_Shaders->Get("Light")->bind();
+	m_Shaders->Get("Light")->setUniform4f("lightColor", m_LightColor);
+	m_Shaders->Get("Light")->setUniform1f("blend", m_Blend);
+	m_Shaders->Get("Light")->setUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders->Get("Light")->setUniform3f("src_pos", m_LightTranslations);
+	m_Shaders->Get("Light")->setUniform3f("view_pos", m_Camera->GetPosition());
+	m_Shaders->Get("Light")->setUniform4f("src_color", m_LightColor);
+	m_Shaders->Get("Light")->setUniform4f("un_color", m_UniColor);
 	model = glm::translate(glm::mat4(1.0f), m_LightTranslations);
 	model = glm::scale(model, m_LightScales);
 
-	Renderer::DrawQuad(m_LightShader, model, m_LightVertexArray);
+	Renderer::DrawQuad(m_Shaders->Get("Light"), model, m_LightVertexArray);
 
 	Renderer::EndScene();
 

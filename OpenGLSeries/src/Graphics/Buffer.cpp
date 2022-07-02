@@ -45,6 +45,11 @@ void BufferLayout::calcStrideAndOffset()
 // VERTEX BUFFER!!
 //////////////////////////
 
+Ref<VertexBuffer> VertexBuffer::Create(GLfloat* vertices, size_t size)
+{
+	return CreateRef<VertexBuffer>(vertices, size);
+}
+
 VertexBuffer::VertexBuffer(GLfloat* vertices, size_t size)
 {
 	glGenBuffers(1, &m_BufferID);
@@ -76,6 +81,11 @@ void VertexBuffer::setLayout(const BufferLayout& layout)
 //////////////////////////
 // INDEX BUFFER!!
 //////////////////////////
+
+Ref<IndexBuffer> IndexBuffer::Create(GLuint* indices, size_t count)
+{
+	return CreateRef<IndexBuffer>(indices, count);
+}
 
 IndexBuffer::IndexBuffer(GLuint* indices, size_t count)
 	: m_Count(count)

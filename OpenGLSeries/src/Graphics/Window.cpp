@@ -6,6 +6,11 @@ void error_callback(int error, const char* description)
 	CORE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
 }
 
+Ref<Window> Window::Create(const std::string& title, uint32_t width, uint32_t height)
+{
+	return CreateRef<Window>(title, width, height);
+}
+
 Window::Window(const std::string& title, unsigned int width, unsigned int height)
 {
 	Init(title, width, height);

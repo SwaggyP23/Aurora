@@ -1,7 +1,12 @@
 #include "OGLpch.h"
 #include "Texture.h"
 
-Texture::Texture(std::string filePath)
+Ref<Texture> Texture::Create(const std::string& filePath)
+{
+	return CreateRef<Texture>(filePath);
+}
+
+Texture::Texture(const std::string& filePath)
 	: m_Path(filePath), m_Width(0), m_Height(0)
 {
 	glGenTextures(1, &m_TextID);

@@ -19,8 +19,10 @@ class Window
 {
 	using EventCallbackFn = std::function<void(Event&)>;
 public:
-	Window(const std::string& title, unsigned int width, unsigned int height);
+	Window(const std::string& title, uint32_t width, uint32_t height);
 	~Window();
+
+	static Ref<Window> Create(const std::string& title, uint32_t width, uint32_t height);
 
 	void enable(GLenum type) const;
 	void disable(GLenum type) const;

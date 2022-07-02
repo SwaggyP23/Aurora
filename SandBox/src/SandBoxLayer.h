@@ -22,10 +22,12 @@ private:
 	Ref<VertexArray> m_LightVertexArray;
 	Ref<VertexArray> m_SphereVertexArray;
 
-	Ref<Shader> m_Shader;
-	Ref<Shader> m_LightShader;
-	Ref<Shader> m_GroundShader;
-	Ref<Shader> m_SphereShader;
+	Ref<ShaderLibrary> m_Shaders;
+
+	//Ref<Shader> m_Shader;
+	//Ref<Shader> m_LightShader;
+	//Ref<Shader> m_GroundShader;
+	//Ref<Shader> m_SphereShader;
 
 	Ref<EditorCamera> m_Camera;
 

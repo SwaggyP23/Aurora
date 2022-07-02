@@ -9,7 +9,7 @@ Application::Application(const std::string& name)
 {
 	s_Instance = this;
 
-	m_Window = CreateRef<Window>(name, 1280, 720);
+	m_Window = Window::Create(name, 1280, 720);
 	m_Window->enable(GL_DEPTH_TEST);
 	m_Window->SetVSync(true);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));

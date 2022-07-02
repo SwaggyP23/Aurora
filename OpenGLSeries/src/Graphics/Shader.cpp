@@ -85,6 +85,11 @@ namespace Utils {
 
 }
 
+Ref<Shader> Shader::Create(const std::string& filepath)
+{
+	return CreateRef<Shader>(filepath);
+}
+
 Shader::Shader(const std::string& filePath)
 	: m_FilePath(filePath)
 {
@@ -93,6 +98,13 @@ Shader::Shader(const std::string& filePath)
 	auto shaderSplitSources = splitSource(shaderFullSource);
 
 	m_ShaderID = createShaderProgram(shaderSplitSources);
+
+	size_t lastSlash = filePath.find_last_of("/\\");
+	lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+
+	size_t lastDot = filePath.rfind('.');
+	size_t count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
+	m_Name = filePath.substr(lastSlash, count);
 }
 
 std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
@@ -218,34 +230,37 @@ GLint Shader::getUniformLocation(const GLchar* name) const
 
 void ShaderLibrary::Add(const Ref<Shader>& shader)
 {
-
+	const std::string& name = shader->getName();
+	Add(name, shader);
 }
 
 void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 {
-
+	//if (Exists(name)) CORE_LOG_WARN("Shader already exists!");
+	m_Shaders[name] = shader;
 }
 
 Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
 {
-
-	return nullptr;
+	auto shader = Shader::Create(filepath);
+	Add(shader);
+	return shader;
 }
 
 Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 {
-
-	return nullptr;
+	auto shader = Shader::Create(filepath);
+	Add(name, shader);
+	return shader;
 }
 
 Ref<Shader> ShaderLibrary::Get(const std::string& name)
 {
-
-	return nullptr;
+	if (!Exists(name)) CORE_LOG_WARN("Shader not found!");
+	return m_Shaders[name];
 }
 
 bool ShaderLibrary::Exists(const std::string& name) const
 {
-
-	return false;
+	return m_Shaders.find(name) != m_Shaders.end();
 }

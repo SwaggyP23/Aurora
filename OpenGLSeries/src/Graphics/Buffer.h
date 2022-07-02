@@ -118,6 +118,8 @@ public:
 	VertexBuffer(GLfloat* vertices, size_t size);
 	~VertexBuffer();
 
+	static Ref<VertexBuffer> Create(GLfloat* vertices, size_t size);
+
 	void bind() const;
 	void unBind() const;
 
@@ -140,6 +142,8 @@ public:
 	IndexBuffer() = default;
 	IndexBuffer(GLuint* indices, size_t count);
 	~IndexBuffer();
+
+	static Ref<IndexBuffer> Create(GLuint* indices, size_t count);
 
 	void bind() const;
 	void unBind() const;

@@ -16,6 +16,8 @@ public:
 	VertexArray();
 	~VertexArray();
 
+	static Ref<VertexArray> Create();
+
 	void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
 	void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 

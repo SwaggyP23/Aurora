@@ -8,8 +8,10 @@
 class Texture
 {
 public:
-	Texture(std::string filePath);
+	Texture(const std::string& filePath);
 	~Texture();
+
+	static Ref<Texture> Create(const std::string& filePath);
 
 	void setTextureWrapping(GLenum wrapMode) const;
 	void setTextureFiltering(GLenum minFilter, GLenum magFilter) const;

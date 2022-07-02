@@ -1,5 +1,7 @@
 #pragma once
 
+#define CORE_ASSERT(check, ...)  { if(!(check)) { __debugbreak(); }}
+
 #define SET_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
 template<typename T>

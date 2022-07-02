@@ -17,6 +17,8 @@ public:
 	void bind() const;
 	void unBind() const;
 
+	static Ref<Shader> Create(const std::string& filepath);
+
 	// Setting uniforms...
 
 	void setUniform1i(const GLchar* name, GLuint val) const;
@@ -29,6 +31,8 @@ public:
 	void setUniformMat4(const GLchar* name, const glm::mat4& matrix) const;
 	void setUniformMat4(const GLchar* name, const float* matrix) const;
 
+	inline const std::string& getName() const { return m_Name; }
+
 private:
 	std::unordered_map<GLenum, std::string> splitSource(const std::string& source); 
 	GLuint createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const;
@@ -37,6 +41,7 @@ private:
 private:
 	GLuint m_ShaderID;
 	std::string m_FilePath;
+	std::string m_Name;
 
 	//std::unordered_map<GLenum, std::string> m_ShaderSources; // Storing the shaderType with its source
 	// However this is currently useless since we have the shader asset files present
