@@ -40,6 +40,8 @@ void Texture::loadTextureData(GLint internalFormat, GLenum format)
 	m_Height = ImageLoader::Get().getHeight();
 
 	if (ImageLoader::Get().getData()) {
+		CORE_LOG_WARN("Number of channels for texture {0} is: {1}", m_Path, ImageLoader::Get().getChannels());
+
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE,
 			ImageLoader::Get().getData());
 

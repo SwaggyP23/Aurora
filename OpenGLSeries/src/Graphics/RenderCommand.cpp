@@ -16,7 +16,7 @@ void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t
 	glViewport(x, y, width, height);
 }
 
-void RenderCommand::ActivateTextures(const std::vector<std::shared_ptr<Texture>>& texts)
+void RenderCommand::ActivateTextures(const std::vector<Ref<Texture>>& texts)
 {
 	int i = 0;
 	for (const auto& texture : texts)
@@ -27,7 +27,7 @@ void RenderCommand::ActivateTextures(const std::vector<std::shared_ptr<Texture>>
 	}
 }
 
-void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, bool state)
+void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, bool state)
 {
 	if (!state)
 		glDrawElements(GL_TRIANGLES, (GLsizei)vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr);

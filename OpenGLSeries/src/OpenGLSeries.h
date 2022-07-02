@@ -8,6 +8,8 @@
 
 #include "Application.h"
 
+#include "Core/Base.h"
+
 #include "Layers/Layer.h"
 #include "Logging/Log.h"
 

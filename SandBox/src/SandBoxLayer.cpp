@@ -1,7 +1,7 @@
 #include "SandBoxLayer.h"
 
 SandBoxLayer::SandBoxLayer()
-	: Layer("SandBoxLayer"), m_Camera(std::make_shared<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
+	: Layer("SandBoxLayer"), m_Camera(CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 {
 	float groundVertices[] = {
 		-50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 0.0f,
@@ -20,12 +20,12 @@ SandBoxLayer::SandBoxLayer()
 	};
 
 	// For ground...
-	m_GroundVertexArray = std::make_shared<VertexArray>();
-	std::shared_ptr<VertexBuffer> m_GroundVertexBuffer = std::make_shared<VertexBuffer>(groundVertices, sizeof(groundVertices));
+	m_GroundVertexArray = CreateRef<VertexArray>();
+	Ref<VertexBuffer> m_GroundVertexBuffer = CreateRef<VertexBuffer>(groundVertices, sizeof(groundVertices));
 	m_GroundVertexBuffer->bind();
 	m_GroundVertexBuffer->setLayout(m_GroundLayout);
 	m_GroundVertexArray->addVertexBuffer(m_GroundVertexBuffer);
-	std::shared_ptr<IndexBuffer> m_GroundIndexBuffer = std::make_shared<IndexBuffer>(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
+	Ref<IndexBuffer> m_GroundIndexBuffer = CreateRef<IndexBuffer>(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
 	m_GroundIndexBuffer->bind();
 	m_GroundVertexArray->setIndexBuffer(m_GroundIndexBuffer);
 
@@ -115,13 +115,13 @@ SandBoxLayer::SandBoxLayer()
 			{ShaderDataType::Float4, "a_Color" }
 	};
 
-	m_SphereVertexArray = std::make_shared<VertexArray>();
-	std::shared_ptr<VertexBuffer> m_SphereVertexBuffer = std::make_shared<VertexBuffer>(&data[0], data.size() * sizeof(float));
+	m_SphereVertexArray = CreateRef<VertexArray>();
+	Ref<VertexBuffer> m_SphereVertexBuffer = CreateRef<VertexBuffer>(&data[0], data.size() * sizeof(float));
 	m_SphereVertexBuffer->bind();
 	m_SphereVertexBuffer->setLayout(m_SphereLayout);
 	m_SphereVertexArray->addVertexBuffer(m_SphereVertexBuffer);
 
-	std::shared_ptr<IndexBuffer> m_SphereIndexBuffer = std::make_shared<IndexBuffer>(&Sphereindices[0], Sphereindices.size());
+	Ref<IndexBuffer> m_SphereIndexBuffer = CreateRef<IndexBuffer>(&Sphereindices[0], Sphereindices.size());
 	m_SphereIndexBuffer->bind();
 	m_SphereVertexArray->setIndexBuffer(m_SphereIndexBuffer);
 
@@ -193,10 +193,10 @@ SandBoxLayer::SandBoxLayer()
 	m_CubePositions[8] = glm::vec3(0.0f, 0.0f, -7.0f);
 	m_CubePositions[9] = glm::vec3(0.0f, 0.0f, -9.0f);
 
-	m_Shader = std::make_shared<Shader>("resources/shaders/Basic.shader");
-	m_LightShader = std::make_shared<Shader>("resources/shaders/Light.shader");
-	m_GroundShader = std::make_shared<Shader>("resources/shaders/Ground.shader");
-	m_SphereShader = std::make_shared<Shader>("resources/shaders/Sphere.shader");
+	m_Shader = CreateRef<Shader>("resources/shaders/Basic.shader");
+	m_LightShader = CreateRef<Shader>("resources/shaders/Light.shader");
+	m_GroundShader = CreateRef<Shader>("resources/shaders/Ground.shader");
+	m_SphereShader = CreateRef<Shader>("resources/shaders/Sphere.shader");
 
 	GLuint indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
 							  4, 5, 6, 6, 7, 4,
@@ -213,15 +213,15 @@ SandBoxLayer::SandBoxLayer()
 	};
 
 	// For main cube
-	m_VertexArray = std::make_shared<VertexArray>();
+	m_VertexArray = CreateRef<VertexArray>();
 
-	std::shared_ptr<VertexBuffer> m_VertexBuffer = std::make_shared<VertexBuffer>(vertices, sizeof(vertices));
+	Ref<VertexBuffer> m_VertexBuffer = CreateRef<VertexBuffer>(vertices, sizeof(vertices));
 	m_VertexBuffer->bind();
 	m_VertexBuffer->setLayout(m_Layout);
 	m_VertexArray->addVertexBuffer(m_VertexBuffer);
 
 	// the 2nd arg here should be sizeof(indices) / sizeof(uint32_t) but it gives warning
-	std::shared_ptr<IndexBuffer> m_IndexBuffer = std::make_shared<IndexBuffer>(indices, sizeof(indices) / sizeof(GLuint));
+	Ref<IndexBuffer> m_IndexBuffer = CreateRef<IndexBuffer>(indices, sizeof(indices) / sizeof(GLuint));
 	m_IndexBuffer->bind();
 	m_VertexArray->setIndexBuffer(m_IndexBuffer);
 
@@ -229,7 +229,7 @@ SandBoxLayer::SandBoxLayer()
 	m_IndexBuffer->unBind();
 
 	// for light source
-	m_LightVertexArray = std::make_shared<VertexArray>();
+	m_LightVertexArray = CreateRef<VertexArray>();
 	m_VertexBuffer->bind();
 	m_LightVertexArray->addVertexBuffer(m_VertexBuffer);
 	m_IndexBuffer->bind();
@@ -239,15 +239,15 @@ SandBoxLayer::SandBoxLayer()
 	m_IndexBuffer->unBind();
 
 	// Creating textures
-	std::shared_ptr<Texture> text1 = std::make_shared<Texture>("resources/textures/ice.png");
+	Ref<Texture> text1 = CreateRef<Texture>("resources/textures/NewYork.png");
 	text1->bind();
 	text1->flipTextureVertically(true);
 	text1->setTextureWrapping(GL_REPEAT);
 	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	text1->loadTextureData(GL_RGBA, GL_RGBA);
+	text1->loadTextureData(GL_RGB, GL_RGB);
 	text1->unBind();
 
-	std::shared_ptr<Texture> text2 = std::make_shared<Texture>("resources/textures/Qiyana.jpg");
+	Ref<Texture> text2 = CreateRef<Texture>("resources/textures/Pepsi.png");
 	text2->bind();
 	text2->flipTextureVertically(true);
 	text2->setTextureWrapping(GL_REPEAT);
@@ -255,7 +255,7 @@ SandBoxLayer::SandBoxLayer()
 	text2->loadTextureData(GL_RGB, GL_RGB);
 	text2->unBind();
 
-	std::shared_ptr<Texture> text3 = std::make_shared<Texture>("resources/textures/checkerboard.png");
+	Ref<Texture> text3 = CreateRef<Texture>("resources/textures/checkerboard.png");
 	text3->bind();
 	text2->flipTextureVertically(true);
 	text3->setTextureWrapping(GL_REPEAT);
@@ -263,7 +263,7 @@ SandBoxLayer::SandBoxLayer()
 	text3->loadTextureData(GL_RGBA, GL_RGBA);
 	text3->unBind();
 
-	std::shared_ptr<Texture> text4 = std::make_shared<Texture>("resources/textures/map.jpg");
+	Ref<Texture> text4 = CreateRef<Texture>("resources/textures/map.jpg");
 	text4->bind();
 	text4->flipTextureVertically(true);
 	text4->setTextureWrapping(GL_REPEAT);
@@ -422,7 +422,7 @@ void SandBoxLayer::onImGuiRender()
 		//ImGui::Begin();
 		ImGui::SliderFloat3("Sphere Translation", (float*)&m_SphereTransalations, -50.0f, 50.0f);
 		ImGui::SliderFloat3("Sphere Rotations", (float*)&m_SphereRotations, 0.0f, 360.0f);
-		ImGui::SliderFloat3("Sphere Scale", (float*)&m_SphereScales, 0.0f, 50.0f);
+		ImGui::SliderFloat3("Sphere Scale", (float*)&m_SphereScales, 0.0f, 30.0f);
 		//ImGui::End();
 	}
 

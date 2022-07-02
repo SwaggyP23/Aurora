@@ -30,7 +30,7 @@ private:
 	bool onWindowResize(WindowResizeEvent& e);
 
 private:
-	std::shared_ptr<Window> m_Window;
+	Ref<Window> m_Window;
 
 	ImGuiLayer* m_ImGuiLayer;
 	LayerStack m_LayerStack;

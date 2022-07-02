@@ -1,14 +1,154 @@
 #include "OGLpch.h"
 #include "Shader.h"
 
+namespace Utils {
+
+	enum class ShaderErrorType
+	{
+		None = -1,
+		vertexShader,
+		fragmentShader,
+		geometryShader
+	};
+
+	static GLenum ShaderTypeFromString(const std::string& type)
+	{
+		if (type == "vertex")
+			return GL_VERTEX_SHADER;
+		if (type == "fragment")
+			return GL_FRAGMENT_SHADER;
+		if (type == "geometry") // Geometry shaders are currently useless since i am not using them
+			return GL_GEOMETRY_SHADER;
+
+		CORE_LOG_ERROR("Unknown shader type!");
+		return 0;
+	}
+
+	static ShaderErrorType ErrorTypeFromShaderType(GLenum shaderType)
+	{
+		switch (shaderType)
+		{
+			case GL_VERTEX_SHADER:		return ShaderErrorType::vertexShader;
+			case GL_FRAGMENT_SHADER:	return ShaderErrorType::fragmentShader;
+			case GL_GEOMETRY_SHADER:	return ShaderErrorType::geometryShader;
+		}
+
+		CORE_LOG_ERROR("Unkown shader type!");
+		return ShaderErrorType::None;
+	}
+
+	static void CheckShaderCompilation(GLuint shader, ShaderErrorType type)
+	{
+		GLint result;
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+		if (!result) {
+			GLint length;
+
+			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+			std::vector<char> errorMessage(length);
+
+			glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
+
+			if (type == ShaderErrorType::vertexShader)
+				CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
+
+			else if (type == ShaderErrorType::fragmentShader)
+				CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
+
+			CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+
+			glDeleteShader(shader);
+		}
+	}
+
+	static void CheckProgramLinkage(GLuint program, const std::vector<GLuint>& shaderIDs)
+	{
+		GLint result;
+		glGetProgramiv(program, GL_LINK_STATUS, &result);
+		if (!result)
+		{
+			GLint length;
+
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+			std::vector<char> errorMessage(length);
+
+			glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
+			CORE_LOG_ERROR("Failed to link program!");
+			CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+
+			glDeleteProgram(program);
+
+			for (auto id : shaderIDs)
+				glDeleteShader(id);
+		}
+	}
+
+}
+
 Shader::Shader(const std::string& filePath)
+	: m_FilePath(filePath)
 {
-	ShaderSources ss = FileReader::Get().ReadShaderFile(filePath);
+	std::string shaderFullSource = FileReader::Get().ReadFile(filePath);
 
-	m_VertexShaderCode = ss.VertexSource;
-	m_FragmentShaderCode = ss.FragmentSource;
+	auto shaderSplitSources = splitSource(shaderFullSource);
 
-	m_ShaderID = createShaderProgram();
+	m_ShaderID = createShaderProgram(shaderSplitSources);
+}
+
+std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
+{ // Props to @TheCherno
+	std::unordered_map<GLenum, std::string> shaderSources;
+
+	const char* typeIdentifier = "#shader";
+	size_t typeIdentifierLength = strlen(typeIdentifier);
+	size_t pos = source.find(typeIdentifier, 0);
+
+	while (pos != std::string::npos)
+	{
+		size_t eol = source.find_first_of("\r\n", pos); // End of shader type declaration line
+		
+		size_t typeBegin = pos + typeIdentifierLength + 1; // Getting the type
+		std::string type = source.substr(typeBegin, eol - typeBegin);
+
+		size_t nextLinePos = source.find_first_not_of("\r\n", eol); // Start of shader code
+
+		pos = source.find(typeIdentifier, nextLinePos); // Start of next shader type declaration line
+
+		shaderSources[Utils::ShaderTypeFromString(type)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+	}
+
+	return shaderSources;
+}
+
+GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
+{
+	GLuint program = glCreateProgram();
+	std::vector<GLuint> ShaderIDs;
+	ShaderIDs.reserve(shaderSources.size());
+	for (const auto& [type, source] : shaderSources)
+	{
+		GLuint shader = ShaderIDs.emplace_back(glCreateShader(type));
+
+		const char* shaderCStr = source.c_str();
+		glShaderSource(shader, 1, &shaderCStr, NULL);
+		glCompileShader(shader);
+
+		Utils::CheckShaderCompilation(shader, Utils::ErrorTypeFromShaderType(type));
+
+		glAttachShader(program, shader);
+	}
+
+	glLinkProgram(program);
+
+	Utils::CheckProgramLinkage(program, ShaderIDs);
+
+	glValidateProgram(program);
+	for (auto id : ShaderIDs) {
+		glDetachShader(program, id);
+		glDeleteShader(id); // This flags the shader for deletion but is not deleted untill it is not linked to any other program, in our case that is directly here since it is already detached
+	}
+
+	return program;
 }
 
 Shader::~Shader()
@@ -76,70 +216,36 @@ GLint Shader::getUniformLocation(const GLchar* name) const
 	return glGetUniformLocation(m_ShaderID, name);
 }
 
-GLuint Shader::createShaderProgram() const
+void ShaderLibrary::Add(const Ref<Shader>& shader)
 {
-	GLuint program = glCreateProgram();
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
 
-	const char* vsC = m_VertexShaderCode.c_str();
-	glShaderSource(vs, 1, &vsC, NULL);
-	glCompileShader(vs);
-
-	CheckShaderCompilation(vs, ShaderErrorType::vertexShader);
-
-	const char* fsC = m_FragmentShaderCode.c_str();
-	glShaderSource(fs, 1, &fsC, NULL);
-	glCompileShader(fs);
-
-	CheckShaderCompilation(fs, ShaderErrorType::fragmentShader);
-
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
-
-	GLint result;
-	glGetProgramiv(program, GL_LINK_STATUS, &result);
-	if (!result)
-	{
-		GLint length;
-
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-		std::vector<char> errorMessage(length);
-
-		glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
-		CORE_LOG_ERROR("Failed to link program, {0}", &errorMessage[0]);
-
-		glDeleteProgram(program);
-	}
-
-	glValidateProgram(program);
-	glDeleteShader(vs);
-	glDeleteShader(fs);
-
-	return program;
 }
 
-void Shader::CheckShaderCompilation(GLuint shader, ShaderErrorType type) const
+void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 {
-	GLint result;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-	if (!result) {
-		GLint length;
 
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-		std::vector<char> errorMessage(length);
+}
 
-		glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
+Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
+{
 
-		if (type == ShaderErrorType::vertexShader)
-			CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
+	return nullptr;
+}
 
-		else if (type == ShaderErrorType::fragmentShader)
-			CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
+Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+{
 
-		CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+	return nullptr;
+}
 
-		glDeleteShader(shader);
-	}
+Ref<Shader> ShaderLibrary::Get(const std::string& name)
+{
+
+	return nullptr;
+}
+
+bool ShaderLibrary::Exists(const std::string& name) const
+{
+
+	return false;
 }

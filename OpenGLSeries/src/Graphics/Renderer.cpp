@@ -5,7 +5,7 @@
 
 glm::mat4 Renderer::m_ViewProjection;
 
-void Renderer::BeginScene(const std::shared_ptr<EditorCamera>& camera)
+void Renderer::BeginScene(const Ref<EditorCamera>& camera)
 {
 	m_ViewProjection = camera->GetProjection() * camera->GetViewMatrix();
 }
@@ -21,7 +21,7 @@ void Renderer::onWindowResize(uint32_t width, uint32_t height)
 }
 
 // For i will not take in the shader since i am already setting uniform outside the renderer
-void Renderer::DrawQuad(const std::shared_ptr<Shader>& shader, const glm::mat4& model, const std::shared_ptr<VertexArray>& VAO)
+void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
 {	
 	shader->setUniformMat4("vw_pr_matrix", m_ViewProjection);
 	shader->setUniformMat4("ml_matrix", model);
@@ -31,7 +31,7 @@ void Renderer::DrawQuad(const std::shared_ptr<Shader>& shader, const glm::mat4& 
 	RenderCommand::DrawIndexed(VAO);
 }
 
-void Renderer::DrawSphere(const std::shared_ptr<Shader>& shader, const glm::mat4& model, const std::shared_ptr<VertexArray>& VAO)
+void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
 {
 	shader->setUniformMat4("vw_pr_matrix", m_ViewProjection);
 	shader->setUniformMat4("ml_matrix", model);

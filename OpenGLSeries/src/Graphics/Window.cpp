@@ -62,6 +62,7 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 		
 		return false;
 	}
+
 	glfwSetErrorCallback(error_callback);
 
 	m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), NULL, NULL);

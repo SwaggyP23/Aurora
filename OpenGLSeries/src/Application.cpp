@@ -9,7 +9,7 @@ Application::Application(const std::string& name)
 {
 	s_Instance = this;
 
-	m_Window = std::make_shared<Window>(name, 1280, 720);
+	m_Window = CreateRef<Window>(name, 1280, 720);
 	m_Window->enable(GL_DEPTH_TEST);
 	m_Window->SetVSync(true);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
@@ -18,7 +18,6 @@ Application::Application(const std::string& name)
 
 	m_ImGuiLayer = new ImGuiLayer();
 	pushOverlay(m_ImGuiLayer);
-	//pushLayer(new SandBoxLayer);
 }
 
 Application::~Application()

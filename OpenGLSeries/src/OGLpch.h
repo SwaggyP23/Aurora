@@ -1,7 +1,5 @@
 #pragma once
 
-#define SET_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
-
 #include <Windows.h>
 
 #include <iostream>
@@ -20,5 +18,6 @@
 #include <stb_image/stb_image.h>
 
 #include "Logging/Log.h"
+#include "Core/Base.h"
 #include "Utils/ImageLoader.h"
 #include "Utils/UtilFunctions.h"

@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef _SHADER_H_
-#define _SHADER_H_
-
 #include "OGLpch.h"
 
 #include <glad/glad.h>
@@ -33,21 +30,35 @@ public:
 	void setUniformMat4(const GLchar* name, const float* matrix) const;
 
 private:
-	enum class ShaderErrorType
-	{
-		vertexShader = 0,
-		fragmentShader,
-	};
-
+	std::unordered_map<GLenum, std::string> splitSource(const std::string& source); 
+	GLuint createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const;
 	GLint getUniformLocation(const GLchar* name) const;
-	GLuint createShaderProgram() const;
-	void CheckShaderCompilation(GLuint shader, ShaderErrorType type) const;
 
 private:
 	GLuint m_ShaderID;
-	std::string m_VertexShaderCode;
-	std::string m_FragmentShaderCode;
+	std::string m_FilePath;
+
+	//std::unordered_map<GLenum, std::string> m_ShaderSources; // Storing the shaderType with its source
+	// However this is currently useless since we have the shader asset files present
 
 };
 
-#endif // !_SHADER_H_
+
+// This is owned by the renderer and allows for easy shader managing throughout the solution
+class ShaderLibrary
+{
+public:
+	void Add(const Ref<Shader>& shader);
+	void Add(const std::string& name, const Ref<Shader>& shader);
+
+	Ref<Shader> Load(const std::string& filepath);
+	Ref<Shader> Load(const std::string& name, const std::string& filepath); // Gives the option to specify name
+
+	Ref<Shader> Get(const std::string& name);
+
+	bool Exists(const std::string& name) const;
+
+private:
+	std::unordered_map<std::string, Ref<Shader>> m_Shaders;
+
+};

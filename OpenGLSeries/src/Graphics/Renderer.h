@@ -7,13 +7,13 @@
 class Renderer
 {
 public:
-	static void BeginScene(const std::shared_ptr<EditorCamera>& camera);
+	static void BeginScene(const Ref<EditorCamera>& camera);
 	static void EndScene();
 	
 	static void onWindowResize(uint32_t width, uint32_t height);
 
-	static void DrawQuad(const std::shared_ptr<Shader>& shader, const glm::mat4& model, const std::shared_ptr<VertexArray>& VAO);
-	static void DrawSphere(const std::shared_ptr<Shader>& shader, const glm::mat4& model, const std::shared_ptr<VertexArray>& VAO);
+	static void DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO);
+	static void DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO);
 
 private:
 	static glm::mat4 m_ViewProjection;

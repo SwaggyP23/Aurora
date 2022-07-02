@@ -16,19 +16,19 @@ public:
 	VertexArray();
 	~VertexArray();
 
-	void addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer);
-	void setIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer);
+	void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
+	void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
 	void bind() const;
 	void unBind() const;
 
-	inline const std::vector<std::shared_ptr<VertexBuffer>>& getVertexBuffers() const { return m_VertexBuffers; }
-	inline const std::shared_ptr<IndexBuffer>& getIndexBuffer() const { return m_IndexBuffer; }
+	inline const std::vector<Ref<VertexBuffer>>& getVertexBuffers() const { return m_VertexBuffers; }
+	inline const Ref<IndexBuffer>& getIndexBuffer() const { return m_IndexBuffer; }
 
 private:
 	GLuint m_ArrayId;
-	std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
-	std::shared_ptr<IndexBuffer> m_IndexBuffer;
+	std::vector<Ref<VertexBuffer>> m_VertexBuffers;
+	Ref<IndexBuffer> m_IndexBuffer;
 
 };
 

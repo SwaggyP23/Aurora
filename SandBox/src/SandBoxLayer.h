@@ -17,23 +17,23 @@ public:
 
 
 private:
-	std::shared_ptr<VertexArray> m_VertexArray;
-	std::shared_ptr<VertexArray> m_GroundVertexArray;
-	std::shared_ptr<VertexArray> m_LightVertexArray;
-	std::shared_ptr<VertexArray> m_SphereVertexArray;
+	Ref<VertexArray> m_VertexArray;
+	Ref<VertexArray> m_GroundVertexArray;
+	Ref<VertexArray> m_LightVertexArray;
+	Ref<VertexArray> m_SphereVertexArray;
 
-	std::shared_ptr<Shader> m_Shader;
-	std::shared_ptr<Shader> m_LightShader;
-	std::shared_ptr<Shader> m_GroundShader;
-	std::shared_ptr<Shader> m_SphereShader;
+	Ref<Shader> m_Shader;
+	Ref<Shader> m_LightShader;
+	Ref<Shader> m_GroundShader;
+	Ref<Shader> m_SphereShader;
 
-	std::shared_ptr<EditorCamera> m_Camera;
+	Ref<EditorCamera> m_Camera;
 
 	bool m_IsRPressed = false;
 
 	glm::vec4 uniColor = glm::vec4(0.5f);
 
-	std::vector<std::shared_ptr<Texture>> m_Textures;
+	std::vector<Ref<Texture>> m_Textures;
 
 	std::array<glm::vec3, 10> m_CubePositions;
 
