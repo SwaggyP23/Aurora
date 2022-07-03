@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OrthoGraphicCamera.h"
 #include "EditorCamera.h"
 #include "VertexArray.h"
 #include "Shader.h"
@@ -8,6 +9,7 @@ class Renderer
 {
 public:
 	static void BeginScene(const Ref<EditorCamera>& camera);
+	static void BeginScene(const Ref<OrthoGraphicCamera>& camera);
 	static void EndScene();
 	
 	static void onWindowResize(uint32_t width, uint32_t height);

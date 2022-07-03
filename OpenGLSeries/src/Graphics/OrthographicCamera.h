@@ -6,11 +6,11 @@
 
 #include <glm/glm.hpp>
 
-class EditorCamera
+class OrthoGraphicCamera
 {
 public:
-	EditorCamera() = default;
-	EditorCamera(float fov, float aspectRatio, float nearClip, float farClip);
+	OrthoGraphicCamera() = default;
+	OrthoGraphicCamera(float aspectRatio, float nearClip, float farClip);
 
 	void OnUpdate(TimeStep ts);
 	void OnEvent(Event& e);
@@ -50,7 +50,7 @@ private:
 	float ZoomSpeed() const;
 
 private:
-	float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
+	float m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 
 	glm::mat4 m_ViewMatrix;
 	glm::mat4 m_Projection;
@@ -61,6 +61,8 @@ private:
 
 	float m_Distance = 10.0f;
 	float m_Pitch = 0.0f, m_Yaw = 0.0f;
+
+	float m_ZoomLevel = 1.0f;
 
 	float m_ViewportWidth = 1920, m_ViewportHeight = 1080;
 };

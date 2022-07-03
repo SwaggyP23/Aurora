@@ -1,8 +1,11 @@
 #include "SandBoxLayer.h"
 
 SandBoxLayer::SandBoxLayer()
-	: Layer("SandBoxLayer"), m_Camera(CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
+	: Layer("SandBoxLayer")
 {
+	m_Camera = CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+	m_OrthoCamera = CreateRef<OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f);
+
 	float groundVertices[] = {
 		-50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 0.0f,
 		 50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   1.0f, 0.0f,
@@ -182,11 +185,11 @@ SandBoxLayer::SandBoxLayer()
 	//m_CubePositions[8] = glm::vec3(1.0f, 0.0f, -2.0f);
 	//m_CubePositions[9] = glm::vec3(0.0f, 1.0f, -1.0f);
 
-	m_CubePositions[0] = glm::vec3(0.0f, 0.0f,  9.0f);
-	m_CubePositions[1] = glm::vec3(0.0f, 0.0f,  7.0f);
-	m_CubePositions[2] = glm::vec3(0.0f, 0.0f,  5.0f);
-	m_CubePositions[3] = glm::vec3(0.0f, 0.0f,  3.0f);
-	m_CubePositions[4] = glm::vec3(0.0f, 0.0f,  1.0f);
+	m_CubePositions[0] = glm::vec3(0.0f, 0.0f, 9.0f);
+	m_CubePositions[1] = glm::vec3(0.0f, 0.0f, 7.0f);
+	m_CubePositions[2] = glm::vec3(0.0f, 0.0f, 5.0f);
+	m_CubePositions[3] = glm::vec3(0.0f, 0.0f, 3.0f);
+	m_CubePositions[4] = glm::vec3(0.0f, 0.0f, 1.0f);
 	m_CubePositions[5] = glm::vec3(0.0f, 0.0f, -1.0f);
 	m_CubePositions[6] = glm::vec3(0.0f, 0.0f, -3.0f);
 	m_CubePositions[7] = glm::vec3(0.0f, 0.0f, -5.0f);
@@ -299,21 +302,28 @@ void SandBoxLayer::onDetach()
 {
 }
 
-void SandBoxLayer::onUpdate(/*should take in timestep*/)
+void SandBoxLayer::onUpdate(TimeStep ts)
 {
 	RenderCommand::setClearColor(m_Color);
 	RenderCommand::Clear();
 
 	RenderCommand::ActivateTextures(m_Textures);
 
-	Renderer::BeginScene(m_Camera);
+	if(m_Perspective)
+		Renderer::BeginScene(m_Camera);
+	else
+		Renderer::BeginScene(m_OrthoCamera);
 
 	m_Shaders.Get("Sphere")->bind();
 	m_Shaders.Get("Sphere")->setUniform4f("lightColor", m_LightColor);
 	m_Shaders.Get("Sphere")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Sphere")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Sphere")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Sphere")->setUniform3f("view_pos", m_Camera->GetPosition());
+	if(m_Perspective)
+		m_Shaders.Get("Sphere")->setUniform3f("view_pos", m_Camera->GetPosition());
+	else
+		m_Shaders.Get("Sphere")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+
 	m_Shaders.Get("Sphere")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Sphere")->setUniform4f("un_color", m_UniColor);
 	glm::mat4 model(1.0f);
@@ -333,7 +343,11 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 	m_Shaders.Get("Basic")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Basic")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Basic")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Basic")->setUniform3f("view_pos", m_Camera->GetPosition());
+	if(m_Perspective)
+		m_Shaders.Get("Basic")->setUniform3f("view_pos", m_Camera->GetPosition());
+	else
+		m_Shaders.Get("Basic")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+
 	m_Shaders.Get("Basic")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Basic")->setUniform4f("un_color", m_UniColor);
 	for (uint32_t i = 0; i < m_CubePositions.size(); i++)
@@ -344,8 +358,13 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 
 		if (m_IsRPressed)
 			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
-		else
-			model = glm::rotate(model, m_Rotation, glm::vec3(1.0f, 0.3f, 0.5f));
+		else {
+			angle = m_Rotations;
+			rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle.x), { 1.0f, 0.0f, 0.0f })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(angle.y), { 0.0f, 1.0f, 0.0f })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f + angle.z), { 0.0f, 0.0f, 1.0f });
+			model *= rotation;
+		}
 
 		model = glm::scale(model, m_Scales);
 
@@ -357,7 +376,11 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 	m_Shaders.Get("Ground")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Ground")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Ground")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Ground")->setUniform3f("view_pos", m_Camera->GetPosition());
+	if (m_Perspective)
+		m_Shaders.Get("Ground")->setUniform3f("view_pos", m_Camera->GetPosition());
+	else
+		m_Shaders.Get("Ground")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+
 	m_Shaders.Get("Ground")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Ground")->setUniform4f("un_color", m_UniColor);
 	model = glm::translate(glm::mat4(1.0f), m_GroundTranslations);
@@ -370,7 +393,11 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 	m_Shaders.Get("Light")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Light")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Light")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Light")->setUniform3f("view_pos", m_Camera->GetPosition());
+	if (m_Perspective)
+		m_Shaders.Get("Light")->setUniform3f("view_pos", m_Camera->GetPosition());
+	else
+		m_Shaders.Get("Light")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+
 	m_Shaders.Get("Light")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Light")->setUniform4f("un_color", m_UniColor);
 	model = glm::translate(glm::mat4(1.0f), m_LightTranslations);
@@ -380,12 +407,18 @@ void SandBoxLayer::onUpdate(/*should take in timestep*/)
 
 	Renderer::EndScene();
 
-	m_Camera->OnUpdate();
+	if (m_Perspective)
+		m_Camera->OnUpdate(ts);
+	else
+		m_OrthoCamera->OnUpdate(ts);
 }
 
 void SandBoxLayer::onEvent(Event& e)
 {
-	m_Camera->OnEvent(e);
+	if (m_Perspective)
+		m_Camera->OnEvent(e);
+	else
+		m_OrthoCamera->OnEvent(e);
 
 	if (Input::isKeyPressed(GLFW_KEY_R))
 		m_IsRPressed = !m_IsRPressed;
@@ -399,10 +432,10 @@ void SandBoxLayer::onImGuiRender()
 	if (ImGui::CollapsingHeader("Cube")) {
 		//ImGui::Begin("Editing");
 		ImGui::ColorEdit3("Uniform Color", (float*)&m_UniColor);
-		ImGui::SliderFloat3("Translation", (float*)&m_Transalations, 0.0f, 5.0f);
-		ImGui::SliderFloat("Rotation", (float*)&m_Rotation, 0.0f, 2.0f);
-		ImGui::SliderFloat3("Scale", (float*)&m_Scales, 0.0f, 3.0f);
-		ImGui::SliderFloat("Blend", &m_Blend, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Cube Translation", (float*)&m_Transalations, 0.0f, 5.0f);
+		ImGui::SliderFloat3("Cube Rotations", (float*)&m_Rotations, 0.0f, 360.0f);
+		ImGui::SliderFloat3("Cube Scale", (float*)&m_Scales, 0.0f, 3.0f);
+		ImGui::SliderFloat("Cube Blend", &m_Blend, 0.0f, 1.0f);
 		//ImGui::End();
 	}
 
@@ -440,6 +473,18 @@ void SandBoxLayer::onImGuiRender()
 	ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
 	ImGui::SliderFloat("Ambient Light", &m_AmbLight, 0.0f, 1.0f);
 	ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
+
+	ImGui::Separator();
+	//ImGui::ShowDemoWindow(); // For reference
+
+	ImGui::Checkbox("Camera Type:", &m_Perspective);
+	ImGui::SameLine();
+	if (m_Perspective)
+		ImGui::Text("Perspective Camera!");
+	else
+		ImGui::Text("OrthoGraphic Camera!");
+
+
 	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 
 	ImGui::End();

@@ -12,7 +12,7 @@ public:
 	virtual void onAttach() override;
 	virtual void onDetach() override;
 	virtual void onImGuiRender() override;
-	virtual void onUpdate(/*should take in timestep*/) override;
+	virtual void onUpdate(TimeStep ts) override;
 	virtual void onEvent(Event& e) override;
 
 
@@ -24,6 +24,7 @@ private:
 
 	ShaderLibrary m_Shaders; // This can not live on the heap since it will throw a Hash & Mask error
 
+	Ref<OrthoGraphicCamera> m_OrthoCamera;
 	Ref<EditorCamera> m_Camera;
 
 	bool m_IsRPressed = false;
@@ -38,9 +39,11 @@ private: // ImGui stuff
 	float m_Time = 0.0f;
 	float m_Blend = 0.0f;
 	float m_AmbLight = 0.06f;
-	float m_Rotation = 0.0f;
+
+	bool m_Perspective = true;
 
 	glm::vec3 m_Transalations = glm::vec3(0.0f);
+	glm::vec3 m_Rotations = glm::vec3(0.0f);
 	glm::vec3 m_Scales = glm::vec3(1.0f);
 
 	glm::vec3 m_LightTranslations = glm::vec3(2.0f);
@@ -53,7 +56,6 @@ private: // ImGui stuff
 	glm::vec3 m_SphereRotations = glm::vec3(0.0f);
 	glm::vec3 m_SphereScales = glm::vec3(1.0f);
 
-	//glm::vec4 m_Color = glm::vec4(0.2f, 0.6f, 0.6f, 1.0f); // Initial clear color.
 	glm::vec4 m_Color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Initial clear color for lighting.
 	glm::vec4 m_LightColor = glm::vec4(1.0f); // Initial clear color for lighting.
 	glm::vec4 m_UniColor = glm::vec4(1.0f);

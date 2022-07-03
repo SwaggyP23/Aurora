@@ -25,4 +25,5 @@
 #include "Graphics/Texture.h"
 #include "Graphics/VertexArray.h"
 
+#include "Graphics/OrthoGraphicCamera.h"
 #include "Graphics/EditorCamera.h"

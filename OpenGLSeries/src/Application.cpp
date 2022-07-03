@@ -57,11 +57,11 @@ void Application::Run()
 	while (m_Running) // Render Loop.
 	{
 		float currentFrame = (float)(glfwGetTime());
-		TimeStep time = currentFrame - m_LastFrame;
+		TimeStep timeStep = currentFrame - m_LastFrame;
 		m_LastFrame = currentFrame;
 
 		for (Layer* layer : m_LayerStack)
-			layer->onUpdate(/*should take in timestep*/);
+			layer->onUpdate(timeStep);
 
 		m_ImGuiLayer->begin();
 		for (Layer* layer : m_LayerStack)

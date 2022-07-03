@@ -1,5 +1,5 @@
 #include "OGLpch.h"
-#include "EditorCamera.h"
+#include "OrthoGraphicCamera.h"
 
 #include "Input/Input.h"
 
@@ -8,19 +8,21 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
-	: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), m_Projection(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
+OrthoGraphicCamera::OrthoGraphicCamera(float aspectRatio, float nearClip, float farClip)
+	: m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip)
 {
+	m_Projection = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -1.0f, 1.0f, m_NearClip, m_FarClip);
 	UpdateView();
 }
 
-void EditorCamera::UpdateProjection()
+void OrthoGraphicCamera::UpdateProjection()
 {
 	m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
-	m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
+	//m_Projection = glm::perspective(glm::radians(16.0f / 9.0f), m_AspectRatio, m_NearClip, m_FarClip);
+	m_Projection = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -1.0f, 1.0f, m_NearClip, m_FarClip);
 }
 
-void EditorCamera::UpdateView()
+void OrthoGraphicCamera::UpdateView()
 {
 	// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 	m_Position = CalculatePosition();
@@ -30,7 +32,7 @@ void EditorCamera::UpdateView()
 	m_ViewMatrix = glm::inverse(m_ViewMatrix);
 }
 
-std::pair<float, float> EditorCamera::PanSpeed() const
+std::pair<float, float> OrthoGraphicCamera::PanSpeed() const
 {
 	float x = std::min(m_ViewportWidth / 1000.0f, 2.4f); // max = 2.4f
 	float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
@@ -41,12 +43,12 @@ std::pair<float, float> EditorCamera::PanSpeed() const
 	return { xFactor, yFactor };
 }
 
-float EditorCamera::RotationSpeed() const
+float OrthoGraphicCamera::RotationSpeed() const
 {
 	return 0.8f;
 }
 
-float EditorCamera::ZoomSpeed() const
+float OrthoGraphicCamera::ZoomSpeed() const
 {
 	float distance = m_Distance * 0.2f;
 	distance = std::max(distance, 0.0f);
@@ -55,7 +57,7 @@ float EditorCamera::ZoomSpeed() const
 	return speed;
 }
 
-void EditorCamera::OnUpdate(TimeStep ts)
+void OrthoGraphicCamera::OnUpdate(TimeStep ts)
 {
 	if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
 	{
@@ -74,37 +76,41 @@ void EditorCamera::OnUpdate(TimeStep ts)
 	UpdateView();
 }
 
-void EditorCamera::OnEvent(Event& e)
+void OrthoGraphicCamera::OnEvent(Event& e)
 {
 	EventDispatcher dispatcher(e);
-	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(EditorCamera::OnMouseScroll));
+	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(OrthoGraphicCamera::OnMouseScroll));
 }
 
-bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
+bool OrthoGraphicCamera::OnMouseScroll(MouseScrolledEvent& e)
 {
 	if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL)) {
-		float delta = e.getYOffset() * 0.1f;
-		MouseZoom(delta);
-		UpdateView();
+		//float delta = e.getYOffset() * 0.1f;
+		//MouseZoom(delta);
+		//UpdateView();
+
+		m_ZoomLevel -= e.getYOffset() * 0.25f;
+		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+		m_Projection = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, m_NearClip, m_FarClip);
 	}
 	return false;
 }
 
-void EditorCamera::MousePan(const glm::vec2& delta)
+void OrthoGraphicCamera::MousePan(const glm::vec2& delta)
 {
 	auto [xSpeed, ySpeed] = PanSpeed();
 	m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
 	m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
 }
 
-void EditorCamera::MouseRotate(const glm::vec2& delta)
+void OrthoGraphicCamera::MouseRotate(const glm::vec2& delta)
 {
 	float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 	m_Yaw += yawSign * delta.x * RotationSpeed();
 	m_Pitch += delta.y * RotationSpeed();
 }
 
-void EditorCamera::MouseZoom(float delta)
+void OrthoGraphicCamera::MouseZoom(float delta)
 {
 	m_Distance -= delta * ZoomSpeed();
 	if (m_Distance < 1.0f)
@@ -114,27 +120,27 @@ void EditorCamera::MouseZoom(float delta)
 	}
 }
 
-glm::vec3 EditorCamera::GetUpDirection() const
+glm::vec3 OrthoGraphicCamera::GetUpDirection() const
 {
 	return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-glm::vec3 EditorCamera::GetRightDirection() const
+glm::vec3 OrthoGraphicCamera::GetRightDirection() const
 {
 	return glm::rotate(GetOrientation(), glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
-glm::vec3 EditorCamera::GetForwardDirection() const
+glm::vec3 OrthoGraphicCamera::GetForwardDirection() const
 {
 	return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
 }
 
-glm::vec3 EditorCamera::CalculatePosition() const
+glm::vec3 OrthoGraphicCamera::CalculatePosition() const
 {
 	return m_FocalPoint - GetForwardDirection() * m_Distance;
 }
 
-glm::quat EditorCamera::GetOrientation() const
+glm::quat OrthoGraphicCamera::GetOrientation() const
 {
 	return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
 }

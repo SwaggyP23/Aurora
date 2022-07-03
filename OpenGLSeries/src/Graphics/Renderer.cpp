@@ -7,12 +7,16 @@ glm::mat4 Renderer::m_ViewProjection;
 
 void Renderer::BeginScene(const Ref<EditorCamera>& camera)
 {
-	m_ViewProjection = camera->GetProjection() * camera->GetViewMatrix();
+	m_ViewProjection = camera->GetProjection() * camera->GetViewMatrix();;
+}
+
+void Renderer::BeginScene(const Ref<OrthoGraphicCamera>& camera)
+{
+	m_ViewProjection = camera->GetViewProjection();
 }
 
 void Renderer::EndScene()
 {
-	// ????
 }
 
 void Renderer::onWindowResize(uint32_t width, uint32_t height)
