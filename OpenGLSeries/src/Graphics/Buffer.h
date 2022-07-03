@@ -29,7 +29,7 @@ static uint32_t ShaderDataTypeSize(ShaderDataType type)
 		case ShaderDataType::Int4:	  return 4 * 4;
 	}
 
-	CORE_LOG_ERROR("Unkown Shader Data Type!! {0}", __FUNCTION__);
+	CORE_ASSERT(false, "Unkown Shader Data Type!");
 	return 0;
 }
 
@@ -49,7 +49,7 @@ static GLenum ShaderDataTypeToOpenGLType(ShaderDataType type)
 		case ShaderDataType::Int4:	  return GL_INT;
 	}
 
-	CORE_LOG_ERROR("Unkown Shader Data Type!! {0}", __FUNCTION__);
+	CORE_ASSERT(false, "Unkown Shader Data Type!");
 	return 0;
 }
 

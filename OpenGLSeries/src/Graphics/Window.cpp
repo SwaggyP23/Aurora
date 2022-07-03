@@ -11,7 +11,7 @@ Ref<Window> Window::Create(const std::string& title, uint32_t width, uint32_t he
 	return CreateRef<Window>(title, width, height);
 }
 
-Window::Window(const std::string& title, unsigned int width, unsigned int height)
+Window::Window(const std::string& title, uint32_t width, uint32_t height)
 {
 	Init(title, width, height);
 }
@@ -28,7 +28,7 @@ void Window::enable(GLenum type) const
 
 void Window::disable(GLenum type) const
 {
-	glEnable(type);
+	glDisable(type);	
 }
 
 void Window::SetVSync(bool state)
@@ -50,11 +50,10 @@ void Window::update() const
 
 	glfwPollEvents();
 	glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
-	glViewport(0, 0, m_Data.Width, m_Data.Height);
-	glfwSwapBuffers(m_Window);
+	m_Context->SwapBuffers();
 }
 
-bool Window::Init(const std::string& title, unsigned int width, unsigned int height)
+bool Window::Init(const std::string& title, uint32_t width, uint32_t height)
 {
 	m_Data.Title = title;
 	m_Data.Width = width;
@@ -62,30 +61,22 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 
 	CORE_LOG_INFO("Creating window {0} ({1}, {2})", m_Data.Title, m_Data.Width, m_Data.Height);
 
-	if (!glfwInit()) {
-		CORE_LOG_ERROR("Failed to initialize glfw!");
-		
-		return false;
-	}
+	int success = glfwInit();
+	CORE_ASSERT(success, "Failed to initialize glfw!");
 
 	glfwSetErrorCallback(error_callback);
 
+#ifdef _DEBUG
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
 	m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), NULL, NULL);
+	CORE_ASSERT(m_Window, "Failed to initialize the window!");
 
-	if (!m_Window) {
-		CORE_LOG_ERROR("Failed to initialize the window!");
+	m_Context = Context::Create(m_Window);
+	m_Context->Init();
 
-		return false;
-	}
-
-	glfwMakeContextCurrent(m_Window);
-
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		CORE_LOG_ERROR("Failed to initialize glad!!");
-
-		return false;
-	}
 	glfwSetWindowUserPointer(m_Window, &m_Data);
+	SetVSync(true);
 
 	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
@@ -100,6 +91,7 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
 			WindowCloseEvent event;
 			data.EventCallback(event);
 		});
@@ -110,24 +102,24 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 
 			switch (action)
 			{
-			case GLFW_PRESS:
-			{
-				KeyPressedEvent event(key, 0);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				KeyReleasedEvent event(key);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				KeyPressedEvent event(key, true);
-				data.EventCallback(event);
-				break;
-			}
+				case GLFW_PRESS:
+				{
+					KeyPressedEvent event(key, 0);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					KeyReleasedEvent event(key);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_REPEAT:
+				{
+					KeyPressedEvent event(key, true);
+					data.EventCallback(event);
+					break;
+				}
 			}
 		});
 
@@ -145,18 +137,18 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 
 			switch (action)
 			{
-			case GLFW_PRESS:
-			{
-				MouseButtonPressedEvent event(button);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				MouseButtonReleasedEvent event(button);
-				data.EventCallback(event);
-				break;
-			}
+				case GLFW_PRESS:
+				{
+					MouseButtonPressedEvent event(button);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					MouseButtonReleasedEvent event(button);
+					data.EventCallback(event);
+					break;
+				}
 			}
 		});
 
@@ -175,10 +167,6 @@ bool Window::Init(const std::string& title, unsigned int width, unsigned int hei
 			MouseMovedEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
 		});
-
-	glViewport(0, 0, m_Data.Width, m_Data.Height);
-
-	CORE_LOG_INFO("OpenGL Version: {0}", (const char*)glGetString(GL_VERSION));
 
 	return true;
 }

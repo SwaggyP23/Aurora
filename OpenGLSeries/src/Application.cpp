@@ -11,7 +11,6 @@ Application::Application(const std::string& name)
 
 	m_Window = Window::Create(name, 1280, 720);
 	m_Window->enable(GL_DEPTH_TEST);
-	m_Window->SetVSync(true);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
 
 	std::vector<char> errorMessage;

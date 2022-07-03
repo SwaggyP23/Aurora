@@ -20,7 +20,7 @@ namespace Utils {
 		if (type == "geometry") // Geometry shaders are currently useless since i am not using them
 			return GL_GEOMETRY_SHADER;
 
-		CORE_LOG_ERROR("Unknown shader type!");
+		CORE_ASSERT(false, "Unknown shader type!");
 		return 0;
 	}
 
@@ -33,7 +33,7 @@ namespace Utils {
 			case GL_GEOMETRY_SHADER:	return ShaderErrorType::geometryShader;
 		}
 
-		CORE_LOG_ERROR("Unkown shader type!");
+		CORE_ASSERT(false, "Unknown shader type!");
 		return ShaderErrorType::None;
 	}
 
@@ -228,16 +228,16 @@ GLint Shader::getUniformLocation(const GLchar* name) const
 	return glGetUniformLocation(m_ShaderID, name);
 }
 
+void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
+{
+	CORE_ASSERT(!Exists(name), "Shader already exists!");
+	m_Shaders[name] = shader;
+}
+
 void ShaderLibrary::Add(const Ref<Shader>& shader)
 {
 	const std::string& name = shader->getName();
 	Add(name, shader);
-}
-
-void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
-{
-	//if (Exists(name)) CORE_LOG_WARN("Shader already exists!");
-	m_Shaders[name] = shader;
 }
 
 Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
@@ -256,11 +256,11 @@ Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& file
 
 Ref<Shader> ShaderLibrary::Get(const std::string& name)
 {
-	if (!Exists(name)) CORE_LOG_WARN("Shader not found!");
+	CORE_ASSERT(Exists(name), "Shader not found!");
 	return m_Shaders[name];
 }
 
-bool ShaderLibrary::Exists(const std::string& name) const
+bool ShaderLibrary::Exists(const std::string& name) const // This always crashes
 {
 	return m_Shaders.find(name) != m_Shaders.end();
 }

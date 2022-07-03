@@ -34,7 +34,7 @@ std::string FileReader::ReadFile(const std::string& filePath)
 	}
 	else
 	{
-		CORE_LOG_ERROR("Could not open file '{0}'", filePath);
+		CORE_ASSERT(false, "Could not open file '{0}'", filePath);
 	}
 
 	return result;

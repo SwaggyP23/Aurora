@@ -22,12 +22,7 @@ private:
 	Ref<VertexArray> m_LightVertexArray;
 	Ref<VertexArray> m_SphereVertexArray;
 
-	Ref<ShaderLibrary> m_Shaders;
-
-	//Ref<Shader> m_Shader;
-	//Ref<Shader> m_LightShader;
-	//Ref<Shader> m_GroundShader;
-	//Ref<Shader> m_SphereShader;
+	ShaderLibrary m_Shaders; // This can not live on the heap since it will throw a Hash & Mask error
 
 	Ref<EditorCamera> m_Camera;
 

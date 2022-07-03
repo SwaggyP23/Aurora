@@ -13,7 +13,7 @@
 #include "Events/MouseEvents.h"
 #include "Events/KeyEvents.h"
 
-// The reasom the app crashes now is because the callbacks for the events are not set so functional throws
+#include "Context.h"
 
 class Window
 {
@@ -35,22 +35,22 @@ public:
 	bool closed() const;
 	void update() const;
 
-	inline unsigned int getWidth() const { return m_Data.Width; }
-	inline unsigned int getHeight() const { return m_Data.Height; }
+	inline uint32_t getWidth() const { return m_Data.Width; }
+	inline uint32_t getHeight() const { return m_Data.Height; }
 	inline GLFWwindow* getWindowPointer() const { return m_Window; }
 
 private:
-	bool Init(const std::string& title, unsigned int width, unsigned int height);
+	bool Init(const std::string& title, uint32_t width, uint32_t height);
 	void ShutDown();
 
 private:
 	GLFWwindow* m_Window;
-	bool m_Closed;
+	Scope<Context> m_Context;
 
 	struct WindowData
 	{
 		std::string Title;
-		unsigned int Width, Height;
+		uint32_t Width, Height;
 		bool VSync;
 
 		EventCallbackFn EventCallback;
