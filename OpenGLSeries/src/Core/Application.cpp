@@ -10,10 +10,9 @@ Application::Application(const std::string& name)
 	s_Instance = this;
 
 	m_Window = Window::Create(name, 1280, 720);
-	m_Window->enable(GL_DEPTH_TEST);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
 
-	std::vector<char> errorMessage;
+	Renderer::Init();
 
 	m_ImGuiLayer = new ImGuiLayer();
 	pushOverlay(m_ImGuiLayer);
@@ -21,6 +20,10 @@ Application::Application(const std::string& name)
 
 Application::~Application()
 {
+	for (Layer* layer : m_LayerStack) // This should be done so that each layer can free its resources in the onDetach function.
+		layer->onDetach();			  // This way no memory leaks are supposed to happen from the application itself.
+
+	Renderer::ShutDown();
 }
 
 void Application::pushLayer(Layer* layer)
@@ -60,13 +63,17 @@ void Application::Run()
 		TimeStep timeStep = currentFrame - m_LastFrame;
 		m_LastFrame = currentFrame;
 
-		for (Layer* layer : m_LayerStack)
-			layer->onUpdate(timeStep);
+		if (!m_Minimized)
+		{
+			for (Layer* layer : m_LayerStack)
+				layer->onUpdate(timeStep);
 
-		m_ImGuiLayer->begin();
-		for (Layer* layer : m_LayerStack)
-			layer->onImGuiRender();
-		m_ImGuiLayer->end();
+			m_ImGuiLayer->begin();
+			for (Layer* layer : m_LayerStack)
+				layer->onImGuiRender();
+			m_ImGuiLayer->end();
+		}
+
 
 		m_Window->update();
 	}
@@ -74,9 +81,17 @@ void Application::Run()
 
 bool Application::onWindowResize(WindowResizeEvent& e)
 {
+	if (e.getWidth() == 0 || e.getHeight() == 0) {
+		m_Minimized = true;
+
+		return false;
+	}
+	
+	m_Minimized = false;
+
 	Renderer::onWindowResize(e.getWidth(), e.getHeight());
 
-	return true;
+	return false;
 }
 
 bool Application::onWindowClose(WindowCloseEvent& e)

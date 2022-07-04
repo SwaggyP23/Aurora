@@ -38,6 +38,7 @@ private:
 	float m_LastFrame = 0.0f;
 
 	bool m_Running = true;
+	bool m_Minimized = false;
 	bool m_VSync = true;
 
 	static Application* s_Instance;

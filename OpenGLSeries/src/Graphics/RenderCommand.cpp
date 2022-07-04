@@ -1,6 +1,17 @@
 #include "OGLpch.h"
 #include "RenderCommand.h"
 
+void RenderCommand::Init()
+{
+	glEnable(GL_DEPTH_TEST);
+	// glEnable(GL_BLEND);		// To be used when i start with the blending chapter
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void RenderCommand::ShutDown()
+{
+}
+
 void RenderCommand::setClearColor(const glm::vec4& color)
 {
 	glClearColor(color.r, color.g, color.b, color.w);
@@ -22,7 +33,7 @@ void RenderCommand::ActivateTextures(const std::vector<Ref<Texture>>& texts)
 	for (const auto& texture : texts)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
-		texture->bind();
+		texture->bind(/*i*/);
 		i++;
 	}
 }

@@ -1,7 +1,7 @@
 #include "OGLpch.h"
 #include "InputImpl.h"
 
-#include "Application.h"
+#include "Core/Application.h"
 #include <GLFW/glfw3.h>
 
 Input* Input::s_Instance = new InputImplementation();

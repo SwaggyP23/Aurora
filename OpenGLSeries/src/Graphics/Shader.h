@@ -36,15 +36,14 @@ public:
 private:
 	std::unordered_map<GLenum, std::string> splitSource(const std::string& source); 
 	GLuint createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const;
-	GLint getUniformLocation(const GLchar* name) const;
+	GLint getUniformLocation(const std::string& name) const;
 
 private:
 	GLuint m_ShaderID;
 	std::string m_FilePath;
 	std::string m_Name;
 
-	//std::unordered_map<GLenum, std::string> m_ShaderSources; // Storing the shaderType with its source
-	// However this is currently useless since we have the shader asset files present
+	mutable std::unordered_map<std::string, GLint> m_UniformLocations;
 
 };
 

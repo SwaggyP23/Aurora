@@ -6,7 +6,7 @@
 //#include <Core/EntryPoint.h>
 // --------------------------
 
-#include "Application.h"
+#include "Core/Application.h"
 
 #include "Core/Base.h"
 

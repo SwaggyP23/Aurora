@@ -24,9 +24,6 @@ public:
 
 	static Ref<Window> Create(const std::string& title, uint32_t width, uint32_t height);
 
-	void enable(GLenum type) const;
-	void disable(GLenum type) const;
-
 	inline void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 
 	void SetVSync(bool state);

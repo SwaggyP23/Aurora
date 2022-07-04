@@ -1,11 +1,14 @@
 #include "SandBoxLayer.h"
 
 SandBoxLayer::SandBoxLayer()
-	: Layer("SandBoxLayer")
+	: Layer("SandBoxLayer"),
+	m_Camera(CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
+	m_OrthoCamera(CreateRef<OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
 {
-	m_Camera = CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-	m_OrthoCamera = CreateRef<OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f);
+}
 
+void SandBoxLayer::onAttach()
+{
 	float groundVertices[] = {
 		-50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 0.0f,
 		 50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   1.0f, 0.0f,
@@ -243,35 +246,35 @@ SandBoxLayer::SandBoxLayer()
 
 	// Creating textures
 	Ref<Texture> text1 = Texture::Create("resources/textures/NewYork.png");
-	text1->bind();
+	text1->bind(/*0*/);
 	text1->flipTextureVertically(true);
 	text1->setTextureWrapping(GL_REPEAT);
 	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	text1->loadTextureData(GL_RGB, GL_RGB);
+	text1->loadTextureData();
 	text1->unBind();
 
-	Ref<Texture> text2 = Texture::Create("resources/textures/Pepsi.png");
-	text2->bind();
+	Ref<Texture> text2 = Texture::Create("resources/textures/Qiyana2.png");
+	text2->bind(/*1*/);
 	text2->flipTextureVertically(true);
 	text2->setTextureWrapping(GL_REPEAT);
 	text2->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	text2->loadTextureData(GL_RGB, GL_RGB);
+	text2->loadTextureData();
 	text2->unBind();
 
 	Ref<Texture> text3 = Texture::Create("resources/textures/checkerboard.png");
-	text3->bind();
+	text3->bind(/*2*/);
 	text2->flipTextureVertically(true);
 	text3->setTextureWrapping(GL_REPEAT);
 	text3->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	text3->loadTextureData(GL_RGBA, GL_RGBA);
+	text3->loadTextureData();
 	text3->unBind();
 
 	Ref<Texture> text4 = Texture::Create("resources/textures/map.jpg");
-	text4->bind();
+	text4->bind(/*3*/);
 	text4->flipTextureVertically(true);
 	text4->setTextureWrapping(GL_REPEAT);
 	text4->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	text4->loadTextureData(GL_RGB, GL_RGB);
+	text4->loadTextureData();
 	text4->unBind();
 
 	// Vector of textures for easily adding and binding textures in render loop	
@@ -292,10 +295,6 @@ SandBoxLayer::SandBoxLayer()
 	m_Shaders.Get("Sphere")->bind();
 	m_Shaders.Get("Sphere")->setUniform1i("SphereTexture1", 3);
 	m_Shaders.Get("Sphere")->unBind();
-}
-
-void SandBoxLayer::onAttach()
-{
 }
 
 void SandBoxLayer::onDetach()
@@ -430,42 +429,34 @@ void SandBoxLayer::onImGuiRender()
 
 	ImGui::Begin("Editing Panel");
 	if (ImGui::CollapsingHeader("Cube")) {
-		//ImGui::Begin("Editing");
 		ImGui::ColorEdit3("Uniform Color", (float*)&m_UniColor);
 		ImGui::SliderFloat3("Cube Translation", (float*)&m_Transalations, 0.0f, 5.0f);
 		ImGui::SliderFloat3("Cube Rotations", (float*)&m_Rotations, 0.0f, 360.0f);
 		ImGui::SliderFloat3("Cube Scale", (float*)&m_Scales, 0.0f, 3.0f);
 		ImGui::SliderFloat("Cube Blend", &m_Blend, 0.0f, 1.0f);
-		//ImGui::End();
 	}
 
 	ImGui::Separator();
 
 	if (ImGui::CollapsingHeader("Light Source")) {
-		//ImGui::Begin("Editing");
 		ImGui::ColorEdit3("Light Color", (float*)&m_LightColor);
 		ImGui::SliderFloat3("Light Translation", (float*)&m_LightTranslations, -30.0f, 135.0f);
 		ImGui::SliderFloat3("Light Scale", (float*)&m_LightScales, 0.0f, 3.0f);
-		//ImGui::End();
 	}
 
 	ImGui::Separator();
 
 	if (ImGui::CollapsingHeader("Ball")) {
-		//ImGui::Begin();
 		ImGui::SliderFloat3("Sphere Translation", (float*)&m_SphereTransalations, -50.0f, 50.0f);
 		ImGui::SliderFloat3("Sphere Rotations", (float*)&m_SphereRotations, 0.0f, 360.0f);
 		ImGui::SliderFloat3("Sphere Scale", (float*)&m_SphereScales, 0.0f, 30.0f);
-		//ImGui::End();
 	}
 
 	ImGui::Separator();
 
 	if (ImGui::CollapsingHeader("Ground")) {
-		//ImGui::Begin("Editing");
 		ImGui::SliderFloat3("Ground Translation", (float*)&m_GroundTranslations, -5.0f, 5.0f);
 		ImGui::SliderFloat3("Ground Scale", (float*)&m_GroundScales, 0.0f, 3.0f);
-		//ImGui::End();
 	}
 
 	ImGui::Separator();

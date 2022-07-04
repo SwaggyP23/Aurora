@@ -17,16 +17,15 @@ public:
 	void setTextureFiltering(GLenum minFilter, GLenum magFilter) const;
 
 	void flipTextureVertically(bool state);
-	void loadTextureData(GLint internalFormat, GLenum format);
+	void loadTextureData();
 	// Internal format specifies in what format the texture is to be stored on the GPU
 	// format Specifies the format of the pixel data.
 
-	void bind() const;
+	void bind(/*uint32_t slot = 0*/) const;
 	void unBind() const;
 
 	inline unsigned int GetWidth() const { return m_Width; }
 	inline unsigned int GetHeight() const { return m_Height; }
-	//inline GLuint getTextureID() const { return m_TextID; }
 
 private:
 	GLuint m_TextID;

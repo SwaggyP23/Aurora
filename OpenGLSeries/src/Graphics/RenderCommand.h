@@ -9,6 +9,9 @@
 class RenderCommand
 {
 public:
+	static void Init();
+	static void ShutDown();
+
 	static void setClearColor(const glm::vec4& color);
 	static void Clear();
 

@@ -21,16 +21,6 @@ Window::~Window()
 	ShutDown();
 }
 
-void Window::enable(GLenum type) const
-{
-	glEnable(type);
-}
-
-void Window::disable(GLenum type) const
-{
-	glDisable(type);	
-}
-
 void Window::SetVSync(bool state)
 {
 	glfwSwapInterval(state);

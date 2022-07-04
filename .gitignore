@@ -5,13 +5,14 @@ Build/
 
 OpenGLSeries.sln
 OpenGLSeries.vcxproj
-OpenGLSeries.vcxproj.filters
 OpenGLSeries.vcxproj.user
+OpenGLSeries.vcxproj.filters
 
 SandBox/SandBox.vcxproj
 SandBox/SandBox.vcxproj.user
 
 ImGui.vcxproj
+ImGui.vcxproj.user
 ImGui.vcxproj.filters
 
 GLFW.vcxproj
@@ -19,4 +20,5 @@ GLFW.vcxproj.user
 GLFW.vcxproj.filters
 
 Glad.vcxproj
+Glad.vcxproj.user
 Glad.vcxproj.filters

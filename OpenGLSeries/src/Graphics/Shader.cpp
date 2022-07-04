@@ -93,7 +93,7 @@ Ref<Shader> Shader::Create(const std::string& filepath)
 Shader::Shader(const std::string& filePath)
 	: m_FilePath(filePath)
 {
-	std::string shaderFullSource = FileReader::Get().ReadFile(filePath);
+	std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
 
 	auto shaderSplitSources = splitSource(shaderFullSource);
 
@@ -223,9 +223,18 @@ void Shader::setUniformMat4(const GLchar* name, const float* matrix) const
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrix);
 }
 
-GLint Shader::getUniformLocation(const GLchar* name) const
+GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
 {
-	return glGetUniformLocation(m_ShaderID, name);
+	auto it = m_UniformLocations.find(name);
+	if (it != m_UniformLocations.end())
+		return it->second;
+	// Directly returns the uniform location if it has been already cached, and if not adds it to the cache map.
+
+	GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
+	m_UniformLocations[name] = location;
+
+	return location;
+	//return glGetUniformLocation(m_ShaderID, name.c_str());
 }
 
 void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
