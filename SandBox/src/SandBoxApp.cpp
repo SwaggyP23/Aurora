@@ -1,6 +1,6 @@
 #include <OpenGLSeries.h>
 #include "SandBoxLayer.h"
-#include "BatchRenderer.h"
+#include "TestLayer.h"
 #include <Core/EntryPoint.h>
 
 class Sandbox : public Application
@@ -10,7 +10,7 @@ public:
 		:	Application(name)
 	{
 		//pushLayer(new SandBoxLayer());
-		pushLayer(new BatchRenderer());
+		pushLayer(new TestLayer());
 	}
 
 	~Sandbox()

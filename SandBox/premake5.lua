@@ -5,53 +5,54 @@ project "SandBox"
     staticruntime "on"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
 
     files
-	{
+    {
         "src/**.h",
         "src/**.cpp"
-	}
+    }
 
     includedirs
-	{
-		"%{wks.location}/OpenGLSeries/deps/spdlog/include",
-		"%{wks.location}/OpenGLSeries/src",
+    {
+        "%{wks.location}/OpenGLSeries/deps/spdlog/include",
+        "%{wks.location}/OpenGLSeries/src",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.stb_image}",
-		"%{IncludeDir.glm}"
-	}
-	links
-	{
+        "%{IncludeDir.glm}"
+    }
+
+    links
+    {
         "OpenGLSeries"
-	}
+    }
 
-	filter "system:windows"
-		systemversion "latest"
+    filter "system:windows"
+        systemversion "latest"
 
-		defines
-		{
-		}
+        defines
+        {
+        }
 
-	filter "configurations:Debug"
-		defines "_DEBUG"
-		runtime "Debug"
-		symbols "on"
+    filter "configurations:Debug"
+        defines "_DEBUG"
+        runtime "Debug"
+        symbols "on"
 
-		links
-		{
-		}
+        links
+        {
+        }
 
-	filter "configurations:Release"
-		defines "_RELEASE"
-		runtime "Release"
-		optimize "on"
+    filter "configurations:Release"
+        defines "_RELEASE"
+        runtime "Release"
+        optimize "on"
 
-		links
-		{
-		}
+        links
+        {
+        }
 
-	filter { "system:windows", "configurations:Release" }
-	buildoptions "/O2"
+    filter { "system:windows", "configurations:Release" }
+    buildoptions "/O2"

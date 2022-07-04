@@ -30,4 +30,4 @@ project "Glad"
         optimize "on"
 
     filter { "system:windows", "configurations:Release" }
-	buildoptions "/O2"
+        buildoptions "/O2"

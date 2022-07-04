@@ -246,7 +246,7 @@ void SandBoxLayer::onAttach()
 
 	// Creating textures
 	Ref<Texture> text1 = Texture::Create("resources/textures/NewYork.png");
-	text1->bind(/*0*/);
+	text1->bind();
 	text1->flipTextureVertically(true);
 	text1->setTextureWrapping(GL_REPEAT);
 	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -254,7 +254,7 @@ void SandBoxLayer::onAttach()
 	text1->unBind();
 
 	Ref<Texture> text2 = Texture::Create("resources/textures/Qiyana2.png");
-	text2->bind(/*1*/);
+	text2->bind(1);
 	text2->flipTextureVertically(true);
 	text2->setTextureWrapping(GL_REPEAT);
 	text2->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -262,7 +262,7 @@ void SandBoxLayer::onAttach()
 	text2->unBind();
 
 	Ref<Texture> text3 = Texture::Create("resources/textures/checkerboard.png");
-	text3->bind(/*2*/);
+	text3->bind(2);
 	text2->flipTextureVertically(true);
 	text3->setTextureWrapping(GL_REPEAT);
 	text3->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -270,14 +270,13 @@ void SandBoxLayer::onAttach()
 	text3->unBind();
 
 	Ref<Texture> text4 = Texture::Create("resources/textures/map.jpg");
-	text4->bind(/*3*/);
+	text4->bind(3);
 	text4->flipTextureVertically(true);
 	text4->setTextureWrapping(GL_REPEAT);
 	text4->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text4->loadTextureData();
 	text4->unBind();
 
-	// Vector of textures for easily adding and binding textures in render loop	
 	m_Textures.push_back(text1);
 	m_Textures.push_back(text2);
 	m_Textures.push_back(text3);

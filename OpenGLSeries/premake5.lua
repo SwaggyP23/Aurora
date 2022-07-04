@@ -5,28 +5,29 @@ project "OpenGLSeries"
     staticruntime "on"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "OGLpch.h"
-	pchsource "src/OGLpch.cpp"
+    pchheader "OGLpch.h"
+    pchsource "src/OGLpch.cpp"
 
     files
-	{
+    {
         "src/**.h",
         "src/**.cpp",
         "deps/stb_image/**.h",
         "deps/stb_image/**.cpp",
         "deps/glm/glm/**.hpp",
         "deps/glm/glm/**.inl"
-	}
-	
-	defines
-	{
-		"_CRT_SECURE_NO_WARNINGS",
-		"GLFW_INCLUDE_NONE"
-	}
+    }
+
+    defines
+    {
+        "_CRT_SECURE_NO_WARNINGS",
+        "GLFW_INCLUDE_NONE"
+    }
+
     includedirs
-	{
+    {
         "src",
         "deps/spdlog/include",
         "%{IncludeDir.GLFW}",
@@ -34,39 +35,40 @@ project "OpenGLSeries"
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}"
-	}
-	links
-	{
+    }
+
+    links
+    {
         "GLFW",
         "Glad",
         "ImGui",
         "opengl32.lib"
-	}
+    }
 
-	filter "system:windows"
-		systemversion "latest"
+    filter "system:windows"
+        systemversion "latest"
 
-		defines
-		{
-		}
+        defines
+        {
+        }
 
-	filter "configurations:Debug"
-		defines "_DEBUG"
-		runtime "Debug"
-		symbols "on"
+    filter "configurations:Debug"
+        defines "_DEBUG"
+        runtime "Debug"
+        symbols "on"
 
-		links
-		{
-		}
+        links
+        {
+        }
 
-	filter "configurations:Release"
-		defines "_RELEASE"
-		runtime "Release"
-		optimize "on"
+    filter "configurations:Release"
+        defines "_RELEASE"
+        runtime "Release"
+        optimize "on"
 
-		links
-		{
-		}
+        links
+        {
+        }
 
-	filter { "system:windows", "configurations:Release" }
-	buildoptions "/O2"
+    filter { "system:windows", "configurations:Release" }
+    buildoptions "/O2"

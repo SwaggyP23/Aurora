@@ -17,7 +17,7 @@ public:
 
 	static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
-	static void ActivateTextures(const std::vector<Ref<Texture>>& texts);
+	static void ActivateTextures(const std::vector<Ref<Texture>>& vec);
 	static void DrawIndexed(const Ref<VertexArray>& vertexArray, bool state = false);
 
 };

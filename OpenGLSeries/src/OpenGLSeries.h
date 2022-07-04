@@ -18,6 +18,7 @@
 #include "ImGui/ImGuiLayer.h"
 
 #include "Graphics/Renderer.h"
+#include "Graphics/Renderer3D.h"
 #include "Graphics/RenderCommand.h"
 
 #include "Graphics/Buffer.h"

@@ -35,10 +35,24 @@ Ref<Texture> Texture::Create(const std::string& filePath)
 	return CreateRef<Texture>(filePath);
 }
 
+Texture::Texture(uint32_t width, uint32_t height)
+	: m_Width(width), m_Height(height)
+{
+	glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
+	glTextureStorage2D(m_TextID, 1, GL_RGBA8, m_Width, m_Height);
+	setTextureWrapping(GL_REPEAT);
+	setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+}
+
+void Texture::setData(void* data)
+{
+	glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
 Texture::Texture(const std::string& filePath)
 	: m_Path(filePath), m_Width(0), m_Height(0)
 {
-	glGenTextures(1, &m_TextID);
+	glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
 }
 
 Texture::~Texture()
@@ -86,17 +100,16 @@ void Texture::loadTextureData()
 		glGenerateTextureMipmap(m_TextID);
 	}
 	else {
-		CORE_LOG_ERROR("Failed to load Texture!! {0}", m_Path);
+		CORE_LOG_ERROR("Failed to load Texture! {0}", m_Path);
 	}
 
 	Utils::ImageLoader::Get().FreeImage();
 }
 
-void Texture::bind(/*uint32_t slot*/) const
+void Texture::bind(uint32_t slot) const
 {
-	glBindTexture(GL_TEXTURE_2D, m_TextID);
-	//glBindTextureUnit(slot, m_TextID); // This is to be used instead of the vector loop that is binding the textures to slots
-	// This should be used instead of that to bind each texture to its certain slot.
+	glBindTextureUnit(slot, m_TextID);
+	
 }
 
 void Texture::unBind() const

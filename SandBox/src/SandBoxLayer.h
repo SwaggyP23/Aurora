@@ -8,6 +8,7 @@ class SandBoxLayer : public Layer
 {
 public:
 	SandBoxLayer();
+	virtual ~SandBoxLayer() = default;
 
 	virtual void onAttach() override;
 	virtual void onDetach() override;
@@ -27,11 +28,11 @@ private:
 	Ref<OrthoGraphicCamera> m_OrthoCamera;
 	Ref<EditorCamera> m_Camera;
 
+	std::vector<Ref<Texture>> m_Textures;
+
 	bool m_IsRPressed = false;
 
 	glm::vec4 uniColor = glm::vec4(0.5f);
-
-	std::vector<Ref<Texture>> m_Textures;
 
 	std::array<glm::vec3, 10> m_CubePositions;
 

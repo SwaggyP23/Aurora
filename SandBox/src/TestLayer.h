@@ -4,10 +4,11 @@
 
 #include <ImGui/imgui.h>
 
-class BatchRenderer : public Layer
+class TestLayer : public Layer
 {
 public:
-	BatchRenderer();
+	TestLayer();
+	virtual ~TestLayer() = default;
 
 	virtual void onAttach() override;
 	virtual void onDetach() override;
@@ -17,13 +18,8 @@ public:
 
 
 private:
-	Ref<VertexArray> m_VertexArray;
-	Ref<Shader> m_Shader;
-
 	Ref<OrthoGraphicCamera> m_OrthoCamera;
 	Ref<EditorCamera> m_Camera;
-
-	glm::vec4 uniColor = glm::vec4(0.5f);
 
 	Ref<Texture> m_Texture;
 
@@ -32,7 +28,7 @@ private: // ImGui stuff
 
 	bool m_Perspective = true;
 
-	glm::vec4 m_Color = glm::vec4(0.0f);
+	glm::vec4 m_Color = glm::vec4(0.5f, 0.5f, 0.2f, 1.0f);
 	glm::vec4 m_UniColor = glm::vec4{ 0.2f, 0.3f, 0.8f, 1.0f };
 
 	glm::vec3 m_Transalations = glm::vec3(0.0f);

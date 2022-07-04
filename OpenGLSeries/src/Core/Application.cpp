@@ -12,7 +12,7 @@ Application::Application(const std::string& name)
 	m_Window = Window::Create(name, 1280, 720);
 	m_Window->SetEventCallback(SET_EVENT_FN(Application::onEvent));
 
-	Renderer::Init();
+	Renderer::Init(); // This handles the Renderer3D initiation since im taking this as the general renderer
 
 	m_ImGuiLayer = new ImGuiLayer();
 	pushOverlay(m_ImGuiLayer);

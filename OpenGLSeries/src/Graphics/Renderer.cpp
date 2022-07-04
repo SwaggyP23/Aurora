@@ -1,5 +1,6 @@
 #include "OGLpch.h"
 #include "Renderer.h"
+#include "Renderer3D.h"
 #include "RenderCommand.h"
 #include "Core/Application.h"
 
@@ -7,11 +8,13 @@ Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneDa
 
 void Renderer::Init()
 {
+	Renderer3D::Init();
 	RenderCommand::Init();
 }
 
 void Renderer::ShutDown()
 {
+	Renderer3D::ShutDown();
 	RenderCommand::ShutDown();
 }
 

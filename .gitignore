@@ -8,8 +8,8 @@ OpenGLSeries.vcxproj
 OpenGLSeries.vcxproj.user
 OpenGLSeries.vcxproj.filters
 
-SandBox/SandBox.vcxproj
-SandBox/SandBox.vcxproj.user
+SandBox.vcxproj
+SandBox.vcxproj.user
 
 ImGui.vcxproj
 ImGui.vcxproj.user

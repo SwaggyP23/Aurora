@@ -160,6 +160,8 @@ GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>
 		glDeleteShader(id); // This flags the shader for deletion but is not deleted untill it is not linked to any other program, in our case that is directly here since it is already detached
 	}
 
+	CORE_ASSERT(program, "Program is null!");
+
 	return program;
 }
 

@@ -22,20 +22,19 @@ void RenderCommand::Clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void RenderCommand::ActivateTextures(const std::vector<Ref<Texture>>& vec)
+{
+	int i = 0;
+	for (auto tex : vec) {
+		glActiveTexture(GL_TEXTURE0 + i);
+		tex->bind();
+		i++;
+	}
+}
+
 void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
 	glViewport(x, y, width, height);
-}
-
-void RenderCommand::ActivateTextures(const std::vector<Ref<Texture>>& texts)
-{
-	int i = 0;
-	for (const auto& texture : texts)
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		texture->bind(/*i*/);
-		i++;
-	}
 }
 
 void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, bool state)
