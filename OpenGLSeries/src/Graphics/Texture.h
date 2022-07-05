@@ -5,6 +5,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+/*
+ * With the new OpenGL version 4.5, the texture workflow is no longer Gen -> Bind -> Allocate -> Upload. 
+ * Rather now its just like Create -> Allocate -> Upload. And now it is no longer needed to do glActiveTexture(GL_TEXTURE0...);
+ * We can just bind to a certain slot which will activate it using glBindTextureUnit(slot, texture);
+ */
+
 class Texture
 {
 public:
@@ -16,8 +22,8 @@ public:
 
 	void setData(void* data);
 
-	void setTextureWrapping(GLenum wrapMode) const;
-	void setTextureFiltering(GLenum minFilter, GLenum magFilter) const;
+	void setTextureWrapping(GLenum wrapMode = GL_REPEAT) const;
+	void setTextureFiltering(GLenum minFilter = GL_NEAREST, GLenum magFilter = GL_NEAREST) const;
 
 	void flipTextureVertically(bool state);
 	void loadTextureData();
@@ -25,7 +31,7 @@ public:
 	// format Specifies the format of the pixel data.
 
 	void bind(uint32_t slot = 0) const;
-	void unBind() const;
+	void unBind(/*uint32_t slot = 0*/) const;
 
 	inline unsigned int GetWidth() const { return m_Width; }
 	inline unsigned int GetHeight() const { return m_Height; }

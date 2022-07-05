@@ -24,3 +24,4 @@
 #include "Core/Base.h"
 #include "Utils/ImageLoader.h"
 #include "Utils/UtilFunctions.h"
+#include "Debugging/Instrumentor.h"

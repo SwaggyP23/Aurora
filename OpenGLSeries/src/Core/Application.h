@@ -43,3 +43,6 @@ private:
 
 	static Application* s_Instance;
 };
+
+// To be defined by user in sandbox project and then the name is specified in the EntryPoint
+Application* CreateApplication(const std::string& name);

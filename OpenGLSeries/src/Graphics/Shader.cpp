@@ -231,6 +231,8 @@ GLint Shader::getUniformLocation(const std::string& name) const // To be instrum
 	if (it != m_UniformLocations.end())
 		return it->second;
 	// Directly returns the uniform location if it has been already cached, and if not adds it to the cache map.
+	// This is faster by like 200--1300 nanosecond for setting 3 uniforms, which would drasticaly become more efficient when 
+	// setting materials and meshes
 
 	GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
 	m_UniformLocations[name] = location;

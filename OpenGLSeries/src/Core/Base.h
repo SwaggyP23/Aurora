@@ -1,12 +1,16 @@
 #pragma once
 
+#include <memory>
+
 #ifdef _DEBUG
-#define CORE_ASSERT(check, ...)  { if(!(check)) { CORE_LOG_ERROR("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); }}
+	#define CORE_ASSERT(check, ...)  { if(!(check)) { CORE_LOG_ERROR("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); }}
 #else
-#define CORE_ASSERT(check, ...)
+	#define CORE_ASSERT(check, ...)
 #endif
 
 #define SET_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
+
+#define BIT(x) 1 << x
 
 template<typename T>
 using Scope = std::unique_ptr<T>;

@@ -5,7 +5,7 @@ struct QuadData
 {
 	Ref<VertexArray> quadVA;
 	Ref<Shader> TexShader;
-	Ref<Texture> defTex;
+	Ref<Texture> DefaultTex;
 };
 
 static QuadData* s_QuadData;
@@ -76,9 +76,9 @@ void Renderer3D::Init()
 	vertexBuffer->unBind();
 	m_IndexBuffer->unBind();
 
-	s_QuadData->defTex = CreateRef<Texture>(1, 1);
+	s_QuadData->DefaultTex = CreateRef<Texture>(1, 1);
 	uint32_t data = 0xffffffff;
-	s_QuadData->defTex->setData(&data);
+	s_QuadData->DefaultTex->setData(&data);
 
 	s_QuadData->TexShader->bind();
 	s_QuadData->TexShader->setUniform1i("u_Texture", 0);
@@ -115,10 +115,10 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3 rotations, 
 		  * glm::rotate(glm::mat4(1.0f), rotations.z, { 0.0f, 0.0f, 1.0f })
 		  * glm::scale(glm::mat4(1.0f), scale);
 
-	s_QuadData->TexShader->setUniformMat4("u_ModelMatrix", model);
 	s_QuadData->TexShader->setUniform4f("u_Color", color);
-	s_QuadData->defTex->bind();
+	s_QuadData->TexShader->setUniformMat4("u_ModelMatrix", model);
 
+	s_QuadData->DefaultTex->bind();
 	s_QuadData->quadVA->bind();
 	RenderCommand::DrawIndexed(s_QuadData->quadVA);
 }
@@ -133,9 +133,9 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3 rotations, 
 		* glm::scale(glm::mat4(1.0f), scale);
 
 	s_QuadData->TexShader->setUniform4f("u_Color", glm::vec4(1.0f));
-	texture->bind();
 	s_QuadData->TexShader->setUniformMat4("u_ModelMatrix", model);
 
+	texture->bind();
 	s_QuadData->quadVA->bind();
 	RenderCommand::DrawIndexed(s_QuadData->quadVA);
 }

@@ -245,37 +245,37 @@ void SandBoxLayer::onAttach()
 	m_IndexBuffer->unBind();
 
 	// Creating textures
-	Ref<Texture> text1 = Texture::Create("resources/textures/NewYork.png");
-	text1->bind();
+	Ref<Texture> text1 = Texture::Create("resources/textures/Lufi.png");
+	//text1->bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to bind and unbind
 	text1->flipTextureVertically(true);
 	text1->setTextureWrapping(GL_REPEAT);
 	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text1->loadTextureData();
-	text1->unBind();
+	//text1->unBind();
 
 	Ref<Texture> text2 = Texture::Create("resources/textures/Qiyana2.png");
-	text2->bind(1);
+	//text2->bind(1); // Only before the draw call we should bind the texture to its corresponding texture slot
 	text2->flipTextureVertically(true);
 	text2->setTextureWrapping(GL_REPEAT);
 	text2->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text2->loadTextureData();
-	text2->unBind();
+	//text2->unBind();
 
 	Ref<Texture> text3 = Texture::Create("resources/textures/checkerboard.png");
-	text3->bind(2);
-	text2->flipTextureVertically(true);
+	//text3->bind(2);
+	text3->flipTextureVertically(true);
 	text3->setTextureWrapping(GL_REPEAT);
 	text3->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text3->loadTextureData();
-	text3->unBind();
+	//text3->unBind();
 
 	Ref<Texture> text4 = Texture::Create("resources/textures/map.jpg");
-	text4->bind(3);
+	//text4->bind(3);
 	text4->flipTextureVertically(true);
 	text4->setTextureWrapping(GL_REPEAT);
 	text4->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 	text4->loadTextureData();
-	text4->unBind();
+	//text4->unBind();
 
 	m_Textures.push_back(text1);
 	m_Textures.push_back(text2);
@@ -305,8 +305,6 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 	RenderCommand::setClearColor(m_Color);
 	RenderCommand::Clear();
 
-	RenderCommand::ActivateTextures(m_Textures);
-
 	if(m_Perspective)
 		Renderer::BeginScene(m_Camera);
 	else
@@ -334,6 +332,7 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 
 	model = glm::scale(model, m_SphereScales);
 
+	m_Textures[3]->bind(3);
 	Renderer::DrawSphere(m_Shaders.Get("Sphere"), model, m_SphereVertexArray);
 
 	m_Shaders.Get("Basic")->bind();
@@ -366,6 +365,8 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 
 		model = glm::scale(model, m_Scales);
 
+		m_Textures[0]->bind();
+		m_Textures[1]->bind(1);
 		Renderer::DrawQuad(m_Shaders.Get("Basic"), model, m_VertexArray);
 	}
 
@@ -384,6 +385,7 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 	model = glm::translate(glm::mat4(1.0f), m_GroundTranslations);
 	model = glm::scale(model, m_GroundScales);
 
+	m_Textures[2]->bind(2);
 	Renderer::DrawQuad(m_Shaders.Get("Ground"), model, m_GroundVertexArray);
 
 	m_Shaders.Get("Light")->bind();

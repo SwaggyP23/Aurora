@@ -10,7 +10,6 @@ TestLayer::TestLayer()
 void TestLayer::onAttach()
 {
 	m_Texture = CreateRef<Texture>("resources/textures/checkerboard.png");
-	m_Texture->bind();
 	m_Texture->flipTextureVertically(true);
 	m_Texture->setTextureWrapping(GL_REPEAT);
 	m_Texture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -22,8 +21,13 @@ void TestLayer::onDetach()
 
 void TestLayer::onUpdate(TimeStep ts)
 {
-	RenderCommand::setClearColor(m_Color);
-	RenderCommand::Clear();
+	PROFILE_FUNCTION();
+	
+	{
+		PROFILE_SCOPE("Clear Colors");
+		RenderCommand::setClearColor(m_Color);
+		RenderCommand::Clear();
+	}
 
 	if (m_Perspective)
 		Renderer3D::BeginScene(m_Camera);
@@ -31,19 +35,25 @@ void TestLayer::onUpdate(TimeStep ts)
 		Renderer3D::BeginScene(m_OrthoCamera);
 
 	glm::vec3 trans = m_Transalations;
-	Renderer3D::DrawQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
-	Renderer3D::DrawQuad({ trans.x, trans.y, -3.0f }, m_Rotations, {m_Scales.x * 20.0f, m_Scales.y * 20.0f, 0.0f }, m_Texture);
-	Renderer3D::DrawQuad({ 0.0f, 0.0f, 3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
-	Renderer3D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.5f, 0.7f, 0.1f, 1.0f });
-	Renderer3D::DrawQuad({ 0.0f, 0.0f,-3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.9f, 0.25f, 0.55f, 1.0f });
-	Renderer3D::DrawQuad({ 0.0f, 0.0f,-6.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 1.0f, 0.5f, 1.0f });
+	{
+		PROFILE_SCOPE("Rendering");
+		Renderer3D::DrawQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
+		Renderer3D::DrawQuad({ trans.x, trans.y, -3.0f }, m_Rotations, { m_Scales.x * 20.0f, m_Scales.y * 20.0f, 0.0f }, m_Texture);
+		Renderer3D::DrawQuad({ 0.0f, 0.0f, 3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+		Renderer3D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.5f, 0.7f, 0.1f, 1.0f });
+		Renderer3D::DrawQuad({ 0.0f, 0.0f,-3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.9f, 0.25f, 0.55f, 1.0f });
+		Renderer3D::DrawQuad({ 0.0f, 0.0f,-6.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 1.0f, 0.5f, 1.0f });
+	}
 
 	Renderer3D::EndScene();
 
-	if (m_Perspective)
-		m_Camera->OnUpdate(ts);
-	else
-		m_OrthoCamera->OnUpdate(ts);
+	{
+		PROFILE_SCOPE("Camera Updating");
+		if (m_Perspective)
+			m_Camera->OnUpdate(ts);
+		else
+			m_OrthoCamera->OnUpdate(ts);
+	}
 }
 
 void TestLayer::onEvent(Event& e)
@@ -56,6 +66,7 @@ void TestLayer::onEvent(Event& e)
 
 void TestLayer::onImGuiRender()
 {
+	PROFILE_FUNCTION();
 	Application& app = Application::getApp(); // Currently imgui does nothing since its input is not passed on
 
 	ImGui::Begin("Editing Panel");

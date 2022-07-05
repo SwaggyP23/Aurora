@@ -34,7 +34,7 @@ private:
 
 	glm::vec4 uniColor = glm::vec4(0.5f);
 
-	std::array<glm::vec3, 10> m_CubePositions;
+	std::array<glm::vec3, 10> m_CubePositions{};
 
 private: // ImGui stuff
 	float m_Time = 0.0f;

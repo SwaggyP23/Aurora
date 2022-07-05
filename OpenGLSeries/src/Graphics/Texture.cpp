@@ -39,7 +39,9 @@ Texture::Texture(uint32_t width, uint32_t height)
 	: m_Width(width), m_Height(height)
 {
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
+
 	glTextureStorage2D(m_TextID, 1, GL_RGBA8, m_Width, m_Height);
+
 	setTextureWrapping(GL_REPEAT);
 	setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 }
@@ -86,7 +88,8 @@ void Texture::loadTextureData()
 	m_Width = Utils::ImageLoader::Get().getWidth();
 	m_Height = Utils::ImageLoader::Get().getHeight();
 
-	if (Utils::ImageLoader::Get().getData()) {
+	if (Utils::ImageLoader::Get().getData())
+	{
 
 		int channels = Utils::ImageLoader::Get().getChannels();
 		CORE_LOG_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
@@ -99,9 +102,8 @@ void Texture::loadTextureData()
 
 		glGenerateTextureMipmap(m_TextID);
 	}
-	else {
+	else
 		CORE_LOG_ERROR("Failed to load Texture! {0}", m_Path);
-	}
 
 	Utils::ImageLoader::Get().FreeImage();
 }
@@ -112,7 +114,8 @@ void Texture::bind(uint32_t slot) const
 	
 }
 
-void Texture::unBind() const
+void Texture::unBind(/*uint32_t slot*/) const
 {
+	//glBindTextureUnit(slot, 0); // This throws OpenGL error 1282, need to take a look at the specification
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -1,6 +1,7 @@
 .vs/
 .git/
 bin/
+Profiling/
 Build/
 
 OpenGLSeries.sln
