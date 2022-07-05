@@ -8,14 +8,23 @@ struct QuadData
 	Ref<Texture> DefaultTex;
 };
 
+struct Vertex
+{
+	glm::vec3 pos;
+	glm::vec4 color;
+	glm::vec2 texCoords;
+};
+
 static QuadData* s_QuadData;
 
 void Renderer3D::Init()
 {
+	PROFILE_FUNCTION();
+
 	s_QuadData = new QuadData();
 
 	// For Cubes-----------------------------------------------------------------------
-	s_QuadData->TexShader = CreateRef<Shader>("resources/shaders/MainShader.shader");
+	s_QuadData->TexShader = Shader::Create("resources/shaders/MainShader.shader");
 	s_QuadData->quadVA = VertexArray::Create();
 
 	float vertices[] = {
@@ -92,12 +101,16 @@ void Renderer3D::ShutDown()
 
 void Renderer3D::BeginScene(const Ref<EditorCamera>& camera)
 {
+	PROFILE_FUNCTION();
+
 	s_QuadData->TexShader->bind();
 	s_QuadData->TexShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
 }
 
 void Renderer3D::BeginScene(const Ref<OrthoGraphicCamera>& camera)
 {
+	PROFILE_FUNCTION();
+
 	s_QuadData->TexShader->bind();
 	s_QuadData->TexShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
 }
@@ -106,8 +119,43 @@ void Renderer3D::EndScene()
 {
 }
 
-void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color)// Should take a rotation!
+void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color)
 {
+	PROFILE_FUNCTION();
+
+	glm::mat4 model(1.0f);
+	model = glm::translate(glm::mat4(1.0f), position)
+		  * glm::scale(glm::mat4(1.0f), scale);
+
+	s_QuadData->TexShader->setUniform4f("u_Color", color);
+	s_QuadData->TexShader->setUniformMat4("u_ModelMatrix", model);
+
+	s_QuadData->DefaultTex->bind();
+	s_QuadData->quadVA->bind();
+	RenderCommand::DrawIndexed(s_QuadData->quadVA);
+}
+
+void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling)
+{
+	PROFILE_FUNCTION();
+
+	glm::mat4 model(1.0f);
+	model = glm::translate(glm::mat4(1.0f), position)
+		  * glm::scale(glm::mat4(1.0f), scale);
+
+	s_QuadData->TexShader->setUniform4f("u_Color", glm::vec4(1.0f));
+	s_QuadData->TexShader->setUniform1f("u_TilingFactor", tiling);
+	s_QuadData->TexShader->setUniformMat4("u_ModelMatrix", model);
+
+	texture->bind();
+	s_QuadData->quadVA->bind();
+	RenderCommand::DrawIndexed(s_QuadData->quadVA);
+}
+
+void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color)// Should take a rotation!
+{
+	PROFILE_FUNCTION();
+
 	glm::mat4 model(1.0f);
 	model = glm::translate(glm::mat4(1.0f), position) 
 		  * glm::rotate(glm::mat4(1.0f), rotations.x, { 1.0f, 0.0f, 0.0f })
@@ -123,8 +171,10 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3 rotations, 
 	RenderCommand::DrawIndexed(s_QuadData->quadVA);
 }
 
-void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture)
+void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling)
 {
+	PROFILE_FUNCTION();
+
 	glm::mat4 model(1.0f);
 	model = glm::translate(glm::mat4(1.0f), position)
 		* glm::rotate(glm::mat4(1.0f), rotations.x, { 1.0f, 0.0f, 0.0f })
@@ -133,6 +183,7 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3 rotations, 
 		* glm::scale(glm::mat4(1.0f), scale);
 
 	s_QuadData->TexShader->setUniform4f("u_Color", glm::vec4(1.0f));
+	s_QuadData->TexShader->setUniform1f("u_TilingFactor", tiling);
 	s_QuadData->TexShader->setUniformMat4("u_ModelMatrix", model);
 
 	texture->bind();

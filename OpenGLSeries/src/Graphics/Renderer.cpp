@@ -8,23 +8,31 @@ Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneDa
 
 void Renderer::Init()
 {
+	PROFILE_FUNCTION();
+
 	Renderer3D::Init();
 	RenderCommand::Init();
 }
 
 void Renderer::ShutDown()
 {
+	// PROFILE_FUNCTION(); Currently not needed since Application destructor profiles it
+
 	Renderer3D::ShutDown();
 	RenderCommand::ShutDown();
 }
 
 void Renderer::BeginScene(const Ref<EditorCamera>& camera)
 {
+	PROFILE_FUNCTION();
+
 	s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
 }
 
 void Renderer::BeginScene(const Ref<OrthoGraphicCamera>& camera)
 {
+	PROFILE_FUNCTION();
+
 	s_SceneData->viewProjectionMatrix = camera->GetViewProjection();
 }
 
@@ -34,12 +42,15 @@ void Renderer::EndScene()
 
 void Renderer::onWindowResize(uint32_t width, uint32_t height)
 {
+	PROFILE_FUNCTION();
+
 	RenderCommand::SetViewport(0, 0, width, height);
 }
 
-// For i will not take in the shader since i am already setting uniform outside the renderer
 void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
-{	
+{
+	PROFILE_FUNCTION();
+
 	shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
 	shader->setUniformMat4("ml_matrix", model);
 	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
@@ -50,6 +61,8 @@ void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const
 
 void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
 {
+	PROFILE_FUNCTION();
+
 	shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
 	shader->setUniformMat4("ml_matrix", model);
 	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));

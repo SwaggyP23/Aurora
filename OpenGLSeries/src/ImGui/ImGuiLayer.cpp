@@ -21,6 +21,8 @@ ImGuiLayer::~ImGuiLayer()
 
 void ImGuiLayer::onAttach()
 {
+	PROFILE_FUNCTION();
+
 	CORE_LOG_INFO("ImGui version: {0}", IMGUI_VERSION);
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -47,6 +49,8 @@ void ImGuiLayer::onAttach()
 
 void ImGuiLayer::onDetach()
 {
+	PROFILE_FUNCTION();
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -54,6 +58,8 @@ void ImGuiLayer::onDetach()
 
 void ImGuiLayer::begin()
 {
+	PROFILE_FUNCTION();
+
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -61,6 +67,8 @@ void ImGuiLayer::begin()
 
 void ImGuiLayer::end()
 {
+	PROFILE_FUNCTION();
+
 	ImGuiIO& io = ImGui::GetIO();
 	Application& app = Application::getApp();
 	io.DisplaySize = ImVec2((float)app.getWindow().getWidth(), (float)app.getWindow().getHeight());

@@ -17,6 +17,8 @@ Context::Context(GLFWwindow* windowHandle)
 
 void Context::Init()
 {
+	PROFILE_FUNCTION();
+
 	glfwMakeContextCurrent(m_WindowHandle);
 
 	int gladSuccess = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -32,5 +34,7 @@ void Context::Init()
 
 void Context::SwapBuffers()
 {
+	PROFILE_FUNCTION();
+
 	glfwSwapBuffers(m_WindowHandle);
 }

@@ -3,12 +3,13 @@
 #include <OpenGLSeries.h>
 
 #include <ImGui/imgui.h>
+#include "Snake.h"
 
-class TestLayer : public Layer
+class GameLayer : public Layer
 {
 public:
-	TestLayer();
-	virtual ~TestLayer() = default;
+	GameLayer();
+	virtual ~GameLayer() = default;
 
 	virtual void onAttach() override;
 	virtual void onDetach() override;
@@ -22,11 +23,29 @@ private:
 	Ref<EditorCamera> m_Camera;
 
 	Ref<Texture> m_Texture;
+	Ref<Texture> m_AppTexture;
+	Ref<Texture> m_SnakeTexture;
 
 private: // ImGui stuff
 	bool m_Perspective = true;
+	bool m_GameOver = false;
+	bool m_Eaten = false;
+	bool m_Generated = false;
 
-	glm::vec4 m_Color = glm::vec4(0.5f, 0.5f, 0.2f, 1.0f);
+	bool left = false, right = false, up = false, down = false;
+	
+	float m_X = 0.0f, m_Y = 0.0f;
+
+	enum class Direction
+	{
+		None = 0, Up, Down, Left, Right
+	};
+
+	Direction m_Dir = Direction::None;
+
+	Snake m_Snake;
+
+	glm::vec4 m_Color = glm::vec4(0.123f, 0.123f, 0.123f, 1.0f);
 	glm::vec4 m_UniColor = glm::vec4{ 0.2f, 0.3f, 0.8f, 1.0f };
 
 	glm::vec3 m_Transalations = glm::vec3(0.0f);

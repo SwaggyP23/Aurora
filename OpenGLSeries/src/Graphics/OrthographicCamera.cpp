@@ -17,6 +17,8 @@ OrthoGraphicCamera::OrthoGraphicCamera(float aspectRatio, float nearClip, float 
 
 void OrthoGraphicCamera::UpdateProjection()
 {
+	PROFILE_FUNCTION();
+
 	m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
 	//m_Projection = glm::perspective(glm::radians(16.0f / 9.0f), m_AspectRatio, m_NearClip, m_FarClip);
 	m_Projection = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -1.0f, 1.0f, m_NearClip, m_FarClip);
@@ -24,6 +26,8 @@ void OrthoGraphicCamera::UpdateProjection()
 
 void OrthoGraphicCamera::UpdateView()
 {
+	PROFILE_FUNCTION();
+
 	// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 	m_Position = CalculatePosition();
 
@@ -59,6 +63,8 @@ float OrthoGraphicCamera::ZoomSpeed() const
 
 void OrthoGraphicCamera::OnUpdate(TimeStep ts)
 {
+	PROFILE_FUNCTION();
+
 	if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
 	{
 		const glm::vec2& mouse{ Input::getMouseX(), Input::getMouseY() };
@@ -78,12 +84,16 @@ void OrthoGraphicCamera::OnUpdate(TimeStep ts)
 
 void OrthoGraphicCamera::OnEvent(Event& e)
 {
+	PROFILE_FUNCTION();
+
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(OrthoGraphicCamera::OnMouseScroll));
 }
 
 bool OrthoGraphicCamera::OnMouseScroll(MouseScrolledEvent& e)
 {
+	PROFILE_FUNCTION();
+
 	if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL)) {
 		//float delta = e.getYOffset() * 0.1f;
 		//MouseZoom(delta);

@@ -13,16 +13,22 @@ Ref<Window> Window::Create(const std::string& title, uint32_t width, uint32_t he
 
 Window::Window(const std::string& title, uint32_t width, uint32_t height)
 {
+	PROFILE_FUNCTION();
+
 	Init(title, width, height);
 }
 
 Window::~Window()
 {
+	PROFILE_FUNCTION();
+
 	ShutDown();
 }
 
 void Window::SetVSync(bool state)
 {
+	PROFILE_FUNCTION();
+
 	glfwSwapInterval(state);
 	m_Data.VSync = state;
 }
@@ -34,9 +40,13 @@ bool Window::closed() const
 
 void Window::update() const
 {
+#ifdef _DEBUG
 	GLenum error = glGetError();
 	if (error != GL_NO_ERROR)
 		CORE_LOG_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
+#endif
+
+	PROFILE_FUNCTION();
 
 	glfwPollEvents();
 	glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
@@ -45,6 +55,8 @@ void Window::update() const
 
 bool Window::Init(const std::string& title, uint32_t width, uint32_t height)
 {
+	// PROFILE_FUNCTION(); Currently not needed since the constructor just calls Init();
+
 	m_Data.Title = title;
 	m_Data.Width = width;
 	m_Data.Height = height;
@@ -163,6 +175,8 @@ bool Window::Init(const std::string& title, uint32_t width, uint32_t height)
 
 void Window::ShutDown()
 {
+	// PROFILE_FUNCTION(); Currently not needed since the destructor just calls ShutDown();
+
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
 }

@@ -5,6 +5,8 @@
 class KeyEvent : public Event
 {
 public:
+	virtual ~KeyEvent() = default;
+
 	inline int getKeyCode() const { return m_KeyCode; }
 
 	EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)

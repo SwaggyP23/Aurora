@@ -1,6 +1,7 @@
 #include <OpenGLSeries.h>
 #include "SandBoxLayer.h"
 #include "TestLayer.h"
+#include "Snake/GameLayer.h"
 #include <Core/EntryPoint.h>
 
 class Sandbox : public Application
@@ -11,6 +12,7 @@ public:
 	{
 		//pushLayer(new SandBoxLayer());
 		pushLayer(new TestLayer());
+		//pushLayer(new GameLayer());
 	}
 
 	~Sandbox()

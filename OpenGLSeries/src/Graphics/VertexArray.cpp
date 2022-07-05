@@ -9,26 +9,36 @@ Ref<VertexArray> VertexArray::Create()
 VertexArray::VertexArray()
 	: m_IndexBuffer()
 {
+	PROFILE_FUNCTION();
+
 	glCreateVertexArrays(1, &m_ArrayId);
 }
 
 VertexArray::~VertexArray()
 {
+	PROFILE_FUNCTION();
+
 	glDeleteVertexArrays(1, &m_ArrayId);
 }
 
 void VertexArray::bind() const
 {
+	PROFILE_FUNCTION();
+
 	glBindVertexArray(m_ArrayId);
 }
 
 void VertexArray::unBind() const
 {
+	PROFILE_FUNCTION();
+
 	glBindVertexArray(0);
 }
 
 void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 {
+	PROFILE_FUNCTION();
+
 	glBindVertexArray(m_ArrayId);
 	vertexBuffer->bind();
 
@@ -52,6 +62,8 @@ void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 
 void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 {
+	PROFILE_FUNCTION();
+
 	glBindVertexArray(m_ArrayId);
 	indexBuffer->bind();
 

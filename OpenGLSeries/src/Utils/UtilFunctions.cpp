@@ -17,6 +17,8 @@ namespace Utils {
 
 	std::string FileReader::ReadFile(const std::string& filePath)
 	{
+		PROFILE_FUNCTION();
+
 		std::string result;
 		std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
 		if (in.is_open())

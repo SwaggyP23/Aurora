@@ -120,7 +120,7 @@ private:
     bool m_Stopped;
 };
 
-#define CORE_PROFILE 1
+#define CORE_PROFILE 0
 #if CORE_PROFILE
 
     #define PROFILE_BEGIN_SESSION(name, filpath)    ::Instrumentor::Get().BeginSession(name, filpath)

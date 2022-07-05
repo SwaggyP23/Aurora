@@ -3,8 +3,13 @@
 #include "Core/Base.h"
 
 #include <string>
-#include <functional>
 #include <sstream>
+
+/*
+ * This switched from using std::function to using just normal function pointers which are deduced by the compiler in the
+ * dispatch function in the F template argument.
+ * The switch is to reduce potential heap allocations done by std::function!
+ */ 
 
 enum class EventType
 {
@@ -17,11 +22,11 @@ enum class EventType
 enum EventCategory
 {
 	None = 0,
-	EventCategoryApplication = BIT(0),
-	EventCategoryInput = BIT(1),
-	EventCategoryKeyboard = BIT(2),
-	EventCategoryMouse = BIT(3),
-	EventCategoryMouseButton = BIT(4)
+	EventCategoryApplication   = BIT(0),
+	EventCategoryInput         = BIT(1),
+	EventCategoryKeyboard      = BIT(2),
+	EventCategoryMouse         = BIT(3),
+	EventCategoryMouseButton   = BIT(4)
 };
 
 #define EVENT_CLASS_TYPE(type) static EventType getStaticType() { return EventType::type; }\
@@ -50,19 +55,16 @@ public:
 
 class EventDispatcher
 {
-	template<typename T>
-	using EventFn = std::function<bool(T&)>; // This is a function that returns a bool and takes T& arg.
-											 // Also T here is the type of even e.g. WindowResizeEvent...
 public:
 	EventDispatcher(Event& e)
 		: m_Event(e) {}
 
-	template<typename T>
-	bool dispatch(EventFn<T> func)
+	template<typename T, typename F> // F is to be deduced by compiler, and it will be a function
+	bool dispatch(const F& func)
 	{
 		if (m_Event.getEventType() == T::getStaticType())
 		{
-			m_Event.Handled = func(*(T*)&m_Event);
+			m_Event.Handled |= func(static_cast<T&>(m_Event));
 			return true;
 		}
 		return false;

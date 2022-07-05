@@ -31,6 +31,8 @@ uint32_t BufferElement::getComponentCount() const
 
 void BufferLayout::calcStrideAndOffset()
 {
+	PROFILE_FUNCTION();
+
 	GLuint offset = 0;
 	m_Stride = 0;
 	for (auto& element : m_Elements)
@@ -50,26 +52,40 @@ Ref<VertexBuffer> VertexBuffer::Create(GLfloat* vertices, size_t size)
 	return CreateRef<VertexBuffer>(vertices, size);
 }
 
+VertexBuffer::VertexBuffer(size_t size)
+{
+	glCreateBuffers(1, &m_BufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
+	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+}
+
 VertexBuffer::VertexBuffer(GLfloat* vertices, size_t size)
 {
-	glGenBuffers(1, &m_BufferID);
+	PROFILE_FUNCTION();
+
+	glCreateBuffers(1, &m_BufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 	glBufferData(GL_ARRAY_BUFFER, size, (const void*)vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 VertexBuffer::~VertexBuffer()
 {
+	PROFILE_FUNCTION();
+
 	glDeleteBuffers(1, &m_BufferID);
 }
 
 void VertexBuffer::bind() const
 {
+	PROFILE_FUNCTION();
+
 	glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 }
 
 void VertexBuffer::unBind() const
 {
+	PROFILE_FUNCTION();
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -90,25 +106,32 @@ Ref<IndexBuffer> IndexBuffer::Create(GLuint* indices, size_t count)
 IndexBuffer::IndexBuffer(GLuint* indices, size_t count)
 	: m_Count(count)
 {
-	glGenBuffers(1, &m_BufferId);
+	PROFILE_FUNCTION();
+
+	glCreateBuffers(1, &m_BufferId);
 	// Since we specified here that is is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
 	// otherwise it will not work
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), indices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 IndexBuffer::~IndexBuffer()
 {
+	PROFILE_FUNCTION();
+
 	glDeleteBuffers(1, &m_BufferId);
 }
 
 void IndexBuffer::bind() const
 {
+	PROFILE_FUNCTION();
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
 }
 
 void IndexBuffer::unBind() const
 {
+	PROFILE_FUNCTION();
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

@@ -16,12 +16,16 @@ EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float f
 
 void EditorCamera::UpdateProjection()
 {
+	PROFILE_FUNCTION();
+
 	m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
 	m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
 }
 
 void EditorCamera::UpdateView()
 {
+	PROFILE_FUNCTION();
+
 	// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 	m_Position = CalculatePosition();
 
@@ -57,6 +61,8 @@ float EditorCamera::ZoomSpeed() const
 
 void EditorCamera::OnUpdate(TimeStep ts)
 {
+	PROFILE_FUNCTION();
+
 	if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
 	{
 		const glm::vec2& mouse{ Input::getMouseX(), Input::getMouseY() };
@@ -76,12 +82,16 @@ void EditorCamera::OnUpdate(TimeStep ts)
 
 void EditorCamera::OnEvent(Event& e)
 {
+	PROFILE_FUNCTION();
+
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(EditorCamera::OnMouseScroll));
 }
 
 bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 {
+	PROFILE_FUNCTION();
+
 	if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL)) {
 		float delta = e.getYOffset() * 0.1f;
 		MouseZoom(delta);

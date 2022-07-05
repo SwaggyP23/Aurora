@@ -7,8 +7,10 @@ LayerStack::LayerStack()
 
 LayerStack::~LayerStack()
 {
-	for (Layer* layer : m_Layers)
+	for (Layer* layer : m_Layers) {
+		layer->onDetach();
 		delete layer;
+	}
 }
 
 void LayerStack::pushLayer(Layer* layer)

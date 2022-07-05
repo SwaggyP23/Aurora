@@ -93,7 +93,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Snake\GameLayer.cpp" />
     <ClCompile Include="src\SandBoxLayer.cpp" />
+    <ClCompile Include="src\Snake\Snake.cpp" />
     <ClCompile Include="src\TestLayer.cpp" />
     <ClCompile Include="src\SandBoxApp.cpp" />
   </ItemGroup>
@@ -103,7 +105,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Snake\GameLayer.h" />
     <ClInclude Include="src\SandBoxLayer.h" />
+    <ClInclude Include="src\Snake\Snake.h" />
     <ClInclude Include="src\TestLayer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

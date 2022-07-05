@@ -11,7 +11,7 @@ class Application
 {
 public:
 	Application(const std::string& name = "OpenGLSeries App");
-	~Application();
+	virtual ~Application();
 
 	void Run();
 	void onEvent(Event& e);

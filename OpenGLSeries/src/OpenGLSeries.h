@@ -13,6 +13,8 @@
 #include "Layers/Layer.h"
 #include "Logging/Log.h"
 
+#include "Utils/Random.h"
+
 #include "Input/Input.h"
 
 #include "ImGui/ImGuiLayer.h"

@@ -53,6 +53,8 @@ private:
 class MouseButtonEvent : public Event
 {
 public:
+	virtual ~MouseButtonEvent() = default;
+
 	inline int getButtonCode() const { return m_ButtonCode; }
 
 	EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)

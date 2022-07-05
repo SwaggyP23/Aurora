@@ -93,6 +93,8 @@ Ref<Shader> Shader::Create(const std::string& filepath)
 Shader::Shader(const std::string& filePath)
 	: m_FilePath(filePath)
 {
+	PROFILE_FUNCTION();
+
 	std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
 
 	auto shaderSplitSources = splitSource(shaderFullSource);
@@ -109,6 +111,8 @@ Shader::Shader(const std::string& filePath)
 
 std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
 { // Props to @TheCherno
+	PROFILE_FUNCTION();
+
 	std::unordered_map<GLenum, std::string> shaderSources;
 
 	const char* typeIdentifier = "#shader";
@@ -134,6 +138,8 @@ std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& s
 
 GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
 {
+	PROFILE_FUNCTION();
+
 	GLuint program = glCreateProgram();
 	std::vector<GLuint> ShaderIDs;
 	ShaderIDs.reserve(shaderSources.size());
@@ -167,16 +173,22 @@ GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>
 
 Shader::~Shader()
 {
+	PROFILE_FUNCTION();
+
 	glDeleteProgram(m_ShaderID);
 }
 
 void Shader::bind() const
 {
+	PROFILE_FUNCTION();
+
 	glUseProgram(m_ShaderID);
 }
 
 void Shader::unBind() const
 {
+	PROFILE_FUNCTION();
+
 	glUseProgram(0);
 }
 
@@ -227,6 +239,8 @@ void Shader::setUniformMat4(const GLchar* name, const float* matrix) const
 
 GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
 {
+	PROFILE_FUNCTION();
+
 	auto it = m_UniformLocations.find(name);
 	if (it != m_UniformLocations.end())
 		return it->second;
@@ -243,6 +257,8 @@ GLint Shader::getUniformLocation(const std::string& name) const // To be instrum
 
 void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 {
+	PROFILE_FUNCTION();
+
 	CORE_ASSERT(!Exists(name), "Shader already exists!");
 	m_Shaders[name] = shader;
 }
@@ -255,6 +271,8 @@ void ShaderLibrary::Add(const Ref<Shader>& shader)
 
 Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
 {
+	PROFILE_FUNCTION();
+
 	auto shader = Shader::Create(filepath);
 	Add(shader);
 	return shader;
@@ -262,6 +280,8 @@ Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
 
 Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 {
+	PROFILE_FUNCTION();
+
 	auto shader = Shader::Create(filepath);
 	Add(name, shader);
 	return shader;

@@ -57,7 +57,7 @@ private: // ImGui stuff
 	glm::vec3 m_SphereRotations = glm::vec3(0.0f);
 	glm::vec3 m_SphereScales = glm::vec3(1.0f);
 
-	glm::vec4 m_Color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Initial clear color for lighting.
+	glm::vec4 m_Color = glm::vec4(0.09f, 0.09f, 0.09f, 1.0f); // Initial clear color for lighting.
 	glm::vec4 m_LightColor = glm::vec4(1.0f); // Initial clear color for lighting.
 	glm::vec4 m_UniColor = glm::vec4(1.0f);
 

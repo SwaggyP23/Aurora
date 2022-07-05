@@ -115,6 +115,7 @@ class VertexBuffer
 {
 public:
 	VertexBuffer() = default;
+	VertexBuffer(size_t size);
 	VertexBuffer(GLfloat* vertices, size_t size);
 	~VertexBuffer();
 

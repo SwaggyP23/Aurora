@@ -15,7 +15,7 @@ class ImGuiLayer : public Layer
 {
 public:
 	ImGuiLayer();
-	virtual ~ImGuiLayer();
+	~ImGuiLayer();
 
 	virtual void onAttach() override;
 	virtual void onDetach() override;
