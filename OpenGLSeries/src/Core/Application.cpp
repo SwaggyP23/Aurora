@@ -1,7 +1,7 @@
 #include "OGLpch.h"
 #include "Application.h"
 
-#include "Graphics/Renderer.h"
+#include "Renderer/Renderer.h"
 
 Application* Application::s_Instance = nullptr;
 

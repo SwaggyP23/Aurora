@@ -1,18 +1,27 @@
 #include "OGLpch.h"
 #include "Renderer3D.h"
 
+// For now just to make the batch renederer work, we wont take a scale, the scale will actually be a vec2 size which will be 
+// added to the transform components!
+
+static const size_t MaxQuadCount     = 1000;
+static const size_t MaxVertexCount   = MaxQuadCount * 4;
+static const size_t MaxIndexCount    = MaxQuadCount * 6;
+static const size_t MaxTextureSlots  = RendererProperties::GetRendererProperties()->TextureSlots;
+
+struct Vertex
+{
+	glm::vec3 Position;
+	glm::vec4 Color;
+	glm::vec2 TexCoords;
+	float TexIndex;
+};
+
 struct QuadData
 {
 	Ref<VertexArray> quadVA;
 	Ref<Shader> TexShader;
 	Ref<Texture> DefaultTex;
-};
-
-struct Vertex
-{
-	glm::vec3 pos;
-	glm::vec4 color;
-	glm::vec2 texCoords;
 };
 
 static QuadData* s_QuadData;

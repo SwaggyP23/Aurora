@@ -1,9 +1,9 @@
 #pragma once
 
-#include "OrthoGraphicCamera.h"
-#include "EditorCamera.h"
-#include "VertexArray.h"
-#include "Shader.h"
+#include "Graphics/OrthoGraphicCamera.h"
+#include "Graphics/EditorCamera.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Shader.h"
 
 class Renderer
 {

@@ -24,11 +24,6 @@ void Context::Init()
 	int gladSuccess = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	CORE_ASSERT(gladSuccess, "Failed to initialize glad!");
 
-	CORE_LOG_INFO("OpenGL Info:");
-	CORE_LOG_INFO("   --> Vendor: {0}", (const char*)glGetString(GL_VENDOR));
-	CORE_LOG_INFO("   --> Renderer: {0}", (const char*)glGetString(GL_RENDERER));
-	CORE_LOG_INFO("   --> Version: {0}", (const char*)glGetString(GL_VERSION));
-
 	CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "OpenGL version is less that 4.5!");
 }
 

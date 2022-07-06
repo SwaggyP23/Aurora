@@ -2,7 +2,7 @@ project "Glad"
     kind "StaticLib"
     language "C"
     staticruntime "on"
-    
+
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
@@ -20,6 +20,10 @@ project "Glad"
     
     filter "system:windows"
         systemversion "latest"
+
+    filter "configurations:Profile"
+        runtime "Debug"
+        symbols "on"
 
     filter "configurations:Debug"
         runtime "Debug"

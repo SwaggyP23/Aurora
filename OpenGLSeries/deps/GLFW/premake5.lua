@@ -53,6 +53,10 @@ project "GLFW"
         "_CRT_SECURE_NO_WARNINGS"
     }
 
+    filter "configurations:Profile"
+        runtime "Debug"
+        symbols "on"
+
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"

@@ -36,6 +36,20 @@ project "SandBox"
         {
         }
 
+    filter "configurations:Profile"
+        defines
+        {
+            "_DEBUG",
+            "_CORE_PROFILE_"
+        }
+
+        runtime "Debug"
+        symbols "on"
+
+        links
+        {
+        }
+
     filter "configurations:Debug"
         defines "_DEBUG"
         runtime "Debug"
@@ -55,4 +69,4 @@ project "SandBox"
         }
 
     filter { "system:windows", "configurations:Release" }
-    buildoptions "/O2"
+        buildoptions "/O2"

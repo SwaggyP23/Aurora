@@ -11,6 +11,7 @@ workspace "OpenGLSeries"
 
         configurations 
         {
+            "Profile",
             "Debug",
             "Release"
         }

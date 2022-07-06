@@ -33,7 +33,7 @@ void Window::SetVSync(bool state)
 	m_Data.VSync = state;
 }
 
-bool Window::closed() const
+bool Window::closed() const 
 {
 	return glfwWindowShouldClose(m_Window) == 1;
 }

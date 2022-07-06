@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Base.h"
+#include "Renderer/RendererPorperties.h"
 
 struct GLFWwindow; // This is so that we dont have to include the glfw header because this will be included in window!
 

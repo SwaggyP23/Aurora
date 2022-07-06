@@ -1,13 +1,14 @@
 #pragma once
 
-#include "EditorCamera.h"
-#include "OrthographicCamera.h"
+#include "Graphics/EditorCamera.h"
+#include "Graphics/OrthographicCamera.h"
 
 #include "RenderCommand.h"
+#include "RendererPorperties.h"
 
-#include "VertexArray.h"
-#include "Texture.h"
-#include "Shader.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Texture.h"
+#include "Graphics/Shader.h"
 
 // Should be one uniform buffer for quads, another for spheres and u get the idea.
 // Should also be one and only one shader.

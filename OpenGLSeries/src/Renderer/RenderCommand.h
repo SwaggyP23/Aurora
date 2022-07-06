@@ -3,8 +3,8 @@
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 
-#include "VertexArray.h"
-#include "Texture.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Texture.h"
 
 class RenderCommand
 {

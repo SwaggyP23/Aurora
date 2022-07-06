@@ -1,4 +1,5 @@
 #include "OGLpch.h"
+#include "RendererPorperties.h"
 #include "Renderer.h"
 #include "Renderer3D.h"
 #include "RenderCommand.h"
@@ -10,6 +11,7 @@ void Renderer::Init()
 {
 	PROFILE_FUNCTION();
 
+	RendererProperties::Init();
 	Renderer3D::Init();
 	RenderCommand::Init();
 }
@@ -20,6 +22,7 @@ void Renderer::ShutDown()
 
 	Renderer3D::ShutDown();
 	RenderCommand::ShutDown();
+	RendererProperties::ShutDown();
 }
 
 void Renderer::BeginScene(const Ref<EditorCamera>& camera)
