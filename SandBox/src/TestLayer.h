@@ -21,10 +21,12 @@ private:
 	Ref<OrthoGraphicCamera> m_OrthoCamera;
 	Ref<EditorCamera> m_Camera;
 
-	Ref<Texture> m_Texture;
+	Ref<Texture> m_CheckerTexture;
+	Ref<Texture> m_QiyanaTexture;
 
 private: // ImGui stuff
 	bool m_Perspective = true;
+	bool m_IsR = false;
 
 	glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 	glm::vec4 m_UniColor = glm::vec4{ 0.2f, 0.3f, 0.8f, 1.0f };

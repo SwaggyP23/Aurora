@@ -22,6 +22,7 @@ public:
 	// Setting uniforms...
 
 	void setUniform1i(const GLchar* name, GLuint val) const;
+	void setUniformArrayi(const GLchar* name, GLint* vals, uint32_t count) const;
 	void setUniform1f(const GLchar* name, GLfloat val) const;
 	void setUniform2f(const GLchar* name, const glm::vec2& vector) const;
 	void setUniform3f(const GLchar* name, const glm::vec3& vector) const;

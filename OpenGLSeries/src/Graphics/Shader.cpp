@@ -197,6 +197,11 @@ void Shader::setUniform1i(const GLchar* name, GLuint val) const
 	glUniform1i(getUniformLocation(name), val);
 }
 
+void Shader::setUniformArrayi(const GLchar* name, GLint* vals, uint32_t count) const
+{
+	glUniform1iv(getUniformLocation(name), count, vals);
+}
+
 void Shader::setUniform1f(const GLchar* name, GLfloat val) const
 {
 	glUniform1f(getUniformLocation(name), val);

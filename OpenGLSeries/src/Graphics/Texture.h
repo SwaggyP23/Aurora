@@ -36,6 +36,9 @@ public:
 
 	inline unsigned int GetWidth() const { return m_Width; }
 	inline unsigned int GetHeight() const { return m_Height; }
+	inline unsigned int GetTextureID() const { return m_TextID; }
+
+	bool operator==(const Texture& other) const { return m_TextID == other.m_TextID; }
 
 private:
 	GLuint m_TextID;
