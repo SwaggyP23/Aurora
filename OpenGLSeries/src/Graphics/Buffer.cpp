@@ -47,19 +47,26 @@ void BufferLayout::calcStrideAndOffset()
 // VERTEX BUFFER!!
 //////////////////////////
 
-Ref<VertexBuffer> VertexBuffer::Create(GLfloat* vertices, size_t size)
+Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
+{
+	return CreateRef<VertexBuffer>(size);
+}
+
+Ref<VertexBuffer> VertexBuffer::Create(GLfloat* vertices, uint32_t size)
 {
 	return CreateRef<VertexBuffer>(vertices, size);
 }
 
-VertexBuffer::VertexBuffer(size_t size)
+VertexBuffer::VertexBuffer(uint32_t size)
 {
+	PROFILE_FUNCTION();
+
 	glCreateBuffers(1, &m_BufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 }
 
-VertexBuffer::VertexBuffer(GLfloat* vertices, size_t size)
+VertexBuffer::VertexBuffer(GLfloat* vertices, uint32_t size)
 {
 	PROFILE_FUNCTION();
 
@@ -89,21 +96,24 @@ void VertexBuffer::unBind() const
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void VertexBuffer::setLayout(const BufferLayout& layout)
+void VertexBuffer::SetData(const void* data, uint32_t size)
 {
-	m_Layout = layout;
+	PROFILE_FUNCTION();
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 }
 
 //////////////////////////
 // INDEX BUFFER!!
 //////////////////////////
 
-Ref<IndexBuffer> IndexBuffer::Create(GLuint* indices, size_t count)
+Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
 {
 	return CreateRef<IndexBuffer>(indices, count);
 }
 
-IndexBuffer::IndexBuffer(GLuint* indices, size_t count)
+IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
 	: m_Count(count)
 {
 	PROFILE_FUNCTION();
@@ -112,7 +122,7 @@ IndexBuffer::IndexBuffer(GLuint* indices, size_t count)
 	// Since we specified here that is is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
 	// otherwise it will not work
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 }
 
 IndexBuffer::~IndexBuffer()

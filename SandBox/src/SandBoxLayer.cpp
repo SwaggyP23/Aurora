@@ -122,12 +122,12 @@ void SandBoxLayer::onAttach()
 	};
 
 	m_SphereVertexArray = VertexArray::Create();
-	Ref<VertexBuffer> m_SphereVertexBuffer = VertexBuffer::Create(&data[0], data.size() * sizeof(float));
+	Ref<VertexBuffer> m_SphereVertexBuffer = VertexBuffer::Create(&data[0], (uint32_t)data.size() * sizeof(float));
 	m_SphereVertexBuffer->bind();
 	m_SphereVertexBuffer->setLayout(m_SphereLayout);
 	m_SphereVertexArray->addVertexBuffer(m_SphereVertexBuffer);
 
-	Ref<IndexBuffer> m_SphereIndexBuffer = IndexBuffer::Create(&Sphereindices[0], Sphereindices.size());
+	Ref<IndexBuffer> m_SphereIndexBuffer = IndexBuffer::Create(&Sphereindices[0], (uint32_t)Sphereindices.size());
 	m_SphereIndexBuffer->bind();
 	m_SphereVertexArray->setIndexBuffer(m_SphereIndexBuffer);
 
@@ -204,7 +204,7 @@ void SandBoxLayer::onAttach()
 	m_Shaders.Load("resources/shaders/Ground.shader");
 	m_Shaders.Load("resources/shaders/Sphere.shader");
 
-	GLuint indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
+	uint32_t indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
 							  4, 5, 6, 6, 7, 4,
 							  8, 9, 10, 10 ,11, 8,
 							  12, 13, 14, 14, 15, 12,
@@ -226,8 +226,7 @@ void SandBoxLayer::onAttach()
 	m_VertexBuffer->setLayout(m_Layout);
 	m_VertexArray->addVertexBuffer(m_VertexBuffer);
 
-	// the 2nd arg here should be sizeof(indices) / sizeof(uint32_t) but it gives warning
-	Ref<IndexBuffer> m_IndexBuffer = IndexBuffer::Create(indices, sizeof(indices) / sizeof(GLuint));
+	Ref<IndexBuffer> m_IndexBuffer = IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
 	m_IndexBuffer->bind();
 	m_VertexArray->setIndexBuffer(m_IndexBuffer);
 

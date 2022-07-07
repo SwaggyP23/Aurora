@@ -26,7 +26,7 @@ private:
 private: // ImGui stuff
 	bool m_Perspective = true;
 
-	glm::vec4 m_Color = glm::vec4(0.5f, 0.5f, 0.2f, 1.0f);
+	glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 	glm::vec4 m_UniColor = glm::vec4{ 0.2f, 0.3f, 0.8f, 1.0f };
 
 	glm::vec3 m_Transalations = glm::vec3(0.0f);

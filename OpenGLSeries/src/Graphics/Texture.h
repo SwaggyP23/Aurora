@@ -18,9 +18,10 @@ public:
 	Texture(const std::string& filePath);
 	~Texture();
 
+	static Ref<Texture> Create(uint32_t width, uint32_t height);
 	static Ref<Texture> Create(const std::string& filePath);
 
-	void setData(void* data);
+	void setData(void* data, uint32_t size);
 
 	void setTextureWrapping(GLenum wrapMode = GL_REPEAT) const;
 	void setTextureFiltering(GLenum minFilter = GL_NEAREST, GLenum magFilter = GL_NEAREST) const;
@@ -40,5 +41,7 @@ private:
 	GLuint m_TextID;
 	std::string m_Path;
 	uint32_t m_Width, m_Height;
+	GLint m_InternalFormat;
+	GLenum m_DataFormat;
 
 };

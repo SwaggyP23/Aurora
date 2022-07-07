@@ -115,18 +115,21 @@ class VertexBuffer
 {
 public:
 	VertexBuffer() = default;
-	VertexBuffer(size_t size);
-	VertexBuffer(GLfloat* vertices, size_t size);
+	VertexBuffer(uint32_t size);
+	VertexBuffer(GLfloat* vertices, uint32_t size);
 	~VertexBuffer();
 
-	static Ref<VertexBuffer> Create(GLfloat* vertices, size_t size);
+	static Ref<VertexBuffer> Create(uint32_t size);
+	static Ref<VertexBuffer> Create(GLfloat* vertices, uint32_t size);
 
 	void bind() const;
 	void unBind() const;
 
-	void setLayout(const BufferLayout& layout);
+	void SetData(const void* data, uint32_t size);
 
-	inline BufferLayout getBufferLayout() const { return m_Layout; }
+	inline const BufferLayout& getBufferLayout() const { return m_Layout; }
+	void setLayout(const BufferLayout& layout) { m_Layout = layout; }
+
 
 private:
 	GLuint m_BufferID;
@@ -137,23 +140,24 @@ private:
 // INDEX BUFFER!!
 //////////////////////////
 
+// Only supports 32-bit index buffers
 class IndexBuffer
 {
 public:
 	IndexBuffer() = default;
-	IndexBuffer(GLuint* indices, size_t count);
+	IndexBuffer(uint32_t* indices, uint32_t count);
 	~IndexBuffer();
 
-	static Ref<IndexBuffer> Create(GLuint* indices, size_t count);
+	static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 
 	void bind() const;
 	void unBind() const;
 
-	inline size_t getCount() const { return m_Count; }
+	inline uint32_t getCount() const { return m_Count; }
 
 private:
 	GLuint m_BufferId;
-	size_t m_Count;
+	uint32_t m_Count;
 };
 
 #endif // !_BUFFER_H_

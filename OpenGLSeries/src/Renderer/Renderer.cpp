@@ -59,7 +59,7 @@ void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const
 	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 	VAO->bind();
-	RenderCommand::DrawIndexed(VAO);
+	RenderCommand::DrawIndexed(VAO, true);
 }
 
 void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
@@ -71,5 +71,5 @@ void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, con
 	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 	VAO->bind();
-	RenderCommand::DrawIndexed(VAO, true);
+	RenderCommand::DrawIndexed(VAO, false);
 }

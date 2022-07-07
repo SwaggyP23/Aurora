@@ -30,6 +30,11 @@ namespace Utils {
 	}
 }
 
+Ref<Texture> Texture::Create(uint32_t width, uint32_t height)
+{
+	return CreateRef<Texture>(width, height);
+}
+
 Ref<Texture> Texture::Create(const std::string& filePath)
 {
 	return CreateRef<Texture>(filePath);
@@ -40,6 +45,9 @@ Texture::Texture(uint32_t width, uint32_t height)
 {
 	PROFILE_FUNCTION();
 
+	m_InternalFormat = GL_RGBA8;
+	m_DataFormat = GL_RGBA;
+
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
 
 	glTextureStorage2D(m_TextID, 1, GL_RGBA8, m_Width, m_Height);
@@ -49,18 +57,22 @@ Texture::Texture(uint32_t width, uint32_t height)
 }
 
 Texture::Texture(const std::string& filePath)
-	: m_Path(filePath), m_Width(0), m_Height(0)
+	: m_Path(filePath), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0)
 {
 	PROFILE_FUNCTION();
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
 }
 
-void Texture::setData(void* data)
+void Texture::setData(void* data, uint32_t size)
 {
 	PROFILE_FUNCTION();
 
-	glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#if _DEBUG
+	uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
+	CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
+#endif
+	glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 }
 
 Texture::~Texture()
@@ -111,9 +123,13 @@ void Texture::loadTextureData()
 		CORE_LOG_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
 
 		Utils::Formats texFormat = Utils::getFormatsFromChannels(channels);
+		m_InternalFormat = texFormat.InternalFormat;
+		m_DataFormat = texFormat.DataFormat;
 
-		glTextureStorage2D(m_TextID, 5, texFormat.InternalFormat, m_Width, m_Height); // level is number of mipmaps
-		glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, texFormat.DataFormat, GL_UNSIGNED_BYTE, Utils::ImageLoader::Get().getData());
+		CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
+
+		glTextureStorage2D(m_TextID, 5, m_InternalFormat, m_Width, m_Height); // level is number of mipmaps
+		glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, Utils::ImageLoader::Get().getData());
 		// the first 0 is the index of the first level/mipmap
 
 		glGenerateTextureMipmap(m_TextID);

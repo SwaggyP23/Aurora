@@ -39,6 +39,8 @@ void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 {
 	PROFILE_FUNCTION();
 
+	CORE_ASSERT(vertexBuffer->getBufferLayout().getElements().size(), "Vertex Buffer had no layout!");
+
 	glBindVertexArray(m_ArrayId);
 	vertexBuffer->bind();
 
@@ -57,7 +59,6 @@ void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	}
 
 	m_VertexBuffers.push_back(vertexBuffer);
-	glBindVertexArray(0);
 }
 
 void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
@@ -68,5 +69,4 @@ void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	indexBuffer->bind();
 
 	m_IndexBuffer = indexBuffer;
-	glBindVertexArray(0);
 }

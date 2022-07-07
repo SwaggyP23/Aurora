@@ -27,10 +27,17 @@ void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t
 	glViewport(x, y, width, height);
 }
 
+void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+{
+	uint32_t count = indexCount ? vertexArray->getIndexBuffer()->getCount() : indexCount;
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+}
+
+// temp
 void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, bool state)
 {
-	if (!state)
-		glDrawElements(GL_TRIANGLES, (GLsizei)vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr);
+	if (state)
+		glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr);
 	else
-		glDrawElements(GL_TRIANGLE_STRIP, (GLsizei)vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLE_STRIP, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr);
 }

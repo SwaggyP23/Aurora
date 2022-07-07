@@ -41,15 +41,18 @@ void TestLayer::onUpdate(TimeStep ts)
 
 	{
 		PROFILE_SCOPE("Rendering");
-		Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
-		Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f,-4.6f }, glm::vec3(0.0f), { 10.0f * 20.0f, 10.0f * 20.0f, 0.0f}, m_Texture);
-		Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 6.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
-		Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.5f, 0.7f, 0.1f, 1.0f });
-		Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 0.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.9f, 0.25f, 0.55f, 1.0f });
-		Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f,-3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 1.0f, 0.5f, 1.0f });
+		// Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
+		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f,-4.6f }, glm::vec3(0.0f), { 10.0f * 20.0f, 10.0f * 20.0f, 0.0f}, m_Texture);
+		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 6.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.5f, 0.7f, 0.1f, 1.0f });
+		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 0.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.9f, 0.25f, 0.55f, 1.0f });
+		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f,-3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 1.0f, 0.5f, 1.0f });
+		Renderer3D::DrawQuad({ -1.0f, 0.0f, 0.0f }, { 0.8f, 0.8f, 0.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
+		Renderer3D::DrawQuad({ 0.5f, -0.5f, 0.0f }, { 0.5f, 0.75f, 0.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
 	}
 
 	Renderer3D::EndScene();
+
 
 	if (m_Perspective)
 		m_Camera->OnUpdate(ts);
