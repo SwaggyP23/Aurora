@@ -12,9 +12,9 @@ struct QuadVertex
 
 struct RendererData
 {
-	const size_t MaxQuads          = 5000;
-	const size_t MaxVertices       = MaxQuads * 8;
-	const size_t MaxIndices        = MaxQuads * 36;
+	static const size_t MaxQuads          = 5000;
+	static const size_t MaxVertices       = MaxQuads * 8;
+	static const size_t MaxIndices        = MaxQuads * 36;
 	static const size_t MaxTextureSlots   = 32;
 	//const size_t MaxTextureSlots   = RendererProperties::GetRendererProperties()->TextureSlots;
 
@@ -32,6 +32,8 @@ struct RendererData
 	uint32_t TextureSlotIndex = 1; // 0 is the white texture
 
 	glm::vec4 QuadVertexPositions[8];
+
+	Renderer3D::Statistics Stats;
 };
 
 static RendererData s_Data;
@@ -136,6 +138,7 @@ void Renderer3D::Init()
 
 void Renderer3D::ShutDown()
 {
+	delete[] s_Data.QuadVertexBufferBase;
 }
 
 void Renderer3D::BeginScene(const Ref<EditorCamera>& camera)
@@ -145,10 +148,7 @@ void Renderer3D::BeginScene(const Ref<EditorCamera>& camera)
 	s_Data.TexShader->bind();
 	s_Data.TexShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
 
-	s_Data.QuadIndexCount = 0;
-	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-	s_Data.TextureSlotIndex = 1;
+	StartBatch();
 }
 
 void Renderer3D::BeginScene(const Ref<OrthoGraphicCamera>& camera)
@@ -158,36 +158,51 @@ void Renderer3D::BeginScene(const Ref<OrthoGraphicCamera>& camera)
 	s_Data.TexShader->bind();
 	s_Data.TexShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
 
-	s_Data.QuadIndexCount = 0;
-	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-	
-	s_Data.TextureSlotIndex = 1;
+	StartBatch();
 }
 
 void Renderer3D::EndScene()
 {
 	PROFILE_FUNCTION();
 
-	// Casting to one byte to actually do a correct calculation, otherwise it tells you the number of elements only since these are QuadVertex.
-	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-	s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
-
-	// TODO: Handle the case if we exceeded the texture slots or the amount of quads
 	Flush();
+}
+
+void Renderer3D::StartBatch()
+{
+	s_Data.QuadIndexCount = 0;
+	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+	s_Data.TextureSlotIndex = 1;
 }
 
 void Renderer3D::Flush()
 {
+	// Casting to one byte to actually do a correct calculation, otherwise it tells you the number of elements only since these are QuadVertex.
+	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
+	s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 	// Bind Textures
 	for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 		s_Data.TextureSlots[i]->bind(i);
 
+	s_Data.TexShader->bind();
 	RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+
+	s_Data.Stats.DrawCalls++;
+}
+
+void Renderer3D::NextBatch()
+{
+	Flush();
+	StartBatch();
 }
 
 void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color)
 {
 	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		NextBatch();
 
 	const float whiteTexIndex = 0.0f; // White texture.
 	const float TilingFactor  = 1.0f; // TilingFactor.
@@ -252,11 +267,16 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, con
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 36;
+
+	s_Data.Stats.QuadCount++;
 }
 
 void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor)
 {
 	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		NextBatch();
 
 	// textureIndex is the index that will be submitted in the VBO with everything and then passed on to the fragment shader so 
 	// that the shader knows which index from the sampler to sample from.
@@ -342,11 +362,16 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, con
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 36;
+
+	s_Data.Stats.QuadCount++;
 }
 
 void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color)// Should take a rotation!
 {
 	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		NextBatch();
 
 	const float whiteTexIndex = 0.0f; // White texture.
 	const float TilingFactor = 1.0f; // TilingFactor.
@@ -415,11 +440,16 @@ void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rota
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 36;
+
+	s_Data.Stats.QuadCount++;
 }
 
 void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor)
 {
 	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		NextBatch();
 
 	float textureIndex = 0.0f;
 	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
@@ -502,4 +532,17 @@ void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rota
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 36;
+
+	s_Data.Stats.QuadCount++;
+}
+
+void Renderer3D::ResetStats()
+{
+	s_Data.Stats.DrawCalls = 0;
+	s_Data.Stats.QuadCount = 0;
+}
+
+Renderer3D::Statistics& Renderer3D::GetStats()
+{
+	return s_Data.Stats;
 }

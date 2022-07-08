@@ -33,7 +33,24 @@ public:
 	static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color);
 	static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f));
 
-	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale , const glm::vec4& color);
+	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color);
 	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
+
+	struct Statistics
+	{
+		uint32_t DrawCalls = 0;
+		uint32_t QuadCount = 0;
+
+		uint32_t GetTotalVertexCount() { return QuadCount * 8; }
+		uint32_t GetTotalIndexCount() { return QuadCount * 36; }
+		uint32_t GetTotalVertexBufferMemory() { return GetTotalVertexCount() * 11 * 4; }
+	};
+
+	static void ResetStats();
+	static Statistics& GetStats();
+
+private:
+	static void StartBatch();
+	static void NextBatch();
 
 };
