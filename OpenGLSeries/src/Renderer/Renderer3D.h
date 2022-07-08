@@ -10,8 +10,14 @@
 #include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
 
-// Should be one uniform buffer for quads, another for spheres and u get the idea.
-// Should also be one and only one shader.
+/*
+ * The way this batching works is that it batches all the elements in one VertexBuffer and submits it every frame. If the amount 
+ * of elements exceeds the maximum amount specified by the capabilities of the gpu, we flush and start a new batch thus increasing
+ * the draw calls if necessary. OR if the amount of used textures exceeds the maximum amount allowed (32 in my case) the renderer
+ * also flushes and starts another batch. And to reuse the old textures they should be resubmitted!
+ * And from the available 32 texture slots, slot 0 is reserved by the white texture in the case we want to draw just plain colors
+ * we can submit texture index 0 and the sampler2D will sample from a white texture (1.0f) thus allowing for plain colors to appear.
+ */
 
 class Renderer3D
 {
@@ -24,10 +30,10 @@ public:
 	static void EndScene();
 	static void Flush();
 
-	static void DrawQuad(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color);
-	static void DrawQuad(const glm::vec3& position, const glm::vec3& size, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f));
+	static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color);
+	static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f));
 
 	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale , const glm::vec4& color);
-	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f);
+	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 
 };

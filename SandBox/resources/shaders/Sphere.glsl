@@ -1,4 +1,4 @@
-#shader vertex
+#pragma vertex
 #version 330 core
 layout(location = 0) in vec3 a_Pos;
 layout(location = 1) in vec3 a_Normal;
@@ -26,7 +26,7 @@ void main()
     gl_Position = vw_pr_matrix * ml_matrix * vec4(a_Pos, 1.0);
 }
 
-#shader fragment
+#pragma fragment
 #version 330 core
 
 layout(location = 0) out vec4 FragColor;

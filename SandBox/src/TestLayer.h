@@ -1,5 +1,7 @@
 #pragma once
 
+// Bottleneck currently is all the maths being done in the drawquads functions
+
 #include <OpenGLSeries.h>
 
 #include <ImGui/imgui.h>
@@ -29,7 +31,7 @@ private: // ImGui stuff
 	bool m_IsR = false;
 
 	glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
-	glm::vec4 m_UniColor = glm::vec4{ 0.2f, 0.3f, 0.8f, 1.0f };
+	glm::vec4 m_UniColor = glm::vec4(1.0f);
 
 	glm::vec3 m_Transalations = glm::vec3(0.0f);
 	glm::vec3 m_Rotations = glm::vec3(0.0f);

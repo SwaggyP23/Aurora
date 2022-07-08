@@ -1,10 +1,6 @@
 #pragma once
 
-// For use by Sandbox apps
-
-// Entry Point of the program
-//#include <Core/EntryPoint.h>
-// --------------------------
+// For use by Sandbox apps------------------------
 
 #include "Core/Application.h"
 

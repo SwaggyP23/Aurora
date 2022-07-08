@@ -115,7 +115,7 @@ std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& s
 
 	std::unordered_map<GLenum, std::string> shaderSources;
 
-	const char* typeIdentifier = "#shader";
+	const char* typeIdentifier = "#pragma";
 	size_t typeIdentifierLength = strlen(typeIdentifier);
 	size_t pos = source.find(typeIdentifier, 0);
 

@@ -199,10 +199,10 @@ void SandBoxLayer::onAttach()
 	m_CubePositions[8] = glm::vec3(0.0f, 0.0f, -7.0f);
 	m_CubePositions[9] = glm::vec3(0.0f, 0.0f, -9.0f);
 
-	m_Shaders.Load("resources/shaders/Basic.shader");
-	m_Shaders.Load("resources/shaders/Light.shader");
-	m_Shaders.Load("resources/shaders/Ground.shader");
-	m_Shaders.Load("resources/shaders/Sphere.shader");
+	m_Shaders.Load("resources/shaders/Basic.glsl");
+	m_Shaders.Load("resources/shaders/Light.glsl");
+	m_Shaders.Load("resources/shaders/Ground.glsl");
+	m_Shaders.Load("resources/shaders/Sphere.glsl");
 
 	uint32_t indices[6 * 6] = { 0, 1, 2, 2, 3, 0,
 							  4, 5, 6, 6, 7, 4,

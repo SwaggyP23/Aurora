@@ -1,5 +1,5 @@
-#shader vertex
-#version 330 core
+#pragma vertex
+#version 450 core
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec4 a_Color;
@@ -24,10 +24,10 @@ void main()
 	gl_Position = u_ViewProjmatrix * /*u_ModelMatrix **/ vec4(a_Position, 1.0f);
 }
 
-#shader fragment
-#version 330 core
+#pragma fragment
+#version 450 core
 
-layout(location = 0) out vec4 FragColor;
+layout(location = 0) out vec4 o_Color;
 
 uniform sampler2D u_Textures[32];
 
@@ -38,5 +38,5 @@ in float v_TilingFactor;
 
 void main()
 {
-	FragColor = texture(u_Textures[int(v_TexIndex)], v_TexCoords * v_TilingFactor) * v_Color;
+	o_Color = texture(u_Textures[int(v_TexIndex)], v_TexCoords * v_TilingFactor) * v_Color;
 }

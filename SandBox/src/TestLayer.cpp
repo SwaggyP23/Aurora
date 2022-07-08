@@ -46,12 +46,10 @@ void TestLayer::onUpdate(TimeStep ts)
 	else
 		Renderer3D::BeginScene(m_OrthoCamera);
 
-	glm::vec3 trans = m_Transalations;
-
 	{
 		PROFILE_SCOPE("Rendering");
 		// Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
-		Renderer3D::DrawQuad({ -5.0f, -5.0f, -0.1f }, { 10.0f, 10.0f, 0.0f }, m_CheckerTexture, 20.0f);
+		Renderer3D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f, 0.0f }, m_CheckerTexture, 30.0f);
 		Renderer3D::DrawQuad({ -2.0f, -2.0f,  2.0f }, { 2.0f, 2.0f, 2.0f }, m_QiyanaTexture);
 		for (float y = -5.0f; y < 5.0f; y += 0.5f)
 		{
@@ -61,68 +59,68 @@ void TestLayer::onUpdate(TimeStep ts)
 				Renderer3D::DrawQuad({ x, y, 0.0f }, { 0.45f, 0.45f, 0.0f }, color);
 			}
 		}
+		static float rotation;
+		rotation += ts * 50.0f;
 		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 6.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
 		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.5f, 0.7f, 0.1f, 1.0f });
-		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 0.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.9f, 0.25f, 0.55f, 1.0f });
-		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f,-3.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 1.0f, 0.5f, 1.0f });
+		Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, 2.0f }, { m_Rotations.x, m_Rotations.y, rotation }, {3.0f, 3.0f, 3.0f}, { 0, 247.0f/255.0f, 168.0f/255.0f, 0.7f });
+		Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_CheckerTexture, 20.0f, m_UniColor);
 		Renderer3D::DrawQuad({ -1.0f,  0.0f, 0.0f }, { 0.8f, 0.8f, 1.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
 		Renderer3D::DrawQuad({  0.5f, -0.5f, 0.0f }, { 0.5f, 0.75f, 1.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
 
-		if (m_IsR) {
-			for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		{
+			for (float j = -4.5f; j < 4.5f; j += 1.0f)
 			{
-				for (float j = -4.5f; j < 4.5f; j += 1.0f)
-				{
-					Renderer3D::DrawQuad({ i, j, -10.0f }, { 0.8f, 0.8f, 1.0f }, { i / 8.0f, j / 4.5f, 1.0f, 1.0f });
-				}
+				Renderer3D::DrawQuad({ i, j, -10.0f }, { 0.8f, 0.8f, 1.0f }, { i / 8.0f, j / 4.5f, 1.0f, 1.0f });
 			}
-
-			for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		}
+		
+		for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		{
+			for (float j = -4.5f; j < 4.5f; j += 1.0f)
 			{
-				for (float j = -4.5f; j < 4.5f; j += 1.0f)
-				{
-					Renderer3D::DrawQuad({ i, j + 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { i / 8.0f, j / 4.5f, 0.5f, 1.0f });
-				}
+				Renderer3D::DrawQuad({ i, j + 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { i / 8.0f, j / 4.5f, 0.5f, 1.0f });
 			}
-
-			for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		}
+		
+		for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		{
+			for (float j = -4.5f; j < 4.5f; j += 1.0f)
 			{
-				for (float j = -4.5f; j < 4.5f; j += 1.0f)
-				{
-					Renderer3D::DrawQuad({ i, j - 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { i / 8.0f, j / 4.5f, 0.0f, 1.0f });
-				}
+				Renderer3D::DrawQuad({ i, j - 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { i / 8.0f, j / 4.5f, 0.0f, 1.0f });
 			}
-
-			for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		}
+		
+		for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		{
+			for (float j = -4.5f; j < 4.5f; j += 1.0f)
 			{
-				for (float j = -4.5f; j < 4.5f; j += 1.0f)
-				{
-					Renderer3D::DrawQuad({ i - 16.0f, j - 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { j / 4.5f, 0.7f, i / 8.0f, 1.0f });
-				}
+				Renderer3D::DrawQuad({ i - 16.0f, j - 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { j / 4.5f, 0.7f, i / 8.0f, 1.0f });
 			}
-
-			for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		}
+		
+		for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		{
+			for (float j = -4.5f; j < 4.5f; j += 1.0f)
 			{
-				for (float j = -4.5f; j < 4.5f; j += 1.0f)
-				{
-					Renderer3D::DrawQuad({ i + 16.0f, j - 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { 0.3f, j / 4.5f, i / 8.0f, 1.0f });
-				}
+				Renderer3D::DrawQuad({ i + 16.0f, j - 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { 0.3f, j / 4.5f, i / 8.0f, 1.0f });
 			}
-
-			for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		}
+		
+		for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		{
+			for (float j = -4.5f; j < 4.5f; j += 1.0f)
 			{
-				for (float j = -4.5f; j < 4.5f; j += 1.0f)
-				{
-					Renderer3D::DrawQuad({ i - 16.0f, j + 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { j / 4.5f, 0.2f, i / 8.0f + 0.3f, 1.0f });
-				}
+				Renderer3D::DrawQuad({ i - 16.0f, j + 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { j / 4.5f, 0.2f, i / 8.0f + 0.3f, 1.0f });
 			}
-
-			for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		}
+		
+		for (float i = -8.0f; i < 8.0f; i += 1.0f)
+		{
+			for (float j = -4.5f; j < 4.5f; j += 1.0f)
 			{
-				for (float j = -4.5f; j < 4.5f; j += 1.0f)
-				{
-					Renderer3D::DrawQuad({ i + 16.0f, j + 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { j / 4.5f - 0.1f, 0.7f, i / 8.0f, 1.0f });
-				}
+				Renderer3D::DrawQuad({ i + 16.0f, j + 9.0f, -10.0f }, { 0.8f, 0.8f, 1.0f }, { j / 4.5f - 0.1f, 0.7f, i / 8.0f, 1.0f });
 			}
 		}
 	}
@@ -141,9 +139,6 @@ void TestLayer::onEvent(Event& e)
 		m_Camera->OnEvent(e);
 	else
 		m_OrthoCamera->OnEvent(e);
-
-	if (Input::isKeyPressed(GLFW_KEY_R))
-		m_IsR = !m_IsR;
 }
 
 void TestLayer::onImGuiRender()
