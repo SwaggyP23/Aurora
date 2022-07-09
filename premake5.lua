@@ -1,11 +1,11 @@
 IncludeDir = {}
-IncludeDir["GLFW"]      = "%{wks.location}/OpenGLSeries/deps/GLFW/include"
-IncludeDir["Glad"]      = "%{wks.location}/OpenGLSeries/deps/Glad/include"
-IncludeDir["ImGui"]     = "%{wks.location}/OpenGLSeries/deps/ImGui"
-IncludeDir["stb_image"] = "%{wks.location}/OpenGLSeries/deps/stb_image"
-IncludeDir["glm"]       = "%{wks.location}/OpenGLSeries/deps/glm"
+IncludeDir["GLFW"]      = "%{wks.location}/Aurora/deps/GLFW/include"
+IncludeDir["Glad"]      = "%{wks.location}/Aurora/deps/Glad/include"
+IncludeDir["ImGui"]     = "%{wks.location}/Aurora/deps/ImGui"
+IncludeDir["stb_image"] = "%{wks.location}/Aurora/deps/stb_image"
+IncludeDir["glm"]       = "%{wks.location}/Aurora/deps/glm"
 
-workspace "OpenGLSeries"
+workspace "Aurora"
 
     architecture "x64"
 
@@ -19,10 +19,10 @@ workspace "OpenGLSeries"
 outputdir = "%{cfg.architecture}-%{cfg.buildcfg}"
 
 group "Dependencies"
-    include "OpenGLSeries/deps/GLFW"
-    include "OpenGLSeries/deps/Glad"
-    include "OpenGLSeries/deps/ImGui/imgui"
+    include "Aurora/deps/GLFW"
+    include "Aurora/deps/Glad"
+    include "Aurora/deps/ImGui/imgui"
 group ""
 
-include "OpenGLSeries"
+include "Aurora"
 include "SandBox"

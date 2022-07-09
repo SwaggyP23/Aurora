@@ -5,10 +5,10 @@ Profiling/
 Build/
 Models/
 
-OpenGLSeries.sln
-OpenGLSeries.vcxproj
-OpenGLSeries.vcxproj.user
-OpenGLSeries.vcxproj.filters
+Aurora.sln
+Aurora.vcxproj
+Aurora.vcxproj.user
+Aurora.vcxproj.filters
 
 SandBox.vcxproj
 SandBox.vcxproj.user

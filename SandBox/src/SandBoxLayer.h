@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenGLSeries.h>
+#include <Aurora.h>
 
 #include <ImGui/imgui.h>
 

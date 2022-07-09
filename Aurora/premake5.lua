@@ -1,5 +1,5 @@
-project "SandBox"
-    kind "ConsoleApp"
+project "Aurora"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
     staticruntime "on"
@@ -7,26 +7,42 @@ project "SandBox"
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
 
+    pchheader "Aurorapch.h"
+    pchsource "src/Aurorapch.cpp"
+
     files
     {
         "src/**.h",
-        "src/**.cpp"
+        "src/**.cpp",
+        "deps/stb_image/**.h",
+        "deps/stb_image/**.cpp",
+        "deps/glm/glm/**.hpp",
+        "deps/glm/glm/**.inl"
+    }
+
+    defines
+    {
+        "_CRT_SECURE_NO_WARNINGS",
+        "GLFW_INCLUDE_NONE"
     }
 
     includedirs
     {
-        "%{wks.location}/Aurora/deps/spdlog/include",
-        "%{wks.location}/Aurora/src",
+        "src",
+        "deps/spdlog/include",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.stb_image}",
-        "%{IncludeDir.glm}"
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.stb_image}"
     }
 
     links
     {
-        "Aurora"
+        "GLFW",
+        "Glad",
+        "ImGui",
+        "opengl32.lib"
     }
 
     filter "system:windows"

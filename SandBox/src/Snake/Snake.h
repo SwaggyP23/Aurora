@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenGLSeries.h>
+#include <Aurora.h>
 
 #include <vector>
 #include <glm/glm.hpp>

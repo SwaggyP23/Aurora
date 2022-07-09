@@ -1,4 +1,4 @@
-#include <OpenGLSeries.h>
+#include <Aurora.h>
 #include "SandBoxLayer.h"
 #include "TestLayer.h"
 #include "Snake/GameLayer.h"
