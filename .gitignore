@@ -3,6 +3,7 @@
 bin/
 Profiling/
 Build/
+Models/
 
 OpenGLSeries.sln
 OpenGLSeries.vcxproj

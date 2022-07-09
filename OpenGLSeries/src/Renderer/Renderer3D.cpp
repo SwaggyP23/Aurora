@@ -9,6 +9,7 @@ struct QuadVertex
 	glm::vec2 TexCoords;
 	float TextureIndex;
 	float TilingFactor;
+	int light;
 };
 
 // So for my laptop, it can not hit 60 fps is the MaxQuads is more than 1.5k since that is alot of memory to be transfered in one go
@@ -59,7 +60,8 @@ void Renderer3D::Init()
 		{ ShaderDataType::Float3, "a_Normals"      },
 		{ ShaderDataType::Float2, "a_TexCoord"     },
 		{ ShaderDataType::Float,  "a_TexIndex"     },
-		{ ShaderDataType::Float,  "a_TilingFactor" }
+		{ ShaderDataType::Float,  "a_TilingFactor" },
+		{ ShaderDataType::Int,    "a_Light"        }
 	});
 	s_Data.QuadVertexArray->addVertexBuffer(s_Data.QuadVertexBuffer);
 
@@ -292,7 +294,7 @@ void Renderer3D::NextBatch()
 	StartBatch();
 }
 
-void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color)
+void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light)
 {
 	PROFILE_FUNCTION();
 
@@ -313,6 +315,7 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, con
 		s_Data.QuadVertexBufferPtr->TexCoords     = s_Data.textureCoords[i];
 		s_Data.QuadVertexBufferPtr->TextureIndex  = whiteTexIndex;
 		s_Data.QuadVertexBufferPtr->TilingFactor  = TilingFactor;
+		s_Data.QuadVertexBufferPtr->light         = light;
 		s_Data.QuadVertexBufferPtr++;
 	}
 
@@ -352,6 +355,8 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, con
 		s_Data.TextureSlotIndex++;
 	}
 
+	const int light = 0;
+
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 						* glm::scale(glm::mat4(1.0f), scale);
 
@@ -363,6 +368,7 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, con
 		s_Data.QuadVertexBufferPtr->TexCoords     = s_Data.textureCoords[i];
 		s_Data.QuadVertexBufferPtr->TextureIndex  = textureIndex;
 		s_Data.QuadVertexBufferPtr->TilingFactor  = tiling;
+		s_Data.QuadVertexBufferPtr->light         = light;
 		s_Data.QuadVertexBufferPtr++;
 	}
 
@@ -371,7 +377,7 @@ void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, con
 	s_Data.Stats.QuadCount++;
 }
 
-void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color)// Should take a rotation!
+void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color, int light)// Should take a rotation!
 {
 	PROFILE_FUNCTION();
 
@@ -379,7 +385,7 @@ void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rota
 		NextBatch();
 
 	const float whiteTexIndex = 0.0f; // White texture.
-	const float TilingFactor = 1.0f; // TilingFactor.
+	const float TilingFactor  = 1.0f; // TilingFactor.
 
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.x), { 1.0f, 0.0f, 0.0f })
@@ -396,6 +402,7 @@ void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rota
 		s_Data.QuadVertexBufferPtr->TexCoords     = s_Data.textureCoords[i];
 		s_Data.QuadVertexBufferPtr->TextureIndex  = whiteTexIndex;
 		s_Data.QuadVertexBufferPtr->TilingFactor  = TilingFactor;
+		s_Data.QuadVertexBufferPtr->light         = light;
 		s_Data.QuadVertexBufferPtr++;
 	}
 
@@ -428,6 +435,8 @@ void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rota
 		s_Data.TextureSlotIndex++;
 	}
 
+	const int light = 0;
+
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.x), { 1.0f, 0.0f, 0.0f })
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.y), { 0.0f, 1.0f, 0.0f })
@@ -442,6 +451,7 @@ void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rota
 		s_Data.QuadVertexBufferPtr->TexCoords     = s_Data.textureCoords[i];
 		s_Data.QuadVertexBufferPtr->TextureIndex  = textureIndex;
 		s_Data.QuadVertexBufferPtr->TilingFactor  = tiling;
+		s_Data.QuadVertexBufferPtr->light         = light;
 		s_Data.QuadVertexBufferPtr++;
 	}
 

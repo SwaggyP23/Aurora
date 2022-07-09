@@ -71,7 +71,7 @@ void TestLayer::onUpdate(TimeStep ts)
 		Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_CheckerTexture, 20.0f, m_UniColor);
 		Renderer3D::DrawQuad({ -1.0f,  0.0f, -8.0f }, { 0.8f, 0.8f, 1.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
 		Renderer3D::DrawQuad({  1.5f, -0.5f, -8.0f }, { 0.5f, 0.75f, 1.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
-		Renderer3D::DrawQuad({ 1.0f, 12.0f, 17.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+		Renderer3D::DrawQuad({ 1.0f, 12.0f, 17.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
 
 		for (float y = -16.0f; y < 16.0f; y += 1.0f)
 		{

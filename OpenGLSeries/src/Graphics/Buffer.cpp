@@ -19,6 +19,7 @@ uint32_t BufferElement::getComponentCount() const
 		case ShaderDataType::Int2:    return 2;
 		case ShaderDataType::Int3:    return 3;
 		case ShaderDataType::Int4:    return 4;
+		case ShaderDataType::Bool:    return 1;
 	}
 
 	CORE_ASSERT(false, "Unkown Shader Data Type!");
