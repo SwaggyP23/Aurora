@@ -53,6 +53,7 @@ void TestLayer::onUpdate(TimeStep ts)
 		// Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
 		Renderer3D::DrawQuad({ 0.0f, 0.0f, -10.1f }, { 10.0f, 10.0f, 0.0f }, m_CheckerTexture, 30.0f);
 		Renderer3D::DrawQuad({ -2.0f, -2.0f,  -8.0f }, { 2.0f, 2.0f, 2.0f }, m_QiyanaTexture);
+
 		for (float y = -5.0f; y < 5.0f; y += 0.5f)
 		{
 			for (float x = -5.0f; x < 5.0f; x += 0.5f)
@@ -61,6 +62,7 @@ void TestLayer::onUpdate(TimeStep ts)
 				Renderer3D::DrawQuad({ x, y, -10.0f }, { 0.45f, 0.45f, 0.0f }, color);
 			}
 		}
+
 		static float rotation;
 		rotation += ts * 50.0f;
 		// Renderer3D::DrawRotatedQuad({ 0.0f, 0.0f, 6.0f }, m_Rotations, { 3.0f, 3.0f, 3.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
@@ -69,6 +71,7 @@ void TestLayer::onUpdate(TimeStep ts)
 		Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_CheckerTexture, 20.0f, m_UniColor);
 		Renderer3D::DrawQuad({ -1.0f,  0.0f, -8.0f }, { 0.8f, 0.8f, 1.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
 		Renderer3D::DrawQuad({  1.5f, -0.5f, -8.0f }, { 0.5f, 0.75f, 1.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+		Renderer3D::DrawQuad({ 1.0f, 12.0f, 17.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 		for (float y = -16.0f; y < 16.0f; y += 1.0f)
 		{

@@ -31,17 +31,7 @@ void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t in
 {
 	PROFILE_FUNCTION();
 
+	vertexArray->bind();
 	uint32_t count = indexCount ? vertexArray->getIndexBuffer()->getCount() : indexCount;
 	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-}
-
-// temp
-void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, bool state)
-{
-	PROFILE_FUNCTION();
-
-	if (state)
-		glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr);
-	else
-		glDrawElements(GL_TRIANGLE_STRIP, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, nullptr);
 }

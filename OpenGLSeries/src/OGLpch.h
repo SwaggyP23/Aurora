@@ -11,6 +11,7 @@
 #include <utility>
 #include <algorithm>
 #include <functional>
+#include <thread>
 
 #include <string>
 #include <sstream>

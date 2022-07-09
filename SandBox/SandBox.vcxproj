@@ -112,7 +112,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\OpenGLSeries\deps\spdlog\include;..\OpenGLSeries\src;..\OpenGLSeries\deps\GLFW\include;..\OpenGLSeries\deps\Glad\include;..\OpenGLSeries\deps\ImGui;..\OpenGLSeries\deps\stb_image;..\OpenGLSeries\deps\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
