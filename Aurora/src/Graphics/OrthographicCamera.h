@@ -6,63 +6,67 @@
 
 #include <glm/glm.hpp>
 
-class OrthoGraphicCamera
-{
-public:
-	OrthoGraphicCamera() = default;
-	OrthoGraphicCamera(float aspectRatio, float nearClip, float farClip);
+namespace Aurora {
 
-	void OnUpdate(TimeStep ts);
-	void OnEvent(Event& e);
+	class OrthoGraphicCamera
+	{
+	public:
+		OrthoGraphicCamera() = default;
+		OrthoGraphicCamera(float aspectRatio, float nearClip, float farClip);
 
-	inline float GetDistance() const { return m_Distance; }
-	inline void SetDistance(float distance) { m_Distance = distance; }
+		void OnUpdate(TimeStep ts);
+		void OnEvent(Event& e);
 
-	inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
+		inline float GetDistance() const { return m_Distance; }
+		inline void SetDistance(float distance) { m_Distance = distance; }
 
-	const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-	glm::mat4 GetViewProjection() const { return m_Projection * m_ViewMatrix; }
-	glm::mat4 GetProjection() const { return m_Projection; }
+		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
 
-	glm::vec3 GetUpDirection() const;
-	glm::vec3 GetRightDirection() const;
-	glm::vec3 GetForwardDirection() const;
-	const glm::vec3& GetPosition() const { return m_Position; }
-	glm::quat GetOrientation() const;
+		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		glm::mat4 GetViewProjection() const { return m_Projection * m_ViewMatrix; }
+		glm::mat4 GetProjection() const { return m_Projection; }
 
-	float GetPitch() const { return m_Pitch; }
-	float GetYaw() const { return m_Yaw; }
+		glm::vec3 GetUpDirection() const;
+		glm::vec3 GetRightDirection() const;
+		glm::vec3 GetForwardDirection() const;
+		const glm::vec3& GetPosition() const { return m_Position; }
+		glm::quat GetOrientation() const;
 
-private:
-	void UpdateProjection();
-	void UpdateView();
+		float GetPitch() const { return m_Pitch; }
+		float GetYaw() const { return m_Yaw; }
 
-	bool OnMouseScroll(MouseScrolledEvent& e);
+	private:
+		void UpdateProjection();
+		void UpdateView();
 
-	void MousePan(const glm::vec2& delta);
-	void MouseRotate(const glm::vec2& delta);
-	void MouseZoom(float delta);
+		bool OnMouseScroll(MouseScrolledEvent& e);
 
-	glm::vec3 CalculatePosition() const;
+		void MousePan(const glm::vec2& delta);
+		void MouseRotate(const glm::vec2& delta);
+		void MouseZoom(float delta);
 
-	std::pair<float, float> PanSpeed() const;
-	float RotationSpeed() const;
-	float ZoomSpeed() const;
+		glm::vec3 CalculatePosition() const;
 
-private:
-	float m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
+		std::pair<float, float> PanSpeed() const;
+		float RotationSpeed() const;
+		float ZoomSpeed() const;
 
-	glm::mat4 m_ViewMatrix;
-	glm::mat4 m_Projection;
-	glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
-	glm::vec3 m_FocalPoint = { 0.0f, 0.0f, 0.0f };
+	private:
+		float m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 
-	glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
+		glm::mat4 m_ViewMatrix;
+		glm::mat4 m_Projection;
+		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_FocalPoint = { 0.0f, 0.0f, 0.0f };
 
-	float m_Distance = 10.0f;
-	float m_Pitch = 0.0f, m_Yaw = 0.0f;
+		glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
 
-	float m_ZoomLevel = 1.0f;
+		float m_Distance = 10.0f;
+		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
-	float m_ViewportWidth = 1920, m_ViewportHeight = 1080;
-};
+		float m_ZoomLevel = 1.0f;
+
+		float m_ViewportWidth = 1920, m_ViewportHeight = 1080;
+	};
+
+}

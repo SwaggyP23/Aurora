@@ -21,7 +21,7 @@ struct VertexOutput
 };
 
 flat out float TexIndex; // Needs to be float and flat so that it does not get interpolated
-flat out int light;
+flat out int lightCube;
 
 layout(location = 0) out VertexOutput Output;
 
@@ -33,7 +33,7 @@ void main()
 	Output.TexCoords = a_TexCoords;
 	TexIndex = a_TexIndex;
 	Output.TilingFactor = a_TilingFactor;
-	light = a_Light;
+	lightCube = a_Light;
 
 	gl_Position = u_ViewProjmatrix * vec4(a_Position, 1.0f);
 }
@@ -44,7 +44,6 @@ void main()
 layout(location = 0) out vec4 o_Color;
 
 uniform sampler2D u_Textures[32];
-uniform vec3 u_SourcePos;
 uniform vec3 u_ViewPosition;
 
 struct VertexOutput
@@ -56,41 +55,58 @@ struct VertexOutput
 	float TilingFactor;
 };
 
+struct Matrial
+{
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	float shininess;
+};
+
+struct Light // Each light should have different properties for each of its components and is not the same across all (Page: 129)
+{
+	vec3 Position;
+
+	vec3 Ambient;
+	vec3 Diffuse;
+	vec3 Specular;
+};
+
+uniform Matrial material;
+uniform Light light;
+
 flat in float TexIndex;
-flat in int light;
+flat in int lightCube;
 
 layout(location = 0) in VertexOutput Input;
 
 void main()
 {
 	vec4 FragColor;
-	if(light == 0){
-		vec4 src_color = vec4(1.0f);
-		const float ambientStrength = 0.3f;
+	if(lightCube == 0){
 		// ambient
-		vec4 ambientLight = src_color * (ambientStrength - 0.2f);
+		vec3 ambientLight = light.Ambient * material.ambient;
 	
 		// Diffuse
 		vec3 norm = normalize(Input.Normals);
-		vec3 lightDirection = normalize(u_SourcePos - Input.Position);
+		vec3 lightDirection = normalize(light.Position - Input.Position);
 	
 		float diffuseImpact = max(dot(norm, lightDirection), 0.0f);
-		vec4 diffuse = diffuseImpact * src_color;
+		vec3 diffuse = light.Diffuse * (diffuseImpact * material.diffuse);
 	
 		// Specular
 		vec3 viewDir = normalize(u_ViewPosition - Input.Position);
 		vec3 reflectionDir = reflect(-lightDirection, norm);
-		float specularIntensity = max(dot(reflectionDir, viewDir), 0.0f);
+		float spec = pow(max(dot(reflectionDir, viewDir), 0.0f), material.shininess);
+		vec3 specular = light.Specular * (spec * material.specular);
 	
-		float spec = pow(specularIntensity, 32);
-		vec4 specular = specularIntensity * spec * src_color;
-	
-		vec4 tempColor = Input.Color * (ambientLight + diffuse + specular);
-		FragColor = texture(u_Textures[int(TexIndex)], Input.TexCoords * Input.TilingFactor) * tempColor;
+		vec3 tempColor = vec3(Input.Color.rgb) * (ambientLight + diffuse + specular);
+		FragColor = vec4(vec3(texture(u_Textures[int(TexIndex)], Input.TexCoords * Input.TilingFactor)) * tempColor, Input.Color.w);
 	}
 	else
 	{
-		FragColor = vec4(1.0f); // This is for light source cubes
+		FragColor = Input.Color;// This is for light source cubes
 	}
 
 	o_Color = FragColor;

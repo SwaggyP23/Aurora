@@ -4,7 +4,7 @@
 
 #include <ImGui/imgui.h>
 
-class SandBoxLayer : public Layer
+class SandBoxLayer : public Aurora::Layer
 {
 public:
 	SandBoxLayer();
@@ -13,22 +13,22 @@ public:
 	virtual void onAttach() override;
 	virtual void onDetach() override;
 	virtual void onImGuiRender() override;
-	virtual void onUpdate(TimeStep ts) override;
-	virtual void onEvent(Event& e) override;
+	virtual void onUpdate(Aurora::TimeStep ts) override;
+	virtual void onEvent(Aurora::Event& e) override;
 
 
 private:
-	Ref<VertexArray> m_VertexArray;
-	Ref<VertexArray> m_GroundVertexArray;
-	Ref<VertexArray> m_LightVertexArray;
-	Ref<VertexArray> m_SphereVertexArray;
+	Aurora::Ref<Aurora::VertexArray> m_VertexArray;
+	Aurora::Ref<Aurora::VertexArray> m_GroundVertexArray;
+	Aurora::Ref<Aurora::VertexArray> m_LightVertexArray;
+	Aurora::Ref<Aurora::VertexArray> m_SphereVertexArray;
 
-	ShaderLibrary m_Shaders; // This can not live on the heap since it will throw a Hash & Mask error
+	Aurora::ShaderLibrary m_Shaders; // This can not live on the heap since it will throw a Hash & Mask error
 
-	Ref<OrthoGraphicCamera> m_OrthoCamera;
-	Ref<EditorCamera> m_Camera;
+	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
+	Aurora::Ref<Aurora::EditorCamera> m_Camera;
 
-	std::vector<Ref<Texture>> m_Textures;
+	std::vector<Aurora::Ref<Aurora::Texture>> m_Textures;
 
 	bool m_IsRPressed = false;
 

@@ -6,19 +6,23 @@
 
 #include <memory>
 
-namespace logger {
-	class Log
-	{
-	public:
-		static void Init();
+namespace Aurora {
 
-		static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
-		static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
+	namespace logger {
+		class Log
+		{
+		public:
+			static void Init();
 
-	private:
-		static std::shared_ptr<spdlog::logger> s_CoreLogger;
-		static std::shared_ptr<spdlog::logger> s_ClientLogger;
-	};
+			static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
+			static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
+
+		private:
+			static std::shared_ptr<spdlog::logger> s_CoreLogger;
+			static std::shared_ptr<spdlog::logger> s_ClientLogger;
+		};
+	}
+
 }
 
 #if _DEBUG

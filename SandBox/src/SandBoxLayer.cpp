@@ -2,8 +2,8 @@
 
 SandBoxLayer::SandBoxLayer()
 	: Layer("SandBoxLayer"),
-	m_Camera(CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-	m_OrthoCamera(CreateRef<OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+	m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
+	m_OrthoCamera(Aurora::CreateRef<Aurora::OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
 {
 }
 
@@ -18,20 +18,20 @@ void SandBoxLayer::onAttach()
 
 	uint32_t groundIndices[] = { 0, 1, 2, 2, 3, 0 };
 
-	BufferLayout m_GroundLayout = {
-		{ ShaderDataType::Float3, "a_Position" },
-		{ ShaderDataType::Float3, "a_Normals" },
-		{ ShaderDataType::Float4, "a_Color" },
-		{ ShaderDataType::Float2, "a_TexCoord" }
+	Aurora::BufferLayout m_GroundLayout = {
+		{ Aurora::ShaderDataType::Float3, "a_Position" },
+		{ Aurora::ShaderDataType::Float3, "a_Normals" },
+		{ Aurora::ShaderDataType::Float4, "a_Color" },
+		{ Aurora::ShaderDataType::Float2, "a_TexCoord" }
 	};
 
 	// For ground...
-	m_GroundVertexArray = VertexArray::Create();
-	Ref<VertexBuffer> m_GroundVertexBuffer = VertexBuffer::Create(groundVertices, sizeof(groundVertices));
+	m_GroundVertexArray = Aurora::VertexArray::Create();
+	Aurora::Ref<Aurora::VertexBuffer> m_GroundVertexBuffer = Aurora::VertexBuffer::Create(groundVertices, sizeof(groundVertices));
 	m_GroundVertexBuffer->bind();
 	m_GroundVertexBuffer->setLayout(m_GroundLayout);
 	m_GroundVertexArray->addVertexBuffer(m_GroundVertexBuffer);
-	Ref<IndexBuffer> m_GroundIndexBuffer = IndexBuffer::Create(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
+	Aurora::Ref<Aurora::IndexBuffer> m_GroundIndexBuffer = Aurora::IndexBuffer::Create(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
 	m_GroundIndexBuffer->bind();
 	m_GroundVertexArray->setIndexBuffer(m_GroundIndexBuffer);
 
@@ -114,20 +114,20 @@ void SandBoxLayer::onAttach()
 		}
 	}
 
-	BufferLayout m_SphereLayout = {
-			{ShaderDataType::Float3, "a_Pos" },
-			{ShaderDataType::Float3, "a_Normal" },
-			{ShaderDataType::Float2, "a_TexCoords" },
-			{ShaderDataType::Float4, "a_Color" }
+	Aurora::BufferLayout m_SphereLayout = {
+		{ Aurora::ShaderDataType::Float3, "a_Pos" },
+		{ Aurora::ShaderDataType::Float3, "a_Normal" },
+		{ Aurora::ShaderDataType::Float2, "a_TexCoords" },
+		{ Aurora::ShaderDataType::Float4, "a_Color" }
 	};
 
-	m_SphereVertexArray = VertexArray::Create();
-	Ref<VertexBuffer> m_SphereVertexBuffer = VertexBuffer::Create(&data[0], (uint32_t)data.size() * sizeof(float));
+	m_SphereVertexArray = Aurora::VertexArray::Create();
+	Aurora::Ref<Aurora::VertexBuffer> m_SphereVertexBuffer = Aurora::VertexBuffer::Create(&data[0], (uint32_t)data.size() * sizeof(float));
 	m_SphereVertexBuffer->bind();
 	m_SphereVertexBuffer->setLayout(m_SphereLayout);
 	m_SphereVertexArray->addVertexBuffer(m_SphereVertexBuffer);
 
-	Ref<IndexBuffer> m_SphereIndexBuffer = IndexBuffer::Create(&Sphereindices[0], (uint32_t)Sphereindices.size());
+	Aurora::Ref<Aurora::IndexBuffer> m_SphereIndexBuffer = Aurora::IndexBuffer::Create(&Sphereindices[0], (uint32_t)Sphereindices.size());
 	m_SphereIndexBuffer->bind();
 	m_SphereVertexArray->setIndexBuffer(m_SphereIndexBuffer);
 
@@ -211,22 +211,22 @@ void SandBoxLayer::onAttach()
 							  16, 17, 18, 18, 19, 16,
 							  20, 21, 22, 22, 23, 20 };
 
-	BufferLayout m_Layout = {
-		{ ShaderDataType::Float3, "a_Position" },
-		{ ShaderDataType::Float3, "a_Normals" },
-		{ ShaderDataType::Float4, "a_Color" },
-		{ ShaderDataType::Float2, "a_TexCoord" }
+	Aurora::BufferLayout m_Layout = {
+		{ Aurora::ShaderDataType::Float3, "a_Position" },
+		{ Aurora::ShaderDataType::Float3, "a_Normals" },
+		{ Aurora::ShaderDataType::Float4, "a_Color" },
+		{ Aurora::ShaderDataType::Float2, "a_TexCoord" }
 	};
 
 	// For main cube
-	m_VertexArray = VertexArray::Create();
+	m_VertexArray = Aurora::VertexArray::Create();
 
-	Ref<VertexBuffer> m_VertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
+	Aurora::Ref<Aurora::VertexBuffer> m_VertexBuffer = Aurora::VertexBuffer::Create(vertices, sizeof(vertices));
 	m_VertexBuffer->bind();
 	m_VertexBuffer->setLayout(m_Layout);
 	m_VertexArray->addVertexBuffer(m_VertexBuffer);
 
-	Ref<IndexBuffer> m_IndexBuffer = IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
+	Aurora::Ref<Aurora::IndexBuffer> m_IndexBuffer = Aurora::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
 	m_IndexBuffer->bind();
 	m_VertexArray->setIndexBuffer(m_IndexBuffer);
 
@@ -234,7 +234,7 @@ void SandBoxLayer::onAttach()
 	m_IndexBuffer->unBind();
 
 	// for light source
-	m_LightVertexArray = VertexArray::Create();
+	m_LightVertexArray = Aurora::VertexArray::Create();
 	m_VertexBuffer->bind();
 	m_LightVertexArray->addVertexBuffer(m_VertexBuffer);
 	m_IndexBuffer->bind();
@@ -244,7 +244,7 @@ void SandBoxLayer::onAttach()
 	m_IndexBuffer->unBind();
 
 	// Creating textures
-	Ref<Texture> text1 = Texture::Create("resources/textures/Lufi.png");
+	Aurora::Ref<Aurora::Texture> text1 = Aurora::Texture::Create("resources/textures/Lufi.png");
 	//text1->bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to bind and unbind
 	text1->flipTextureVertically(true);
 	text1->setTextureWrapping(GL_REPEAT);
@@ -252,7 +252,7 @@ void SandBoxLayer::onAttach()
 	text1->loadTextureData();
 	//text1->unBind();
 
-	Ref<Texture> text2 = Texture::Create("resources/textures/Qiyana2.png");
+	Aurora::Ref<Aurora::Texture> text2 = Aurora::Texture::Create("resources/textures/Qiyana2.png");
 	//text2->bind(1); // Only before the draw call we should bind the texture to its corresponding texture slot
 	text2->flipTextureVertically(true);
 	text2->setTextureWrapping(GL_REPEAT);
@@ -260,7 +260,7 @@ void SandBoxLayer::onAttach()
 	text2->loadTextureData();
 	//text2->unBind();
 
-	Ref<Texture> text3 = Texture::Create("resources/textures/checkerboard.png");
+	Aurora::Ref<Aurora::Texture> text3 = Aurora::Texture::Create("resources/textures/checkerboard.png");
 	//text3->bind(2);
 	text3->flipTextureVertically(true);
 	text3->setTextureWrapping(GL_REPEAT);
@@ -268,7 +268,7 @@ void SandBoxLayer::onAttach()
 	text3->loadTextureData();
 	//text3->unBind();
 
-	Ref<Texture> text4 = Texture::Create("resources/textures/map.jpg");
+	Aurora::Ref<Aurora::Texture> text4 = Aurora::Texture::Create("resources/textures/map.jpg");
 	//text4->bind(3);
 	text4->flipTextureVertically(true);
 	text4->setTextureWrapping(GL_REPEAT);
@@ -299,15 +299,15 @@ void SandBoxLayer::onDetach()
 {
 }
 
-void SandBoxLayer::onUpdate(TimeStep ts)
+void SandBoxLayer::onUpdate(Aurora::TimeStep ts)
 {
-	RenderCommand::setClearColor(m_Color);
-	RenderCommand::Clear();
+	Aurora::RenderCommand::setClearColor(m_Color);
+	Aurora::RenderCommand::Clear();
 
 	if(m_Perspective)
-		Renderer::BeginScene(m_Camera);
+		Aurora::Renderer::BeginScene(m_Camera);
 	else
-		Renderer::BeginScene(m_OrthoCamera);
+		Aurora::Renderer::BeginScene(m_OrthoCamera);
 
 	m_Shaders.Get("Sphere")->bind();
 	m_Shaders.Get("Sphere")->setUniform4f("lightColor", m_LightColor);
@@ -332,7 +332,7 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 	model = glm::scale(model, m_SphereScales);
 
 	m_Textures[3]->bind(3);
-	Renderer::DrawSphere(m_Shaders.Get("Sphere"), model, m_SphereVertexArray);
+	Aurora::Renderer::DrawSphere(m_Shaders.Get("Sphere"), model, m_SphereVertexArray);
 
 	m_Shaders.Get("Basic")->bind();
 	m_Shaders.Get("Basic")->setUniform4f("lightColor", m_LightColor);
@@ -366,7 +366,7 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 
 		m_Textures[0]->bind();
 		m_Textures[1]->bind(1);
-		Renderer::DrawQuad(m_Shaders.Get("Basic"), model, m_VertexArray);
+		Aurora::Renderer::DrawQuad(m_Shaders.Get("Basic"), model, m_VertexArray);
 	}
 
 	m_Shaders.Get("Ground")->bind();
@@ -385,7 +385,7 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 	model = glm::scale(model, m_GroundScales);
 
 	m_Textures[2]->bind(2);
-	Renderer::DrawQuad(m_Shaders.Get("Ground"), model, m_GroundVertexArray);
+	Aurora::Renderer::DrawQuad(m_Shaders.Get("Ground"), model, m_GroundVertexArray);
 
 	m_Shaders.Get("Light")->bind();
 	m_Shaders.Get("Light")->setUniform4f("lightColor", m_LightColor);
@@ -402,9 +402,9 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 	model = glm::translate(glm::mat4(1.0f), m_LightTranslations);
 	model = glm::scale(model, m_LightScales);
 
-	Renderer::DrawQuad(m_Shaders.Get("Light"), model, m_LightVertexArray);
+	Aurora::Renderer::DrawQuad(m_Shaders.Get("Light"), model, m_LightVertexArray);
 
-	Renderer::EndScene();
+	Aurora::Renderer::EndScene();
 
 	if (m_Perspective)
 		m_Camera->OnUpdate(ts);
@@ -412,20 +412,20 @@ void SandBoxLayer::onUpdate(TimeStep ts)
 		m_OrthoCamera->OnUpdate(ts);
 }
 
-void SandBoxLayer::onEvent(Event& e)
+void SandBoxLayer::onEvent(Aurora::Event& e)
 {
 	if (m_Perspective)
 		m_Camera->OnEvent(e);
 	else
 		m_OrthoCamera->OnEvent(e);
 
-	if (Input::isKeyPressed(GLFW_KEY_R))
+	if (Aurora::Input::isKeyPressed(GLFW_KEY_R))
 		m_IsRPressed = !m_IsRPressed;
 }
 
 void SandBoxLayer::onImGuiRender()
 {
-	Application& app = Application::getApp();
+	Aurora::Application& app = Aurora::Application::getApp();
 
 	ImGui::Begin("Editing Panel");
 	if (ImGui::CollapsingHeader("Cube")) {

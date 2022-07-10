@@ -1,9 +1,13 @@
 #include "Aurorapch.h"
 #include "Random.h"
 
-namespace Utils {
+namespace Aurora {
 
-	std::mt19937 Random::s_RandomEngine;
-	std::uniform_int_distribution<std::mt19937::result_type> Random::s_Distribution;
+	namespace Utils {
+
+		std::mt19937 Random::s_RandomEngine;
+		std::uniform_int_distribution<std::mt19937::result_type> Random::s_Distribution;
+
+	}
 
 }

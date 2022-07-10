@@ -9,28 +9,32 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-class VertexArray
-{
-public:
-	VertexArray();
-	~VertexArray();
+namespace Aurora {
 
-	static Ref<VertexArray> Create();
+	class VertexArray
+	{
+	public:
+		VertexArray();
+		~VertexArray();
 
-	void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
-	void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
+		static Ref<VertexArray> Create();
 
-	void bind() const;
-	void unBind() const;
+		void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
+		void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
-	inline const std::vector<Ref<VertexBuffer>>& getVertexBuffers() const { return m_VertexBuffers; }
-	inline const Ref<IndexBuffer>& getIndexBuffer() const { return m_IndexBuffer; }
+		void bind() const;
+		void unBind() const;
 
-private:
-	GLuint m_ArrayId;
-	std::vector<Ref<VertexBuffer>> m_VertexBuffers;
-	Ref<IndexBuffer> m_IndexBuffer;
+		inline const std::vector<Ref<VertexBuffer>>& getVertexBuffers() const { return m_VertexBuffers; }
+		inline const Ref<IndexBuffer>& getIndexBuffer() const { return m_IndexBuffer; }
 
-};
+	private:
+		GLuint m_ArrayId;
+		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
+		Ref<IndexBuffer> m_IndexBuffer;
+
+	};
+
+}
 
 #endif // !_VERTEX_ARRAY_H_

@@ -1,304 +1,308 @@
 #include "Aurorapch.h"
 #include "Shader.h"
 
-namespace Utils {
+namespace Aurora {
 
-	enum class ShaderErrorType
-	{
-		None = -1,
-		vertexShader,
-		fragmentShader,
-		geometryShader
-	};
+	namespace Utils {
 
-	static GLenum ShaderTypeFromString(const std::string& type)
-	{
-		if (type == "vertex")
-			return GL_VERTEX_SHADER;
-		if (type == "fragment")
-			return GL_FRAGMENT_SHADER;
-		if (type == "geometry") // Geometry shaders are currently useless since i am not using them
-			return GL_GEOMETRY_SHADER;
-
-		CORE_ASSERT(false, "Unknown shader type!");
-		return 0;
-	}
-
-	static ShaderErrorType ErrorTypeFromShaderType(GLenum shaderType)
-	{
-		switch (shaderType)
+		enum class ShaderErrorType
 		{
+			None = -1,
+			vertexShader,
+			fragmentShader,
+			geometryShader
+		};
+
+		static GLenum ShaderTypeFromString(const std::string& type)
+		{
+			if (type == "vertex")
+				return GL_VERTEX_SHADER;
+			if (type == "fragment")
+				return GL_FRAGMENT_SHADER;
+			if (type == "geometry") // Geometry shaders are currently useless since i am not using them
+				return GL_GEOMETRY_SHADER;
+
+			CORE_ASSERT(false, "Unknown shader type!");
+			return 0;
+		}
+
+		static ShaderErrorType ErrorTypeFromShaderType(GLenum shaderType)
+		{
+			switch (shaderType)
+			{
 			case GL_VERTEX_SHADER:		return ShaderErrorType::vertexShader;
 			case GL_FRAGMENT_SHADER:	return ShaderErrorType::fragmentShader;
 			case GL_GEOMETRY_SHADER:	return ShaderErrorType::geometryShader;
+			}
+
+			CORE_ASSERT(false, "Unknown shader type!");
+			return ShaderErrorType::None;
 		}
 
-		CORE_ASSERT(false, "Unknown shader type!");
-		return ShaderErrorType::None;
-	}
-
-	static void CheckShaderCompilation(GLuint shader, ShaderErrorType type)
-	{
-		GLint result;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-		if (!result) {
-			GLint length;
-
-			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-			std::vector<char> errorMessage(length);
-
-			glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
-
-			if (type == ShaderErrorType::vertexShader)
-				CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
-
-			else if (type == ShaderErrorType::fragmentShader)
-				CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
-
-			CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
-
-			glDeleteShader(shader);
-		}
-	}
-
-	static void CheckProgramLinkage(GLuint program, const std::vector<GLuint>& shaderIDs)
-	{
-		GLint result;
-		glGetProgramiv(program, GL_LINK_STATUS, &result);
-		if (!result)
+		static void CheckShaderCompilation(GLuint shader, ShaderErrorType type)
 		{
-			GLint length;
+			GLint result;
+			glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+			if (!result) {
+				GLint length;
 
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-			std::vector<char> errorMessage(length);
+				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+				std::vector<char> errorMessage(length);
 
-			glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
-			CORE_LOG_ERROR("Failed to link program!");
-			CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+				glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
 
-			glDeleteProgram(program);
+				if (type == ShaderErrorType::vertexShader)
+					CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
 
-			for (auto id : shaderIDs)
-				glDeleteShader(id);
+				else if (type == ShaderErrorType::fragmentShader)
+					CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
+
+				CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+
+				glDeleteShader(shader);
+			}
 		}
+
+		static void CheckProgramLinkage(GLuint program, const std::vector<GLuint>& shaderIDs)
+		{
+			GLint result;
+			glGetProgramiv(program, GL_LINK_STATUS, &result);
+			if (!result)
+			{
+				GLint length;
+
+				glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+				std::vector<char> errorMessage(length);
+
+				glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
+				CORE_LOG_ERROR("Failed to link program!");
+				CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+
+				glDeleteProgram(program);
+
+				for (auto id : shaderIDs)
+					glDeleteShader(id);
+			}
+		}
+
 	}
 
-}
-
-Ref<Shader> Shader::Create(const std::string& filepath)
-{
-	return CreateRef<Shader>(filepath);
-}
-
-Shader::Shader(const std::string& filePath)
-	: m_FilePath(filePath)
-{
-	PROFILE_FUNCTION();
-
-	std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
-
-	auto shaderSplitSources = splitSource(shaderFullSource);
-
-	m_ShaderID = createShaderProgram(shaderSplitSources);
-
-	size_t lastSlash = filePath.find_last_of("/\\");
-	lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-
-	size_t lastDot = filePath.rfind('.');
-	size_t count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
-	m_Name = filePath.substr(lastSlash, count);
-}
-
-std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
-{ // Props to @TheCherno
-	PROFILE_FUNCTION();
-
-	std::unordered_map<GLenum, std::string> shaderSources;
-
-	const char* typeIdentifier = "#pragma";
-	size_t typeIdentifierLength = strlen(typeIdentifier);
-	size_t pos = source.find(typeIdentifier, 0);
-
-	while (pos != std::string::npos)
+	Ref<Shader> Shader::Create(const std::string& filepath)
 	{
-		size_t eol = source.find_first_of("\r\n", pos); // End of shader type declaration line
-		
-		size_t typeBegin = pos + typeIdentifierLength + 1; // Getting the type
-		std::string type = source.substr(typeBegin, eol - typeBegin);
-
-		size_t nextLinePos = source.find_first_not_of("\r\n", eol); // Start of shader code
-
-		pos = source.find(typeIdentifier, nextLinePos); // Start of next shader type declaration line
-
-		shaderSources[Utils::ShaderTypeFromString(type)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+		return CreateRef<Shader>(filepath);
 	}
 
-	return shaderSources;
-}
-
-GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
-{
-	PROFILE_FUNCTION();
-
-	GLuint program = glCreateProgram();
-	std::vector<GLuint> ShaderIDs;
-	ShaderIDs.reserve(shaderSources.size());
-	for (const auto& [type, source] : shaderSources)
+	Shader::Shader(const std::string& filePath)
+		: m_FilePath(filePath)
 	{
-		GLuint shader = ShaderIDs.emplace_back(glCreateShader(type));
+		PROFILE_FUNCTION();
 
-		const char* shaderCStr = source.c_str();
-		glShaderSource(shader, 1, &shaderCStr, NULL);
-		glCompileShader(shader);
+		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
 
-		Utils::CheckShaderCompilation(shader, Utils::ErrorTypeFromShaderType(type));
+		auto shaderSplitSources = splitSource(shaderFullSource);
 
-		glAttachShader(program, shader);
+		m_ShaderID = createShaderProgram(shaderSplitSources);
+
+		size_t lastSlash = filePath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+
+		size_t lastDot = filePath.rfind('.');
+		size_t count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
+		m_Name = filePath.substr(lastSlash, count);
 	}
 
-	glLinkProgram(program);
+	std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
+	{ // Props to @TheCherno
+		PROFILE_FUNCTION();
 
-	Utils::CheckProgramLinkage(program, ShaderIDs);
+		std::unordered_map<GLenum, std::string> shaderSources;
 
-	glValidateProgram(program);
-	for (auto id : ShaderIDs) {
-		glDetachShader(program, id);
-		glDeleteShader(id); // This flags the shader for deletion but is not deleted untill it is not linked to any other program, in our case that is directly here since it is already detached
+		const char* typeIdentifier = "#pragma";
+		size_t typeIdentifierLength = strlen(typeIdentifier);
+		size_t pos = source.find(typeIdentifier, 0);
+
+		while (pos != std::string::npos)
+		{
+			size_t eol = source.find_first_of("\r\n", pos); // End of shader type declaration line
+
+			size_t typeBegin = pos + typeIdentifierLength + 1; // Getting the type
+			std::string type = source.substr(typeBegin, eol - typeBegin);
+
+			size_t nextLinePos = source.find_first_not_of("\r\n", eol); // Start of shader code
+
+			pos = source.find(typeIdentifier, nextLinePos); // Start of next shader type declaration line
+
+			shaderSources[Utils::ShaderTypeFromString(type)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+		}
+
+		return shaderSources;
 	}
 
-	CORE_ASSERT(program, "Program is null!");
+	GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
+	{
+		PROFILE_FUNCTION();
 
-	return program;
-}
+		GLuint program = glCreateProgram();
+		std::vector<GLuint> ShaderIDs;
+		ShaderIDs.reserve(shaderSources.size());
+		for (const auto& [type, source] : shaderSources)
+		{
+			GLuint shader = ShaderIDs.emplace_back(glCreateShader(type));
 
-Shader::~Shader()
-{
-	PROFILE_FUNCTION();
+			const char* shaderCStr = source.c_str();
+			glShaderSource(shader, 1, &shaderCStr, NULL);
+			glCompileShader(shader);
 
-	glDeleteProgram(m_ShaderID);
-}
+			Utils::CheckShaderCompilation(shader, Utils::ErrorTypeFromShaderType(type));
 
-void Shader::bind() const
-{
-	PROFILE_FUNCTION();
+			glAttachShader(program, shader);
+		}
 
-	glUseProgram(m_ShaderID);
-}
+		glLinkProgram(program);
 
-void Shader::unBind() const
-{
-	PROFILE_FUNCTION();
+		Utils::CheckProgramLinkage(program, ShaderIDs);
 
-	glUseProgram(0);
-}
+		glValidateProgram(program);
+		for (auto id : ShaderIDs) {
+			glDetachShader(program, id);
+			glDeleteShader(id); // This flags the shader for deletion but is not deleted untill it is not linked to any other program, in our case that is directly here since it is already detached
+		}
 
-void Shader::setUniform1i(const GLchar* name, GLuint val) const
-{
-	glUniform1i(getUniformLocation(name), val);
-}
+		CORE_ASSERT(program, "Program is null!");
 
-void Shader::setUniformArrayi(const GLchar* name, GLint* vals, uint32_t count) const
-{
-	glUniform1iv(getUniformLocation(name), count, vals);
-}
+		return program;
+	}
 
-void Shader::setUniform1f(const GLchar* name, GLfloat val) const
-{
-	glUniform1f(getUniformLocation(name), val);
-}
+	Shader::~Shader()
+	{
+		PROFILE_FUNCTION();
 
-void Shader::setUniform2f(const GLchar* name, const glm::vec2& vector) const
-{
-	glUniform2f(getUniformLocation(name), vector.x, vector.y);
-}
+		glDeleteProgram(m_ShaderID);
+	}
 
-void Shader::setUniform3f(const GLchar* name, const glm::vec3& vector) const
-{
-	glUniform3f(getUniformLocation(name), vector.x, vector.y, vector.z);
-}
+	void Shader::bind() const
+	{
+		PROFILE_FUNCTION();
 
-void Shader::setUniform4f(const GLchar* name, const glm::vec4& vector) const
-{
-	glUniform4f(getUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
-}
+		glUseProgram(m_ShaderID);
+	}
 
-void Shader::setUniformMat3(const GLchar* name, const glm::mat3& matrix) const
-{
-	glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
-}
+	void Shader::unBind() const
+	{
+		PROFILE_FUNCTION();
 
-void Shader::setUniformMat3(const GLchar* name, const float* matrix) const
-{
-	glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, matrix);
-}
+		glUseProgram(0);
+	}
 
-void Shader::setUniformMat4(const GLchar* name, const glm::mat4& matrix) const
-{
-	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
-}
+	void Shader::setUniform1i(const GLchar* name, GLuint val) const
+	{
+		glUniform1i(getUniformLocation(name), val);
+	}
 
-void Shader::setUniformMat4(const GLchar* name, const float* matrix) const
-{
-	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrix);
-}
+	void Shader::setUniformArrayi(const GLchar* name, GLint* vals, uint32_t count) const
+	{
+		glUniform1iv(getUniformLocation(name), count, vals);
+	}
 
-GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
-{
-	PROFILE_FUNCTION();
+	void Shader::setUniform1f(const GLchar* name, GLfloat val) const
+	{
+		glUniform1f(getUniformLocation(name), val);
+	}
 
-	auto it = m_UniformLocations.find(name);
-	if (it != m_UniformLocations.end())
-		return it->second;
-	// Directly returns the uniform location if it has been already cached, and if not adds it to the cache map.
-	// This is faster by like 200--1300 nanosecond for setting 3 uniforms, which would drasticaly become more efficient when 
-	// setting materials and meshes
+	void Shader::setUniform2f(const GLchar* name, const glm::vec2& vector) const
+	{
+		glUniform2f(getUniformLocation(name), vector.x, vector.y);
+	}
 
-	GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
-	m_UniformLocations[name] = location;
+	void Shader::setUniform3f(const GLchar* name, const glm::vec3& vector) const
+	{
+		glUniform3f(getUniformLocation(name), vector.x, vector.y, vector.z);
+	}
 
-	return location;
-	//return glGetUniformLocation(m_ShaderID, name.c_str());
-}
+	void Shader::setUniform4f(const GLchar* name, const glm::vec4& vector) const
+	{
+		glUniform4f(getUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
+	}
 
-void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
-{
-	PROFILE_FUNCTION();
+	void Shader::setUniformMat3(const GLchar* name, const glm::mat3& matrix) const
+	{
+		glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+	}
 
-	CORE_ASSERT(!Exists(name), "Shader already exists!");
-	m_Shaders[name] = shader;
-}
+	void Shader::setUniformMat3(const GLchar* name, const float* matrix) const
+	{
+		glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, matrix);
+	}
 
-void ShaderLibrary::Add(const Ref<Shader>& shader)
-{
-	const std::string& name = shader->getName();
-	Add(name, shader);
-}
+	void Shader::setUniformMat4(const GLchar* name, const glm::mat4& matrix) const
+	{
+		glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+	}
 
-Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
-{
-	PROFILE_FUNCTION();
+	void Shader::setUniformMat4(const GLchar* name, const float* matrix) const
+	{
+		glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrix);
+	}
 
-	auto shader = Shader::Create(filepath);
-	Add(shader);
-	return shader;
-}
+	GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
+	{
+		PROFILE_FUNCTION();
 
-Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
-{
-	PROFILE_FUNCTION();
+		auto it = m_UniformLocations.find(name);
+		if (it != m_UniformLocations.end())
+			return it->second;
+		// Directly returns the uniform location if it has been already cached, and if not adds it to the cache map.
+		// This is faster by like flat 12 millisecond for setting 6 uniforms, which would drasticaly become more efficient when 
+		// setting materials and meshes
 
-	auto shader = Shader::Create(filepath);
-	Add(name, shader);
-	return shader;
-}
+		GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
+		m_UniformLocations[name] = location;
 
-Ref<Shader> ShaderLibrary::Get(const std::string& name)
-{
-	CORE_ASSERT(Exists(name), "Shader not found!");
-	return m_Shaders[name];
-}
+		return location;
+		//return glGetUniformLocation(m_ShaderID, name.c_str()); // This is Without Caching!
+	}
 
-bool ShaderLibrary::Exists(const std::string& name) const // This always crashes
-{
-	return m_Shaders.find(name) != m_Shaders.end();
+	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
+	{
+		PROFILE_FUNCTION();
+
+		CORE_ASSERT(!Exists(name), "Shader already exists!");
+		m_Shaders[name] = shader;
+	}
+
+	void ShaderLibrary::Add(const Ref<Shader>& shader)
+	{
+		const std::string& name = shader->getName();
+		Add(name, shader);
+	}
+
+	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
+	{
+		PROFILE_FUNCTION();
+
+		auto shader = Shader::Create(filepath);
+		Add(shader);
+		return shader;
+	}
+
+	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+	{
+		PROFILE_FUNCTION();
+
+		auto shader = Shader::Create(filepath);
+		Add(name, shader);
+		return shader;
+	}
+
+	Ref<Shader> ShaderLibrary::Get(const std::string& name)
+	{
+		CORE_ASSERT(Exists(name), "Shader not found!");
+		return m_Shaders[name];
+	}
+
+	bool ShaderLibrary::Exists(const std::string& name) const // This always crashes
+	{
+		return m_Shaders.find(name) != m_Shaders.end();
+	}
+
 }

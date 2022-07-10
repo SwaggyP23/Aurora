@@ -4,32 +4,36 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-Scope<Context> Context::Create(GLFWwindow* handle)
-{
-	return CreateScope<Context>(handle);
-}
+namespace Aurora {
 
-Context::Context(GLFWwindow* windowHandle)
-	: m_WindowHandle(windowHandle)
-{
-	CORE_ASSERT(m_WindowHandle, "Window handle is null!");
-}
+	Scope<Context> Context::Create(GLFWwindow* handle)
+	{
+		return CreateScope<Context>(handle);
+	}
 
-void Context::Init()
-{
-	PROFILE_FUNCTION();
+	Context::Context(GLFWwindow* windowHandle)
+		: m_WindowHandle(windowHandle)
+	{
+		CORE_ASSERT(m_WindowHandle, "Window handle is null!");
+	}
 
-	glfwMakeContextCurrent(m_WindowHandle);
+	void Context::Init()
+	{
+		PROFILE_FUNCTION();
 
-	int gladSuccess = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	CORE_ASSERT(gladSuccess, "Failed to initialize glad!");
+		glfwMakeContextCurrent(m_WindowHandle);
 
-	CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "OpenGL version is less that 4.5!");
-}
+		int gladSuccess = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		CORE_ASSERT(gladSuccess, "Failed to initialize glad!");
 
-void Context::SwapBuffers()
-{
-	PROFILE_FUNCTION();
+		CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "OpenGL version is less that 4.5!");
+	}
 
-	glfwSwapBuffers(m_WindowHandle);
+	void Context::SwapBuffers()
+	{
+		PROFILE_FUNCTION();
+
+		glfwSwapBuffers(m_WindowHandle);
+	}
+
 }

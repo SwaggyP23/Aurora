@@ -1,37 +1,41 @@
 #include "Aurorapch.h"
 #include "ImageLoader.h"
 
-namespace Utils {
+namespace Aurora {
 
-	unsigned char* ImageLoader::m_Data;
-	uint32_t ImageLoader::m_Width, ImageLoader::m_Height, ImageLoader::m_Channels;
+	namespace Utils {
 
-	ImageLoader& ImageLoader::Get()
-	{
-		static ImageLoader s_Instance;
+		unsigned char* ImageLoader::m_Data;
+		uint32_t ImageLoader::m_Width, ImageLoader::m_Height, ImageLoader::m_Channels;
 
-		return s_Instance;
-	}
+		ImageLoader& ImageLoader::Get()
+		{
+			static ImageLoader s_Instance;
 
-	void ImageLoader::LoadImageFile(const char* filePath)
-	{
-		PROFILE_FUNCTION();
+			return s_Instance;
+		}
 
-		m_Data = (uint8_t*)stbi_load(filePath, (int*)&m_Width, (int*)&m_Height, (int*)&m_Channels, 0);
-	}
+		void ImageLoader::LoadImageFile(const char* filePath)
+		{
+			PROFILE_FUNCTION();
 
-	void ImageLoader::FreeImage()
-	{
-		PROFILE_FUNCTION();
+			m_Data = (uint8_t*)stbi_load(filePath, (int*)&m_Width, (int*)&m_Height, (int*)&m_Channels, 0);
+		}
 
-		stbi_image_free(m_Data);
-	}
+		void ImageLoader::FreeImage()
+		{
+			PROFILE_FUNCTION();
 
-	void ImageLoader::setFlipVertically(bool boolean)
-	{
-		PROFILE_FUNCTION();
+			stbi_image_free(m_Data);
+		}
 
-		stbi_set_flip_vertically_on_load(boolean);
+		void ImageLoader::setFlipVertically(bool boolean)
+		{
+			PROFILE_FUNCTION();
+
+			stbi_set_flip_vertically_on_load(boolean);
+		}
+
 	}
 
 }

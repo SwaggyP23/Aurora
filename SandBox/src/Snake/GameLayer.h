@@ -5,7 +5,7 @@
 #include <ImGui/imgui.h>
 #include "Snake.h"
 
-class GameLayer : public Layer
+class GameLayer : public Aurora::Layer
 {
 public:
 	GameLayer();
@@ -14,17 +14,17 @@ public:
 	virtual void onAttach() override;
 	virtual void onDetach() override;
 	virtual void onImGuiRender() override;
-	virtual void onUpdate(TimeStep ts) override;
-	virtual void onEvent(Event& e) override;
+	virtual void onUpdate(Aurora::TimeStep ts) override;
+	virtual void onEvent(Aurora::Event& e) override;
 
 
 private:
-	Ref<OrthoGraphicCamera> m_OrthoCamera;
-	Ref<EditorCamera> m_Camera;
+	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
+	Aurora::Ref<Aurora::EditorCamera> m_Camera;
 
-	Ref<Texture> m_Texture;
-	Ref<Texture> m_AppTexture;
-	Ref<Texture> m_SnakeTexture;
+	Aurora::Ref<Aurora::Texture> m_Texture;
+	Aurora::Ref<Aurora::Texture> m_AppTexture;
+	Aurora::Ref<Aurora::Texture> m_SnakeTexture;
 
 private: // ImGui stuff
 	bool m_Perspective = true;

@@ -1,22 +1,26 @@
 #pragma once
 
-struct Properties
-{
-	const char* Vendor = nullptr;
-	const char* Renderer = nullptr;
-	const char* Version = nullptr;
-	const char* GLSLVersion = nullptr;
-	uint32_t TextureSlots = 0;
-};
+namespace Aurora {
 
-class RendererProperties
-{
-public:
-	static void Init();
-	static void ShutDown();
+	struct Properties
+	{
+		const char* Vendor = nullptr;
+		const char* Renderer = nullptr;
+		const char* Version = nullptr;
+		const char* GLSLVersion = nullptr;
+		uint32_t TextureSlots = 0;
+	};
 
-	static const Properties* GetRendererProperties();
+	class RendererProperties
+	{
+	public:
+		static void Init();
+		static void ShutDown();
 
-private:
-	static Properties* s_Props;
-};
+		static const Properties* GetRendererProperties();
+
+	private:
+		static Properties* s_Props;
+	};
+
+}

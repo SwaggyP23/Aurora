@@ -4,11 +4,11 @@
 #include "Snake/GameLayer.h"
 #include <Core/EntryPoint.h>
 
-class Sandbox : public Application
+class Sandbox : public Aurora::Application
 {
 public:
 	Sandbox(const std::string& name)
-		:	Application(name)
+		: Aurora::Application(name)
 	{
 		//pushLayer(new SandBoxLayer());
 		pushLayer(new TestLayer());
@@ -20,7 +20,7 @@ public:
 	}
 };
 
-Application* CreateApplication(const std::string& name)
+Aurora::Application* Aurora::CreateApplication(const std::string& name)
 {
 	return new Sandbox(name);
 }

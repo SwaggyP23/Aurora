@@ -6,7 +6,7 @@
 
 #include <ImGui/imgui.h>
 
-class TestLayer : public Layer
+class TestLayer : public Aurora::Layer
 {
 public:
 	TestLayer();
@@ -15,16 +15,16 @@ public:
 	virtual void onAttach() override;
 	virtual void onDetach() override;
 	virtual void onImGuiRender() override;
-	virtual void onUpdate(TimeStep ts) override;
-	virtual void onEvent(Event& e) override;
+	virtual void onUpdate(Aurora::TimeStep ts) override;
+	virtual void onEvent(Aurora::Event& e) override;
 
 
 private:
-	Ref<OrthoGraphicCamera> m_OrthoCamera;
-	Ref<EditorCamera> m_Camera;
+	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
+	Aurora::Ref<Aurora::EditorCamera> m_Camera;
 
-	Ref<Texture> m_CheckerTexture;
-	Ref<Texture> m_QiyanaTexture;
+	Aurora::Ref<Aurora::Texture> m_CheckerTexture;
+	Aurora::Ref<Aurora::Texture> m_QiyanaTexture;
 
 private: // ImGui stuff
 	bool m_Perspective = true;

@@ -19,38 +19,42 @@
  * we can submit texture index 0 and the sampler2D will sample from a white texture (1.0f) thus allowing for plain colors to appear.
  */
 
-class Renderer3D
-{
-public:
-	static void Init();
-	static void ShutDown();
+namespace Aurora {
 
-	static void BeginScene(const Ref<EditorCamera>& camera);
-	static void BeginScene(const Ref<OrthoGraphicCamera>& camera);
-	static void EndScene();
-	static void Flush();
-
-	static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light = 0);
-	static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f));
-
-	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color, int light = 0);
-	static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
-
-	struct Statistics
+	class Renderer3D
 	{
-		uint32_t DrawCalls = 0;
-		uint32_t QuadCount = 0;
+	public:
+		static void Init();
+		static void ShutDown();
 
-		uint32_t GetTotalVertexCount() { return QuadCount * 24; }
-		uint32_t GetTotalIndexCount() { return QuadCount * 36; }
-		uint32_t GetTotalVertexBufferMemory() { return GetTotalVertexCount() * 11 * 4; }
+		static void BeginScene(const Ref<EditorCamera>& camera);
+		static void BeginScene(const Ref<OrthoGraphicCamera>& camera);
+		static void EndScene();
+		static void Flush();
+
+		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light = 0);
+		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f));
+
+		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color, int light = 0);
+		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
+
+		struct Statistics
+		{
+			uint32_t DrawCalls = 0;
+			uint32_t QuadCount = 0;
+
+			uint32_t GetTotalVertexCount() { return QuadCount * 24; }
+			uint32_t GetTotalIndexCount() { return QuadCount * 36; }
+			uint32_t GetTotalVertexBufferMemory() { return GetTotalVertexCount() * 11 * 4; }
+		};
+
+		static void ResetStats();
+		static Statistics& GetStats();
+
+	private:
+		static void StartBatch();
+		static void NextBatch();
+
 	};
 
-	static void ResetStats();
-	static Statistics& GetStats();
-
-private:
-	static void StartBatch();
-	static void NextBatch();
-
-};
+}

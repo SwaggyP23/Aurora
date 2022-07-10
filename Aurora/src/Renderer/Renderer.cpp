@@ -5,71 +5,75 @@
 #include "RenderCommand.h"
 #include "Core/Application.h"
 
-Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
+namespace Aurora {
 
-void Renderer::Init()
-{
-	PROFILE_FUNCTION();
+	Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
 
-	RendererProperties::Init();
-	Renderer3D::Init();
-	RenderCommand::Init();
-}
+	void Renderer::Init()
+	{
+		PROFILE_FUNCTION();
 
-void Renderer::ShutDown()
-{
-	// PROFILE_FUNCTION(); Currently not needed since Application destructor profiles it
+		RendererProperties::Init();
+		Renderer3D::Init();
+		RenderCommand::Init();
+	}
 
-	Renderer3D::ShutDown();
-	RenderCommand::ShutDown();
-	RendererProperties::ShutDown();
-}
+	void Renderer::ShutDown()
+	{
+		// PROFILE_FUNCTION(); Currently not needed since Application destructor profiles it
 
-void Renderer::BeginScene(const Ref<EditorCamera>& camera)
-{
-	PROFILE_FUNCTION();
+		Renderer3D::ShutDown();
+		RenderCommand::ShutDown();
+		RendererProperties::ShutDown();
+	}
 
-	s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
-}
+	void Renderer::BeginScene(const Ref<EditorCamera>& camera)
+	{
+		PROFILE_FUNCTION();
 
-void Renderer::BeginScene(const Ref<OrthoGraphicCamera>& camera)
-{
-	PROFILE_FUNCTION();
+		s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
+	}
 
-	s_SceneData->viewProjectionMatrix = camera->GetViewProjection();
-}
+	void Renderer::BeginScene(const Ref<OrthoGraphicCamera>& camera)
+	{
+		PROFILE_FUNCTION();
 
-void Renderer::EndScene()
-{
-}
+		s_SceneData->viewProjectionMatrix = camera->GetViewProjection();
+	}
 
-void Renderer::onWindowResize(uint32_t width, uint32_t height)
-{
-	PROFILE_FUNCTION();
+	void Renderer::EndScene()
+	{
+	}
 
-	RenderCommand::SetViewport(0, 0, width, height);
-}
+	void Renderer::onWindowResize(uint32_t width, uint32_t height)
+	{
+		PROFILE_FUNCTION();
 
-void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
-{
-	PROFILE_FUNCTION();
+		RenderCommand::SetViewport(0, 0, width, height);
+	}
 
-	shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-	shader->setUniformMat4("ml_matrix", model);
-	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+	void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
+	{
+		PROFILE_FUNCTION();
 
-	VAO->bind();
-	RenderCommand::DrawIndexed(VAO, true);
-}
+		shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
+		shader->setUniformMat4("ml_matrix", model);
+		shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
-void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
-{
-	PROFILE_FUNCTION();
+		VAO->bind();
+		RenderCommand::DrawIndexed(VAO, true);
+	}
 
-	shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-	shader->setUniformMat4("ml_matrix", model);
-	shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+	void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
+	{
+		PROFILE_FUNCTION();
 
-	VAO->bind();
-	RenderCommand::DrawIndexed(VAO, false);
+		shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
+		shader->setUniformMat4("ml_matrix", model);
+		shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+
+		VAO->bind();
+		RenderCommand::DrawIndexed(VAO, false);
+	}
+
 }

@@ -5,16 +5,20 @@
 
 struct GLFWwindow; // This is so that we dont have to include the glfw header because this will be included in window!
 
-class Context
-{
-public:
-	Context(GLFWwindow* windowHandle);
-	static Scope<Context> Create(GLFWwindow* handle);
+namespace Aurora {
 
-	void Init();
-	void SwapBuffers();
+	class Context
+	{
+	public:
+		Context(GLFWwindow* windowHandle);
+		static Scope<Context> Create(GLFWwindow* handle);
 
-private:
-	GLFWwindow* m_WindowHandle;
+		void Init();
+		void SwapBuffers();
 
-};
+	private:
+		GLFWwindow* m_WindowHandle;
+
+	};
+
+}

@@ -11,17 +11,21 @@
 #include "Events/KeyEvents.h"
 #include <glm/glm.hpp>
 
-class ImGuiLayer : public Layer
-{
-public:
-	ImGuiLayer();
-	~ImGuiLayer();
+namespace Aurora {
 
-	virtual void onAttach() override;
-	virtual void onDetach() override;
-	virtual void onEvent(Event& e) override;
+	class ImGuiLayer : public Layer
+	{
+	public:
+		ImGuiLayer();
+		~ImGuiLayer();
 
-	void begin();
-	void end();
+		virtual void onAttach() override;
+		virtual void onDetach() override;
+		virtual void onEvent(Event& e) override;
 
-};
+		void begin();
+		void end();
+
+	};
+
+}

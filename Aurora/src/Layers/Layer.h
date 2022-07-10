@@ -4,20 +4,24 @@
 #include "Core/TimeStep.h"
 #include "Events/Events.h"
 
-class Layer // This is an interface
-{
-public:
-	Layer(const std::string& name = "Default layer");
-	virtual ~Layer();
+namespace Aurora {
 
-	virtual void onAttach() {}
-	virtual void onDetach() {}
-	virtual void onUpdate(TimeStep ts) {}
-	virtual void onImGuiRender() {}
-	virtual void onEvent(Event& e) {}
+	class Layer // This is an interface
+	{
+	public:
+		Layer(const std::string& name = "Default layer");
+		virtual ~Layer();
 
-	inline const std::string& getName() const { return m_Name; }
+		virtual void onAttach() {}
+		virtual void onDetach() {}
+		virtual void onUpdate(TimeStep ts) {}
+		virtual void onImGuiRender() {}
+		virtual void onEvent(Event& e) {}
 
-private:
-	std::string m_Name;
-};
+		inline const std::string& getName() const { return m_Name; }
+
+	private:
+		std::string m_Name;
+	};
+
+}

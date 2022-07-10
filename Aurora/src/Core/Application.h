@@ -7,42 +7,46 @@
 #include "Layers/LayerStack.h"
 #include "ImGui/ImGuiLayer.h"
 
-class Application
-{
-public:
-	Application(const std::string& name = "OpenGLSeries App");
-	virtual ~Application();
+namespace Aurora {
 
-	void Run();
-	void onEvent(Event& e);
+	class Application
+	{
+	public:
+		Application(const std::string& name = "OpenGLSeries App");
+		virtual ~Application();
 
-	void pushLayer(Layer* layer);
-	void pushOverlay(Layer* layer);
-	
-	inline bool& getVSync() { return m_VSync; }
+		void Run();
+		void onEvent(Event& e);
 
-	inline ImGuiLayer* getImGuiLayer() const { return m_ImGuiLayer; }
-	inline Window& getWindow() const { return *m_Window; }
-	inline static Application& getApp() { return *s_Instance; }
+		void pushLayer(Layer* layer);
+		void pushOverlay(Layer* layer);
 
-private:
-	bool onWindowClose(WindowCloseEvent& e);
-	bool onWindowResize(WindowResizeEvent& e);
+		inline bool& getVSync() { return m_VSync; }
 
-private:
-	Ref<Window> m_Window;
+		inline ImGuiLayer* getImGuiLayer() const { return m_ImGuiLayer; }
+		inline Window& getWindow() const { return *m_Window; }
+		inline static Application& getApp() { return *s_Instance; }
 
-	ImGuiLayer* m_ImGuiLayer;
-	LayerStack m_LayerStack;
+	private:
+		bool onWindowClose(WindowCloseEvent& e);
+		bool onWindowResize(WindowResizeEvent& e);
 
-	float m_LastFrame = 0.0f;
+	private:
+		Ref<Window> m_Window;
 
-	bool m_Running = true;
-	bool m_Minimized = false;
-	bool m_VSync = true;
+		ImGuiLayer* m_ImGuiLayer;
+		LayerStack m_LayerStack;
 
-	static Application* s_Instance;
-};
+		float m_LastFrame = 0.0f;
 
-// To be defined by user in sandbox project and then the name is specified in the EntryPoint
-Application* CreateApplication(const std::string& name);
+		bool m_Running = true;
+		bool m_Minimized = false;
+		bool m_VSync = true;
+
+		static Application* s_Instance;
+	};
+
+	// To be defined by user in sandbox project and then the name is specified in the EntryPoint
+	Application* CreateApplication(const std::string& name);
+
+}

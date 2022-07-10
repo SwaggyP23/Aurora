@@ -19,10 +19,10 @@ class Snake
 {
 public:
 	void IncParts();
-	void moveUp(TimeStep ts);
-	void moveDown(TimeStep ts);
-	void moveLeft(TimeStep ts);
-	void moveRight(TimeStep ts);
+	void moveUp(Aurora::TimeStep ts);
+	void moveDown(Aurora::TimeStep ts);
+	void moveLeft(Aurora::TimeStep ts);
+	void moveRight(Aurora::TimeStep ts);
 	bool checkCollision(const glm::vec2& appPos);
 
 	const std::vector<BodyPart>& getBodyParts() const { return m_Arr; }

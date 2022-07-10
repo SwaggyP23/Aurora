@@ -26,7 +26,7 @@ bool Snake::checkCollision(const glm::vec2& appPos)
 	return false;
 }
 
-void Snake::moveUp(TimeStep ts)
+void Snake::moveUp(Aurora::TimeStep ts)
 {
 	for (size_t i = m_Arr.size() - 1; i > 0; i--)
 	{
@@ -40,7 +40,7 @@ void Snake::moveUp(TimeStep ts)
 		m_Arr[0].position.y = -PANELHEIGHT / 2 + 0.5f;
 }
 
-void Snake::moveDown(TimeStep ts)
+void Snake::moveDown(Aurora::TimeStep ts)
 {
 	for (size_t i = m_Arr.size() - 1; i > 0; i--)
 	{
@@ -54,7 +54,7 @@ void Snake::moveDown(TimeStep ts)
 		m_Arr[0].position.y = PANELHEIGHT / 2 - 0.5f;
 }
 
-void Snake::moveLeft(TimeStep ts)
+void Snake::moveLeft(Aurora::TimeStep ts)
 {
 	for (size_t i = m_Arr.size() - 1; i > 0; i--)
 	{
@@ -68,7 +68,7 @@ void Snake::moveLeft(TimeStep ts)
 		m_Arr[0].position.x = PANELWIDTH / 2 - 0.5f;
 }
 
-void Snake::moveRight(TimeStep ts)
+void Snake::moveRight(Aurora::TimeStep ts)
 {
 	for (size_t i = m_Arr.size() - 1; i > 0; i--)
 	{
