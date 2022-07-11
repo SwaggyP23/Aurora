@@ -16,13 +16,13 @@ namespace Aurora {
 	{
 		PROFILE_FUNCTION();
 
-		m_ContainerTexture = Aurora::Texture::Create("assets/textures/container2.png");
+		m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
 		m_ContainerTexture->flipTextureVertically(true);
 		m_ContainerTexture->setTextureWrapping(GL_REPEAT);
 		m_ContainerTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 		m_ContainerTexture->loadTextureData();
 
-		m_GroundTexture = Aurora::Texture::Create("assets/textures/ice.png");
+		m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
 		m_GroundTexture->flipTextureVertically(true);
 		m_GroundTexture->setTextureWrapping(GL_REPEAT);
 		m_GroundTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);

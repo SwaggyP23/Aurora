@@ -3,6 +3,12 @@
 
 namespace Aurora {
 
+	static void MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	{
+		if (type == GL_DEBUG_TYPE_ERROR)
+			CORE_LOG_CRITICAL("GL CALLBACK: type: **GL ERROR** {0}, severity: {1}, message: {2}", type, severity, message);
+	}
+
 	static void error_callback(int error, const char* description)
 	{
 		CORE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
@@ -63,9 +69,9 @@ namespace Aurora {
 		int success = glfwInit();
 		CORE_ASSERT(success, "Failed to initialize glfw!");
 
-		glfwSetErrorCallback(error_callback);
 #ifdef _DEBUG
-		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+		glfwSetErrorCallback(error_callback);
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE); // This is for OpenGL error callback
 #endif
 
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), NULL, NULL);
@@ -73,6 +79,11 @@ namespace Aurora {
 
 		m_Context = Context::Create(m_Window);
 		m_Context->Init();
+
+#ifdef _DEBUG
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(MessageCallback, 0); // This is for GLFW error callback and is the one that gets called
+#endif
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);

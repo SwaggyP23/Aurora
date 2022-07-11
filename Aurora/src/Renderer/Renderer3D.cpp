@@ -25,7 +25,7 @@ namespace Aurora {
 		static const size_t MaxQuads = 1000;
 		static const size_t MaxVertices = MaxQuads * 24;
 		static const size_t MaxIndices = MaxQuads * 36;
-		static const size_t MaxTextureSlots = 32;
+		static const size_t MaxTextureSlots = 16; // 16 for Luna and 32 for SandBox which is stupid
 		//const size_t MaxTextureSlots   = RendererProperties::GetRendererProperties()->TextureSlots;
 
 		Ref<VertexArray> QuadVertexArray;
@@ -136,7 +136,7 @@ namespace Aurora {
 			samplers[i] = i;
 		// This is the sampler that will be submitted to OpenGL and in which OpenGL will be sampling the textures from according to the passed index
 
-		s_Data.QuadShader = Shader::Create("assets/shaders/MainShader.glsl");
+		s_Data.QuadShader = Shader::Create("resources/shaders/MainShader.glsl");
 		s_Data.QuadShader->bind();
 		s_Data.QuadShader->setUniformArrayi("u_Textures", samplers, s_Data.MaxTextureSlots);
 
@@ -251,6 +251,9 @@ namespace Aurora {
 		s_Data.QuadShader->setUniform3f("light.Ambient", { 0.2f, 0.2f, 0.2f });
 		s_Data.QuadShader->setUniform3f("light.Diffuse", { 0.5f, 0.5f, 0.5f });
 		s_Data.QuadShader->setUniform3f("light.Specular", glm::vec3(1.0f));
+		s_Data.QuadShader->setUniform1f("light.Constant", 1.0f);
+		s_Data.QuadShader->setUniform1f("light.Linear", 0.09f);
+		s_Data.QuadShader->setUniform1f("light.Quadratic", 0.032f);
 		s_Data.QuadShader->setUniform3f("u_ViewPosition", camera->GetPosition());
 		s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
 		
