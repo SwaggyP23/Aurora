@@ -3,14 +3,14 @@
 #include "Aurora.h"
 #include "Application.h"
 
-extern Aurora::Application* Aurora::CreateApplication(const std::string& name);
+extern Aurora::Application* Aurora::CreateApplication();
 
 int main(int argc, char** argv)
 {
 	Aurora::logger::Log::Init();
 
 	PROFILE_BEGIN_SESSION("Startup", "Profiling/ApplicationStartup.json");
-	Aurora::Application* app = Aurora::CreateApplication("Reda's App");
+	Aurora::Application* app = Aurora::CreateApplication();
 	PROFILE_END_SESSION();
 
 	PROFILE_BEGIN_SESSION("Runtime", "Profiling/ApplicationRuntime.json");

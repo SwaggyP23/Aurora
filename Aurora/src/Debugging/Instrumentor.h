@@ -128,9 +128,9 @@ namespace Aurora {
 
 #ifdef _CORE_PROFILE_
 
-    #define PROFILE_BEGIN_SESSION(name, filpath)    ::Instrumentor::Get().BeginSession(name, filpath)
-    #define PROFILE_END_SESSION()                   ::Instrumentor::Get().EndSession()
-    #define PROFILE_SCOPE(name)                     ::InstrumentationTimer timer##__LINE__(name)
+    #define PROFILE_BEGIN_SESSION(name, filpath)    ::Aurora::Instrumentor::Get().BeginSession(name, filpath)
+    #define PROFILE_END_SESSION()                   ::Aurora::Instrumentor::Get().EndSession()
+    #define PROFILE_SCOPE(name)                     ::Aurora::InstrumentationTimer timer##__LINE__(name)
     #define PROFILE_FUNCTION()                      PROFILE_SCOPE(__FUNCSIG__)
 
 #else

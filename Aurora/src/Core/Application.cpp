@@ -32,6 +32,11 @@ namespace Aurora {
 		Renderer::ShutDown();
 	}
 
+	void Application::Close()
+	{
+		m_Running = false;
+	}
+
 	void Application::pushLayer(Layer* layer)
 	{
 		PROFILE_FUNCTION();

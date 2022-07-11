@@ -10,6 +10,10 @@ Aurora.vcxproj
 Aurora.vcxproj.user
 Aurora.vcxproj.filters
 
+Luna.vcxproj
+Luna.vcxproj.user
+Luna.vcxproj.filters
+
 SandBox.vcxproj
 SandBox.vcxproj.user
 SandBox.vcxproj.filters

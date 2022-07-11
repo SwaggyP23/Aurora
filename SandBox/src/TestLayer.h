@@ -22,9 +22,11 @@ public:
 private:
 	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
 	Aurora::Ref<Aurora::EditorCamera> m_Camera;
+	Aurora::Ref<Aurora::Shader> modelShader;
 
-	Aurora::Ref<Aurora::Texture> m_CheckerTexture;
+	Aurora::Ref<Aurora::Texture> m_ContainerTexture;
 	Aurora::Ref<Aurora::Texture> m_QiyanaTexture;
+	Aurora::Ref<Aurora::Texture> m_GroundTexture;
 
 private: // ImGui stuff
 	bool m_Perspective = true;

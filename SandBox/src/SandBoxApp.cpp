@@ -7,8 +7,8 @@
 class Sandbox : public Aurora::Application
 {
 public:
-	Sandbox(const std::string& name)
-		: Aurora::Application(name)
+	Sandbox()
+		: Aurora::Application("SandBox App")
 	{
 		//pushLayer(new SandBoxLayer());
 		pushLayer(new TestLayer());
@@ -20,7 +20,7 @@ public:
 	}
 };
 
-Aurora::Application* Aurora::CreateApplication(const std::string& name)
+Aurora::Application* Aurora::CreateApplication()
 {
-	return new Sandbox(name);
+	return new Sandbox();
 }

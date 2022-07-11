@@ -43,7 +43,7 @@ namespace Aurora {
 		bool operator==(const Texture& other) const { return m_TextID == other.m_TextID; }
 
 	private:
-		GLuint m_TextID;
+		GLuint m_TextID = 0;
 		std::string m_Path;
 		uint32_t m_Width, m_Height;
 		GLint m_InternalFormat;

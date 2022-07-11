@@ -3,7 +3,7 @@
 
 namespace Aurora {
 
-	void error_callback(int error, const char* description)
+	static void error_callback(int error, const char* description)
 	{
 		CORE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
@@ -37,11 +37,11 @@ namespace Aurora {
 
 	void Window::Update() const
 	{
-		#ifdef _DEBUG
+#ifdef _DEBUG
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 			CORE_LOG_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
-		#endif
+#endif
 
 		PROFILE_FUNCTION();
 
@@ -64,10 +64,10 @@ namespace Aurora {
 		CORE_ASSERT(success, "Failed to initialize glfw!");
 
 		glfwSetErrorCallback(error_callback);
-
-		#ifdef _DEBUG
+#ifdef _DEBUG
 		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-		#endif
+#endif
+
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), NULL, NULL);
 		CORE_ASSERT(m_Window, "Failed to initialize the window!");
 

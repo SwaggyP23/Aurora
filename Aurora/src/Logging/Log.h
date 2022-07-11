@@ -27,17 +27,17 @@ namespace Aurora {
 
 #if _DEBUG
 
-	#define CORE_LOG_TRACE(...)     ::logger::Log::GetCoreLogger()->trace(__VA_ARGS__)
-	#define CORE_LOG_INFO(...)      ::logger::Log::GetCoreLogger()->info(__VA_ARGS__)
-	#define CORE_LOG_WARN(...)      ::logger::Log::GetCoreLogger()->warn(__VA_ARGS__)
-	#define CORE_LOG_ERROR(...)     ::logger::Log::GetCoreLogger()->error(__VA_ARGS__)
-	#define CORE_LOG_CRITICAL(...)  ::logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
-	
-	#define LOG_TRACE(...)          ::logger::Log::GetClientLogger()->trace(__VA_ARGS__)
-	#define LOG_INFO(...)           ::logger::Log::GetClientLogger()->info(__VA_ARGS__)
-	#define LOG_WARN(...)           ::logger::Log::GetClientLogger()->warn(__VA_ARGS__)
-	#define LOG_ERROR(...)          ::logger::Log::GetClientLogger()->error(__VA_ARGS__)
-	#define LOG_CRITICAL(...)       ::logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
+	#define CORE_LOG_TRACE(...)     ::Aurora::logger::Log::GetCoreLogger()->trace(__VA_ARGS__)
+	#define CORE_LOG_INFO(...)      ::Aurora::logger::Log::GetCoreLogger()->info(__VA_ARGS__)
+	#define CORE_LOG_WARN(...)      ::Aurora::logger::Log::GetCoreLogger()->warn(__VA_ARGS__)
+	#define CORE_LOG_ERROR(...)     ::Aurora::logger::Log::GetCoreLogger()->error(__VA_ARGS__)
+	#define CORE_LOG_CRITICAL(...)  ::Aurora::logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
+
+	#define LOG_TRACE(...)          ::Aurora::logger::Log::GetClientLogger()->trace(__VA_ARGS__)
+	#define LOG_INFO(...)           ::Aurora::logger::Log::GetClientLogger()->info(__VA_ARGS__)
+	#define LOG_WARN(...)           ::Aurora::logger::Log::GetClientLogger()->warn(__VA_ARGS__)
+	#define LOG_ERROR(...)          ::Aurora::logger::Log::GetClientLogger()->error(__VA_ARGS__)
+	#define LOG_CRITICAL(...)       ::Aurora::logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 #else
 

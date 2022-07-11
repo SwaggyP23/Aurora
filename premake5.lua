@@ -25,4 +25,5 @@ group "Dependencies"
 group ""
 
 include "Aurora"
+include "Luna"
 include "SandBox"

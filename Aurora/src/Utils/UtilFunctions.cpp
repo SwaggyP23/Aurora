@@ -35,12 +35,12 @@ namespace Aurora {
 				}
 				else
 				{
-					CORE_LOG_ERROR("Could not read from file '{0}'", filePath);
+					CORE_LOG_ERROR("Could not read from file {0}", filePath);
 				}
 			}
 			else
 			{
-				CORE_ASSERT(false, "Could not open file '{0}'", filePath);
+				CORE_ASSERT(false, "Could not open file {0}", filePath);
 			}
 
 			return result;

@@ -14,11 +14,17 @@ void TestLayer::onAttach()
 {
 	PROFILE_FUNCTION();
 
-	m_CheckerTexture = Aurora::Texture::Create("resources/textures/container2.png");
-	m_CheckerTexture->flipTextureVertically(true);
-	m_CheckerTexture->setTextureWrapping(GL_REPEAT);
-	m_CheckerTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-	m_CheckerTexture->loadTextureData();
+	m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
+	m_ContainerTexture->flipTextureVertically(true);
+	m_ContainerTexture->setTextureWrapping(GL_REPEAT);
+	m_ContainerTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	m_ContainerTexture->loadTextureData();
+
+	m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
+	m_GroundTexture->flipTextureVertically(true);
+	m_GroundTexture->setTextureWrapping(GL_REPEAT);
+	m_GroundTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	m_GroundTexture->loadTextureData();
 }
 void TestLayer::onDetach()
 {
@@ -45,22 +51,27 @@ void TestLayer::onUpdate(Aurora::TimeStep ts)
 	{
 		PROFILE_SCOPE("Rendering");
 		Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
-		Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
-		// Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
-		// Aurora::Renderer3D::DrawQuad({ 0.0f, 0.0f, -10.1f }, { 10.0f, 10.0f, 0.0f }, m_CheckerTexture, 30.0f);
+		Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, m_GroundTexture, 20.0f);
+		Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
+		Aurora::Renderer3D::DrawQuad({ -2.0f, 2.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
+		Aurora::Renderer3D::DrawQuad({ 1.0f,-4.0f, 2.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
+		Aurora::Renderer3D::DrawQuad({ 1.0f, 3.0f,-2.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
+		Aurora::Renderer3D::DrawQuad({ 5.0f, 2.0f,-1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
+		Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
+		Aurora::Renderer3D::DrawQuad({ 0.0f, 0.0f, -10.1f }, { 10.0f, 10.0f, 0.0f }, m_GroundTexture, 30.0f);
 
-		//for (float y = -5.0f; y < 5.0f; y += 0.5f)
-		//{
-		//	for (float x = -5.0f; x < 5.0f; x += 0.5f)
-		//	{
-		//		glm::vec4 color = { (x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.7f };
-		//		Aurora::Renderer3D::DrawQuad({ x, y, -10.0f }, { 0.45f, 0.45f, 0.0f }, color);
-		//	}
-		//}
+		for (float y = -5.0f; y < 5.0f; y += 0.5f)
+		{
+			for (float x = -5.0f; x < 5.0f; x += 0.5f)
+			{
+				glm::vec4 color = { (x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.7f };
+				Aurora::Renderer3D::DrawQuad({ x, y, -10.0f }, { 0.45f, 0.45f, 0.0f }, color);
+			}
+		}
 
-		//static float rotation;
-		//rotation += ts * 50.0f;
-		//Aurora::Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, -6.0f }, { m_Rotations.x, m_Rotations.y, rotation }, {3.0f, 3.0f, 3.0f}, { 0, 247.0f/255.0f, 168.0f/255.0f, 0.7f });
+		static float rotation;
+		rotation += ts * 50.0f;
+		Aurora::Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, -6.0f }, { m_Rotations.x, m_Rotations.y, rotation }, {3.0f, 3.0f, 3.0f}, { 0, 247.0f/255.0f, 168.0f/255.0f, 0.7f });
 		//Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_CheckerTexture, 20.0f, m_UniColor);
 		//Aurora::Renderer3D::DrawQuad({ -1.0f,  0.0f, -8.0f }, { 0.8f, 0.8f, 1.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
 		//Aurora::Renderer3D::DrawQuad({  1.5f, -0.5f, -8.0f }, { 0.5f, 0.75f, 1.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });

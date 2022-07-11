@@ -55,11 +55,10 @@ struct VertexOutput
 	float TilingFactor;
 };
 
-struct Matrial
+struct Material
 {
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+//	sampler2D diffuse; // This is not needed here since it is in the textures array
+	sampler2D specular;
 
 	float shininess;
 };
@@ -67,13 +66,14 @@ struct Matrial
 struct Light // Each light should have different properties for each of its components and is not the same across all (Page: 129)
 {
 	vec3 Position;
+	vec3 Direction; // For directional light
 
 	vec3 Ambient;
 	vec3 Diffuse;
 	vec3 Specular;
 };
 
-uniform Matrial material;
+uniform Material material;
 uniform Light light;
 
 flat in float TexIndex;
@@ -86,20 +86,21 @@ void main()
 	vec4 FragColor;
 	if(lightCube == 0){
 		// ambient
-		vec3 ambientLight = light.Ambient * material.ambient;
+		vec3 ambientLight = light.Ambient * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb; // Since ambient and diffuse should be fairly the same (Page: 132).
 	
 		// Diffuse
 		vec3 norm = normalize(Input.Normals);
 		vec3 lightDirection = normalize(light.Position - Input.Position);
+//		vec3 lightDirection = normalize(-light.Direction);
 	
 		float diffuseImpact = max(dot(norm, lightDirection), 0.0f);
-		vec3 diffuse = light.Diffuse * (diffuseImpact * material.diffuse);
+		vec3 diffuse = light.Diffuse * diffuseImpact * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
 	
 		// Specular
 		vec3 viewDir = normalize(u_ViewPosition - Input.Position);
 		vec3 reflectionDir = reflect(-lightDirection, norm);
 		float spec = pow(max(dot(reflectionDir, viewDir), 0.0f), material.shininess);
-		vec3 specular = light.Specular * (spec * material.specular);
+		vec3 specular = light.Specular * spec * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
 	
 		vec3 tempColor = vec3(Input.Color.rgb) * (ambientLight + diffuse + specular);
 		FragColor = vec4(vec3(texture(u_Textures[int(TexIndex)], Input.TexCoords * Input.TilingFactor)) * tempColor, Input.Color.w);

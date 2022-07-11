@@ -12,8 +12,10 @@ namespace Aurora {
 	class Application
 	{
 	public:
-		Application(const std::string& name = "OpenGLSeries App");
+		Application(const std::string& name = "Aurora Engine");
 		virtual ~Application();
+
+		void Close();
 
 		void Run();
 		void onEvent(Event& e);
@@ -47,6 +49,6 @@ namespace Aurora {
 	};
 
 	// To be defined by user in sandbox project and then the name is specified in the EntryPoint
-	Application* CreateApplication(const std::string& name);
+	Application* CreateApplication();
 
 }

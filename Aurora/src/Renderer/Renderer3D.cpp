@@ -3,6 +3,8 @@
 
 namespace Aurora {
 
+	Ref<Texture> Renderer3D::m_ContainerTexture;
+
 	struct QuadVertex
 	{
 		glm::vec3 Position;
@@ -41,7 +43,9 @@ namespace Aurora {
 
 		glm::vec4 QuadVertexPositions[24];
 		glm::vec3 QuadNormalPositions[24];
+
 		uint32_t quadVertexCount = 24;
+
 		glm::vec2 textureCoords[24];
 
 		Renderer3D::Statistics Stats;
@@ -64,7 +68,7 @@ namespace Aurora {
 			{ ShaderDataType::Float,  "a_TexIndex"     },
 			{ ShaderDataType::Float,  "a_TilingFactor" },
 			{ ShaderDataType::Int,    "a_Light"        }
-			});
+		});
 		s_Data.QuadVertexArray->addVertexBuffer(s_Data.QuadVertexBuffer);
 
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
@@ -132,7 +136,7 @@ namespace Aurora {
 			samplers[i] = i;
 		// This is the sampler that will be submitted to OpenGL and in which OpenGL will be sampling the textures from according to the passed index
 
-		s_Data.QuadShader = Shader::Create("resources/shaders/MainShader.glsl");
+		s_Data.QuadShader = Shader::Create("assets/shaders/MainShader.glsl");
 		s_Data.QuadShader->bind();
 		s_Data.QuadShader->setUniformArrayi("u_Textures", samplers, s_Data.MaxTextureSlots);
 
@@ -238,26 +242,18 @@ namespace Aurora {
 	{
 		PROFILE_FUNCTION();
 
-		glm::vec3 color;
-		color.x = glm::sin((float)glfwGetTime() * 2.0f);
-		color.y = glm::sin((float)glfwGetTime() * 0.7f);
-		color.z = glm::sin((float)glfwGetTime() * 1.3f);
-
-		{
-			PROFILE_SCOPE("Setting the uniforms!");
-			s_Data.QuadShader->bind();
-			s_Data.QuadShader->setUniform3f("material.ambient", color * glm::vec3(0.5f));
-			s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
-			s_Data.QuadShader->setUniform3f("material.specular", { 0.5f, 0.5f, 0.5f });
-			s_Data.QuadShader->setUniform1f("material.shininess", 32.0f);
-			s_Data.QuadShader->setUniform3f("light.Position", { 1.2f, 3.0f, 2.0f });
-			s_Data.QuadShader->setUniform3f("light.Ambient", { 0.2f, 0.2f, 0.2f });
-			s_Data.QuadShader->setUniform3f("light.Diffuse", { 0.5f, 0.5f, 0.5f });
-			s_Data.QuadShader->setUniform3f("light.Specular", glm::vec3(1.0f));
-			s_Data.QuadShader->setUniform3f("u_ViewPosition", camera->GetPosition());
-			s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
-		}
-
+		s_Data.QuadShader->bind();
+		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
+		s_Data.QuadShader->setUniform1i("material.specular", 2);
+		s_Data.QuadShader->setUniform1f("material.shininess", 50.0f);
+		s_Data.QuadShader->setUniform3f("light.Position", { 1.2f, 3.0f, 2.0f });
+		s_Data.QuadShader->setUniform3f("light.Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->setUniform3f("light.Ambient", { 0.2f, 0.2f, 0.2f });
+		s_Data.QuadShader->setUniform3f("light.Diffuse", { 0.5f, 0.5f, 0.5f });
+		s_Data.QuadShader->setUniform3f("light.Specular", glm::vec3(1.0f));
+		s_Data.QuadShader->setUniform3f("u_ViewPosition", camera->GetPosition());
+		s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
+		
 		StartBatch();
 	}
 
@@ -399,7 +395,7 @@ namespace Aurora {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const glm::vec4& color, int light)// Should take a rotation!
+	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light)// Should take a rotation!
 	{
 		PROFILE_FUNCTION();
 
@@ -434,7 +430,7 @@ namespace Aurora {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3 rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor)
+	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor)
 	{
 		PROFILE_FUNCTION();
 
