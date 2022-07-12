@@ -53,6 +53,7 @@ namespace Aurora {
 		{
 			PROFILE_SCOPE("Rendering");
 			Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
+			Aurora::Renderer3D::DrawQuad({-1.2f, 2.0f,-6.0f }, { 0.2f, 0.2f, 0.2f }, { 0.0f, 0.0f, 1.0f, 1.0f }, 1);
 			Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, m_GroundTexture, 20.0f);
 			Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
 			Aurora::Renderer3D::DrawQuad({ -2.0f, 2.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);

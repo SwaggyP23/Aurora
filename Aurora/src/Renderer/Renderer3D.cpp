@@ -246,14 +246,27 @@ namespace Aurora {
 		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
 		s_Data.QuadShader->setUniform1i("material.specular", 2);
 		s_Data.QuadShader->setUniform1f("material.shininess", 50.0f);
-		s_Data.QuadShader->setUniform3f("light.Position", { 1.2f, 3.0f, 2.0f });
-		s_Data.QuadShader->setUniform3f("light.Direction", { -0.2f, -1.0f, -0.3f });
-		s_Data.QuadShader->setUniform3f("light.Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->setUniform3f("light.Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->setUniform3f("light.Specular", glm::vec3(1.0f));
-		s_Data.QuadShader->setUniform1f("light.Constant", 1.0f);
-		s_Data.QuadShader->setUniform1f("light.Linear", 0.09f);
-		s_Data.QuadShader->setUniform1f("light.Quadratic", 0.032f);
+
+		// For light one
+		s_Data.QuadShader->setUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
+		s_Data.QuadShader->setUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->setUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
+		s_Data.QuadShader->setUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
+		s_Data.QuadShader->setUniform3f("light[0].Specular", glm::vec3(1.0f));
+		s_Data.QuadShader->setUniform1f("light[0].Constant", 1.0f);
+		s_Data.QuadShader->setUniform1f("light[0].Linear", 0.09f);
+		s_Data.QuadShader->setUniform1f("light[0].Quadratic", 0.032f);
+
+		// For light two
+		s_Data.QuadShader->setUniform3f("light[1].Position", { -1.2f, 2.0f, -6.0f });
+		s_Data.QuadShader->setUniform3f("light[1].Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->setUniform3f("light[1].Ambient", { 0.2f, 0.2f, 0.2f });
+		s_Data.QuadShader->setUniform3f("light[1].Diffuse", { 0.5f, 0.5f, 0.5f });
+		s_Data.QuadShader->setUniform3f("light[1].Specular", glm::vec3(0.0f, 0.0f, 1.0f));
+		s_Data.QuadShader->setUniform1f("light[1].Constant", 1.0f);
+		s_Data.QuadShader->setUniform1f("light[1].Linear", 0.09f);
+		s_Data.QuadShader->setUniform1f("light[1].Quadratic", 0.0032f);
+
 		s_Data.QuadShader->setUniform3f("u_ViewPosition", camera->GetPosition());
 		s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
 		
