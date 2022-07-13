@@ -78,7 +78,7 @@ struct Light // Each light should have different properties for each of its comp
 };
 
 uniform Material material;
-uniform Light light[4];
+uniform Light light[1];
 
 flat in float TexIndex;
 flat in int lightCube;
@@ -115,7 +115,7 @@ vec3 CalcPointLight(vec3 normals, vec3 viewDirection)
 	vec3 lightDirection = vec3(0.0f), reflectionDir = vec3(0.0f); 
 	float Distance, attenuation, diffuseImpact, spec;
 
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 1; i++)
 	{
 		Distance = length(light[i].Position - Input.Position);
 		attenuation = 1.0f / (light[i].Constant + light[i].Linear * Distance + light[i].Quadratic * (Distance * Distance));
