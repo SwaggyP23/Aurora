@@ -3,6 +3,8 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/compatibility.hpp>
 
+#include <iostream>
+
 namespace Aurora {
 
 	EditorLayer::EditorLayer()
@@ -27,6 +29,18 @@ namespace Aurora {
 		m_GroundTexture->setTextureWrapping(GL_REPEAT);
 		m_GroundTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 		m_GroundTexture->loadTextureData();
+
+		m_QiyanaTexture = Aurora::Texture::Create("resources/textures/checkerboard.png");
+		m_QiyanaTexture->flipTextureVertically(true);
+		m_QiyanaTexture->setTextureWrapping(GL_REPEAT);
+		m_QiyanaTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+		m_QiyanaTexture->loadTextureData();
+
+		m_CheckerTexture = Aurora::Texture::Create("resources/textures/checkerboard2.png");
+		m_CheckerTexture->flipTextureVertically(true);
+		m_CheckerTexture->setTextureWrapping(GL_REPEAT);
+		m_CheckerTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+		m_CheckerTexture->loadTextureData();
 	}
 	void EditorLayer::onDetach()
 	{
@@ -53,24 +67,27 @@ namespace Aurora {
 		{
 			PROFILE_SCOPE("Rendering");
 			Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
-			Aurora::Renderer3D::DrawQuad({-1.2f, 2.0f,-6.0f }, { 0.2f, 0.2f, 0.2f }, { 0.0f, 0.0f, 1.0f, 1.0f }, 1);
-			Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, m_GroundTexture, 20.0f);
-			Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
-			Aurora::Renderer3D::DrawQuad({ -2.0f, 2.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
-			Aurora::Renderer3D::DrawQuad({ 1.0f,-4.0f, 2.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
-			Aurora::Renderer3D::DrawQuad({ 1.0f, 3.0f,-2.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
-			Aurora::Renderer3D::DrawQuad({ 5.0f, 2.0f,-1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
-			Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_UniColor);
-			Aurora::Renderer3D::DrawQuad({ 0.0f, 0.0f, -10.1f }, { 10.0f, 10.0f, 0.0f }, m_GroundTexture, 30.0f);
+			Aurora::Renderer3D::DrawQuad({ 3.0f, 2.0f,-6.0f }, { 0.2f, 0.2f, 0.2f }, { 0.0f, 0.0f, 1.0f, 1.0f }, 1);
+			Aurora::Renderer3D::DrawQuad({-2.4f, 2.0f,-6.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f }, 1);
+			Aurora::Renderer3D::DrawQuad({-4.0f, 2.0f, 6.0f }, { 0.2f, 0.2f, 0.2f }, { 0.0f, 1.0f, 0.0f, 1.0f }, 1);
 
-			for (float y = -5.0f; y < 5.0f; y += 0.5f)
-			{
-				for (float x = -5.0f; x < 5.0f; x += 0.5f)
-				{
-					glm::vec4 color = { (x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.7f };
-					Aurora::Renderer3D::DrawQuad({ x, y, -10.0f }, { 0.45f, 0.45f, 0.0f }, color);
-				}
-			}
+			Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
+			Aurora::Renderer3D::DrawQuad({ 0.0f, -0.5f,-16.0f }, { 30.0f, 15.0f, 2.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
+			Aurora::Renderer3D::DrawQuad({-16.0f, -0.5f, -1.0f }, { 2.0f, 15.0f, 32.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
+
+			Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_QiyanaTexture);
+			Aurora::Renderer3D::DrawQuad({ -2.0f, 2.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_CheckerTexture);
+			Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_GroundTexture, 1.0f, m_UniColor);
+
+			//Aurora::Renderer3D::DrawQuad({ 10.1f, 0.0f, 0.0f }, { 0.0f, 10.0f, 10.0f }, m_GroundTexture, 30.0f);
+			//for (float y = -5.0f; y < 5.0f; y += 0.5f)
+			//{
+			//	for (float x = -5.0f; x < 5.0f; x += 0.5f)
+			//	{
+			//		glm::vec4 color = { (x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.7f };
+			//		Aurora::Renderer3D::DrawQuad({ 10.0f, y, x }, { 0.0f, 0.45f, 0.45f }, color);
+			//	}
+			//}
 
 			static float rotation;
 			rotation += ts * 50.0f;

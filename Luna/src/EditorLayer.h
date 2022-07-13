@@ -26,6 +26,7 @@ namespace Aurora {
 		Aurora::Ref<Aurora::Texture> m_ContainerTexture;
 		Aurora::Ref<Aurora::Texture> m_QiyanaTexture;
 		Aurora::Ref<Aurora::Texture> m_GroundTexture;
+		Aurora::Ref<Aurora::Texture> m_CheckerTexture;
 
 	private: // ImGui stuff
 		bool m_Perspective = true;
