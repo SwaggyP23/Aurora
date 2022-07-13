@@ -15,20 +15,20 @@ void GameLayer::onAttach()
 
 	m_Texture = Aurora::Texture::Create("resources/textures/Pepsi.png");
 	m_Texture->flipTextureVertically(true);
-	m_Texture->setTextureWrapping(GL_REPEAT);
-	m_Texture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	m_Texture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_Texture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_Texture->loadTextureData();
 
 	m_AppTexture = Aurora::Texture::Create("resources/textures/apple.png");
 	m_AppTexture->flipTextureVertically(true);
-	m_AppTexture->setTextureWrapping(GL_REPEAT);
-	m_AppTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	m_AppTexture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_AppTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_AppTexture->loadTextureData();
 
 	m_SnakeTexture = Aurora::Texture::Create("resources/textures/Snake.png");
 	m_SnakeTexture->flipTextureVertically(true);
-	m_SnakeTexture->setTextureWrapping(GL_REPEAT);
-	m_SnakeTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	m_SnakeTexture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_SnakeTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_SnakeTexture->loadTextureData();
 }
 
@@ -97,32 +97,32 @@ void GameLayer::onUpdate(Aurora::TimeStep ts)
 
 void GameLayer::onEvent(Aurora::Event& e)
 {
-	if (Aurora::Input::isKeyPressed(GLFW_KEY_W) && !down) {
+	if (Aurora::Input::isKeyPressed(Aurora::Key::W) && !down) {
 		m_Dir = Direction::Up;
 		up = true;
 		left = false;
 		right = false;
 	}
-	else if (Aurora::Input::isKeyPressed(GLFW_KEY_A) && !right) {
+	else if (Aurora::Input::isKeyPressed(Aurora::Key::A) && !right) {
 		m_Dir = Direction::Left;
 		left = true;
 		up = false;
 		down = false;
 	}
-	else if (Aurora::Input::isKeyPressed(GLFW_KEY_S) && !up) {
+	else if (Aurora::Input::isKeyPressed(Aurora::Key::S) && !up) {
 		m_Dir = Direction::Down;
 		down = true;
 		right = false;
 		left = false;
 	}
-	else if (Aurora::Input::isKeyPressed(GLFW_KEY_D) && !left) {
+	else if (Aurora::Input::isKeyPressed(Aurora::Key::D) && !left) {
 		m_Dir = Direction::Right;
 		right = true;
 		up = false;
 		down = false;
 	}
 
-	if (Aurora::Input::isKeyPressed(GLFW_KEY_LEFT_ALT)) // This is for debugging
+	if (Aurora::Input::isKeyPressed(Aurora::Key::LeftAlt)) // This is for debugging
 		m_Snake.IncParts();
 
 	if (m_Perspective)

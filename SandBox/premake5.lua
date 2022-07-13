@@ -39,8 +39,8 @@ project "SandBox"
     filter "configurations:Profile"
         defines
         {
-            "_DEBUG",
-            "_CORE_PROFILE_"
+            "AURORA_DEBUG",
+            "AURORA_CORE_PROFILE_"
         }
 
         runtime "Debug"
@@ -51,7 +51,7 @@ project "SandBox"
         }
 
     filter "configurations:Debug"
-        defines "_DEBUG"
+        defines "AURORA_DEBUG"
         runtime "Debug"
         symbols "on"
 
@@ -60,9 +60,9 @@ project "SandBox"
         }
 
     filter "configurations:Release"
-        defines "_RELEASE"
+        defines "AURORA_RELEASE"
         runtime "Release"
-        optimize "on"
+        optimize "Speed"
 
         links
         {

@@ -247,32 +247,32 @@ void SandBoxLayer::onAttach()
 	Aurora::Ref<Aurora::Texture> text1 = Aurora::Texture::Create("resources/textures/Lufi.png");
 	//text1->bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to bind and unbind
 	text1->flipTextureVertically(true);
-	text1->setTextureWrapping(GL_REPEAT);
-	text1->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	text1->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text1->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text1->loadTextureData();
 	//text1->unBind();
 
 	Aurora::Ref<Aurora::Texture> text2 = Aurora::Texture::Create("resources/textures/Qiyana2.png");
 	//text2->bind(1); // Only before the draw call we should bind the texture to its corresponding texture slot
 	text2->flipTextureVertically(true);
-	text2->setTextureWrapping(GL_REPEAT);
-	text2->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	text2->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text2->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text2->loadTextureData();
 	//text2->unBind();
 
 	Aurora::Ref<Aurora::Texture> text3 = Aurora::Texture::Create("resources/textures/checkerboard.png");
 	//text3->bind(2);
 	text3->flipTextureVertically(true);
-	text3->setTextureWrapping(GL_REPEAT);
-	text3->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	text3->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text3->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text3->loadTextureData();
 	//text3->unBind();
 
 	Aurora::Ref<Aurora::Texture> text4 = Aurora::Texture::Create("resources/textures/map.jpg");
 	//text4->bind(3);
 	text4->flipTextureVertically(true);
-	text4->setTextureWrapping(GL_REPEAT);
-	text4->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+	text4->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text4->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text4->loadTextureData();
 	//text4->unBind();
 
@@ -352,15 +352,11 @@ void SandBoxLayer::onUpdate(Aurora::TimeStep ts)
 		model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		model = glm::translate(model, m_CubePositions[i] + m_Transalations);
 
-		if (m_IsRPressed)
-			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
-		else {
-			angle = m_Rotations;
-			rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle.x), { 1.0f, 0.0f, 0.0f })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(angle.y), { 0.0f, 1.0f, 0.0f })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f + angle.z), { 0.0f, 0.0f, 1.0f });
-			model *= rotation;
-		}
+		angle = m_Rotations;
+		rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle.x), { 1.0f, 0.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), glm::radians(angle.y), { 0.0f, 1.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f + angle.z), { 0.0f, 0.0f, 1.0f });
+		model *= rotation;
 
 		model = glm::scale(model, m_Scales);
 
@@ -419,7 +415,7 @@ void SandBoxLayer::onEvent(Aurora::Event& e)
 	else
 		m_OrthoCamera->OnEvent(e);
 
-	if (Aurora::Input::isKeyPressed(GLFW_KEY_R))
+	if (Aurora::Input::isKeyPressed(Aurora::Key::R))
 		m_IsRPressed = !m_IsRPressed;
 }
 

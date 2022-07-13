@@ -32,6 +32,26 @@ namespace Aurora {
 		}
 	}
 
+	static GLenum GLTypeFromTextureProperties(TextureProperties Type)
+	{
+		switch (Type)
+		{
+			case Aurora::TextureProperties::Repeat:                      return GL_REPEAT;
+			case Aurora::TextureProperties::MirrorredRepeat:             return GL_MIRRORED_REPEAT;
+			case Aurora::TextureProperties::ClampToEdge:                 return GL_CLAMP_TO_EDGE;
+			case Aurora::TextureProperties::ClampToBorder:               return GL_CLAMP_TO_BORDER;
+			case Aurora::TextureProperties::Nearest:                     return GL_NEAREST;
+			case Aurora::TextureProperties::Linear:                      return GL_LINEAR;
+			case Aurora::TextureProperties::MipMap_NearestNearest:       return GL_NEAREST_MIPMAP_NEAREST;
+			case Aurora::TextureProperties::MipMap_LinearNearest:        return GL_LINEAR_MIPMAP_NEAREST;
+			case Aurora::TextureProperties::MipMap_NearestLinear:        return GL_NEAREST_MIPMAP_LINEAR;
+			case Aurora::TextureProperties::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
+		}
+
+		CORE_ASSERT(false, "Unkown texture Filtering/Wrapping type!");
+		return 0;
+	}
+
 	Ref<Texture> Texture::Create(uint32_t width, uint32_t height)
 	{
 		return CreateRef<Texture>(width, height);
@@ -54,8 +74,8 @@ namespace Aurora {
 
 		glTextureStorage2D(m_TextID, 1, GL_RGBA8, m_Width, m_Height);
 
-		setTextureWrapping(GL_REPEAT);
-		setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+		setTextureWrapping(TextureProperties::Repeat);
+		setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 	}
 
 	Texture::Texture(const std::string& filePath)
@@ -70,10 +90,10 @@ namespace Aurora {
 	{
 		PROFILE_FUNCTION();
 
-		#if _DEBUG
+#if _DEBUG
 		uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
 		CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
-		#endif
+#endif
 		glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 
@@ -84,20 +104,20 @@ namespace Aurora {
 		glDeleteTextures(1, &m_TextID);
 	}
 
-	void Texture::setTextureWrapping(GLenum wrapMode) const
+	void Texture::setTextureWrapping(TextureProperties wrapMode) const
 	{
 		PROFILE_FUNCTION();
 
-		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_S, wrapMode);
-		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_T, wrapMode);
+		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_S, GLTypeFromTextureProperties(wrapMode));
+		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_T, GLTypeFromTextureProperties(wrapMode));
 	}
 
-	void Texture::setTextureFiltering(GLenum minFilter, GLenum magFilter) const
+	void Texture::setTextureFiltering(TextureProperties minFilter, TextureProperties magFilter) const
 	{
 		PROFILE_FUNCTION();
 
-		glTextureParameteri(m_TextID, GL_TEXTURE_MIN_FILTER, minFilter);
-		glTextureParameteri(m_TextID, GL_TEXTURE_MAG_FILTER, magFilter);
+		glTextureParameteri(m_TextID, GL_TEXTURE_MIN_FILTER, GLTypeFromTextureProperties(minFilter));
+		glTextureParameteri(m_TextID, GL_TEXTURE_MAG_FILTER, GLTypeFromTextureProperties(magFilter));
 	}
 
 	void Texture::flipTextureVertically(bool state)

@@ -1,9 +1,4 @@
-IncludeDir = {}
-IncludeDir["GLFW"]      = "%{wks.location}/Aurora/deps/GLFW/include"
-IncludeDir["Glad"]      = "%{wks.location}/Aurora/deps/Glad/include"
-IncludeDir["ImGui"]     = "%{wks.location}/Aurora/deps/ImGui"
-IncludeDir["stb_image"] = "%{wks.location}/Aurora/deps/stb_image"
-IncludeDir["glm"]       = "%{wks.location}/Aurora/deps/glm"
+include "Dependencies.lua"
 
 workspace "Aurora"
 
@@ -24,6 +19,11 @@ group "Dependencies"
     include "Aurora/deps/ImGui/imgui"
 group ""
 
-include "Aurora"
-include "Luna"
-include "SandBox"
+group "Core"
+    include "Aurora"
+    include "Luna"
+group ""
+
+group "Runtime"
+    include "SandBox"
+group "Runtime"

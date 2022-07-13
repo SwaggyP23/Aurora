@@ -126,7 +126,7 @@ namespace Aurora {
 
 }
 
-#ifdef _CORE_PROFILE_
+#ifdef AURORA_CORE_PROFILE_
 
     #define PROFILE_BEGIN_SESSION(name, filpath)        ::Aurora::Instrumentor::Get().BeginSession(name, filpath)
     #define PROFILE_END_SESSION()                       ::Aurora::Instrumentor::Get().EndSession()

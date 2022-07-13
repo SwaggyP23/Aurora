@@ -3,8 +3,6 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/compatibility.hpp>
 
-#include <iostream>
-
 namespace Aurora {
 
 	EditorLayer::EditorLayer()
@@ -20,26 +18,26 @@ namespace Aurora {
 
 		m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
 		m_ContainerTexture->flipTextureVertically(true);
-		m_ContainerTexture->setTextureWrapping(GL_REPEAT);
-		m_ContainerTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+		m_ContainerTexture->setTextureWrapping(TextureProperties::Linear);
+		m_ContainerTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_ContainerTexture->loadTextureData();
 
 		m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
 		m_GroundTexture->flipTextureVertically(true);
-		m_GroundTexture->setTextureWrapping(GL_REPEAT);
-		m_GroundTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+		m_ContainerTexture->setTextureWrapping(TextureProperties::Linear);
+		m_ContainerTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_GroundTexture->loadTextureData();
 
 		m_QiyanaTexture = Aurora::Texture::Create("resources/textures/checkerboard.png");
 		m_QiyanaTexture->flipTextureVertically(true);
-		m_QiyanaTexture->setTextureWrapping(GL_REPEAT);
-		m_QiyanaTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+		m_ContainerTexture->setTextureWrapping(TextureProperties::Linear);
+		m_ContainerTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_QiyanaTexture->loadTextureData();
 
 		m_CheckerTexture = Aurora::Texture::Create("resources/textures/checkerboard2.png");
 		m_CheckerTexture->flipTextureVertically(true);
-		m_CheckerTexture->setTextureWrapping(GL_REPEAT);
-		m_CheckerTexture->setTextureFiltering(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+		m_ContainerTexture->setTextureWrapping(TextureProperties::Linear);
+		m_ContainerTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_CheckerTexture->loadTextureData();
 	}
 	void EditorLayer::onDetach()
@@ -201,6 +199,7 @@ namespace Aurora {
 			ImGui::Text("Perspective Camera!");
 		else
 			ImGui::Text("OrthoGraphic Camera!");
+		
 
 		float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 		m_Peak = peak;

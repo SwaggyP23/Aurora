@@ -63,7 +63,4 @@ project "GLFW"
 
     filter "configurations:Release"
         runtime "Release"
-        optimize "on"
-
-    filter { "system:windows", "configurations:Release" }
-        buildoptions "/O2"
+        optimize "Speed"
