@@ -67,9 +67,6 @@ namespace Aurora {
 		{
 			PROFILE_SCOPE("Rendering");
 			Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
-			Aurora::Renderer3D::DrawQuad({ 3.0f, 2.0f,-6.0f }, { 0.2f, 0.2f, 0.2f }, { 0.0f, 0.0f, 1.0f, 1.0f }, 1);
-			Aurora::Renderer3D::DrawQuad({-2.4f, 2.0f,-6.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f }, 1);
-			Aurora::Renderer3D::DrawQuad({-4.0f, 2.0f, 6.0f }, { 0.2f, 0.2f, 0.2f }, { 0.0f, 1.0f, 0.0f, 1.0f }, 1);
 
 			Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
 			Aurora::Renderer3D::DrawQuad({ 0.0f, -0.5f,-16.0f }, { 30.0f, 15.0f, 2.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
@@ -77,7 +74,6 @@ namespace Aurora {
 
 			Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_QiyanaTexture);
 			Aurora::Renderer3D::DrawQuad({ -2.0f, 2.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_CheckerTexture);
-			Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_GroundTexture, 1.0f, m_UniColor);
 
 			//Aurora::Renderer3D::DrawQuad({ 10.1f, 0.0f, 0.0f }, { 0.0f, 10.0f, 10.0f }, m_GroundTexture, 30.0f);
 			//for (float y = -5.0f; y < 5.0f; y += 0.5f)
@@ -91,11 +87,7 @@ namespace Aurora {
 
 			static float rotation;
 			rotation += ts * 50.0f;
-			Aurora::Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, -6.0f }, { m_Rotations.x, m_Rotations.y, rotation }, { 3.0f, 3.0f, 3.0f }, { 0, 247.0f / 255.0f, 168.0f / 255.0f, 0.7f });
-			//Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_CheckerTexture, 20.0f, m_UniColor);
-			//Aurora::Renderer3D::DrawQuad({ -1.0f,  0.0f, -8.0f }, { 0.8f, 0.8f, 1.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
-			//Aurora::Renderer3D::DrawQuad({  1.5f, -0.5f, -8.0f }, { 0.5f, 0.75f, 1.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
-			//Aurora::Renderer3D::DrawQuad({ 1.0f,  -1.0f,  0.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
+			Aurora::Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, -6.0f }, { 0.0f, 0.0f, rotation }, { 3.0f, 3.0f, 3.0f }, { 0, 247.0f / 255.0f, 168.0f / 255.0f, 0.7f });
 		}
 
 		Aurora::Renderer3D::EndScene();
@@ -121,22 +113,6 @@ namespace Aurora {
 		Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
 
 		ImGui::Begin("Editing Panel");
-		if (ImGui::CollapsingHeader("Cube")) {
-			ImGui::ColorEdit3("Uniform Color", (float*)&m_UniColor);
-			ImGui::SliderFloat3("Cube Translation", (float*)&m_Transalations, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Cube Rotations", (float*)&m_Rotations, 0.0f, 360.0f);
-			ImGui::SliderFloat3("Cube Scale", (float*)&m_Scales, 0.0f, 3.0f);
-		}
-
-		ImGui::Separator();
-
-		if (ImGui::CollapsingHeader("Right Wall")) {
-			ImGui::SliderFloat3("Wall Translation", (float*)&m_WallTransalations, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Wall Rotations", (float*)&m_WallRotations, 0.0f, 360.0f);
-			ImGui::SliderFloat3("Wall Scale", (float*)&m_WallScales, 0.0f, 3.0f);
-		}
-
-		ImGui::Separator();
 
 		ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
 

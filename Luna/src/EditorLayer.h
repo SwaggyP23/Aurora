@@ -19,9 +19,8 @@ namespace Aurora {
 
 
 	private:
-		Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
 		Aurora::Ref<Aurora::EditorCamera> m_Camera;
-		Aurora::Ref<Aurora::Shader> modelShader;
+		Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
 
 		Aurora::Ref<Aurora::Texture> m_ContainerTexture;
 		Aurora::Ref<Aurora::Texture> m_QiyanaTexture;
@@ -34,14 +33,6 @@ namespace Aurora {
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 		glm::vec4 m_UniColor = glm::vec4(1.0f);
-
-		glm::vec3 m_Transalations = glm::vec3(0.0f, 0.0f, -8.0f);
-		glm::vec3 m_Rotations = glm::vec3(0.0f);
-		glm::vec3 m_Scales = glm::vec3(1.0f);
-
-		glm::vec3 m_WallTransalations = glm::vec3(0.0f);
-		glm::vec3 m_WallRotations = glm::vec3(0.0f, 90.0f, 0.0f);
-		glm::vec3 m_WallScales = glm::vec3(1.0f, 1.0f, 1.0f);
 	};
 
 }

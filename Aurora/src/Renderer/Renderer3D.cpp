@@ -25,7 +25,7 @@ namespace Aurora {
 		static const size_t MaxQuads = 1000;
 		static const size_t MaxVertices = MaxQuads * 24;
 		static const size_t MaxIndices = MaxQuads * 36;
-		static const size_t MaxTextureSlots = 16; // 16 for Luna and 32 for SandBox which is stupid
+		static const size_t MaxTextureSlots = 16;// 16 for Luna and 32 for SandBox which is stupid
 		//const size_t MaxTextureSlots   = RendererProperties::GetRendererProperties()->TextureSlots;
 
 		Ref<VertexArray> QuadVertexArray;
@@ -254,38 +254,8 @@ namespace Aurora {
 		s_Data.QuadShader->setUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
 		s_Data.QuadShader->setUniform3f("light[0].Specular", glm::vec3(1.0f));
 		s_Data.QuadShader->setUniform1f("light[0].Constant", 1.0f);
-		s_Data.QuadShader->setUniform1f("light[0].Linear", 0.09f);
-		s_Data.QuadShader->setUniform1f("light[0].Quadratic", 0.032f);
-
-		// For light two
-		s_Data.QuadShader->setUniform3f("light[1].Position", { 3.0f, 2.0f, -6.0f });
-		s_Data.QuadShader->setUniform3f("light[1].Direction", { -0.2f, -1.0f, -0.3f });
-		s_Data.QuadShader->setUniform3f("light[1].Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->setUniform3f("light[1].Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->setUniform3f("light[1].Specular", glm::vec3(0.0f, 0.0f, 1.0f));
-		s_Data.QuadShader->setUniform1f("light[1].Constant", 1.0f);
-		s_Data.QuadShader->setUniform1f("light[1].Linear", 0.009f);
-		s_Data.QuadShader->setUniform1f("light[1].Quadratic", 0.092f);
-
-		// For light three
-		s_Data.QuadShader->setUniform3f("light[2].Position", { -2.4f, 2.0f,-6.0f });
-		s_Data.QuadShader->setUniform3f("light[2].Direction", { -0.2f, -1.0f, -0.3f });
-		s_Data.QuadShader->setUniform3f("light[2].Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->setUniform3f("light[2].Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->setUniform3f("light[2].Specular", { 1.0f, 0.0f, 0.0f });
-		s_Data.QuadShader->setUniform1f("light[2].Constant", 1.0f);
-		s_Data.QuadShader->setUniform1f("light[2].Linear", 0.009f);
-		s_Data.QuadShader->setUniform1f("light[2].Quadratic", 0.032f);
-
-		// For light four
-		s_Data.QuadShader->setUniform3f("light[3].Position", {-4.0f, 2.0f, 6.0f });
-		s_Data.QuadShader->setUniform3f("light[3].Direction", { -0.2f, -1.0f, -0.3f });
-		s_Data.QuadShader->setUniform3f("light[3].Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->setUniform3f("light[3].Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->setUniform3f("light[3].Specular", { 0.0f, 1.0f, 0.0f });
-		s_Data.QuadShader->setUniform1f("light[3].Constant", 1.0f);
-		s_Data.QuadShader->setUniform1f("light[3].Linear", 0.009f);
-		s_Data.QuadShader->setUniform1f("light[3].Quadratic", 0.032f);
+		s_Data.QuadShader->setUniform1f("light[0].Linear", 0.009f);
+		s_Data.QuadShader->setUniform1f("light[0].Quadratic", 0.0032f);
 
 		s_Data.QuadShader->setUniform3f("u_ViewPosition", camera->GetPosition());
 		s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
@@ -298,6 +268,20 @@ namespace Aurora {
 		PROFILE_FUNCTION();
 
 		s_Data.QuadShader->bind();
+
+		s_Data.QuadShader->setUniform1i("material.specular", 2);
+		s_Data.QuadShader->setUniform1f("material.shininess", 50.0f);
+
+		// For light one
+		s_Data.QuadShader->setUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
+		s_Data.QuadShader->setUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->setUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
+		s_Data.QuadShader->setUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
+		s_Data.QuadShader->setUniform3f("light[0].Specular", glm::vec3(1.0f));
+		s_Data.QuadShader->setUniform1f("light[0].Constant", 1.0f);
+		s_Data.QuadShader->setUniform1f("light[0].Linear", 0.009f);
+		s_Data.QuadShader->setUniform1f("light[0].Quadratic", 0.0032f);
+
 		s_Data.QuadShader->setUniform3f("u_ViewPosition", camera->GetPosition());
 		s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", camera->GetViewProjection());
 
