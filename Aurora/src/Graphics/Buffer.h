@@ -32,7 +32,7 @@ namespace Aurora {
 		    case ShaderDataType::Bool:    return 1;
 		}
 
-		CORE_ASSERT(false, "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
 		return 0;
 	}
 
@@ -53,7 +53,7 @@ namespace Aurora {
 		    case ShaderDataType::Bool:    return GL_BOOL;
 		}
 
-		CORE_ASSERT(false, "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
 		return 0;
 	}
 

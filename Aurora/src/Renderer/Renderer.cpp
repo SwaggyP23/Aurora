@@ -11,7 +11,7 @@ namespace Aurora {
 
 	void Renderer::Init()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		RendererProperties::Init();
 		Renderer3D::Init();
@@ -29,14 +29,14 @@ namespace Aurora {
 
 	void Renderer::BeginScene(const Ref<EditorCamera>& camera)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
 	}
 
 	void Renderer::BeginScene(const Ref<OrthoGraphicCamera>& camera)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		s_SceneData->viewProjectionMatrix = camera->GetViewProjection();
 	}
@@ -47,14 +47,14 @@ namespace Aurora {
 
 	void Renderer::onWindowResize(uint32_t width, uint32_t height)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
 	void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
 		shader->setUniformMat4("ml_matrix", model);
@@ -66,7 +66,7 @@ namespace Aurora {
 
 	void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
 		shader->setUniformMat4("ml_matrix", model);

@@ -5,13 +5,41 @@ namespace Aurora {
 
 	static void MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
-		if (type == GL_DEBUG_TYPE_ERROR)
-			CORE_LOG_CRITICAL("GL CALLBACK: type: **GL ERROR** {0}, severity: {1}, message: {2}", type, severity, message);
+		const char* ErrorType;
+		switch (type)
+		{
+			case 0x824C:    ErrorType = "ERROR";
+				break;
+			case 0x824D:    ErrorType = "DEPRECATED BEHAVIOR";
+				break;
+			case 0x824E:    ErrorType = "UNDEFINED_BEHAVIOR";
+				break;
+			case 0x824F:    ErrorType = "PORTABILITY";
+				break;
+			case 0x8250:    ErrorType = "PERFORMANCE";
+				break;
+			case 0x8251:    ErrorType = "OTHER";
+				break;
+		}
+
+		const char* Severity;
+		switch (severity)
+		{
+			case 0x9146:	Severity = "HIGH";
+				break;
+			case 0x9147:	Severity = "MEIDUM";
+				break;
+		}
+		
+		if (severity == 0x9146)
+			AR_CORE_LOG_CRITICAL("GL Callback: Type: {0}, Severity: {1}, Message: {2}", ErrorType, Severity, message);
+		else if (severity == 0x9147)
+			AR_CORE_LOG_WARN("GL Callback: Type: {0}, Severity: {1}, Message: {2}", ErrorType, Severity, message);
 	}
 
 	static void error_callback(int error, const char* description)
 	{
-		CORE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
+		AR_CORE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
 	Ref<Window> Window::Create(const std::string& title, uint32_t width, uint32_t height)
@@ -21,21 +49,21 @@ namespace Aurora {
 
 	Window::Window(const std::string& title, uint32_t width, uint32_t height)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		Init(title, width, height);
 	}
 
 	Window::~Window()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		ShutDown();
 	}
 
 	void Window::SetVSync(bool state)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glfwSwapInterval(state);
 		m_Data.VSync = state;
@@ -43,13 +71,13 @@ namespace Aurora {
 
 	void Window::Update() const
 	{
-#ifdef _DEBUG
+#ifdef AURORA_DEBUG
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
-			CORE_LOG_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
+			AR_CORE_LOG_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
 #endif
 
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glfwPollEvents();
 		//glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
@@ -64,23 +92,23 @@ namespace Aurora {
 		m_Data.Width = width;
 		m_Data.Height = height;
 
-		CORE_LOG_INFO("Creating window {0} ({1}, {2})", m_Data.Title, m_Data.Width, m_Data.Height);
+		AR_CORE_LOG_INFO("Creating window {0} ({1}, {2})", m_Data.Title, m_Data.Width, m_Data.Height);
 
 		int success = glfwInit();
-		CORE_ASSERT(success, "Failed to initialize glfw!");
+		AR_CORE_ASSERT(success, "Failed to initialize glfw!");
 
-#ifdef _DEBUG
+#ifdef AURORA_DEBUG
 		glfwSetErrorCallback(error_callback);
 		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE); // This is for OpenGL error callback
 #endif
 
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), NULL, NULL);
-		CORE_ASSERT(m_Window, "Failed to initialize the window!");
+		AR_CORE_ASSERT(m_Window, "Failed to initialize the window!");
 
 		m_Context = Context::Create(m_Window);
 		m_Context->Init();
 
-#ifdef _DEBUG
+#ifdef AURORA_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(MessageCallback, 0); // This is for GLFW error callback and is the one that gets called
 #endif

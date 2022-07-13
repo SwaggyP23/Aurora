@@ -247,7 +247,7 @@ void SandBoxLayer::onAttach()
 	Aurora::Ref<Aurora::Texture> text1 = Aurora::Texture::Create("resources/textures/Lufi.png");
 	//text1->bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to bind and unbind
 	text1->flipTextureVertically(true);
-	text1->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text1->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	text1->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text1->loadTextureData();
 	//text1->unBind();
@@ -255,7 +255,7 @@ void SandBoxLayer::onAttach()
 	Aurora::Ref<Aurora::Texture> text2 = Aurora::Texture::Create("resources/textures/Qiyana2.png");
 	//text2->bind(1); // Only before the draw call we should bind the texture to its corresponding texture slot
 	text2->flipTextureVertically(true);
-	text2->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text2->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	text2->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text2->loadTextureData();
 	//text2->unBind();
@@ -263,7 +263,7 @@ void SandBoxLayer::onAttach()
 	Aurora::Ref<Aurora::Texture> text3 = Aurora::Texture::Create("resources/textures/checkerboard.png");
 	//text3->bind(2);
 	text3->flipTextureVertically(true);
-	text3->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text3->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	text3->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text3->loadTextureData();
 	//text3->unBind();
@@ -271,7 +271,7 @@ void SandBoxLayer::onAttach()
 	Aurora::Ref<Aurora::Texture> text4 = Aurora::Texture::Create("resources/textures/map.jpg");
 	//text4->bind(3);
 	text4->flipTextureVertically(true);
-	text4->setTextureWrapping(Aurora::TextureProperties::Linear);
+	text4->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	text4->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	text4->loadTextureData();
 	//text4->unBind();

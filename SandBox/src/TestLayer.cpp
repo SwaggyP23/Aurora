@@ -12,31 +12,31 @@ TestLayer::TestLayer()
 
 void TestLayer::onAttach()
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
 	m_ContainerTexture->flipTextureVertically(true);
-	m_ContainerTexture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_ContainerTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	m_ContainerTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_ContainerTexture->loadTextureData();
 
 	m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
 	m_GroundTexture->flipTextureVertically(true);
-	m_GroundTexture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_GroundTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	m_GroundTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_GroundTexture->loadTextureData();
 }
 void TestLayer::onDetach()
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 }
 
 void TestLayer::onUpdate(Aurora::TimeStep ts)
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 	
 	{
-		PROFILE_SCOPE("Clear Colors");
+		AR_PROFILE_SCOPE("Clear Colors");
 		Aurora::RenderCommand::setClearColor(m_Color);
 		Aurora::RenderCommand::Clear();
 	}
@@ -49,7 +49,7 @@ void TestLayer::onUpdate(Aurora::TimeStep ts)
 		Aurora::Renderer3D::BeginScene(m_OrthoCamera);
 
 	{
-		PROFILE_SCOPE("Rendering");
+		AR_PROFILE_SCOPE("Rendering");
 		Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
 		Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, m_GroundTexture, 20.0f);
 		Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
@@ -96,7 +96,7 @@ void TestLayer::onEvent(Aurora::Event& e)
 
 void TestLayer::onImGuiRender()
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
 

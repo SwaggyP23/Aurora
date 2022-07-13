@@ -10,7 +10,7 @@ void Snake::IncParts()
 		newPart = { { m_Arr[m_Arr.size() - 1].position.x,  m_Arr[m_Arr.size() - 1].position.y - 1.0f } };
 
 	m_Arr.emplace_back(newPart);
-	LOG_WARN("Snake grew to {0}", m_Arr.size());
+	AR_LOG_WARN("Snake grew to {0}", m_Arr.size());
 }
 
 bool Snake::checkCollision(const glm::vec2& appPos)

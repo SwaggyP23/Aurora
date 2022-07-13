@@ -9,40 +9,40 @@ GameLayer::GameLayer()
 
 void GameLayer::onAttach()
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	Aurora::Utils::Random::Init();
 
 	m_Texture = Aurora::Texture::Create("resources/textures/Pepsi.png");
 	m_Texture->flipTextureVertically(true);
-	m_Texture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_Texture->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	m_Texture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_Texture->loadTextureData();
 
 	m_AppTexture = Aurora::Texture::Create("resources/textures/apple.png");
 	m_AppTexture->flipTextureVertically(true);
-	m_AppTexture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_AppTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	m_AppTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_AppTexture->loadTextureData();
 
 	m_SnakeTexture = Aurora::Texture::Create("resources/textures/Snake.png");
 	m_SnakeTexture->flipTextureVertically(true);
-	m_SnakeTexture->setTextureWrapping(Aurora::TextureProperties::Linear);
+	m_SnakeTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
 	m_SnakeTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_SnakeTexture->loadTextureData();
 }
 
 void GameLayer::onDetach()
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 }
 
 void GameLayer::onUpdate(Aurora::TimeStep ts)
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	{
-		PROFILE_SCOPE("Clear Colors");
+		AR_PROFILE_SCOPE("Clear Colors");
 		Aurora::RenderCommand::setClearColor(m_Color);
 		Aurora::RenderCommand::Clear();
 	}
@@ -133,7 +133,7 @@ void GameLayer::onEvent(Aurora::Event& e)
 
 void GameLayer::onImGuiRender()
 {
-	PROFILE_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
 

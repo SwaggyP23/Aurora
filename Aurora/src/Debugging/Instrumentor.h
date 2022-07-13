@@ -128,16 +128,16 @@ namespace Aurora {
 
 #ifdef AURORA_CORE_PROFILE_
 
-    #define PROFILE_BEGIN_SESSION(name, filpath)        ::Aurora::Instrumentor::Get().BeginSession(name, filpath)
-    #define PROFILE_END_SESSION()                       ::Aurora::Instrumentor::Get().EndSession()
-    #define PROFILE_SCOPE(name)                         ::Aurora::InstrumentationTimer timer##__LINE__(name)
-    #define PROFILE_FUNCTION()                          PROFILE_SCOPE(__FUNCSIG__)
+    #define AR_PROFILE_BEGIN_SESSION(name, filpath)        ::Aurora::Instrumentor::Get().BeginSession(name, filpath)
+    #define AR_PROFILE_END_SESSION()                       ::Aurora::Instrumentor::Get().EndSession()
+    #define AR_PROFILE_SCOPE(name)                         ::Aurora::InstrumentationTimer timer##__LINE__(name)
+    #define AR_PROFILE_FUNCTION()                          AR_PROFILE_SCOPE(__FUNCSIG__)
 
 #else
 
-    #define PROFILE_BEGIN_SESSION(name, filpath)
-    #define PROFILE_END_SESSION()
-    #define PROFILE_SCOPE(name)
-    #define PROFILE_FUNCTION()
+    #define AR_PROFILE_BEGIN_SESSION(name, filpath)
+    #define AR_PROFILE_END_SESSION()
+    #define AR_PROFILE_SCOPE(name)
+    #define AR_PROFILE_FUNCTION()
 
 #endif

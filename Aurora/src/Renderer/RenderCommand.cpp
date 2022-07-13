@@ -31,7 +31,7 @@ namespace Aurora {
 
 	void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		vertexArray->bind();
 		uint32_t count = indexCount ? vertexArray->getIndexBuffer()->getCount() : indexCount;

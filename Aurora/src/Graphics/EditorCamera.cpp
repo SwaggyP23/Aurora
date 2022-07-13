@@ -18,7 +18,7 @@ namespace Aurora {
 
 	void EditorCamera::UpdateProjection()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
 		m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
@@ -26,7 +26,7 @@ namespace Aurora {
 
 	void EditorCamera::UpdateView()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 		m_Position = CalculatePosition();
@@ -63,7 +63,7 @@ namespace Aurora {
 
 	void EditorCamera::OnUpdate(TimeStep ts)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
 		{
@@ -84,15 +84,15 @@ namespace Aurora {
 
 	void EditorCamera::OnEvent(Event& e)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		EventDispatcher dispatcher(e);
-		dispatcher.dispatch<MouseScrolledEvent>(SET_EVENT_FN(EditorCamera::OnMouseScroll));
+		dispatcher.dispatch<MouseScrolledEvent>(AR_SET_EVENT_FN(EditorCamera::OnMouseScroll));
 	}
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL)) {
 			float delta = e.getYOffset() * 0.1f;

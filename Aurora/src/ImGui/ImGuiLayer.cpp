@@ -23,9 +23,9 @@ namespace Aurora {
 
 	void ImGuiLayer::onAttach()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
-		CORE_LOG_INFO("ImGui version: {0}", IMGUI_VERSION);
+		AR_CORE_LOG_INFO("ImGui version: {0}", IMGUI_VERSION);
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
@@ -51,7 +51,7 @@ namespace Aurora {
 
 	void ImGuiLayer::onDetach()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -60,7 +60,7 @@ namespace Aurora {
 
 	void ImGuiLayer::begin()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -69,7 +69,7 @@ namespace Aurora {
 
 	void ImGuiLayer::end()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::getApp();

@@ -19,7 +19,7 @@ namespace Aurora {
 
 		std::string FileReader::ReadFile(const std::string& filePath)
 		{
-			PROFILE_FUNCTION();
+			AR_PROFILE_FUNCTION();
 
 			std::string result;
 			std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
@@ -35,12 +35,12 @@ namespace Aurora {
 				}
 				else
 				{
-					CORE_LOG_ERROR("Could not read from file {0}", filePath);
+					AR_CORE_LOG_ERROR("Could not read from file {0}", filePath);
 				}
 			}
 			else
 			{
-				CORE_ASSERT(false, "Could not open file {0}", filePath);
+				AR_CORE_ASSERT(false, "Could not open file {0}", filePath);
 			}
 
 			return result;

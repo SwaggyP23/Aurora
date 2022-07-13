@@ -24,7 +24,7 @@ namespace Aurora {
 		    case ShaderDataType::Bool:    return 1;
 		}
 
-		CORE_ASSERT(false, "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
 		return 0;
 	}
 
@@ -34,7 +34,7 @@ namespace Aurora {
 
 	void BufferLayout::calcStrideAndOffset()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		GLuint offset = 0;
 		m_Stride = 0;
@@ -62,7 +62,7 @@ namespace Aurora {
 
 	VertexBuffer::VertexBuffer(uint32_t size)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
@@ -71,7 +71,7 @@ namespace Aurora {
 
 	VertexBuffer::VertexBuffer(GLfloat* vertices, uint32_t size)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
@@ -80,28 +80,28 @@ namespace Aurora {
 
 	VertexBuffer::~VertexBuffer()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glDeleteBuffers(1, &m_BufferID);
 	}
 
 	void VertexBuffer::bind() const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 	}
 
 	void VertexBuffer::unBind() const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 	void VertexBuffer::SetData(const void* data, uint32_t size)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
@@ -119,7 +119,7 @@ namespace Aurora {
 	IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
 		: m_Count(count)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferId);
 		// Since we specified here that is is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
@@ -130,21 +130,21 @@ namespace Aurora {
 
 	IndexBuffer::~IndexBuffer()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glDeleteBuffers(1, &m_BufferId);
 	}
 
 	void IndexBuffer::bind() const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
 	}
 
 	void IndexBuffer::unBind() const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}

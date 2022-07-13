@@ -26,7 +26,7 @@ namespace Aurora {
 				dataFormat = GL_RGB;
 			}
 
-			CORE_ASSERT(internalFormat & dataFormat, "Format is not supported. Format is null!");
+			AR_CORE_ASSERT(internalFormat & dataFormat, "Format is not supported. Format is null!");
 
 			return { internalFormat, dataFormat };
 		}
@@ -36,19 +36,19 @@ namespace Aurora {
 	{
 		switch (Type)
 		{
-			case Aurora::TextureProperties::Repeat:                      return GL_REPEAT;
-			case Aurora::TextureProperties::MirrorredRepeat:             return GL_MIRRORED_REPEAT;
-			case Aurora::TextureProperties::ClampToEdge:                 return GL_CLAMP_TO_EDGE;
-			case Aurora::TextureProperties::ClampToBorder:               return GL_CLAMP_TO_BORDER;
-			case Aurora::TextureProperties::Nearest:                     return GL_NEAREST;
-			case Aurora::TextureProperties::Linear:                      return GL_LINEAR;
-			case Aurora::TextureProperties::MipMap_NearestNearest:       return GL_NEAREST_MIPMAP_NEAREST;
-			case Aurora::TextureProperties::MipMap_LinearNearest:        return GL_LINEAR_MIPMAP_NEAREST;
-			case Aurora::TextureProperties::MipMap_NearestLinear:        return GL_NEAREST_MIPMAP_LINEAR;
-			case Aurora::TextureProperties::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
+			case TextureProperties::Repeat:                      return GL_REPEAT;
+			case TextureProperties::MirrorredRepeat:             return GL_MIRRORED_REPEAT;
+			case TextureProperties::ClampToEdge:                 return GL_CLAMP_TO_EDGE;
+			case TextureProperties::ClampToBorder:               return GL_CLAMP_TO_BORDER;
+			case TextureProperties::Nearest:                     return GL_NEAREST;
+			case TextureProperties::Linear:                      return GL_LINEAR;
+			case TextureProperties::MipMap_NearestNearest:       return GL_NEAREST_MIPMAP_NEAREST;
+			case TextureProperties::MipMap_LinearNearest:        return GL_LINEAR_MIPMAP_NEAREST;
+			case TextureProperties::MipMap_NearestLinear:        return GL_NEAREST_MIPMAP_LINEAR;
+			case TextureProperties::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
 		}
 
-		CORE_ASSERT(false, "Unkown texture Filtering/Wrapping type!");
+		AR_CORE_ASSERT(false, "Unkown texture Filtering/Wrapping type!");
 		return 0;
 	}
 
@@ -65,7 +65,7 @@ namespace Aurora {
 	Texture::Texture(uint32_t width, uint32_t height)
 		: m_Width(width), m_Height(height)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
@@ -81,32 +81,32 @@ namespace Aurora {
 	Texture::Texture(const std::string& filePath)
 		: m_Path(filePath), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
 	}
 
 	void Texture::setData(void* data, uint32_t size)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
-#if _DEBUG
+#ifdef AURORA_DEBUG
 		uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
-		CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
+		AR_CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
 #endif
 		glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 
 	Texture::~Texture()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glDeleteTextures(1, &m_TextID);
 	}
 
 	void Texture::setTextureWrapping(TextureProperties wrapMode) const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_S, GLTypeFromTextureProperties(wrapMode));
 		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_T, GLTypeFromTextureProperties(wrapMode));
@@ -114,7 +114,7 @@ namespace Aurora {
 
 	void Texture::setTextureFiltering(TextureProperties minFilter, TextureProperties magFilter) const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glTextureParameteri(m_TextID, GL_TEXTURE_MIN_FILTER, GLTypeFromTextureProperties(minFilter));
 		glTextureParameteri(m_TextID, GL_TEXTURE_MAG_FILTER, GLTypeFromTextureProperties(magFilter));
@@ -127,7 +127,7 @@ namespace Aurora {
 
 	void Texture::loadTextureData()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		// load image
 		const char* path = m_Path.c_str();
@@ -139,16 +139,16 @@ namespace Aurora {
 
 		if (Utils::ImageLoader::Get().getData())
 		{
-			PROFILE_SCOPE("Texture Storage! -- Texture::loadTextureData()!");
+			AR_PROFILE_SCOPE("Texture Storage! -- Texture::loadTextureData()!");
 
 			int channels = Utils::ImageLoader::Get().getChannels();
-			CORE_LOG_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
+			AR_CORE_LOG_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
 
 			Utils::Formats texFormat = Utils::getFormatsFromChannels(channels);
 			m_InternalFormat = texFormat.InternalFormat;
 			m_DataFormat = texFormat.DataFormat;
 
-			CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
+			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
 
 			glTextureStorage2D(m_TextID, 5, m_InternalFormat, m_Width, m_Height); // level is number of mipmaps
 			glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, Utils::ImageLoader::Get().getData());
@@ -157,25 +157,26 @@ namespace Aurora {
 			glGenerateTextureMipmap(m_TextID);
 		}
 		else
-			CORE_LOG_ERROR("Failed to load Texture! {0}", m_Path);
+			AR_CORE_LOG_ERROR("Failed to load Texture! {0}", m_Path);
 
 		Utils::ImageLoader::Get().FreeImage();
 	}
 
 	void Texture::bind(uint32_t slot) const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindTextureUnit(slot, m_TextID);
 
 	}
 
-	void Texture::unBind(/*uint32_t slot*/) const
+	void Texture::unBind(uint32_t slot) const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
-		//glBindTextureUnit(slot, 0); // This throws OpenGL error 1282, need to take a look at the specification
-		glBindTexture(GL_TEXTURE_2D, 0);
+		// This currently maybe works, however it throws OpenGL error 1282, need to take a look at the specification and if ever that error pops up check here
+		glBindTextureUnit(slot, 0);
+		//glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 }

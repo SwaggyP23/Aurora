@@ -41,7 +41,7 @@ namespace Aurora {
 		// format Specifies the format of the pixel data.
 
 		void bind(uint32_t slot = 0) const;
-		void unBind(/*uint32_t slot = 0*/) const;
+		void unBind(uint32_t slot = 0) const;
 
 		inline unsigned int GetWidth() const { return m_Width; }
 		inline unsigned int GetHeight() const { return m_Height; }

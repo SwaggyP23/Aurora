@@ -22,7 +22,7 @@ namespace Aurora {
 			if (type == "geometry") // Geometry shaders are currently useless since i am not using them
 				return GL_GEOMETRY_SHADER;
 
-			CORE_ASSERT(false, "Unknown shader type!");
+			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return 0;
 		}
 
@@ -35,7 +35,7 @@ namespace Aurora {
 			case GL_GEOMETRY_SHADER:	return ShaderErrorType::geometryShader;
 			}
 
-			CORE_ASSERT(false, "Unknown shader type!");
+			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return ShaderErrorType::None;
 		}
 
@@ -52,12 +52,12 @@ namespace Aurora {
 				glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
 
 				if (type == ShaderErrorType::vertexShader)
-					CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
+					AR_CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
 
 				else if (type == ShaderErrorType::fragmentShader)
-					CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
+					AR_CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
 
-				CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+				AR_CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
 
 				glDeleteShader(shader);
 			}
@@ -75,8 +75,8 @@ namespace Aurora {
 				std::vector<char> errorMessage(length);
 
 				glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
-				CORE_LOG_ERROR("Failed to link program!");
-				CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+				AR_CORE_LOG_ERROR("Failed to link program!");
+				AR_CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
 
 				glDeleteProgram(program);
 
@@ -95,7 +95,7 @@ namespace Aurora {
 	Shader::Shader(const std::string& filePath)
 		: m_FilePath(filePath)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
 
@@ -113,7 +113,7 @@ namespace Aurora {
 
 	std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
 	{ // Props to @TheCherno
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		std::unordered_map<GLenum, std::string> shaderSources;
 
@@ -140,7 +140,7 @@ namespace Aurora {
 
 	GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		GLuint program = glCreateProgram();
 		std::vector<GLuint> ShaderIDs;
@@ -168,28 +168,28 @@ namespace Aurora {
 			glDeleteShader(id); // This flags the shader for deletion but is not deleted untill it is not linked to any other program, in our case that is directly here since it is already detached
 		}
 
-		CORE_ASSERT(program, "Program is null!");
+		AR_CORE_ASSERT(program, "Program is null!");
 
 		return program;
 	}
 
 	Shader::~Shader()
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glDeleteProgram(m_ShaderID);
 	}
 
 	void Shader::bind() const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glUseProgram(m_ShaderID);
 	}
 
 	void Shader::unBind() const
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glUseProgram(0);
 	}
@@ -246,7 +246,7 @@ namespace Aurora {
 
 	GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		auto it = m_UniformLocations.find(name);
 		if (it != m_UniformLocations.end())
@@ -264,9 +264,9 @@ namespace Aurora {
 
 	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
-		CORE_ASSERT(!Exists(name), "Shader already exists!");
+		AR_CORE_ASSERT(!Exists(name), "Shader already exists!");
 		m_Shaders[name] = shader;
 	}
 
@@ -278,7 +278,7 @@ namespace Aurora {
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		auto shader = Shader::Create(filepath);
 		Add(shader);
@@ -287,7 +287,7 @@ namespace Aurora {
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 	{
-		PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		auto shader = Shader::Create(filepath);
 		Add(name, shader);
@@ -296,7 +296,7 @@ namespace Aurora {
 
 	Ref<Shader> ShaderLibrary::Get(const std::string& name)
 	{
-		CORE_ASSERT(Exists(name), "Shader not found!");
+		AR_CORE_ASSERT(Exists(name), "Shader not found!");
 		return m_Shaders[name];
 	}
 
