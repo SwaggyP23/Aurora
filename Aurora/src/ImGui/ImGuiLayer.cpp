@@ -25,7 +25,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_LOG_INFO("ImGui version: {0}", IMGUI_VERSION);
+		AR_CORE_INFO("ImGui version: {0}", IMGUI_VERSION);
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();

@@ -35,7 +35,7 @@ namespace Aurora {
 				}
 				else
 				{
-					AR_CORE_LOG_ERROR("Could not read from file {0}", filePath);
+					AR_CORE_ERROR("Could not read from file {0}", filePath);
 				}
 			}
 			else

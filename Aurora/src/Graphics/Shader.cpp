@@ -52,12 +52,12 @@ namespace Aurora {
 				glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
 
 				if (type == ShaderErrorType::vertexShader)
-					AR_CORE_LOG_ERROR("Failed to compile Vertex Shader!!");
+					AR_CORE_ERROR("Failed to compile Vertex Shader!!");
 
 				else if (type == ShaderErrorType::fragmentShader)
-					AR_CORE_LOG_ERROR("Failed to compile Fragment Shader!!");
+					AR_CORE_ERROR("Failed to compile Fragment Shader!!");
 
-				AR_CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+				AR_CORE_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
 
 				glDeleteShader(shader);
 			}
@@ -75,8 +75,8 @@ namespace Aurora {
 				std::vector<char> errorMessage(length);
 
 				glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
-				AR_CORE_LOG_ERROR("Failed to link program!");
-				AR_CORE_LOG_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+				AR_CORE_ERROR("Failed to link program!");
+				AR_CORE_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
 
 				glDeleteProgram(program);
 

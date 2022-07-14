@@ -18,17 +18,19 @@ namespace Aurora {
 		virtual void onEvent(Aurora::Event& e) override;
 
 
-	private:
-		Aurora::Ref<Aurora::EditorCamera> m_Camera;
-		Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
-		Aurora::Ref<Framebuffer> m_Framebuffer;
-
+	private: // Temporary things like textures for now
 		Aurora::Ref<Aurora::Texture> m_ContainerTexture;
 		Aurora::Ref<Aurora::Texture> m_QiyanaTexture;
 		Aurora::Ref<Aurora::Texture> m_GroundTexture;
 		Aurora::Ref<Aurora::Texture> m_CheckerTexture;
 
-	private: // ImGui stuff
+	private: // Main private stuff for this editor
+		Aurora::Ref<Aurora::EditorCamera> m_Camera;
+		Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
+		Aurora::Ref<Framebuffer> m_Framebuffer;
+
+		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
+
 		bool m_Perspective = true;
 		float m_Peak = 0;
 

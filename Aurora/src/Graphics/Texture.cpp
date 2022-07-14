@@ -142,7 +142,7 @@ namespace Aurora {
 			AR_PROFILE_SCOPE("Texture Storage! -- Texture::loadTextureData()!");
 
 			int channels = Utils::ImageLoader::Get().getChannels();
-			AR_CORE_LOG_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
+			AR_CORE_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
 
 			Utils::Formats texFormat = Utils::getFormatsFromChannels(channels);
 			m_InternalFormat = texFormat.InternalFormat;
@@ -157,7 +157,7 @@ namespace Aurora {
 			glGenerateTextureMipmap(m_TextID);
 		}
 		else
-			AR_CORE_LOG_ERROR("Failed to load Texture! {0}", m_Path);
+			AR_CORE_ERROR("Failed to load Texture! {0}", m_Path);
 
 		Utils::ImageLoader::Get().FreeImage();
 	}
