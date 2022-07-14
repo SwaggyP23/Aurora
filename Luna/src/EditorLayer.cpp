@@ -97,10 +97,12 @@ namespace Aurora {
 		Aurora::Renderer3D::EndScene();
 		m_Framebuffer->unBind();
 
-		if (m_Perspective)
-			m_Camera->OnUpdate(ts);
-		else
-			m_OrthoCamera->OnUpdate(ts);
+		if (m_ViewPortFocused) {
+			if (m_Perspective)
+				m_Camera->OnUpdate(ts);
+			else
+				m_OrthoCamera->OnUpdate(ts);
+		}
 	}
 
 	void EditorLayer::onEvent(Aurora::Event& e)
@@ -216,14 +218,19 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");
 
+		m_ViewPortFocused = ImGui::IsWindowFocused();
+		m_ViewPortHovered = ImGui::IsWindowHovered();
+
+		// If viewport is not focused OR is not hovered -> Block events
+		// Which means if we lost focus however we are still hovered, that is not acceptable -> Block events
+		Application::getApp().getImGuiLayer()->SetBlockEvents(!m_ViewPortFocused || !m_ViewPortHovered);
+
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
 		if (m_ViewportSize != *((glm::vec2*)&viewPortPanelSize))
 		{
 			m_ViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
-
-		//AR_TRACE("{0}, {1}", m_ViewportSize.x, m_ViewportSize.y);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
 		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });

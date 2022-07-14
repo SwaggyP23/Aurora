@@ -29,5 +29,6 @@
 #include "Utils/ImageLoader.h"
 #include "Utils/UtilFunctions.h"
 #include "Debugging/Instrumentor.h"
+#include "Debugging/Timer.h"
 
 #include <Windows.h>

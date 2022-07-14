@@ -8,6 +8,7 @@
 
 #include "Core/Base.h"
 #include "Debugging/Instrumentor.h"
+#include "Debugging/Timer.h"
 
 #include "Layers/Layer.h"
 #include "Logging/Log.h"

@@ -2,8 +2,11 @@
 
 #include <random>
 
-// This randomEngine returns a random float between 0 and 1, you can multiply the result by 5 for example to get a random number
-// between 0 and 5...
+/*
+ * This randomEngine returns a random float between 0 and 1, you can multiply the result by 5 for example to get a random number
+ * between 0 and 5...
+ * We could also use the random engine mt19937_64 which gives 64-bit random numbers however that will mostly be used for UUIDS/GUIDS
+ */
 
 namespace Aurora {
 

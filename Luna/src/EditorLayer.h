@@ -32,6 +32,8 @@ namespace Aurora {
 		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 
 		bool m_Perspective = true;
+		bool m_ViewPortFocused = false;
+		bool m_ViewPortHovered = false;
 		float m_Peak = 0;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);

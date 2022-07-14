@@ -26,6 +26,11 @@ namespace Aurora {
 		void begin();
 		void end();
 
+		void SetBlockEvents(bool state) { m_BlockEvents = state; }
+
+	private:
+		bool m_BlockEvents = true;
+
 	};
 
 }
