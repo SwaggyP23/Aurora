@@ -12,7 +12,7 @@ namespace Aurora {
 	{
 	}
 
-	void EditorLayer::onAttach()
+	void EditorLayer::OnAttach()
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -45,12 +45,12 @@ namespace Aurora {
 		fbSpec.Height = 720;
 		m_Framebuffer = Aurora::Framebuffer::Create(fbSpec);
 	}
-	void EditorLayer::onDetach()
+	void EditorLayer::OnDetach()
 	{
 		AR_PROFILE_FUNCTION();
 	}
 
-	void EditorLayer::onUpdate(Aurora::TimeStep ts)
+	void EditorLayer::OnUpdate(Aurora::TimeStep ts)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -105,7 +105,7 @@ namespace Aurora {
 		}
 	}
 
-	void EditorLayer::onEvent(Aurora::Event& e)
+	void EditorLayer::OnEvent(Aurora::Event& e)
 	{
 		if (m_Perspective)
 			m_Camera->OnEvent(e);
@@ -113,7 +113,7 @@ namespace Aurora {
 			m_OrthoCamera->OnEvent(e);
 	}
 
-	void EditorLayer::onImGuiRender()
+	void EditorLayer::OnImGuiRender()
 	{
 		AR_PROFILE_FUNCTION();
 

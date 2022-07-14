@@ -12,11 +12,11 @@ namespace Aurora {
 		Layer(const std::string& name = "Default layer");
 		virtual ~Layer();
 
-		virtual void onAttach() {}
-		virtual void onDetach() {}
-		virtual void onUpdate(TimeStep ts) {}
-		virtual void onImGuiRender() {}
-		virtual void onEvent(Event& e) {}
+		virtual void OnAttach() {}
+		virtual void OnDetach() {}
+		virtual void OnUpdate(TimeStep ts) {}
+		virtual void OnImGuiRender() {}
+		virtual void OnEvent(Event& e) {}
 
 		inline const std::string& getName() const { return m_Name; }
 

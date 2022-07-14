@@ -10,7 +10,7 @@ TestLayer::TestLayer()
 {
 }
 
-void TestLayer::onAttach()
+void TestLayer::OnAttach()
 {
 	AR_PROFILE_FUNCTION();
 
@@ -26,12 +26,12 @@ void TestLayer::onAttach()
 	m_GroundTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
 	m_GroundTexture->loadTextureData();
 }
-void TestLayer::onDetach()
+void TestLayer::OnDetach()
 {
 	AR_PROFILE_FUNCTION();
 }
 
-void TestLayer::onUpdate(Aurora::TimeStep ts)
+void TestLayer::OnUpdate(Aurora::TimeStep ts)
 {
 	AR_PROFILE_FUNCTION();
 	
@@ -86,7 +86,7 @@ void TestLayer::onUpdate(Aurora::TimeStep ts)
 		m_OrthoCamera->OnUpdate(ts);
 }
 
-void TestLayer::onEvent(Aurora::Event& e)
+void TestLayer::OnEvent(Aurora::Event& e)
 {
 	if (m_Perspective)
 		m_Camera->OnEvent(e);
@@ -94,7 +94,7 @@ void TestLayer::onEvent(Aurora::Event& e)
 		m_OrthoCamera->OnEvent(e);
 }
 
-void TestLayer::onImGuiRender()
+void TestLayer::OnImGuiRender()
 {
 	AR_PROFILE_FUNCTION();
 

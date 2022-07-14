@@ -11,11 +11,11 @@ namespace Aurora {
 		EditorLayer();
 		virtual ~EditorLayer() = default;
 
-		virtual void onAttach() override;
-		virtual void onDetach() override;
-		virtual void onImGuiRender() override;
-		virtual void onUpdate(Aurora::TimeStep ts) override;
-		virtual void onEvent(Aurora::Event& e) override;
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnImGuiRender() override;
+		virtual void OnUpdate(Aurora::TimeStep ts) override;
+		virtual void OnEvent(Aurora::Event& e) override;
 
 
 	private: // Temporary things like textures for now

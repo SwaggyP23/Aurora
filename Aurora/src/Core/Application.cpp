@@ -42,7 +42,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		m_LayerStack.pushLayer(layer);
-		layer->onAttach();
+		layer->OnAttach();
 	}
 
 	void Application::pushOverlay(Layer* layer)
@@ -50,7 +50,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		m_LayerStack.pushOverlay(layer);
-		layer->onAttach();
+		layer->OnAttach();
 	}
 
 	void Application::onEvent(Event& e)
@@ -68,7 +68,7 @@ namespace Aurora {
 		{
 			if (e.Handled)
 				break;
-			(*it)->onEvent(e);
+			(*it)->OnEvent(e);
 		}
 	}
 
@@ -88,17 +88,19 @@ namespace Aurora {
 			{
 				{
 					AR_PROFILE_SCOPE("LayerStack Updating!");
+					ScopedTimer timer("Application Layer::OnUpdate");
 
 					for (Layer* layer : m_LayerStack)
-						layer->onUpdate(timeStep);
+						layer->OnUpdate(timeStep);
 				}
 
 				m_ImGuiLayer->begin();
 				{
 					AR_PROFILE_SCOPE("LayerStack ImGui Rendering!");
+					ScopedTimer timer("Application ImGuiLayer::OnUpdate");
 
 					for (Layer* layer : m_LayerStack)
-						layer->onImGuiRender();
+						layer->OnImGuiRender();
 				}
 				m_ImGuiLayer->end();
 			}

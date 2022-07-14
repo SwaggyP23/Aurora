@@ -3,6 +3,7 @@ include "Dependencies.lua"
 workspace "Aurora"
 
     architecture "x64"
+    startproject "Luna"
 
         configurations 
         {

@@ -63,6 +63,7 @@ project "Luna"
         defines "AURORA_RELEASE"
         runtime "Release"
         optimize "Speed"
+        inlining "Auto"
 
         links
         {

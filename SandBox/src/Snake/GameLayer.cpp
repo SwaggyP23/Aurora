@@ -7,7 +7,7 @@ GameLayer::GameLayer()
 {
 }
 
-void GameLayer::onAttach()
+void GameLayer::OnAttach()
 {
 	AR_PROFILE_FUNCTION();
 
@@ -32,12 +32,12 @@ void GameLayer::onAttach()
 	m_SnakeTexture->loadTextureData();
 }
 
-void GameLayer::onDetach()
+void GameLayer::OnDetach()
 {
 	AR_PROFILE_FUNCTION();
 }
 
-void GameLayer::onUpdate(Aurora::TimeStep ts)
+void GameLayer::OnUpdate(Aurora::TimeStep ts)
 {
 	AR_PROFILE_FUNCTION();
 
@@ -95,7 +95,7 @@ void GameLayer::onUpdate(Aurora::TimeStep ts)
 		m_OrthoCamera->OnUpdate(ts);
 }
 
-void GameLayer::onEvent(Aurora::Event& e)
+void GameLayer::OnEvent(Aurora::Event& e)
 {
 	if (Aurora::Input::isKeyPressed(Aurora::Key::W) && !down) {
 		m_Dir = Direction::Up;
@@ -131,7 +131,7 @@ void GameLayer::onEvent(Aurora::Event& e)
 		m_OrthoCamera->OnEvent(e);
 }
 
-void GameLayer::onImGuiRender()
+void GameLayer::OnImGuiRender()
 {
 	AR_PROFILE_FUNCTION();
 

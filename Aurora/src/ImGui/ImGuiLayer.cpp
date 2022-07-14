@@ -21,7 +21,7 @@ namespace Aurora {
 	{
 	}
 
-	void ImGuiLayer::onAttach()
+	void ImGuiLayer::OnAttach()
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -49,7 +49,7 @@ namespace Aurora {
 		ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
-	void ImGuiLayer::onDetach()
+	void ImGuiLayer::OnDetach()
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -87,7 +87,7 @@ namespace Aurora {
 		}
 	}
 
-	void ImGuiLayer::onEvent(Event& e)
+	void ImGuiLayer::OnEvent(Event& e)
 	{
 		if (m_BlockEvents)
 		{

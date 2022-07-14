@@ -63,6 +63,7 @@ project "SandBox"
         defines "AURORA_RELEASE"
         runtime "Release"
         optimize "Speed"
+        inlining "Auto"
 
         links
         {

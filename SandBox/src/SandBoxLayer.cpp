@@ -7,7 +7,7 @@ SandBoxLayer::SandBoxLayer()
 {
 }
 
-void SandBoxLayer::onAttach()
+void SandBoxLayer::OnAttach()
 {
 	float groundVertices[] = {
 		-50.0f, -5.0f, -50.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 0.0f,
@@ -295,11 +295,11 @@ void SandBoxLayer::onAttach()
 	m_Shaders.Get("Sphere")->unBind();
 }
 
-void SandBoxLayer::onDetach()
+void SandBoxLayer::OnDetach()
 {
 }
 
-void SandBoxLayer::onUpdate(Aurora::TimeStep ts)
+void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 {
 	Aurora::RenderCommand::setClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
@@ -408,7 +408,7 @@ void SandBoxLayer::onUpdate(Aurora::TimeStep ts)
 		m_OrthoCamera->OnUpdate(ts);
 }
 
-void SandBoxLayer::onEvent(Aurora::Event& e)
+void SandBoxLayer::OnEvent(Aurora::Event& e)
 {
 	if (m_Perspective)
 		m_Camera->OnEvent(e);
@@ -419,7 +419,7 @@ void SandBoxLayer::onEvent(Aurora::Event& e)
 		m_IsRPressed = !m_IsRPressed;
 }
 
-void SandBoxLayer::onImGuiRender()
+void SandBoxLayer::OnImGuiRender()
 {
 	Aurora::Application& app = Aurora::Application::getApp();
 

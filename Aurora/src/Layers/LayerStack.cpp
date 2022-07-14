@@ -10,7 +10,7 @@ namespace Aurora {
 	LayerStack::~LayerStack()
 	{
 		for (Layer* layer : m_Layers) {
-			layer->onDetach();
+			layer->OnDetach();
 			delete layer;
 		}
 	}

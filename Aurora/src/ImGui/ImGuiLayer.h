@@ -19,9 +19,9 @@ namespace Aurora {
 		ImGuiLayer();
 		~ImGuiLayer();
 
-		virtual void onAttach() override;
-		virtual void onDetach() override;
-		virtual void onEvent(Event& e) override;
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnEvent(Event& e) override;
 
 		void begin();
 		void end();
