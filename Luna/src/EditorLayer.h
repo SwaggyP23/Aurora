@@ -21,6 +21,7 @@ namespace Aurora {
 	private:
 		Aurora::Ref<Aurora::EditorCamera> m_Camera;
 		Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
+		Aurora::Ref<Framebuffer> m_Framebuffer;
 
 		Aurora::Ref<Aurora::Texture> m_ContainerTexture;
 		Aurora::Ref<Aurora::Texture> m_QiyanaTexture;

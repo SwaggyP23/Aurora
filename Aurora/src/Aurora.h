@@ -27,6 +27,7 @@
 #include "Graphics/Shader.h"
 #include "Graphics/Texture.h"
 #include "Graphics/VertexArray.h"
+#include "Graphics/Framebuffers.h"
 
 #include "Graphics/OrthoGraphicCamera.h"
 #include "Graphics/EditorCamera.h"

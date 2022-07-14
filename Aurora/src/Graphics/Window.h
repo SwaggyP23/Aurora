@@ -21,6 +21,7 @@ namespace Aurora {
 	class Window
 	{
 		using EventCallbackFn = std::function<void(Event&)>;
+
 	public:
 		Window(const std::string& title, uint32_t width, uint32_t height);
 		~Window();
