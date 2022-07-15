@@ -1,5 +1,7 @@
 #pragma once
 
+// This is to be used with Chrome Tracing
+
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -20,7 +22,7 @@ namespace Aurora {
 
     struct InstrumentationSession
     {
-        std::string Name;
+        const char* Name;
     };
 
     class Instrumentor
@@ -31,7 +33,7 @@ namespace Aurora {
         {
         }
 
-        void BeginSession(const std::string& name, const std::string& filepath = "results.json")
+        void BeginSession(const char* name, const char* filepath = "results.json")
         {
             m_OutputStream.open(filepath);
             WriteHeader();

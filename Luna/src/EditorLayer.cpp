@@ -2,8 +2,20 @@
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/compatibility.hpp>
+#include <iostream>
 
 namespace Aurora {
+
+	static void DoSomething()
+	{
+		AR_PERF_TIMER("Dosomething");
+
+		for (int i = 0; i < 100; i++)
+		{
+			std::cout << i;
+		}
+		std::cout << std::endl;
+	}
 
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
@@ -53,6 +65,12 @@ namespace Aurora {
 	void EditorLayer::OnUpdate(Aurora::TimeStep ts)
 	{
 		AR_PROFILE_FUNCTION();
+
+		for(int i = 0; i < 3; i++)
+			DoSomething();
+
+		AR_INFO("TOTAL TIME: {0}", PerformanceTimer::GetTotalTime());
+
 
 		Aurora::Renderer3D::ResetStats();
 

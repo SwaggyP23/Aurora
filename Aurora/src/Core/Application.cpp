@@ -106,6 +106,7 @@ namespace Aurora {
 			}
 
 			m_Window->Update();
+			AR_ENDF_TIMER();
 		}
 	}
 
