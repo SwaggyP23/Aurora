@@ -88,7 +88,6 @@ namespace Aurora {
 			{
 				{
 					AR_PROFILE_SCOPE("LayerStack Updating!");
-					ScopedTimer timer("Application Layer::OnUpdate");
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(timeStep);
@@ -97,7 +96,6 @@ namespace Aurora {
 				m_ImGuiLayer->begin();
 				{
 					AR_PROFILE_SCOPE("LayerStack ImGui Rendering!");
-					ScopedTimer timer("Application ImGuiLayer::OnUpdate");
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnImGuiRender();
@@ -106,7 +104,7 @@ namespace Aurora {
 			}
 
 			m_Window->Update();
-			AR_ENDF_TIMER();
+			AR_ENDF_TIMER;
 		}
 	}
 

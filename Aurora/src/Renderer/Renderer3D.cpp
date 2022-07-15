@@ -305,6 +305,9 @@ namespace Aurora {
 
 	void Renderer3D::Flush()
 	{
+		AR_PROFILE_FUNCTION();
+		AR_PERF_TIMER("Renderer3D::Flush");
+
 		if (s_Data.QuadIndexCount)
 		{
 			// Casting to one byte to actually do a correct calculation, otherwise it tells you the number of elements only since these are QuadVertex.
@@ -331,6 +334,7 @@ namespace Aurora {
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light)
 	{
 		AR_PROFILE_FUNCTION();
+		AR_PERF_TIMER("Renderer3D::DrawQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
@@ -418,6 +422,7 @@ namespace Aurora {
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light)// Should take a rotation!
 	{
 		AR_PROFILE_FUNCTION();
+		AR_PERF_TIMER("Renderer3D::DrawRotatedQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();

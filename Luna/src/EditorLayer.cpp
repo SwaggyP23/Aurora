@@ -6,17 +6,6 @@
 
 namespace Aurora {
 
-	static void DoSomething()
-	{
-		AR_PERF_TIMER("Dosomething");
-
-		for (int i = 0; i < 100; i++)
-		{
-			std::cout << i;
-		}
-		std::cout << std::endl;
-	}
-
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
 		m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
@@ -65,12 +54,6 @@ namespace Aurora {
 	void EditorLayer::OnUpdate(Aurora::TimeStep ts)
 	{
 		AR_PROFILE_FUNCTION();
-
-		for(int i = 0; i < 3; i++)
-			DoSomething();
-
-		AR_INFO("TOTAL TIME: {0}", PerformanceTimer::GetTotalTime());
-
 
 		Aurora::Renderer3D::ResetStats();
 
@@ -190,11 +173,12 @@ namespace Aurora {
 
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu("File"))
+			if (ImGui::BeginMenu("Options"))
 			{
 				// Disabling fullscreen would allow the window to be moved to the front of other windows,
 				// which we can't undo at the moment without finer window depth/z control.
 
+				if (ImGui::MenuItem("Performance", NULL, m_Performance)) m_Performance = !m_Performance;
 				if (ImGui::MenuItem("Exit")) Application::getApp().Close();
 
 				ImGui::EndMenu();
@@ -222,16 +206,33 @@ namespace Aurora {
 		m_Peak = peak;
 		ImGui::Separator();
 		ImGui::Text("Renderer Stats:");
-		ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
 		ImGui::Text("Draw Calls: %d", Aurora::Renderer3D::GetStats().DrawCalls);
 		ImGui::Text("Quad Count: %d", Aurora::Renderer3D::GetStats().QuadCount);
 		ImGui::Text("Vertex Count: %d", Aurora::Renderer3D::GetStats().GetTotalVertexCount());
 		ImGui::Text("Index Count: %d", Aurora::Renderer3D::GetStats().GetTotalIndexCount());
 		ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Aurora::Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
 		ImGui::Checkbox("V Sync ", &(app.getVSync()));
-		ImGui::Text("Peak FPS: %.f", m_Peak);
 
 		ImGui::End();
+
+		if (m_Performance)
+		{
+			ImGui::Begin("Performance");
+			ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
+			ImGui::Text("Peak FPS: %.f", m_Peak);
+			
+			if (ImGui::CollapsingHeader("Timers (Milliseconds)")) {
+				for (auto& it = PerformanceTimer::GetTimeMap().rbegin(); it != PerformanceTimer::GetTimeMap().rend(); it++)
+				{
+					if (it->second > 25.0f)
+						ImGui::TextColored(ImVec4{ 1, 0, 0, 1 }, "%.4f, %s", it->second, it->first.c_str());
+					else
+						ImGui::Text("%.4f, %s", it->second, it->first.c_str());
+				}
+			}
+
+			ImGui::End();
+		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");

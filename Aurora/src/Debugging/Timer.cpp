@@ -3,6 +3,6 @@
 
 namespace Aurora {
 
-	PerformanceTimer::TotalTime PerformanceTimer::s_Total;
+	std::map<std::string, float> PerformanceTimer::s_TimeMap;
 
 }

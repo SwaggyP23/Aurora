@@ -136,7 +136,7 @@ namespace Aurora {
 
     #define AR_PROFILE_BEGIN_SESSION(name, filpath)        ::Aurora::Instrumentor::Get().BeginSession(name, filpath)
     #define AR_PROFILE_END_SESSION()                       ::Aurora::Instrumentor::Get().EndSession()
-    #define AR_PROFILE_SCOPE(name)                         ::Aurora::InstrumentationTimer timer##__LINE__(name)
+    #define AR_PROFILE_SCOPE(name)                         ::Aurora::InstrumentationTimer Instrumentor##__LINE__(name)
     #define AR_PROFILE_FUNCTION()                          AR_PROFILE_SCOPE(__FUNCSIG__)
 
 #else
