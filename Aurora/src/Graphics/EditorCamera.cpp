@@ -1,7 +1,7 @@
 #include "Aurorapch.h"
 #include "EditorCamera.h"
 
-#include "Input/Input.h"
+#include "Core/Input.h"
 
 #include <glfw/glfw3.h>
 

@@ -15,8 +15,8 @@
 
 #include "Utils/Random.h"
 
-#include "Input/Input.h"
-#include "Input/KeyCodes.h"
+#include "Core/Input.h"
+#include "Core/KeyCodes.h"
 
 #include "ImGui/ImGuiLayer.h"
 

@@ -17,10 +17,9 @@ project "SandBox"
     {
         "%{wks.location}/Aurora/deps/spdlog/include",
         "%{wks.location}/Aurora/src",
-        "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}",
-        "%{IncludeDir.ImGui}",
-        "%{IncludeDir.stb_image}",
+        "%{IncludeDir.Glad}", 
+        "%{IncludeDir.GLFW}", 
+        "%{IncludeDir.ImGui}", 
         "%{IncludeDir.glm}"
     }
 

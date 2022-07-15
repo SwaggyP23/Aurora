@@ -2,7 +2,6 @@
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/compatibility.hpp>
-#include <iostream>
 
 namespace Aurora {
 
