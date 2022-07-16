@@ -1,6 +1,10 @@
 #pragma once
 
-// This is to be used with Chrome Tracing
+/*
+ * This is now a deprecated Profiler, it was used mainly before introducing Optick into the engine and all the profiled information were
+ * dumped into a json file which then was displayed in Chrome://tracing. It was good as DIY profiling however it is nothing compared
+ * to Optick which is why it is now deprecated.
+ */
 
 #include <algorithm>
 #include <chrono>

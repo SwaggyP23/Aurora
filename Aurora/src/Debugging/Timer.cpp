@@ -3,6 +3,6 @@
 
 namespace Aurora {
 
-	std::map<std::string, float> PerformanceTimer::s_TimeMap;
+	std::unordered_map<std::string, float> PerformanceTimer::s_TimeMap;
 
 }

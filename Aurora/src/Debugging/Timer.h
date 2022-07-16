@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map> // Could use unordered_map, however this provides automatic sorting which is conveniant for the use case
+#include <unordered_map>
 
 #include "Logging/Log.h"
 
@@ -69,17 +69,17 @@ namespace Aurora {
 
 		float GetPreviousTime() { return m_Time; }
 
-		static std::map<std::string, float>& GetTimeMap() { return s_TimeMap; }
+		static std::unordered_map<std::string, float>& GetTimeMap() { return s_TimeMap; }
 
 	private:
 		std::string m_Name;
 		Timer m_Timer;
 		float m_Time = 0;
 
-		static std::map<std::string, float> s_TimeMap;
+		static std::unordered_map<std::string, float> s_TimeMap;
 	};
 
 }
 
 #define AR_PERF_TIMER(name) ::Aurora::PerformanceTimer timer##__LINE__; timer##__LINE__.SetPerFrameTime(name, timer##__LINE__.GetPreviousTime())
-#define AR_ENDF_TIMER       for(auto&[name, time] : PerformanceTimer::GetTimeMap()) { time = 0; }
+#define AR_ENDF_TIMER()     for(auto&[name, time] : PerformanceTimer::GetTimeMap()) { time = 0; }

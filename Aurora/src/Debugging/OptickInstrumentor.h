@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+ * This is the main way of Profiling in this engine. Almost all the functions are profiled individually and the result are written into
+ * a file which can then be opened inside the Optick app (which for all tends and purposes is in the repository with the engine), and 
+ * all the profiling results can be seen inside the app.
+ */
+
 #include <optick/optick.h>
 
 #ifdef AURORA_CORE_PROFILE
