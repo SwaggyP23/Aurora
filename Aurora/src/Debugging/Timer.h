@@ -81,5 +81,5 @@ namespace Aurora {
 
 }
 
-#define AR_PERF_TIMER(name) ::Aurora::PerformanceTimer timer##__LINE__; timer##__LINE__.SetPerFrameTime(name, timer##__LINE__.GetPreviousTime())
-#define AR_ENDF_TIMER()     for(auto&[name, time] : PerformanceTimer::GetTimeMap()) { time = 0; }
+#define AR_PERF_TIMER(name)     ::Aurora::PerformanceTimer timer##__LINE__; timer##__LINE__.SetPerFrameTime(name, timer##__LINE__.GetPreviousTime())
+#define AR_ENDF_TIMER()         for(auto&[name, time] : PerformanceTimer::GetTimeMap()) { time = 0; }

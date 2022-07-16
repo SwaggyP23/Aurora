@@ -79,7 +79,7 @@ namespace Aurora {
 	{
 		while (m_Running) // Render Loop.
 		{
-			AR_ENDF_TIMER(); // This is for the imgui timers
+			AR_ENDF_TIMER(); // This is for the UI timers
 			AR_OP_PROF_FRAME("Game Loop");
 
 			float currentFrame = (float)(glfwGetTime());

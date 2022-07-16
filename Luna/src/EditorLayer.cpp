@@ -21,10 +21,7 @@ namespace Aurora {
 
 		for (auto& it : timerValues)
 		{
-			if (it.second > 0.5f)
-				ImGui::TextColored(ImVec4{ 1, 0, 0, 1 }, "%.4f, %s", it.second, it.first.c_str());
-			else
-				ImGui::Text("%.4f, %s", it.second, it.first.c_str());
+			ImGui::Text("%.4f, %s", it.second, it.first.c_str());
 		}
 	}
 

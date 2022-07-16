@@ -86,3 +86,6 @@ project "Aurora"
         links
         {
         }
+
+    filter "files:deps/stb_image/**.cpp"
+        flags { "NoPCH" }
