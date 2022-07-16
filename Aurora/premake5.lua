@@ -30,8 +30,8 @@ project "Aurora"
     {
         "src",
         "deps/spdlog/include",
-        "%{IncludeDir.Glad}", -- These two should not be here but they give some dogshit include error
-        "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.GLFW}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.Optick}",

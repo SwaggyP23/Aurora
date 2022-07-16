@@ -1,5 +1,4 @@
 .vs/
-.git/
 bin/
 Profiling/
 Build/
@@ -29,3 +28,5 @@ GLFW.vcxproj.filters
 Glad.vcxproj
 Glad.vcxproj.user
 Glad.vcxproj.filters
+
+Optick.vcxproj
