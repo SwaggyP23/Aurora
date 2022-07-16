@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "Application.h"
 
+#include "Debugging/ChromeInstrumentor.h"
+
 #include "Renderer/Renderer.h"
 
 namespace Aurora {
@@ -9,7 +11,7 @@ namespace Aurora {
 
 	Application::Application(const std::string& name)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		s_Instance = this;
 
@@ -17,6 +19,7 @@ namespace Aurora {
 		m_Window->SetEventCallback(AR_SET_EVENT_FN(Application::onEvent));
 
 		Renderer::Init(); // This handles the Renderer3D initiation since im taking this as the general renderer
+		Aurora::Utils::Random::Init(); // This initializes the random number generator engine
 
 		m_ImGuiLayer = new ImGuiLayer();
 		pushOverlay(m_ImGuiLayer);
@@ -24,7 +27,7 @@ namespace Aurora {
 
 	Application::~Application()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		// Layers' onDetach() function is called from the LayerStack destructor due to RAII since the layerstack in application is on
 		// the stack
@@ -39,7 +42,7 @@ namespace Aurora {
 
 	void Application::pushLayer(Layer* layer)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		m_LayerStack.pushLayer(layer);
 		layer->OnAttach();
@@ -47,7 +50,7 @@ namespace Aurora {
 
 	void Application::pushOverlay(Layer* layer)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		m_LayerStack.pushOverlay(layer);
 		layer->OnAttach();
@@ -55,7 +58,7 @@ namespace Aurora {
 
 	void Application::onEvent(Event& e)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		m_Window->SetVSync(m_VSync);
 
@@ -74,11 +77,9 @@ namespace Aurora {
 
 	void Application::Run()
 	{
-		AR_PROFILE_FUNCTION();
-
 		while (m_Running) // Render Loop.
 		{
-			AR_PROFILE_SCOPE("Run Loop");
+			AR_OP_PROF_FRAME("Game Loop");
 
 			float currentFrame = (float)(glfwGetTime());
 			TimeStep timeStep = currentFrame - m_LastFrame;
@@ -87,7 +88,7 @@ namespace Aurora {
 			if (!m_Minimized)
 			{
 				{
-					AR_PROFILE_SCOPE("LayerStack Updating!");
+					AR_OP_PROF_SCOPE_DYNAMIC("LayerStack Updating!");
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(timeStep);
@@ -95,7 +96,7 @@ namespace Aurora {
 
 				m_ImGuiLayer->begin();
 				{
-					AR_PROFILE_SCOPE("LayerStack ImGui Rendering!");
+					AR_OP_PROF_SCOPE_DYNAMIC("LayerStack ImGui Rendering!");
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnImGuiRender();
@@ -104,13 +105,13 @@ namespace Aurora {
 			}
 
 			m_Window->Update();
-			AR_ENDF_TIMER;
+			AR_ENDF_TIMER; // This is for the imgui timers
 		}
 	}
 
 	bool Application::onWindowResize(WindowResizeEvent& e)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		if (e.getWidth() == 0 || e.getHeight() == 0) {
 			m_Minimized = true;

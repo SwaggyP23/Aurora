@@ -34,7 +34,7 @@ namespace Aurora {
 
 	void BufferLayout::calcStrideAndOffset()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		GLuint offset = 0;
 		m_Stride = 0;
@@ -62,7 +62,7 @@ namespace Aurora {
 
 	VertexBuffer::VertexBuffer(uint32_t size)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
@@ -71,7 +71,7 @@ namespace Aurora {
 
 	VertexBuffer::VertexBuffer(GLfloat* vertices, uint32_t size)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
@@ -80,28 +80,26 @@ namespace Aurora {
 
 	VertexBuffer::~VertexBuffer()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glDeleteBuffers(1, &m_BufferID);
 	}
 
 	void VertexBuffer::bind() const
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 	}
 
 	void VertexBuffer::unBind() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 	void VertexBuffer::SetData(const void* data, uint32_t size)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
@@ -119,7 +117,7 @@ namespace Aurora {
 	IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
 		: m_Count(count)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferId);
 		// Since we specified here that is is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
@@ -130,22 +128,20 @@ namespace Aurora {
 
 	IndexBuffer::~IndexBuffer()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glDeleteBuffers(1, &m_BufferId);
 	}
 
 	void IndexBuffer::bind() const
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
 	}
 
 	void IndexBuffer::unBind() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 

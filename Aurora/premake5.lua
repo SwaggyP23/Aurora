@@ -30,10 +30,11 @@ project "Aurora"
     {
         "src",
         "deps/spdlog/include",
-        "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}",
+        "%{IncludeDir.Glad}", -- These two should not be here but they give some dogshit include error
+        "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.Optick}",
         "%{IncludeDir.stb_image}"
     }
 
@@ -42,6 +43,7 @@ project "Aurora"
         "GLFW",
         "Glad",
         "ImGui",
+        "Optick",
         "opengl32.lib"
     }
 
@@ -56,7 +58,7 @@ project "Aurora"
         defines
         {
             "AURORA_DEBUG",
-            "AURORA_CORE_PROFILE_"
+            "AURORA_CORE_PROFILE"
         }
 
         runtime "Debug"

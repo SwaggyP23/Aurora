@@ -15,12 +15,14 @@ project "Luna"
 
     includedirs
     {
-        "%{wks.location}/Aurora/deps/spdlog/include",
         "%{wks.location}/Aurora/src",
-        "%{IncludeDir.Glad}",
-        "%{IncludeDir.GLFW}",
-        "%{IncludeDir.ImGui}",
-        "%{IncludeDir.glm}"
+        "%{wks.location}/Aurora/deps/spdlog/include",
+        "%{wks.location}/Aurora/deps",
+        "%{IncludeDir.Glad}", -- These two should not be here but they give some dogshit include error
+        "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
+        "%{IncludeDir.ImGui}",-- This one also
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.Optick}"
     }
 
     links
@@ -39,7 +41,7 @@ project "Luna"
         defines
         {
             "AURORA_DEBUG",
-            "AURORA_CORE_PROFILE_"
+            "AURORA_CORE_PROFILE"
         }
 
         runtime "Debug"

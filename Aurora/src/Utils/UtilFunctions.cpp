@@ -19,7 +19,7 @@ namespace Aurora {
 
 		std::string FileReader::ReadFile(const std::string& filePath)
 		{
-			AR_PROFILE_FUNCTION();
+			AR_OP_PROF_FUNCTION();
 
 			std::string result;
 			std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII

@@ -14,7 +14,7 @@ namespace Aurora {
 
 	void EditorLayer::OnAttach()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		m_ContainerTexture = Aurora::Texture::Create("resources/textures/Qiyana.jpg");
 		m_ContainerTexture->flipTextureVertically(true);
@@ -47,21 +47,18 @@ namespace Aurora {
 	}
 	void EditorLayer::OnDetach()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 	}
 
 	void EditorLayer::OnUpdate(Aurora::TimeStep ts)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		Aurora::Renderer3D::ResetStats();
 
-		{
-			AR_PROFILE_SCOPE("Clear Colors");
-			m_Framebuffer->bind();
-			Aurora::RenderCommand::setClearColor(m_Color);
-			Aurora::RenderCommand::Clear();
-		}
+		m_Framebuffer->bind();
+		Aurora::RenderCommand::setClearColor(m_Color);
+		Aurora::RenderCommand::Clear();
 
 		if (m_Perspective)
 			Aurora::Renderer3D::BeginScene(m_Camera);
@@ -69,7 +66,7 @@ namespace Aurora {
 			Aurora::Renderer3D::BeginScene(m_OrthoCamera);
 
 		{
-			AR_PROFILE_SCOPE("Rendering");
+			AR_OP_PROF_SCOPE_DYNAMIC("Rendering");
 			Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
 
 			Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
@@ -115,7 +112,7 @@ namespace Aurora {
 
 	void EditorLayer::OnImGuiRender()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
 

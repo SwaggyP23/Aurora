@@ -28,7 +28,8 @@
 #include "Core/Base.h"
 #include "Utils/ImageLoader.h"
 #include "Utils/UtilFunctions.h"
-#include "Debugging/Instrumentor.h"
+#include "Debugging/OptickInstrumentor.h"
+#include "Debugging/ChromeInstrumentor.h"
 #include "Debugging/Timer.h"
 
 #include <Windows.h>

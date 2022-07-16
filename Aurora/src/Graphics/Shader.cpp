@@ -95,7 +95,7 @@ namespace Aurora {
 	Shader::Shader(const std::string& filePath)
 		: m_FilePath(filePath)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
 
@@ -113,7 +113,7 @@ namespace Aurora {
 
 	std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
 	{ // Props to @TheCherno
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		std::unordered_map<GLenum, std::string> shaderSources;
 
@@ -140,7 +140,7 @@ namespace Aurora {
 
 	GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		GLuint program = glCreateProgram();
 		std::vector<GLuint> ShaderIDs;
@@ -175,22 +175,20 @@ namespace Aurora {
 
 	Shader::~Shader()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glDeleteProgram(m_ShaderID);
 	}
 
 	void Shader::bind() const
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glUseProgram(m_ShaderID);
 	}
 
 	void Shader::unBind() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glUseProgram(0);
 	}
 
@@ -246,7 +244,7 @@ namespace Aurora {
 
 	GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		auto it = m_UniformLocations.find(name);
 		if (it != m_UniformLocations.end())
@@ -264,7 +262,7 @@ namespace Aurora {
 
 	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		AR_CORE_ASSERT(!Exists(name), "Shader already exists!");
 		m_Shaders[name] = shader;
@@ -278,8 +276,6 @@ namespace Aurora {
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
 	{
-		AR_PROFILE_FUNCTION();
-
 		auto shader = Shader::Create(filepath);
 		Add(shader);
 		return shader;
@@ -287,8 +283,6 @@ namespace Aurora {
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 	{
-		AR_PROFILE_FUNCTION();
-
 		auto shader = Shader::Create(filepath);
 		Add(name, shader);
 		return shader;

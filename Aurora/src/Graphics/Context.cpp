@@ -19,7 +19,7 @@ namespace Aurora {
 
 	void Context::Init()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glfwMakeContextCurrent(m_WindowHandle);
 
@@ -31,7 +31,7 @@ namespace Aurora {
 
 	void Context::SwapBuffers()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glfwSwapBuffers(m_WindowHandle);
 	}

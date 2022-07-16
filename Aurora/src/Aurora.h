@@ -7,7 +7,8 @@
 #include "Core/Application.h"
 
 #include "Core/Base.h"
-#include "Debugging/Instrumentor.h"
+#include "Debugging/OptickInstrumentor.h"
+#include "Debugging/ChromeInstrumentor.h"
 #include "Debugging/Timer.h"
 
 #include "Layers/Layer.h"

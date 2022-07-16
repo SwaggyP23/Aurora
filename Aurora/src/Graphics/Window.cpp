@@ -49,21 +49,17 @@ namespace Aurora {
 
 	Window::Window(const std::string& title, uint32_t width, uint32_t height)
 	{
-		AR_PROFILE_FUNCTION();
-
 		Init(title, width, height);
 	}
 
 	Window::~Window()
 	{
-		AR_PROFILE_FUNCTION();
-
 		ShutDown();
 	}
 
 	void Window::SetVSync(bool state)
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		glfwSwapInterval(state);
 		m_Data.VSync = state;
@@ -71,13 +67,13 @@ namespace Aurora {
 
 	void Window::Update() const
 	{
+		AR_OP_PROF_FUNCTION();
+
 #ifdef AURORA_DEBUG
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 			AR_CORE_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
 #endif
-
-		AR_PROFILE_FUNCTION();
 
 		glfwPollEvents();
 		//glfwGetFramebufferSize(m_Window, (int*)&m_Data.Width, (int*)&m_Data.Height);
@@ -86,7 +82,7 @@ namespace Aurora {
 
 	bool Window::Init(const std::string& title, uint32_t width, uint32_t height)
 	{
-		// PROFILE_FUNCTION(); Currently not needed since the constructor just calls Init();
+		AR_OP_PROF_FUNCTION();
 
 		m_Data.Title = title;
 		m_Data.Width = width;
@@ -211,7 +207,7 @@ namespace Aurora {
 
 	void Window::ShutDown()
 	{
-		// PROFILE_FUNCTION(); Currently not needed since the destructor just calls ShutDown();
+		AR_OP_PROF_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();

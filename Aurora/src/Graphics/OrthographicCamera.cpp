@@ -19,7 +19,7 @@ namespace Aurora {
 
 	void OrthoGraphicCamera::UpdateProjection()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
 		//m_Projection = glm::perspective(glm::radians(16.0f / 9.0f), m_AspectRatio, m_NearClip, m_FarClip);
@@ -28,7 +28,7 @@ namespace Aurora {
 
 	void OrthoGraphicCamera::UpdateView()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_OP_PROF_FUNCTION();
 
 		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 		m_Position = CalculatePosition();
@@ -65,8 +65,6 @@ namespace Aurora {
 
 	void OrthoGraphicCamera::OnUpdate(TimeStep ts)
 	{
-		AR_PROFILE_FUNCTION();
-
 		if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
 		{
 			const glm::vec2& mouse{ Input::getMouseX(), Input::getMouseY() };
@@ -86,21 +84,13 @@ namespace Aurora {
 
 	void OrthoGraphicCamera::OnEvent(Event& e)
 	{
-		AR_PROFILE_FUNCTION();
-
 		EventDispatcher dispatcher(e);
 		dispatcher.dispatch<MouseScrolledEvent>(AR_SET_EVENT_FN(OrthoGraphicCamera::OnMouseScroll));
 	}
 
 	bool OrthoGraphicCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		AR_PROFILE_FUNCTION();
-
 		if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL)) {
-			//float delta = e.getYOffset() * 0.1f;
-			//MouseZoom(delta);
-			//UpdateView();
-
 			m_ZoomLevel -= e.getYOffset() * 0.25f;
 			m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
 			m_Projection = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, m_NearClip, m_FarClip);

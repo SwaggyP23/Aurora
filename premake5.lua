@@ -18,6 +18,7 @@ group "Dependencies"
     include "Aurora/deps/GLFW"
     include "Aurora/deps/Glad"
     include "Aurora/deps/ImGui/imgui"
+    include "Aurora/deps/optick"
 group ""
 
 group "Core"
