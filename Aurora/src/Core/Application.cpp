@@ -79,6 +79,7 @@ namespace Aurora {
 	{
 		while (m_Running) // Render Loop.
 		{
+			AR_ENDF_TIMER(); // This is for the imgui timers
 			AR_OP_PROF_FRAME("Game Loop");
 
 			float currentFrame = (float)(glfwGetTime());
@@ -96,8 +97,6 @@ namespace Aurora {
 
 				m_ImGuiLayer->begin();
 				{
-					AR_OP_PROF_SCOPE_DYNAMIC("LayerStack ImGui Rendering!");
-
 					for (Layer* layer : m_LayerStack)
 						layer->OnImGuiRender();
 				}
@@ -105,7 +104,6 @@ namespace Aurora {
 			}
 
 			m_Window->Update();
-			AR_ENDF_TIMER; // This is for the imgui timers
 		}
 	}
 

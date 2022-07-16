@@ -5,6 +5,29 @@
 
 namespace Aurora {
 
+	static void ShowTimers()
+	{
+		auto& mp = PerformanceTimer::GetTimeMap();
+
+		std::vector<std::pair<std::string, float>> timerValues;
+		timerValues.reserve(mp.size());
+		for (auto& [name, val] : mp)
+			timerValues.emplace_back(name, val);
+
+		std::sort(timerValues.begin(), timerValues.end(), [](const std::pair<std::string, float>& a, const std::pair<std::string, float>& b) -> bool
+			{
+				return a.second > b.second;
+			});
+
+		for (auto& it : timerValues)
+		{
+			if (it.second > 0.5f)
+				ImGui::TextColored(ImVec4{ 1, 0, 0, 1 }, "%.4f, %s", it.second, it.first.c_str());
+			else
+				ImGui::Text("%.4f, %s", it.second, it.first.c_str());
+		}
+	}
+
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
 		m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
@@ -53,6 +76,7 @@ namespace Aurora {
 	void EditorLayer::OnUpdate(Aurora::TimeStep ts)
 	{
 		AR_OP_PROF_FUNCTION();
+		AR_PERF_TIMER("EditorLayer::OnUpdate");
 
 		Aurora::Renderer3D::ResetStats();
 
@@ -217,15 +241,8 @@ namespace Aurora {
 			ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
 			ImGui::Text("Peak FPS: %.f", m_Peak);
 			
-			if (ImGui::CollapsingHeader("Timers (Milliseconds)")) {
-				for (auto& it = PerformanceTimer::GetTimeMap().rbegin(); it != PerformanceTimer::GetTimeMap().rend(); it++)
-				{
-					if (it->second > 25.0f)
-						ImGui::TextColored(ImVec4{ 1, 0, 0, 1 }, "%.4f, %s", it->second, it->first.c_str());
-					else
-						ImGui::Text("%.4f, %s", it->second, it->first.c_str());
-				}
-			}
+			if (ImGui::CollapsingHeader("CPU Timers (Milliseconds)"))
+				ShowTimers();
 
 			ImGui::End();
 		}
