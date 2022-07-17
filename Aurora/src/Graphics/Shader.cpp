@@ -95,7 +95,7 @@ namespace Aurora {
 	Shader::Shader(const std::string& filePath)
 		: m_FilePath(filePath)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
 
@@ -113,7 +113,7 @@ namespace Aurora {
 
 	std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
 	{ // Props to @TheCherno
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		std::unordered_map<GLenum, std::string> shaderSources;
 
@@ -140,7 +140,7 @@ namespace Aurora {
 
 	GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		GLuint program = glCreateProgram();
 		std::vector<GLuint> ShaderIDs;
@@ -175,14 +175,14 @@ namespace Aurora {
 
 	Shader::~Shader()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glDeleteProgram(m_ShaderID);
 	}
 
 	void Shader::bind() const
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glUseProgram(m_ShaderID);
 	}
@@ -244,7 +244,7 @@ namespace Aurora {
 
 	GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		auto it = m_UniformLocations.find(name);
 		if (it != m_UniformLocations.end())
@@ -262,7 +262,7 @@ namespace Aurora {
 
 	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		AR_CORE_ASSERT(!Exists(name), "Shader already exists!");
 		m_Shaders[name] = shader;

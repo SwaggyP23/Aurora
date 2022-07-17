@@ -9,15 +9,15 @@ int main(int argc, char** argv)
 {
 	Aurora::logger::Log::Init();
 
-	AR_OP_START_CAPTURE();
+	AR_PROFILE_BEGIN_SESSION("ApplicationStartup", "Profiling");
 	Aurora::Application* app = Aurora::CreateApplication();
-	AR_OP_STOP_CAPTURE("Profiling/ApplicationStartup.opt");
+	AR_PROFILE_END_SESSION("ApplicationStartup");
 
-	AR_OP_START_CAPTURE();
+	AR_PROFILE_BEGIN_SESSION("ApplicationRuntime", "Profiling");
 	app->Run();
-	AR_OP_STOP_CAPTURE("Profiling/ApplicationRuntime.opt");
+	AR_PROFILE_END_SESSION("ApplicationRuntime");
 
-	AR_OP_START_CAPTURE();
+	AR_PROFILE_BEGIN_SESSION("ApplicationShutdown", "Profiling");
 	delete app;
-	AR_OP_STOP_CAPTURE("Profiling/ApplicationShutdown.opt");
+	AR_PROFILE_END_SESSION("ApplicationShutdown");
 }

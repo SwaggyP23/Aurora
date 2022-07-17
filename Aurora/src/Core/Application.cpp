@@ -1,8 +1,6 @@
 #include "Aurorapch.h"
 #include "Application.h"
 
-#include "Debugging/ChromeInstrumentor.h"
-
 #include "Renderer/Renderer.h"
 
 namespace Aurora {
@@ -11,7 +9,7 @@ namespace Aurora {
 
 	Application::Application(const std::string& name)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		s_Instance = this;
 
@@ -27,7 +25,7 @@ namespace Aurora {
 
 	Application::~Application()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		// Layers' onDetach() function is called from the LayerStack destructor due to RAII since the layerstack in application is on
 		// the stack
@@ -42,7 +40,7 @@ namespace Aurora {
 
 	void Application::pushLayer(Layer* layer)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_LayerStack.pushLayer(layer);
 		layer->OnAttach();
@@ -50,7 +48,7 @@ namespace Aurora {
 
 	void Application::pushOverlay(Layer* layer)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_LayerStack.pushOverlay(layer);
 		layer->OnAttach();
@@ -58,7 +56,7 @@ namespace Aurora {
 
 	void Application::onEvent(Event& e)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_Window->SetVSync(m_VSync);
 
@@ -80,7 +78,7 @@ namespace Aurora {
 		while (m_Running) // Render Loop.
 		{
 			AR_ENDF_TIMER(); // This is for the UI timers
-			AR_OP_PROF_FRAME("Game Loop");
+			AR_PROFILE_FRAME("Game Loop");
 
 			float currentFrame = (float)(glfwGetTime());
 			TimeStep timeStep = currentFrame - m_LastFrame;
@@ -89,7 +87,7 @@ namespace Aurora {
 			if (!m_Minimized)
 			{
 				{
-					AR_OP_PROF_SCOPE_DYNAMIC("LayerStack Updating!");
+					AR_PROFILE_SCOPE("LayerStack Updating!");
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(timeStep);
@@ -109,7 +107,7 @@ namespace Aurora {
 
 	bool Application::onWindowResize(WindowResizeEvent& e)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		if (e.getWidth() == 0 || e.getHeight() == 0) {
 			m_Minimized = true;

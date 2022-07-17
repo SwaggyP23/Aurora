@@ -55,7 +55,7 @@ namespace Aurora {
 
 	void Renderer3D::Init()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
 
@@ -240,7 +240,7 @@ namespace Aurora {
 
 	void Renderer3D::BeginScene(const Ref<EditorCamera>& camera)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		s_Data.QuadShader->bind();
 		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
@@ -265,7 +265,7 @@ namespace Aurora {
 
 	void Renderer3D::BeginScene(const Ref<OrthoGraphicCamera>& camera)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		s_Data.QuadShader->bind();
 
@@ -303,7 +303,7 @@ namespace Aurora {
 
 	void Renderer3D::Flush()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("Renderer3D::Flush");
 
 		if (s_Data.QuadIndexCount)
@@ -331,7 +331,7 @@ namespace Aurora {
 
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("Renderer3D::DrawQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
@@ -364,7 +364,7 @@ namespace Aurora {
 
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
@@ -419,7 +419,7 @@ namespace Aurora {
 
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light)// Should take a rotation!
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("Renderer3D::DrawRotatedQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
@@ -455,7 +455,7 @@ namespace Aurora {
 
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();

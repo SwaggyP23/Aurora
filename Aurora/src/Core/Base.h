@@ -8,6 +8,8 @@
 	#define AR_CORE_ASSERT(check, ...)
 #endif
 
+#define STRINGIFY(A, B, C) A B C // Concatenates three strings. This is to be used for strings and STRINGS ONLY!!
+
 #define AR_SET_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
 #define BIT(x) 1 << x

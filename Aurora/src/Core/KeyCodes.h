@@ -10,6 +10,10 @@ namespace Aurora {
 
 		enum : KeyCode
 		{
+			Release          = 0,  /*  GLFW_RELEASE  */
+			Press            = 1,  /*  GLFW_PRESS    */
+			Repeat           = 2,  /*  GLFW_REPEAT   */
+
 			Space            = 32,
 			Apostrophe       = 39,  /* ' */
 			Comma            = 44,  /* , */

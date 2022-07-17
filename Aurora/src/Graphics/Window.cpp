@@ -59,7 +59,7 @@ namespace Aurora {
 
 	void Window::SetVSync(bool state)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glfwSwapInterval(state);
 		m_Data.VSync = state;
@@ -67,7 +67,7 @@ namespace Aurora {
 
 	void Window::Update() const
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 #ifdef AURORA_DEBUG
 		GLenum error = glGetError();
@@ -82,7 +82,7 @@ namespace Aurora {
 
 	bool Window::Init(const std::string& title, uint32_t width, uint32_t height)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_Data.Title = title;
 		m_Data.Width = width;
@@ -207,7 +207,7 @@ namespace Aurora {
 
 	void Window::ShutDown()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();

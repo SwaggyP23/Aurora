@@ -5,6 +5,8 @@ namespace Aurora {
 
 	void RenderCommand::Init()
 	{
+		AR_PROFILE_FUNCTION();
+
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);		// To be used when i start with the blending chapter
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -31,7 +33,7 @@ namespace Aurora {
 
 	void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		vertexArray->bind();
 		uint32_t count = indexCount ? vertexArray->getIndexBuffer()->getCount() : indexCount;

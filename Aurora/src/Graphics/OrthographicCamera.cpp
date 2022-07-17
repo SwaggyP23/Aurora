@@ -3,8 +3,6 @@
 
 #include "Core/Input.h"
 
-#include <glfw/glfw3.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
@@ -19,7 +17,7 @@ namespace Aurora {
 
 	void OrthoGraphicCamera::UpdateProjection()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
 		//m_Projection = glm::perspective(glm::radians(16.0f / 9.0f), m_AspectRatio, m_NearClip, m_FarClip);
@@ -28,7 +26,7 @@ namespace Aurora {
 
 	void OrthoGraphicCamera::UpdateView()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 		m_Position = CalculatePosition();
@@ -65,17 +63,19 @@ namespace Aurora {
 
 	void OrthoGraphicCamera::OnUpdate(TimeStep ts)
 	{
-		if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
+		AR_PROFILE_FUNCTION();
+
+		if (Input::isKeyPressed(Key::LeftControl))
 		{
 			const glm::vec2& mouse{ Input::getMouseX(), Input::getMouseY() };
 			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			m_InitialMousePosition = mouse;
 
-			if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+			if (Input::isMouseButtonPressed(Mouse::ButtonLeft))
 				MousePan(delta);
-			else if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
+			else if (Input::isMouseButtonPressed(Mouse::ButtonRight))
 				MouseRotate(delta);
-			else if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+			else if (Input::isMouseButtonPressed(Mouse::ButtonMiddle))
 				MouseZoom(delta.y);
 		}
 
@@ -90,7 +90,7 @@ namespace Aurora {
 
 	bool OrthoGraphicCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		if (Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL)) {
+		if (Input::isKeyPressed(Key::LeftControl)) {
 			m_ZoomLevel -= e.getYOffset() * 0.25f;
 			m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
 			m_Projection = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, m_NearClip, m_FarClip);

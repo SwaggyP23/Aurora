@@ -1,7 +1,9 @@
 #include "Aurorapch.h"
 #include "Input.h"
 
+#include "KeyCodes.h"
 #include "Core/Application.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Aurora {
@@ -12,7 +14,7 @@ namespace Aurora {
 
 		int state = glfwGetKey(window, keycode);
 
-		return state == GLFW_PRESS || state == GLFW_REPEAT;
+		return state == Key::Press || state == Key::Repeat;
 	}
 
 	bool Input::isMouseButtonPressed(int button)
@@ -21,7 +23,7 @@ namespace Aurora {
 
 		int state = glfwGetMouseButton(window, button);
 
-		return state == GLFW_PRESS;
+		return state == Key::Press;
 	}
 
 	std::pair<float, float> Input::getMousePosition()

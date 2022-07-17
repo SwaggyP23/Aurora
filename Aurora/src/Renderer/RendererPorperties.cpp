@@ -9,7 +9,7 @@ namespace Aurora {
 
 	void RendererProperties::Init()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		s_Props = new Properties();
 
