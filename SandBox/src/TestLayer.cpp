@@ -12,7 +12,7 @@ TestLayer::TestLayer()
 
 void TestLayer::OnAttach()
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
 	m_ContainerTexture->flipTextureVertically(true);
@@ -28,12 +28,12 @@ void TestLayer::OnAttach()
 }
 void TestLayer::OnDetach()
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 }
 
 void TestLayer::OnUpdate(Aurora::TimeStep ts)
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 	
 	Aurora::RenderCommand::setClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
@@ -46,7 +46,7 @@ void TestLayer::OnUpdate(Aurora::TimeStep ts)
 		Aurora::Renderer3D::BeginScene(m_OrthoCamera);
 
 	{
-		AR_OP_PROF_SCOPE_DYNAMIC("Rendering");
+		AR_PROFILE_SCOPE("Rendering");
 		Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
 		Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, m_GroundTexture, 20.0f);
 		Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_ContainerTexture);
@@ -93,7 +93,7 @@ void TestLayer::OnEvent(Aurora::Event& e)
 
 void TestLayer::OnImGuiRender()
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
 

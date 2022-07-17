@@ -18,7 +18,7 @@ namespace Aurora {
 
 	Framebuffer::~Framebuffer()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glDeleteFramebuffers(1, &m_BufferID);
 		glDeleteTextures(1, &m_ColorAttachment);
@@ -27,7 +27,7 @@ namespace Aurora {
 
 	void Framebuffer::Invalidate()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		if (m_BufferID)
 		{
@@ -70,7 +70,7 @@ namespace Aurora {
 
 	void Framebuffer::bind() const
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, m_BufferID);
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);

@@ -2,6 +2,8 @@
 
 #include "Aurora.h"
 
+#include <stb_image/stb_image.h>
+
 namespace Aurora {
 
 	namespace Utils {

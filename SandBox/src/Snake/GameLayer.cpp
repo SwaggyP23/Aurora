@@ -9,7 +9,7 @@ GameLayer::GameLayer()
 
 void GameLayer::OnAttach()
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	m_Texture = Aurora::Texture::Create("resources/textures/Pepsi.png");
 	m_Texture->flipTextureVertically(true);
@@ -32,12 +32,12 @@ void GameLayer::OnAttach()
 
 void GameLayer::OnDetach()
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 }
 
 void GameLayer::OnUpdate(Aurora::TimeStep ts)
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	Aurora::RenderCommand::setClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
@@ -128,7 +128,7 @@ void GameLayer::OnEvent(Aurora::Event& e)
 
 void GameLayer::OnImGuiRender()
 {
-	AR_OP_PROF_FUNCTION();
+	AR_PROFILE_FUNCTION();
 
 	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
 

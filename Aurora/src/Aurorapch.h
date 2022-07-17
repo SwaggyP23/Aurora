@@ -21,15 +21,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <stb_image/stb_image.h>
-
-#include "Utils/Random.h"
 #include "Logging/Log.h"
 #include "Core/Base.h"
-#include "Utils/ImageLoader.h"
-#include "Utils/UtilFunctions.h"
-#include "Debugging/OptickInstrumentor.h"
-#include "Debugging/ChromeInstrumentor.h"
+#include "Utils/Utils.h"
+
+#include "Debugging/Instrumentation.h"
 #include "Debugging/Timer.h"
 
 #include <Windows.h>

@@ -34,8 +34,9 @@ project "Aurora"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.stb_image}",
         "%{IncludeDir.Optick}",
-        "%{IncludeDir.stb_image}"
+        "%{IncludeDir.Entt}"
     }
 
     links
@@ -86,3 +87,6 @@ project "Aurora"
         links
         {
         }
+
+    filter "files:deps/stb_image/**.cpp"
+        flags { "NoPCH" }

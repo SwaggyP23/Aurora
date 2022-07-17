@@ -65,7 +65,7 @@ namespace Aurora {
 	Texture::Texture(uint32_t width, uint32_t height)
 		: m_Width(width), m_Height(height)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
@@ -81,14 +81,14 @@ namespace Aurora {
 	Texture::Texture(const std::string& filePath)
 		: m_Path(filePath), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
 	}
 
 	void Texture::setData(void* data, uint32_t size)
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 #ifdef AURORA_DEBUG
 		uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
@@ -99,14 +99,14 @@ namespace Aurora {
 
 	Texture::~Texture()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glDeleteTextures(1, &m_TextID);
 	}
 
 	void Texture::setTextureWrapping(TextureProperties wrapMode) const
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_S, GLTypeFromTextureProperties(wrapMode));
 		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_T, GLTypeFromTextureProperties(wrapMode));
@@ -114,7 +114,7 @@ namespace Aurora {
 
 	void Texture::setTextureFiltering(TextureProperties minFilter, TextureProperties magFilter) const
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glTextureParameteri(m_TextID, GL_TEXTURE_MIN_FILTER, GLTypeFromTextureProperties(minFilter));
 		glTextureParameteri(m_TextID, GL_TEXTURE_MAG_FILTER, GLTypeFromTextureProperties(magFilter));
@@ -127,7 +127,7 @@ namespace Aurora {
 
 	void Texture::loadTextureData()
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		// load image
 		const char* path = m_Path.c_str();
@@ -139,7 +139,7 @@ namespace Aurora {
 
 		if (Utils::ImageLoader::Get().getData())
 		{
-			AR_OP_PROF_SCOPE_DYNAMIC("Texture Storage! Texture::loadTextureData()!");
+			AR_PROFILE_SCOPE("Texture Storage! Texture::loadTextureData()!");
 
 			int channels = Utils::ImageLoader::Get().getChannels();
 			AR_CORE_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
@@ -164,7 +164,7 @@ namespace Aurora {
 
 	void Texture::bind(uint32_t slot) const
 	{
-		AR_OP_PROF_FUNCTION();
+		AR_PROFILE_FUNCTION();
 
 		glBindTextureUnit(slot, m_TextID);
 
