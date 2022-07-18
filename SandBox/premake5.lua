@@ -22,7 +22,9 @@ project "SandBox"
         "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
         "%{IncludeDir.ImGui}",-- This one also
         "%{IncludeDir.glm}",
+        "%{IncludeDir.Entt}",
         "%{IncludeDir.Optick}"
+
     }
 
     links
