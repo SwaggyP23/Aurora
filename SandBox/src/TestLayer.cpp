@@ -68,7 +68,7 @@ void TestLayer::OnUpdate(Aurora::TimeStep ts)
 
 		static float rotation;
 		rotation += ts * 50.0f;
-		Aurora::Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, -6.0f }, { m_Rotations.x, m_Rotations.y, rotation }, {3.0f, 3.0f, 3.0f}, { 0, 247.0f/255.0f, 168.0f/255.0f, 0.7f });
+		Aurora::Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, -6.0f }, { m_Rotations.x, m_Rotations.y, rotation }, {3.0f, 3.0f, 3.0f}, glm::vec4{ 0, 247.0f/255.0f, 168.0f/255.0f, 0.7f });
 		//Aurora::Renderer3D::DrawRotatedQuad(m_Transalations, m_Rotations, m_Scales, m_CheckerTexture, 20.0f, m_UniColor);
 		//Aurora::Renderer3D::DrawQuad({ -1.0f,  0.0f, -8.0f }, { 0.8f, 0.8f, 1.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
 		//Aurora::Renderer3D::DrawQuad({  1.5f, -0.5f, -8.0f }, { 0.5f, 0.75f, 1.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });

@@ -5,7 +5,7 @@
 
 namespace Aurora {
 
-	Scene::Scene()
+	Scene::Scene(bool dummyVarForRefSystem)
 	{
 		struct TransformComponent
 		{
@@ -27,7 +27,7 @@ namespace Aurora {
 
 	Ref<Scene> Scene::Create()
 	{
-		return CreateRef<Scene>();
+		return CreateRef<Scene>(true);
 	}
 
 	Entity Scene::CreateEntity(const char* name)

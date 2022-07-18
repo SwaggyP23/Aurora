@@ -15,7 +15,7 @@
     #define OP_EXTENSION ".opt"
 
     #define AR_OP_START_CAPTURE()             OPTICK_START_CAPTURE()
-    #define AR_OP_STOP_CAPTURE(name)          OPTICK_STOP_CAPTURE();OPTICK_SAVE_CAPTURE(STRINGIFY("Profiling/Optick/", name, OP_EXTENSION))
+    #define AR_OP_STOP_CAPTURE(name)          OPTICK_STOP_CAPTURE();OPTICK_SAVE_CAPTURE("Profiling/Optick/" name OP_EXTENSION)
     #define AR_OP_PROF_FRAME(...)             OPTICK_FRAME(__VA_ARGS__)
     #define AR_OP_PROF_FUNCTION(...)          OPTICK_EVENT(__VA_ARGS__)
     #define AR_OP_PROF_TAG(name, ...)         OPTICK_TAG(name, __VA_ARGS__)

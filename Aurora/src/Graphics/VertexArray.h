@@ -14,7 +14,7 @@ namespace Aurora {
 	class VertexArray
 	{
 	public:
-		VertexArray();
+		VertexArray(uint32_t count);  // This parameter is to be removed when a good reference counting system is made or do a good soln
 		~VertexArray();
 
 		static Ref<VertexArray> Create();
