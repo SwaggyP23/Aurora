@@ -152,6 +152,7 @@ namespace Aurora {
 		IndexBuffer(uint32_t* indices, uint32_t count);
 		~IndexBuffer();
 
+		static Ref<IndexBuffer> Create();
 		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 
 		void bind() const;

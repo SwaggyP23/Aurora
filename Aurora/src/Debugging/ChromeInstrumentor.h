@@ -165,7 +165,7 @@ namespace Aurora {
 
     #define CH_EXTENSION ".json"
 
-    #define AR_CT_PROF_BEGIN_SESSION(name, filepath)       ::Aurora::Instrumentor::Get().BeginSession(name, STRINGIFY(filepath"/Chrome/", name, CH_EXTENSION))
+    #define AR_CT_PROF_BEGIN_SESSION(name, filepath)       ::Aurora::Instrumentor::Get().BeginSession(name, filepath"/Chrome/" name CH_EXTENSION)
     #define AR_CT_PROF_END_SESSION()                       ::Aurora::Instrumentor::Get().EndSession()
     #define AR_CT_PROF_SCOPE(name)                         ::Aurora::InstrumentationTimer Instrumentor##__LINE__(name)
     #define AR_CT_PROF_FUNCTION()                          AR_CT_PROF_SCOPE(__FUNCSIG__)

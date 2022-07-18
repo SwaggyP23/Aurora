@@ -109,6 +109,11 @@ namespace Aurora {
 	// INDEX BUFFER!!
 	//////////////////////////
 
+	Ref<IndexBuffer> IndexBuffer::Create()
+	{
+		return CreateRef<IndexBuffer>();
+	}
+
 	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
 	{
 		return CreateRef<IndexBuffer>(indices, count);

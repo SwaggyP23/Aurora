@@ -5,15 +5,15 @@ namespace Aurora {
 
 	Ref<VertexArray> VertexArray::Create()
 	{
-		return CreateRef<VertexArray>();
+		return CreateRef<VertexArray>(1);
 	}
 
-	VertexArray::VertexArray()
+	VertexArray::VertexArray(uint32_t count)
 		: m_IndexBuffer()
 	{
 		AR_PROFILE_FUNCTION();
 
-		glCreateVertexArrays(1, &m_ArrayId);
+		glCreateVertexArrays(count, &m_ArrayId);
 	}
 
 	VertexArray::~VertexArray()
