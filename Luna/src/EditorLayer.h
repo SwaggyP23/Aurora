@@ -19,15 +19,18 @@ namespace Aurora {
 
 
 	private: // Temporary things like textures for now
-		Aurora::Ref<Aurora::Texture> m_ContainerTexture;
-		Aurora::Ref<Aurora::Texture> m_QiyanaTexture;
-		Aurora::Ref<Aurora::Texture> m_GroundTexture;
-		Aurora::Ref<Aurora::Texture> m_CheckerTexture;
+		Ref<Aurora::Texture> m_ContainerTexture;
+		Ref<Aurora::Texture> m_QiyanaTexture;
+		Ref<Aurora::Texture> m_GroundTexture;
+		Ref<Aurora::Texture> m_CheckerTexture;
 
 	private: // Main private stuff for this editor
-		Aurora::Ref<Aurora::EditorCamera> m_Camera;
-		Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
-		Aurora::Ref<Framebuffer> m_Framebuffer;
+		Ref<Aurora::EditorCamera> m_Camera;
+		Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
+		Ref<Framebuffer> m_Framebuffer;
+		Ref<Scene> m_ActiveScene;
+
+		Entity m_SquareEntity;
 
 		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 

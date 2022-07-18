@@ -27,8 +27,8 @@ namespace Aurora {
 
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
-		m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-		m_OrthoCamera(Aurora::CreateRef<Aurora::OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+		m_Camera(CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
+		m_OrthoCamera(CreateRef<OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
 	{
 	}
 
@@ -36,84 +36,52 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		m_ContainerTexture = Aurora::Texture::Create("resources/textures/Qiyana.jpg");
+		m_ContainerTexture = Texture::Create("resources/textures/Qiyana.jpg");
 		m_ContainerTexture->flipTextureVertically(true);
 		m_ContainerTexture->setTextureWrapping(TextureProperties::Repeat);
 		m_ContainerTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_ContainerTexture->loadTextureData();
 
-		m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
+		m_GroundTexture = Texture::Create("resources/textures/ice.png");
 		m_GroundTexture->flipTextureVertically(true);
 		m_GroundTexture->setTextureWrapping(TextureProperties::Repeat);
 		m_GroundTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_GroundTexture->loadTextureData();
 
-		m_QiyanaTexture = Aurora::Texture::Create("resources/textures/checkerboard.png");
+		m_QiyanaTexture = Texture::Create("resources/textures/checkerboard.png");
 		m_QiyanaTexture->flipTextureVertically(true);
 		m_QiyanaTexture->setTextureWrapping(TextureProperties::Repeat);
 		m_QiyanaTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_QiyanaTexture->loadTextureData();
 
-		m_CheckerTexture = Aurora::Texture::Create("resources/textures/checkerboard2.png");
+		m_CheckerTexture = Texture::Create("resources/textures/checkerboard2.png");
 		m_CheckerTexture->flipTextureVertically(true);
 		m_CheckerTexture->setTextureWrapping(TextureProperties::Repeat);
 		m_CheckerTexture->setTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
 		m_CheckerTexture->loadTextureData();
 
-		Aurora::FramebufferSpecification fbSpec;
+		FramebufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = Aurora::Framebuffer::Create(fbSpec);
+		m_Framebuffer = Framebuffer::Create(fbSpec);
+
+		m_ActiveScene = Scene::Create();
+
+		auto square = m_ActiveScene->CreateEntity("Test Square");
+		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f });
+
+		m_SquareEntity = square;
 	}
+
 	void EditorLayer::OnDetach()
 	{
 		AR_PROFILE_FUNCTION();
 	}
 
-	void EditorLayer::OnUpdate(Aurora::TimeStep ts)
+	void EditorLayer::OnUpdate(TimeStep ts)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("EditorLayer::OnUpdate");
-
-		Aurora::Renderer3D::ResetStats();
-
-		m_Framebuffer->bind();
-		Aurora::RenderCommand::setClearColor(m_Color);
-		Aurora::RenderCommand::Clear();
-
-		if (m_Perspective)
-			Aurora::Renderer3D::BeginScene(m_Camera);
-		else
-			Aurora::Renderer3D::BeginScene(m_OrthoCamera);
-
-		{
-			AR_PROFILE_SCOPE("Rendering");
-			Aurora::Renderer3D::DrawQuad({ 1.2f, 3.0f, 2.0f }, { 0.2f, 0.2f, 0.2f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1);
-
-			Aurora::Renderer3D::DrawQuad({ 0.0f, -7.0f, 0.0f }, { 30.0f, 2.0f, 30.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
-			Aurora::Renderer3D::DrawQuad({ 0.0f, -0.5f,-16.0f }, { 30.0f, 15.0f, 2.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
-			Aurora::Renderer3D::DrawQuad({-16.0f, -0.5f, -1.0f }, { 2.0f, 15.0f, 32.0f }, {1.0f, 1.0f, 1.0f, 1.0f});
-
-			Aurora::Renderer3D::DrawQuad({ 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_QiyanaTexture);
-			Aurora::Renderer3D::DrawQuad({ -2.0f, 2.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, m_CheckerTexture);
-
-			//Aurora::Renderer3D::DrawQuad({ 10.1f, 0.0f, 0.0f }, { 0.0f, 10.0f, 10.0f }, m_GroundTexture, 30.0f);
-			//for (float y = -5.0f; y < 5.0f; y += 0.5f)
-			//{
-			//	for (float x = -5.0f; x < 5.0f; x += 0.5f)
-			//	{
-			//		glm::vec4 color = { (x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.7f };
-			//		Aurora::Renderer3D::DrawQuad({ 10.0f, y, x }, { 0.0f, 0.45f, 0.45f }, color);
-			//	}
-			//}
-
-			static float rotation;
-			rotation += ts * 50.0f;
-			Aurora::Renderer3D::DrawRotatedQuad({ -5.5f, -1.5f, -6.0f }, { 0.0f, 0.0f, rotation }, { 3.0f, 3.0f, 3.0f }, { 0, 247.0f / 255.0f, 168.0f / 255.0f, 0.7f });
-		}
-
-		Aurora::Renderer3D::EndScene();
-		m_Framebuffer->unBind();
 
 		if (m_ViewPortFocused) {
 			if (m_Perspective)
@@ -121,9 +89,27 @@ namespace Aurora {
 			else
 				m_OrthoCamera->OnUpdate(ts);
 		}
+
+		Renderer3D::ResetStats();
+
+		m_Framebuffer->bind();
+		RenderCommand::setClearColor(m_Color);
+		RenderCommand::Clear();
+
+
+		if (m_Perspective)
+			Renderer3D::BeginScene(m_Camera);
+		else
+			Renderer3D::BeginScene(m_OrthoCamera);
+
+		m_ActiveScene->onUpdate(ts);
+
+		Renderer3D::EndScene();
+
+		m_Framebuffer->unBind();
 	}
 
-	void EditorLayer::OnEvent(Aurora::Event& e)
+	void EditorLayer::OnEvent(Event& e)
 	{
 		if (m_Perspective)
 			m_Camera->OnEvent(e);
@@ -135,7 +121,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
+		Application& app = Application::getApp(); // Currently imgui does nothing since its input is not passed on
 
 		static bool dockSpaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -208,6 +194,16 @@ namespace Aurora {
 
 		ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
 
+		if (m_SquareEntity)
+		{
+			ImGui::Separator();
+			auto& name = m_SquareEntity.GetComponent<TagComponent>().Tag;
+			ImGui::Text("%s", name.c_str());
+
+			auto& squareColor = m_SquareEntity.GetComponent<SpriteRendererComponent>().Color;
+			ImGui::ColorEdit3("Cube Color", (float*)&squareColor);
+		}
+
 		ImGui::Separator();
 		//ImGui::ShowDemoWindow(); // For reference
 
@@ -223,11 +219,11 @@ namespace Aurora {
 		m_Peak = peak;
 		ImGui::Separator();
 		ImGui::Text("Renderer Stats:");
-		ImGui::Text("Draw Calls: %d", Aurora::Renderer3D::GetStats().DrawCalls);
-		ImGui::Text("Quad Count: %d", Aurora::Renderer3D::GetStats().QuadCount);
-		ImGui::Text("Vertex Count: %d", Aurora::Renderer3D::GetStats().GetTotalVertexCount());
-		ImGui::Text("Index Count: %d", Aurora::Renderer3D::GetStats().GetTotalIndexCount());
-		ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Aurora::Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
+		ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
+		ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
+		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
+		ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
+		ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
 		ImGui::Checkbox("V Sync ", &(app.getVSync()));
 
 		ImGui::End();

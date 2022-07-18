@@ -31,4 +31,8 @@
 #include "Renderer/Renderer3D.h"
 #include "Renderer/RenderCommand.h"
 
+#include "Scene/Scene.h"
+#include "Scene/Entity.h"
+#include "Scene/Components.h"
+
 #include "Utils/Random.h"
