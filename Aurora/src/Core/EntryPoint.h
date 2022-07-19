@@ -8,6 +8,7 @@ extern Aurora::Application* Aurora::CreateApplication();
 int main(int argc, char** argv)
 {
 	Aurora::logger::Log::Init();
+	AR_CORE_TRACE("Date: {}", __DATE__);
 
 	AR_PROFILE_BEGIN_SESSION("ApplicationStartup", "Profiling");
 	Aurora::Application* app = Aurora::CreateApplication();

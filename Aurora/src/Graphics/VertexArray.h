@@ -14,7 +14,7 @@ namespace Aurora {
 	class VertexArray
 	{
 	public:
-		VertexArray(uint32_t count);  // This parameter is to be removed when a good reference counting system is made or do a good soln
+		VertexArray();
 		~VertexArray();
 
 		static Ref<VertexArray> Create();
@@ -29,7 +29,7 @@ namespace Aurora {
 		inline const Ref<IndexBuffer>& getIndexBuffer() const { return m_IndexBuffer; }
 
 	private:
-		GLuint m_ArrayId;
+		uint32_t m_ArrayId;
 		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
 		Ref<IndexBuffer> m_IndexBuffer;
 

@@ -3,17 +3,38 @@
 
 namespace Aurora {
 
-	Ref<VertexArray> VertexArray::Create()
+	static uint32_t ShaderDataTypeToOpenGLType(ShaderDataType type)
 	{
-		return CreateRef<VertexArray>(1);
+		switch (type)
+		{
+			case ShaderDataType::Float:	        return GL_FLOAT;
+			case ShaderDataType::Float2:        return GL_FLOAT;
+			case ShaderDataType::Float3:        return GL_FLOAT;
+			case ShaderDataType::Float4:        return GL_FLOAT;
+			case ShaderDataType::Mat3:	        return GL_FLOAT;
+			case ShaderDataType::Mat4:	        return GL_FLOAT;
+			case ShaderDataType::Int:	        return GL_INT;
+			case ShaderDataType::Int2:	        return GL_INT;
+			case ShaderDataType::Int3:	        return GL_INT;
+			case ShaderDataType::Int4:	        return GL_INT;
+			case ShaderDataType::Bool:	        return GL_BOOL;
+		}
+
+		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
+		return 0;
 	}
 
-	VertexArray::VertexArray(uint32_t count)
+	Ref<VertexArray> VertexArray::Create()
+	{
+		return CreateRef<VertexArray>();
+	}
+
+	VertexArray::VertexArray()
 		: m_IndexBuffer()
 	{
 		AR_PROFILE_FUNCTION();
 
-		glCreateVertexArrays(count, &m_ArrayId);
+		glCreateVertexArrays(1, &m_ArrayId);
 	}
 
 	VertexArray::~VertexArray()

@@ -1,11 +1,19 @@
 #include "Aurorapch.h"
 #include "Buffer.h"
 
-//////////////////////////
-// BUFFER ELEMENT!!
-//////////////////////////
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 namespace Aurora {
+
+	//////////////////////////
+	// BUFFER ELEMENT!!
+	//////////////////////////
+
+	BufferElement::BufferElement(ShaderDataType type, const std::string& name, bool normalized)
+		: name(name), type(type), size(ShaderDataTypeSize(type)), offset(0), normalized(normalized)
+	{
+	}
 
 	uint32_t BufferElement::getComponentCount() const
 	{

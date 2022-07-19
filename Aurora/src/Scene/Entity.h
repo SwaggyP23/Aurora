@@ -13,6 +13,7 @@ namespace Aurora {
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
+		~Entity();
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)

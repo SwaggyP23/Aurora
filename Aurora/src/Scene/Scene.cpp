@@ -5,8 +5,14 @@
 
 namespace Aurora {
 
-	Scene::Scene(bool dummyVarForRefSystem)
+	Ref<Scene> Scene::Create()
 	{
+		return CreateRef<Scene>();
+	}
+
+	Scene::Scene()
+	{
+		#if 0
 		struct TransformComponent
 		{
 			glm::vec3 translation, rotation, scale;
@@ -19,15 +25,11 @@ namespace Aurora {
 		m_Registry.emplace<TransformComponent>(Entity);
 
 		TransformComponent& transform = m_Registry.get<TransformComponent>(Entity);
+		#endif
 	}
 
 	Scene::~Scene()
 	{
-	}
-
-	Ref<Scene> Scene::Create()
-	{
-		return CreateRef<Scene>(true);
 	}
 
 	Entity Scene::CreateEntity(const char* name)

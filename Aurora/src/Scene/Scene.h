@@ -11,7 +11,7 @@ namespace Aurora {
 	class Scene
 	{
 	public:
-		Scene(bool dummyVarForRefSystem); // This parameter is to be removed when a good reference counting system is made or do a good soln
+		Scene();
 		~Scene();
 
 		static Ref<Scene> Create();
