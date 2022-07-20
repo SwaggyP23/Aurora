@@ -25,7 +25,6 @@ private:
 
 	Aurora::ShaderLibrary m_Shaders; // This can not live on the heap since it will throw a Hash & Mask error
 
-	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
 	Aurora::Ref<Aurora::EditorCamera> m_Camera;
 
 	std::vector<Aurora::Ref<Aurora::Texture>> m_Textures;

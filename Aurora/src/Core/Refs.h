@@ -5,6 +5,7 @@
  * access to hazel-dev and look at an actual real reference counting system and implementation, however for now, i will use my own 
  * idea and implementation of a ref counting system.. which is just to get rid of all the shared pointers situation.
  * This does not support pointers to arrays for now and probably never will untill the use case arrises, then i would just implement it.
+ * Create Weak_Pointers
  */
 
 #include "Logging/Log.h"

@@ -34,13 +34,6 @@ namespace Aurora {
 		s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
 	}
 
-	void Renderer::BeginScene(const Ref<OrthoGraphicCamera>& camera)
-	{
-		AR_PROFILE_FUNCTION();
-
-		s_SceneData->viewProjectionMatrix = camera->GetViewProjection();
-	}
-
 	void Renderer::EndScene()
 	{
 	}

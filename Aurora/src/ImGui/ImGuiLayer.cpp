@@ -42,7 +42,7 @@ namespace Aurora {
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		Application& app = Application::getApp();
+		Application& app = Application::GetApp();
 		GLFWwindow* window = (GLFWwindow*)app.getWindow().getWindowPointer();
 
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -72,7 +72,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::getApp();
+		Application& app = Application::GetApp();
 		io.DisplaySize = ImVec2((float)app.getWindow().getWidth(), (float)app.getWindow().getHeight());
 
 		ImGui::Render();

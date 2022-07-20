@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Graphics/OrthoGraphicCamera.h"
 #include "Graphics/EditorCamera.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
@@ -14,7 +13,6 @@ namespace Aurora {
 		static void ShutDown();
 
 		static void BeginScene(const Ref<EditorCamera>& camera);
-		static void BeginScene(const Ref<OrthoGraphicCamera>& camera);
 		static void EndScene();
 
 		static void onWindowResize(uint32_t width, uint32_t height);

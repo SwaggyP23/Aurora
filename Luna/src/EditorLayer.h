@@ -25,16 +25,16 @@ namespace Aurora {
 		Ref<Aurora::Texture> m_CheckerTexture;
 
 	private: // Main private stuff for this editor
-		Ref<Aurora::EditorCamera> m_Camera;
-		Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
+		EditorCamera m_Camera;
 		Ref<Framebuffer> m_Framebuffer;
 		Ref<Scene> m_ActiveScene;
 
-		Entity m_SquareEntity;
+		Entity m_CameraEntity;
+		Entity m_Square1Entity;
+		Entity m_Square2Entity;
 
-		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
+		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 
-		bool m_Perspective = true;
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;
 		bool m_Performance = false;

@@ -12,20 +12,6 @@ namespace Aurora {
 
 	Scene::Scene()
 	{
-		#if 0
-		struct TransformComponent
-		{
-			glm::vec3 translation, rotation, scale;
-
-			operator glm::vec3& () { return translation; }
-		};
-
-		entt::entity Entity = m_Registry.create();
-
-		m_Registry.emplace<TransformComponent>(Entity);
-
-		TransformComponent& transform = m_Registry.get<TransformComponent>(Entity);
-		#endif
 	}
 
 	Scene::~Scene()
@@ -49,12 +35,35 @@ namespace Aurora {
 
 	void Scene::onUpdate(TimeStep ts)
 	{
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (auto entity : group)
+		Camera* mainCamera = nullptr;
+		glm::mat4* mainTransform = nullptr;
 		{
-			auto&[transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+			auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
+			for (auto entity : group)
+			{
+				auto& [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
 
-			Renderer3D::DrawQuad(transform.Translation, transform.Scale, sprite.Color);
+				if (camera.Primary)
+				{
+					mainCamera = &camera.SceneCamera;
+					mainTransform = &(glm::translate(glm::mat4(1.0f), transform.Translation) * glm::scale(glm::mat4(1.0f), transform.Scale));
+				}
+			}
+		}
+
+		if (mainCamera)
+		{
+			Renderer3D::BeginScene(mainCamera->GetProjection(), *mainTransform);
+
+			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+			for (auto entity : group)
+			{
+				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+
+				Renderer3D::DrawQuad(transform.Translation, transform.Scale, sprite.Color);
+			}
+
+			Renderer3D::EndScene();
 		}
 	}
 

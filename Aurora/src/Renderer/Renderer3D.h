@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Graphics/EditorCamera.h"
-#include "Graphics/OrthographicCamera.h"
 
 #include "RenderCommand.h"
 #include "RendererPorperties.h"
@@ -27,8 +26,8 @@ namespace Aurora {
 		static void Init();
 		static void ShutDown();
 
-		static void BeginScene(const Ref<EditorCamera>& camera);
-		static void BeginScene(const Ref<OrthoGraphicCamera>& camera);
+		static void BeginScene(const Camera& camera, const glm::mat4& transform);
+		static void BeginScene(const EditorCamera& camera); // TODO: remove
 		static void EndScene();
 		static void Flush();
 

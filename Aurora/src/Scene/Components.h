@@ -39,4 +39,15 @@ namespace Aurora {
 
 	};
 
+	struct CameraComponent
+	{
+		Camera SceneCamera;
+		bool Primary = true; // TODO: This should be in the Scene
+
+		CameraComponent() = default;
+		CameraComponent(const Camera& camera)
+			: SceneCamera(camera) {}
+		CameraComponent(const CameraComponent&) = default;
+	};
+
 }

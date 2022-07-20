@@ -25,9 +25,9 @@ namespace Aurora {
 
 		inline bool& getVSync() { return m_VSync; }
 
-		inline ImGuiLayer* getImGuiLayer() const { return m_ImGuiLayer; }
+		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 		inline Window& getWindow() const { return *m_Window; }
-		inline static Application& getApp() { return *s_Instance; }
+		inline static Application& GetApp() { return *s_Instance; }
 
 	private:
 		bool onWindowClose(WindowCloseEvent& e);
@@ -48,7 +48,7 @@ namespace Aurora {
 		static Application* s_Instance;
 	};
 
-	// To be defined by user in sandbox project and then the name is specified in the EntryPoint
+	// To be defined by user and then the name of the app is specified in the SandBox App when inheriting Application.
 	Application* CreateApplication();
 
 }

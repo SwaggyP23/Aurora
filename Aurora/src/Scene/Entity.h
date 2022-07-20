@@ -1,5 +1,7 @@
 #pragma once
 
+// This should be changed from taking a plain old pointer to taking some sort of a weak pointer when i create it.
+
 #include "Scene.h"
 #include "Components.h"
 
@@ -42,7 +44,7 @@ namespace Aurora {
 		template<typename T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.try_get<T>(m_EntityHandle) == nullptr ? false : true;
+			return m_Scene->m_Registry.try_get<T>(m_EntityHandle) ? true : false;
 		}
 
 		operator bool() const { return m_EntityHandle != entt::null; }

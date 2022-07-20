@@ -8,7 +8,12 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);		// To be used when i start with the blending chapter
+		glDepthFunc(GL_LESS);
+
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 

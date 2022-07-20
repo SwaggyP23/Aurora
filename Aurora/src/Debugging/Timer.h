@@ -21,7 +21,7 @@ namespace Aurora {
 
 		double Elapsed() // returns time in seconds
 		{
-			return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.000000001;
+			return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
 		}
 
 		double ElapsedMicros() // returns time in microseconds

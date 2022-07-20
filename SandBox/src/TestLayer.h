@@ -20,7 +20,6 @@ public:
 
 
 private:
-	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
 	Aurora::Ref<Aurora::EditorCamera> m_Camera;
 	Aurora::Ref<Aurora::Shader> modelShader;
 

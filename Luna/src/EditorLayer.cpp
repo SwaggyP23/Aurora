@@ -27,8 +27,7 @@ namespace Aurora {
 
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
-		m_Camera(CreateRef<EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-		m_OrthoCamera(CreateRef<OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+		m_Camera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 	{
 	}
 
@@ -68,9 +67,17 @@ namespace Aurora {
 		m_ActiveScene = Scene::Create();
 
 		auto square = m_ActiveScene->CreateEntity("Test Square");
-		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f });
+		auto cube = m_ActiveScene->CreateEntity("Another Cube");
+		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 0.5f });
+		m_Square1Entity = square;
 
-		m_SquareEntity = square;
+		cube.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 0.0f, 1.0f, 5.0f });
+		auto& trans = cube.GetComponent<TransformComponent>();
+		trans.Translation = { 1.0f, 0.0f, 0.0f };
+		m_Square2Entity = cube;
+	
+		//m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity"); Dont work right now
+		//m_CameraEntity.AddComponent<CameraComponent>(glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f));
 	}
 
 	void EditorLayer::OnDetach()
@@ -83,11 +90,17 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("EditorLayer::OnUpdate");
 
-		if (m_ViewPortFocused) {
-			if (m_Perspective)
-				m_Camera->OnUpdate(ts);
-			else
-				m_OrthoCamera->OnUpdate(ts);
+		// Framebuffer resizing... This stops the blacked out frames we would get when resizing...
+		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification(); m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f 
+			&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		{
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_Camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+		}
+
+		if (m_ViewPortFocused)
+		{
+			m_Camera.OnUpdate(ts);
 		}
 
 		Renderer3D::ResetStats();
@@ -96,32 +109,21 @@ namespace Aurora {
 		RenderCommand::setClearColor(m_Color);
 		RenderCommand::Clear();
 
-
-		if (m_Perspective)
-			Renderer3D::BeginScene(m_Camera);
-		else
-			Renderer3D::BeginScene(m_OrthoCamera);
-
 		m_ActiveScene->onUpdate(ts);
-
-		Renderer3D::EndScene();
 
 		m_Framebuffer->unBind();
 	}
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		if (m_Perspective)
-			m_Camera->OnEvent(e);
-		else
-			m_OrthoCamera->OnEvent(e);
+		m_Camera.OnEvent(e);
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
 		AR_PROFILE_FUNCTION();
 
-		Application& app = Application::getApp(); // Currently imgui does nothing since its input is not passed on
+		Application& app = Application::GetApp(); // Currently imgui does nothing since its input is not passed on
 
 		static bool dockSpaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -182,7 +184,7 @@ namespace Aurora {
 				// which we can't undo at the moment without finer window depth/z control.
 
 				if (ImGui::MenuItem("Performance", NULL, m_Performance)) m_Performance = !m_Performance;
-				if (ImGui::MenuItem("Exit")) Application::getApp().Close();
+				if (ImGui::MenuItem("Exit")) Application::GetApp().Close();
 
 				ImGui::EndMenu();
 			}
@@ -194,26 +196,18 @@ namespace Aurora {
 
 		ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
 
-		if (m_SquareEntity)
+		if (m_Square1Entity && m_Square2Entity)
 		{
 			ImGui::Separator();
-			auto& name = m_SquareEntity.GetComponent<TagComponent>().Tag;
+			auto& name = m_Square1Entity.GetComponent<TagComponent>().Tag;
 			ImGui::Text("%s", name.c_str());
 
-			auto& squareColor = m_SquareEntity.GetComponent<SpriteRendererComponent>().Color;
+			auto& squareColor = m_Square2Entity.GetComponent<SpriteRendererComponent>().Color;
 			ImGui::ColorEdit3("Cube Color", (float*)&squareColor);
 		}
 
 		ImGui::Separator();
 		//ImGui::ShowDemoWindow(); // For reference
-
-		ImGui::Checkbox("Camera Type:", &m_Perspective);
-		ImGui::SameLine();
-		if (m_Perspective)
-			ImGui::Text("Perspective Camera!");
-		else
-			ImGui::Text("OrthoGraphic Camera!");
-
 
 		float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 		m_Peak = peak;
@@ -248,14 +242,10 @@ namespace Aurora {
 
 		// If viewport is not focused OR is not hovered -> Block events
 		// Which means if we lost focus however we are still hovered, that is not acceptable -> Block events
-		Application::getApp().getImGuiLayer()->SetBlockEvents(!m_ViewPortFocused || !m_ViewPortHovered);
+		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused || !m_ViewPortHovered);
 
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
-		if (m_ViewportSize != *((glm::vec2*)&viewPortPanelSize))
-		{
-			m_ViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		}
+		m_ViewportSize = *(glm::vec2*)&viewPortPanelSize;
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
 		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });

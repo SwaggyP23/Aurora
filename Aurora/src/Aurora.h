@@ -19,7 +19,6 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/Framebuffers.h"
 
-#include "Graphics/OrthoGraphicCamera.h"
 #include "Graphics/EditorCamera.h"
 
 #include "ImGui/ImGuiLayer.h"

@@ -33,7 +33,7 @@ namespace Aurora {
 
 	#define EVENT_CLASS_TYPE(type) static EventType getStaticType() { return EventType::type; }\
 								virtual EventType getEventType() const override { return getStaticType(); }\
-								virtual const char* getName() const override { return #type; };
+								virtual const char* getName() const override { return AR_STRINGIFY_MACRO(type); };
 
 	#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
