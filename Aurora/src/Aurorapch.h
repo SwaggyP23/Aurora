@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef NOMINMAX
-#define NOMINMAX // This are for the random number generator
+#define NOMINMAX // These are for the random number generator
 #endif // !NOMINMAX
 
 #include <iostream>

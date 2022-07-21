@@ -5,8 +5,7 @@
 
 TestLayer::TestLayer()
 	: Layer("BatchRenderer"),
-	m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-	m_OrthoCamera(Aurora::CreateRef<Aurora::OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+	m_Camera(Aurora::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 {
 }
 
@@ -40,10 +39,7 @@ void TestLayer::OnUpdate(Aurora::TimeStep ts)
 
 	Aurora::Renderer3D::ResetStats();
 
-	if (m_Perspective)
-		Aurora::Renderer3D::BeginScene(m_Camera);
-	else
-		Aurora::Renderer3D::BeginScene(m_OrthoCamera);
+	Aurora::Renderer3D::BeginScene(m_Camera);
 
 	{
 		AR_PROFILE_SCOPE("Rendering");
@@ -77,25 +73,19 @@ void TestLayer::OnUpdate(Aurora::TimeStep ts)
 
 	Aurora::Renderer3D::EndScene();
 
-	if (m_Perspective)
-		m_Camera->OnUpdate(ts);
-	else
-		m_OrthoCamera->OnUpdate(ts);
+	m_Camera.OnUpdate(ts);
 }
 
 void TestLayer::OnEvent(Aurora::Event& e)
 {
-	if (m_Perspective)
-		m_Camera->OnEvent(e);
-	else
-		m_OrthoCamera->OnEvent(e);
+	m_Camera.OnEvent(e);
 }
 
 void TestLayer::OnImGuiRender()
 {
 	AR_PROFILE_FUNCTION();
 
-	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
+	Aurora::Application& app = Aurora::Application::GetApp(); // Currently imgui does nothing since its input is not passed on
 
 	ImGui::Begin("Editing Panel");
 	if (ImGui::CollapsingHeader("Cube")) {
@@ -119,13 +109,6 @@ void TestLayer::OnImGuiRender()
 
 	ImGui::Separator();
 	//ImGui::ShowDemoWindow(); // For reference
-
-	ImGui::Checkbox("Camera Type:", &m_Perspective);
-	ImGui::SameLine();
-	if (m_Perspective)
-		ImGui::Text("Perspective Camera!");
-	else
-		ImGui::Text("OrthoGraphic Camera!");
 
 	float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 	m_Peak = peak;

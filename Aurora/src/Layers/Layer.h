@@ -20,7 +20,7 @@ namespace Aurora {
 
 		inline const std::string& getName() const { return m_Name; }
 
-	private:
+	protected:
 		std::string m_Name;
 	};
 

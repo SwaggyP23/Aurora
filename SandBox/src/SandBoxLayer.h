@@ -25,7 +25,7 @@ private:
 
 	Aurora::ShaderLibrary m_Shaders; // This can not live on the heap since it will throw a Hash & Mask error
 
-	Aurora::Ref<Aurora::EditorCamera> m_Camera;
+	Aurora::EditorCamera m_Camera;
 
 	std::vector<Aurora::Ref<Aurora::Texture>> m_Textures;
 
@@ -39,8 +39,6 @@ private: // ImGui stuff
 	float m_Time = 0.0f;
 	float m_Blend = 0.0f;
 	float m_AmbLight = 0.06f;
-
-	bool m_Perspective = true;
 
 	glm::vec3 m_Transalations = glm::vec3(0.0f);
 	glm::vec3 m_Rotations = glm::vec3(0.0f);

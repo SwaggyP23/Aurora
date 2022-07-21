@@ -33,19 +33,35 @@ namespace Aurora {
 		m_Registry.destroy(entity);
 	}
 
-	void Scene::onUpdate(TimeStep ts)
+	void Scene::OnUpdate(TimeStep ts)
 	{
+		//Update Scripts...
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc)
+			{
+				// TODO: Move to OnScenePlay()... and OnSceneStop() we need to call the OnDestroy for the scripts
+				if(!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();					
+				}
+
+				nsc.Instance->OnUpdate(ts);
+			});
+		}
+
 		Camera* mainCamera = nullptr;
 		glm::mat4* mainTransform = nullptr;
 		{
-			auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
+			auto view = m_Registry.view<TransformComponent, CameraComponent>();
+			for (auto entity : view)
 			{
-				auto& [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
+				auto[transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
 
 				if (camera.Primary)
 				{
-					mainCamera = &camera.SceneCamera;
+					mainCamera = &camera.Camera;
 					mainTransform = &(glm::translate(glm::mat4(1.0f), transform.Translation) * glm::scale(glm::mat4(1.0f), transform.Scale));
 				}
 			}
@@ -55,15 +71,33 @@ namespace Aurora {
 		{
 			Renderer3D::BeginScene(mainCamera->GetProjection(), *mainTransform);
 
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-			for (auto entity : group)
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			for (auto entity : view)
 			{
-				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+				auto[transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
 				Renderer3D::DrawQuad(transform.Translation, transform.Scale, sprite.Color);
 			}
 
 			Renderer3D::EndScene();
+		}
+	}
+
+	void Scene::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+
+		// Resize the non-fixed aspect ratio cameras...
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto entity : view)
+		{
+			auto& cameraComponent = view.get<CameraComponent>(entity);
+			if (!cameraComponent.FixedAspectRatio)
+			{
+				cameraComponent.Camera.SetViewportSize(width, height);
+			}
+
 		}
 	}
 

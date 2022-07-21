@@ -2,8 +2,7 @@
 
 SandBoxLayer::SandBoxLayer()
 	: Layer("SandBoxLayer"),
-	m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-	m_OrthoCamera(Aurora::CreateRef<Aurora::OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+	m_Camera(Aurora::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 {
 }
 
@@ -304,20 +303,14 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	Aurora::RenderCommand::setClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
-	if(m_Perspective)
-		Aurora::Renderer::BeginScene(m_Camera);
-	else
-		Aurora::Renderer::BeginScene(m_OrthoCamera);
+	Aurora::Renderer::BeginScene(Aurora::CreateRef<Aurora::EditorCamera>(m_Camera));
 
 	m_Shaders.Get("Sphere")->bind();
 	m_Shaders.Get("Sphere")->setUniform4f("lightColor", m_LightColor);
 	m_Shaders.Get("Sphere")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Sphere")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Sphere")->setUniform3f("src_pos", m_LightTranslations);
-	if(m_Perspective)
-		m_Shaders.Get("Sphere")->setUniform3f("view_pos", m_Camera->GetPosition());
-	else
-		m_Shaders.Get("Sphere")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+	m_Shaders.Get("Sphere")->setUniform3f("view_pos", m_Camera.GetPosition());
 
 	m_Shaders.Get("Sphere")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Sphere")->setUniform4f("un_color", m_UniColor);
@@ -339,10 +332,7 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	m_Shaders.Get("Basic")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Basic")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Basic")->setUniform3f("src_pos", m_LightTranslations);
-	if(m_Perspective)
-		m_Shaders.Get("Basic")->setUniform3f("view_pos", m_Camera->GetPosition());
-	else
-		m_Shaders.Get("Basic")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+	m_Shaders.Get("Basic")->setUniform3f("view_pos", m_Camera.GetPosition());
 
 	m_Shaders.Get("Basic")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Basic")->setUniform4f("un_color", m_UniColor);
@@ -370,10 +360,7 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	m_Shaders.Get("Ground")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Ground")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Ground")->setUniform3f("src_pos", m_LightTranslations);
-	if (m_Perspective)
-		m_Shaders.Get("Ground")->setUniform3f("view_pos", m_Camera->GetPosition());
-	else
-		m_Shaders.Get("Ground")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+	m_Shaders.Get("Ground")->setUniform3f("view_pos", m_Camera.GetPosition());
 
 	m_Shaders.Get("Ground")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Ground")->setUniform4f("un_color", m_UniColor);
@@ -388,10 +375,7 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	m_Shaders.Get("Light")->setUniform1f("blend", m_Blend);
 	m_Shaders.Get("Light")->setUniform1f("ambientStrength", m_AmbLight);
 	m_Shaders.Get("Light")->setUniform3f("src_pos", m_LightTranslations);
-	if (m_Perspective)
-		m_Shaders.Get("Light")->setUniform3f("view_pos", m_Camera->GetPosition());
-	else
-		m_Shaders.Get("Light")->setUniform3f("view_pos", m_OrthoCamera->GetPosition());
+	m_Shaders.Get("Light")->setUniform3f("view_pos", m_Camera.GetPosition());
 
 	m_Shaders.Get("Light")->setUniform4f("src_color", m_LightColor);
 	m_Shaders.Get("Light")->setUniform4f("un_color", m_UniColor);
@@ -402,18 +386,12 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 
 	Aurora::Renderer::EndScene();
 
-	if (m_Perspective)
-		m_Camera->OnUpdate(ts);
-	else
-		m_OrthoCamera->OnUpdate(ts);
+	m_Camera.OnUpdate(ts);
 }
 
 void SandBoxLayer::OnEvent(Aurora::Event& e)
 {
-	if (m_Perspective)
-		m_Camera->OnEvent(e);
-	else
-		m_OrthoCamera->OnEvent(e);
+	m_Camera.OnEvent(e);
 
 	if (Aurora::Input::isKeyPressed(Aurora::Key::R))
 		m_IsRPressed = !m_IsRPressed;
@@ -421,7 +399,7 @@ void SandBoxLayer::OnEvent(Aurora::Event& e)
 
 void SandBoxLayer::OnImGuiRender()
 {
-	Aurora::Application& app = Aurora::Application::getApp();
+	Aurora::Application& app = Aurora::Application::GetApp();
 
 	ImGui::Begin("Editing Panel");
 	if (ImGui::CollapsingHeader("Cube")) {
@@ -463,14 +441,6 @@ void SandBoxLayer::OnImGuiRender()
 
 	ImGui::Separator();
 	//ImGui::ShowDemoWindow(); // For reference
-
-	ImGui::Checkbox("Camera Type:", &m_Perspective);
-	ImGui::SameLine();
-	if (m_Perspective)
-		ImGui::Text("Perspective Camera!");
-	else
-		ImGui::Text("OrthoGraphic Camera!");
-
 
 	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 

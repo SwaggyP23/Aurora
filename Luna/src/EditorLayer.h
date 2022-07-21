@@ -25,11 +25,15 @@ namespace Aurora {
 		Ref<Aurora::Texture> m_CheckerTexture;
 
 	private: // Main private stuff for this editor
-		EditorCamera m_Camera;
+		EditorCamera m_EditorCamera;
 		Ref<Framebuffer> m_Framebuffer;
 		Ref<Scene> m_ActiveScene;
 
 		Entity m_CameraEntity;
+		Entity m_SecondCamera;
+
+		bool m_PrimaryCamera = true;
+
 		Entity m_Square1Entity;
 		Entity m_Square2Entity;
 

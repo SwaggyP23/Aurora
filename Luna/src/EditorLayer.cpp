@@ -27,7 +27,7 @@ namespace Aurora {
 
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
-		m_Camera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
+		m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 	{
 	}
 
@@ -76,8 +76,32 @@ namespace Aurora {
 		trans.Translation = { 1.0f, 0.0f, 0.0f };
 		m_Square2Entity = cube;
 	
-		//m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity"); Dont work right now
-		//m_CameraEntity.AddComponent<CameraComponent>(glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f));
+		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
+		m_CameraEntity.AddComponent<CameraComponent>();
+
+		m_SecondCamera = m_ActiveScene->CreateEntity("Camera Entity 2");
+		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
+		cc.Primary = false;
+
+		class CameraScript : public ScriptableEntity
+		{
+			virtual void OnUpdate(TimeStep ts) override
+			{
+				auto& transform = GetComponent<TransformComponent>().Translation;
+				const float speed = 5.0f;
+
+				if (Input::isKeyPressed(Key::W))
+					transform.y += speed * ts;
+				if (Input::isKeyPressed(Key::S))
+					transform.y -= speed * ts;
+				if (Input::isKeyPressed(Key::A))
+					transform.x -= speed * ts;
+				if (Input::isKeyPressed(Key::D))
+					transform.x += speed * ts;
+			}
+		};
+
+		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraScript>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -95,12 +119,14 @@ namespace Aurora {
 			&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_Camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		if (m_ViewPortFocused)
 		{
-			m_Camera.OnUpdate(ts);
+			m_EditorCamera.OnUpdate(ts);
 		}
 
 		Renderer3D::ResetStats();
@@ -109,14 +135,14 @@ namespace Aurora {
 		RenderCommand::setClearColor(m_Color);
 		RenderCommand::Clear();
 
-		m_ActiveScene->onUpdate(ts);
+		m_ActiveScene->OnUpdate(ts);
 
 		m_Framebuffer->unBind();
 	}
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_Camera.OnEvent(e);
+		m_EditorCamera.OnEvent(e);
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -220,6 +246,21 @@ namespace Aurora {
 		ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
 		ImGui::Checkbox("V Sync ", &(app.getVSync()));
 
+		ImGui::DragFloat3("Camera Transform", glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Translation));
+		if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
+		{
+			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
+			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
+		}
+
+		{
+			auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
+			float OrthoSize = camera.GetOrthographicSize();
+			if (ImGui::DragFloat("Cam 2 OrthoSize", &OrthoSize))
+				camera.SetOrthographicSize(OrthoSize);
+		}
+
+
 		ImGui::End();
 
 		if (m_Performance)
@@ -248,7 +289,8 @@ namespace Aurora {
 		m_ViewportSize = *(glm::vec2*)&viewPortPanelSize;
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
-		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		// The uv0 was 0, 1 and uv1 was 1, 0 however that seems to flip the w and s movement in the script for what ever reason...
+		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y },ImVec2{ 1, 0 }, ImVec2{ 0, 1 });
 		ImGui::End();
 		ImGui::PopStyleVar();
 

@@ -2,8 +2,7 @@
 
 GameLayer::GameLayer()
 	: Layer("BatchRenderer"),
-	m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-	m_OrthoCamera(Aurora::CreateRef<Aurora::OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+	m_Camera(Aurora::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 {
 }
 
@@ -42,10 +41,7 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 	Aurora::RenderCommand::setClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
-	if (m_Perspective)
-		Aurora::Renderer3D::BeginScene(m_Camera);
-	else
-		Aurora::Renderer3D::BeginScene(m_OrthoCamera);
+	Aurora::Renderer3D::BeginScene(m_Camera);
 
 	//glm::vec3 trans = m_Transalations;
 
@@ -84,10 +80,7 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 	if (m_Snake.checkCollision(Collision))
 		m_Generated = false;
 
-	if (m_Perspective)
-		m_Camera->OnUpdate(ts);
-	else
-		m_OrthoCamera->OnUpdate(ts);
+	m_Camera.OnUpdate(ts);
 }
 
 void GameLayer::OnEvent(Aurora::Event& e)
@@ -120,17 +113,14 @@ void GameLayer::OnEvent(Aurora::Event& e)
 	if (Aurora::Input::isKeyPressed(Aurora::Key::LeftAlt)) // This is for debugging
 		m_Snake.IncParts();
 
-	if (m_Perspective)
-		m_Camera->OnEvent(e);
-	else
-		m_OrthoCamera->OnEvent(e);
+	m_Camera.OnEvent(e);
 }
 
 void GameLayer::OnImGuiRender()
 {
 	AR_PROFILE_FUNCTION();
 
-	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
+	Aurora::Application& app = Aurora::Application::GetApp(); // Currently imgui does nothing since its input is not passed on
 
 	ImGui::Begin("Editing Panel");
 	if (ImGui::CollapsingHeader("Cube")) {
@@ -144,14 +134,6 @@ void GameLayer::OnImGuiRender()
 
 	ImGui::Separator();
 	//ImGui::ShowDemoWindow(); // For reference
-
-	ImGui::Checkbox("Camera Type:", &m_Perspective);
-	ImGui::SameLine();
-	if (m_Perspective)
-		ImGui::Text("Perspective Camera!");
-	else
-		ImGui::Text("OrthoGraphic Camera!");
-
 
 	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 

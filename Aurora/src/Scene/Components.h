@@ -2,6 +2,8 @@
 
 // TODO: to be added, mesh components by refering to darianopolis on discord
 
+#include "SceneCamera.h"
+
 #include <glm/glm.hpp>
 
 namespace Aurora {
@@ -41,13 +43,33 @@ namespace Aurora {
 
 	struct CameraComponent
 	{
-		Camera SceneCamera;
+		SceneCamera Camera;
 		bool Primary = true; // TODO: This should be in the Scene
+		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
-		CameraComponent(const Camera& camera)
-			: SceneCamera(camera) {}
 		CameraComponent(const CameraComponent&) = default;
+
+	};
+
+	// Forward declaring the class because it is not necessary to include...
+	class ScriptableEntity;
+
+	// This is a NATIVE script component in the sense that this will be a C++ script, C# scripts are another type but too early for that
+	struct NativeScriptComponent
+	{
+		ScriptableEntity* Instance = nullptr;
+
+		ScriptableEntity* (*InstantiateScript)();
+		void(*DestroyScript)(NativeScriptComponent*); // Takes in a Native Script comp since the lambda in non capturing... so we need to simulate the "this" pointer...
+
+		template<typename T>
+		void Bind()
+		{
+			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+			DestroyScript = [](NativeScriptComponent* nativeScriptComp) { delete nativeScriptComp->Instance; };
+			// Could also set instance to nullptr after deleting however not so necessary other than in Debug...
+		}
 	};
 
 }

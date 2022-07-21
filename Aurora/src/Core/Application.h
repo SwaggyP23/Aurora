@@ -18,7 +18,7 @@ namespace Aurora {
 		void Close();
 
 		void Run();
-		void onEvent(Event& e);
+		void OnEvent(Event& e);
 
 		void pushLayer(Layer* layer);
 		void pushOverlay(Layer* layer);
