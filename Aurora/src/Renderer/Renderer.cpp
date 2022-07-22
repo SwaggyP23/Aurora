@@ -12,10 +12,9 @@ namespace Aurora {
 	void Renderer::Init()
 	{
 		AR_PROFILE_FUNCTION();
-
-		RendererProperties::Init();
-		Renderer3D::Init();
-		RenderCommand::Init();
+		// Currently not in use
+		// Renderer3D::Init();
+		// RenderCommand::Init();
 	}
 
 	void Renderer::ShutDown()

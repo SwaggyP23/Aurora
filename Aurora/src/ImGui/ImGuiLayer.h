@@ -1,10 +1,5 @@
 #pragma once
 
-/*
- * The ImGuiLayer and Layers and Events system is all thanks to The Cherno which infact this whole thing 
- * is in thanks to him since he is the main reference and then there is also the LearnOpenGL Book
- */
-
 #include "Layers/Layer.h"
 #include "Events/ApplicationEvents.h"
 #include "Events/MouseEvents.h"

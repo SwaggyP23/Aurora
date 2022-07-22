@@ -16,8 +16,8 @@ namespace Aurora {
 		int light;
 	};
 
-	// So for my laptop, it can not hit 60 fps is the MaxQuads is more than 1.5k since that is alot of memory to be transfered in one go
-	// from the CPU to the GPU, even if you are only rendering like 15 quads it will not peak in fps since, again, the memory is to big!
+	// So for my laptop, it can not hit 60 fps if the MaxQuads is more than 1.5k since that is alot of memory to be transfered in one go
+	// from the CPU to the GPU, even if you are only rendering like 15 quads it will not peak in fps since, again, the memory is too big!
 	// Therefore for lowerend laptops, it is better to keep the MaxQuads under the 1.5k mark.
 
 	struct RendererData
@@ -25,8 +25,8 @@ namespace Aurora {
 		static const size_t MaxQuads = 1000;
 		static const size_t MaxVertices = MaxQuads * 24;
 		static const size_t MaxIndices = MaxQuads * 36;
-		static const size_t MaxTextureSlots = 16;// 16 for Luna and 32 for SandBox which is stupid
-		//const size_t MaxTextureSlots   = RendererProperties::GetRendererProperties()->TextureSlots;
+		static const size_t MaxTextureSlots = 16; // 16 for Luna and 32 for SandBox which is stupid
+		// const size_t MaxTextureSlots = RendererProperties::GetRendererProperties()->TextureSlots;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
@@ -56,6 +56,8 @@ namespace Aurora {
 	void Renderer3D::Init()
 	{
 		AR_PROFILE_FUNCTION();
+
+		RenderCommand::Init();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
 
@@ -431,9 +433,9 @@ namespace Aurora {
 		const float TilingFactor = 1.0f; // TilingFactor.
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.x), { 1.0f, 0.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.y), { 0.0f, 1.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.z), { 0.0f, 0.0f, 1.0f })
+			* glm::rotate(glm::mat4(1.0f), rotations.x, { 1.0f, 0.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotations.y, { 0.0f, 1.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotations.z, { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), scale);
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));
@@ -482,9 +484,9 @@ namespace Aurora {
 		const int light = 0;
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.x), { 1.0f, 0.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.y), { 0.0f, 1.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotations.z), { 0.0f, 0.0f, 1.0f })
+			* glm::rotate(glm::mat4(1.0f), rotations.x, { 1.0f, 0.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotations.y, { 0.0f, 1.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotations.z, { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), scale);
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));

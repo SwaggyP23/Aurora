@@ -1,7 +1,7 @@
 #pragma once
 #include <Aurora.h>
 
-#include <ImGui/imgui.h>
+#include "Panels/SceneHierarchyPanel.h"
 
 namespace Aurora {
 
@@ -29,14 +29,6 @@ namespace Aurora {
 		Ref<Framebuffer> m_Framebuffer;
 		Ref<Scene> m_ActiveScene;
 
-		Entity m_CameraEntity;
-		Entity m_SecondCamera;
-
-		bool m_PrimaryCamera = true;
-
-		Entity m_Square1Entity;
-		Entity m_Square2Entity;
-
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 
 		bool m_ViewPortFocused = false;
@@ -45,7 +37,9 @@ namespace Aurora {
 		float m_Peak = 0;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
-		glm::vec4 m_UniColor = glm::vec4(1.0f);
+
+		// Panels...
+		SceneHierarchyPanel	m_SceneHierarchyPanel;
 	};
 
 }

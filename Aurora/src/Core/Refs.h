@@ -72,6 +72,7 @@ namespace Aurora {
 			return *this;
 		}
 
+		T* raw() const { return m_Ptr; }
 		uint32_t GetRefCount() const { return m_RefCount ? *m_RefCount : 0; }
 		bool IsUnique() const { return *m_RefCount == 0; }
 

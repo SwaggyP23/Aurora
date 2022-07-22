@@ -23,7 +23,7 @@ namespace Aurora {
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name == "" ? "Entity" : name;
+		tag.Tag = name == "" ? "AuroraDefault" : name;
 
 		return entity;
 	}
@@ -52,7 +52,7 @@ namespace Aurora {
 		}
 
 		Camera* mainCamera = nullptr;
-		glm::mat4* mainTransform = nullptr;
+		glm::mat4 mainTransform;
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
 			for (auto entity : view)
@@ -62,21 +62,21 @@ namespace Aurora {
 				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;
-					mainTransform = &(glm::translate(glm::mat4(1.0f), transform.Translation) * glm::scale(glm::mat4(1.0f), transform.Scale));
+					mainTransform = transform.GetTransform();
 				}
 			}
 		}
 
 		if (mainCamera)
 		{
-			Renderer3D::BeginScene(mainCamera->GetProjection(), *mainTransform);
+			Renderer3D::BeginScene(mainCamera->GetProjection(), mainTransform);
 
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto entity : view)
 			{
 				auto[transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-				Renderer3D::DrawQuad(transform.Translation, transform.Scale, sprite.Color);
+				Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
 			}
 
 			Renderer3D::EndScene();
@@ -97,8 +97,39 @@ namespace Aurora {
 			{
 				cameraComponent.Camera.SetViewportSize(width, height);
 			}
-
 		}
+	}
+
+	template<typename T>
+	void Scene::OnComponentAdded(Entity entity, T& component)
+	{
+		static_assert(false);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
+	{
+		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
+	{
 	}
 
 }

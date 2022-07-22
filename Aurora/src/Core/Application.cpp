@@ -17,8 +17,9 @@ namespace Aurora {
 		m_Window = Window::Create(name, 1280, 720);
 		m_Window->SetEventCallback(AR_SET_EVENT_FN(Application::OnEvent));
 
-		Renderer::Init(); // This handles the Renderer3D initiation since im taking this as the general renderer
-		Aurora::Utils::Random::Init(); // This initializes the random number generator engine
+		RendererProperties::Init();
+		Renderer3D::Init(); // This handles the Renderer3D initiation and the RenderCommand
+		Utils::Random::Init(); // This initializes the random number generator engine
 
 		m_ImGuiLayer = new ImGuiLayer();
 		pushOverlay(m_ImGuiLayer);

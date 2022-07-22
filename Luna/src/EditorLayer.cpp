@@ -66,42 +66,25 @@ namespace Aurora {
 
 		m_ActiveScene = Scene::Create();
 
-		auto square = m_ActiveScene->CreateEntity("Test Square");
-		auto cube = m_ActiveScene->CreateEntity("Another Cube");
-		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 0.5f });
-		m_Square1Entity = square;
-
-		cube.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 0.0f, 1.0f, 5.0f });
-		auto& trans = cube.GetComponent<TransformComponent>();
-		trans.Translation = { 1.0f, 0.0f, 0.0f };
-		m_Square2Entity = cube;
-	
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
-		m_CameraEntity.AddComponent<CameraComponent>();
-
-		m_SecondCamera = m_ActiveScene->CreateEntity("Camera Entity 2");
-		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
-		cc.Primary = false;
-
 		class CameraScript : public ScriptableEntity
 		{
 			virtual void OnUpdate(TimeStep ts) override
 			{
-				auto& transform = GetComponent<TransformComponent>().Translation;
+				auto& translation = GetComponent<TransformComponent>().Translation;
 				const float speed = 5.0f;
 
 				if (Input::isKeyPressed(Key::W))
-					transform.y += speed * ts;
+					translation.y += speed * ts;
 				if (Input::isKeyPressed(Key::S))
-					transform.y -= speed * ts;
+					translation.y -= speed * ts;
 				if (Input::isKeyPressed(Key::A))
-					transform.x -= speed * ts;
+					translation.x -= speed * ts;
 				if (Input::isKeyPressed(Key::D))
-					transform.x += speed * ts;
+					translation.x += speed * ts;
 			}
 		};
 
-		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraScript>();
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnDetach()
@@ -218,19 +201,11 @@ namespace Aurora {
 			ImGui::EndMenuBar();
 		}
 
+		m_SceneHierarchyPanel.OnImGuiRender();
+
 		ImGui::Begin("Editing Panel");
 
 		ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
-
-		if (m_Square1Entity && m_Square2Entity)
-		{
-			ImGui::Separator();
-			auto& name = m_Square1Entity.GetComponent<TagComponent>().Tag;
-			ImGui::Text("%s", name.c_str());
-
-			auto& squareColor = m_Square2Entity.GetComponent<SpriteRendererComponent>().Color;
-			ImGui::ColorEdit3("Cube Color", (float*)&squareColor);
-		}
 
 		ImGui::Separator();
 		//ImGui::ShowDemoWindow(); // For reference
@@ -245,21 +220,6 @@ namespace Aurora {
 		ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
 		ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
 		ImGui::Checkbox("V Sync ", &(app.getVSync()));
-
-		ImGui::DragFloat3("Camera Transform", glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Translation));
-		if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
-		{
-			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
-			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
-		}
-
-		{
-			auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
-			float OrthoSize = camera.GetOrthographicSize();
-			if (ImGui::DragFloat("Cam 2 OrthoSize", &OrthoSize))
-				camera.SetOrthographicSize(OrthoSize);
-		}
-
 
 		ImGui::End();
 
@@ -290,7 +250,7 @@ namespace Aurora {
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
 		// The uv0 was 0, 1 and uv1 was 1, 0 however that seems to flip the w and s movement in the script for what ever reason...
-		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y },ImVec2{ 1, 0 }, ImVec2{ 0, 1 });
+		ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y },ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		ImGui::End();
 		ImGui::PopStyleVar();
 
