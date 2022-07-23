@@ -37,7 +37,7 @@ namespace Aurora {
 	{
 	}
 
-	void Renderer::onWindowResize(uint32_t width, uint32_t height)
+	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		AR_PROFILE_FUNCTION();
 

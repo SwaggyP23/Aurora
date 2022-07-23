@@ -135,7 +135,5 @@ void GameLayer::OnImGuiRender()
 	ImGui::Separator();
 	//ImGui::ShowDemoWindow(); // For reference
 
-	ImGui::Checkbox("V Sync ", &(app.getVSync()));
-
 	ImGui::End();
 }

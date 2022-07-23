@@ -17,7 +17,7 @@ namespace Aurora {
 		AR_CORE_ASSERT(m_WindowHandle, "Window handle is null!");
 	}
 
-	void Context::Init()
+	void Context::Init() const
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -29,11 +29,18 @@ namespace Aurora {
 		AR_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "OpenGL version is less that 4.5!");
 	}
 
-	void Context::SwapBuffers()
+	void Context::SwapBuffers() const
 	{
 		AR_PROFILE_FUNCTION();
 
 		glfwSwapBuffers(m_WindowHandle);
+	}
+
+	void Context::PollEvents() const
+	{
+		AR_PROFILE_FUNCTION();
+
+		glfwPollEvents();
 	}
 
 }

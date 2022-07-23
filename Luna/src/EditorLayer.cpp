@@ -168,22 +168,24 @@ namespace Aurora {
 		// all active windows docked into it will lose their parent and become undocked.
 		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
 		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-		if (!opt_padding)
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		ImGui::Begin("DockSpace Demo", &dockSpaceOpen, window_flags);
-		if (!opt_padding)
-			ImGui::PopStyleVar();
+		ImGui::PopStyleVar();
 
 		if (opt_fullscreen)
 			ImGui::PopStyleVar(2);
 
 		// Submit the DockSpace
 		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+		float minWindowSizeX = style.WindowMinSize.x;
+		style.WindowMinSize.x = 370.0f; // try resetting it to 340 however to do that i will need to add a column between the tag and add component button
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
+		style.WindowMinSize.x = minWindowSizeX;
 
 		if (ImGui::BeginMenuBar())
 		{
@@ -193,6 +195,7 @@ namespace Aurora {
 				// which we can't undo at the moment without finer window depth/z control.
 
 				if (ImGui::MenuItem("Performance", NULL, m_Performance)) m_Performance = !m_Performance;
+				if (ImGui::MenuItem("Restart")) Application::GetApp().Restart();
 				if (ImGui::MenuItem("Exit")) Application::GetApp().Close();
 
 				ImGui::EndMenu();
@@ -203,7 +206,7 @@ namespace Aurora {
 
 		m_SceneHierarchyPanel.OnImGuiRender();
 
-		ImGui::Begin("Editing Panel");
+		ImGui::Begin("Stats");
 
 		ImGui::ColorEdit3("Clear Color", (float*)&m_Color);
 
@@ -219,15 +222,16 @@ namespace Aurora {
 		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
 		ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
 		ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
-		ImGui::Checkbox("V Sync ", &(app.getVSync()));
 
 		ImGui::End();
 
 		if (m_Performance)
 		{
-			ImGui::Begin("Performance");
+			ImGui::Begin("Statistics", &m_Performance);
 			ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
 			ImGui::Text("Peak FPS: %.f", m_Peak);
+			ImGui::Text("CPU Frame: %.3f ms", Application::GetApp().GetCPUTime());
+			ImGui::Text("Up Time: %.3f ms", Application::GetApp().GetTimeSinceStart());
 			
 			if (ImGui::CollapsingHeader("CPU Timers (Milliseconds)"))
 				ShowTimers();

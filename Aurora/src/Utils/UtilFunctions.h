@@ -18,6 +18,12 @@ namespace Aurora {
 
 		};
 
+		class Time
+		{
+		public:
+			static float GetTime();
+		};
+
 	}
 
 }

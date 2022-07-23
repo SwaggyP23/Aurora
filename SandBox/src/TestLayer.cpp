@@ -120,7 +120,6 @@ void TestLayer::OnImGuiRender()
 	ImGui::Text("Vertex Count: %d", Aurora::Renderer3D::GetStats().GetTotalVertexCount());
 	ImGui::Text("Index Count: %d", Aurora::Renderer3D::GetStats().GetTotalIndexCount());
 	ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Aurora::Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
-	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 	ImGui::Text("Peak FPS: %.f", m_Peak);
 
 	ImGui::End();

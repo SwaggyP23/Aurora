@@ -46,6 +46,11 @@ namespace Aurora {
 			return result;
 		}
 
+		float Time::GetTime()
+		{
+			return (float)glfwGetTime();
+		}
+
 	}
 
 }

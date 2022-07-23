@@ -18,10 +18,12 @@ namespace Aurora {
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event& e) override;
 
-		void begin();
-		void end();
+		void Begin();
+		void End();
 
 		void SetBlockEvents(bool state) { m_BlockEvents = state; }
+
+		void SetDarkThemeColor();
 
 	private:
 		bool m_BlockEvents = true;

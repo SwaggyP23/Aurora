@@ -23,6 +23,7 @@ namespace Aurora {
 	private:
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
+		int m_NameCounter = 0;
 
 	};
 

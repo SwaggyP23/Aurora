@@ -9,24 +9,20 @@ namespace Aurora {
 
 	LayerStack::~LayerStack()
 	{
-		for (Layer* layer : m_Layers) {
-			layer->OnDetach();
-			delete layer;
-		}
 	}
 
-	void LayerStack::pushLayer(Layer* layer)
+	void LayerStack::PushLayer(Layer* layer)
 	{
 		m_Layers.emplace(m_Layers.begin() + m_InsertIndex, layer);
 		m_InsertIndex++;
 	}
 
-	void LayerStack::pushOverlay(Layer* layer)
+	void LayerStack::PushOverlay(Layer* layer)
 	{
 		m_Layers.emplace_back(layer);
 	}
 
-	void LayerStack::popLayer(Layer* layer)
+	void LayerStack::PopLayer(Layer* layer)
 	{
 		std::vector<Layer*>::iterator it = std::find(m_Layers.begin(), m_Layers.end(), layer);
 		if (it != m_Layers.end())
@@ -36,7 +32,7 @@ namespace Aurora {
 		}
 	}
 
-	void LayerStack::popOverlay(Layer* layer)
+	void LayerStack::PopOverlay(Layer* layer)
 	{
 		std::vector<Layer*>::iterator it = std::find(m_Layers.begin(), m_Layers.end(), layer);
 		if (it != m_Layers.end())

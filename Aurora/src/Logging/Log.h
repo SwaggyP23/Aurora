@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/fmt/ostr.h>
 
 #include <memory>
@@ -13,6 +14,7 @@ namespace Aurora {
 		{
 		public:
 			static void Init();
+			static void ShutDown();
 
 			static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 			static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }

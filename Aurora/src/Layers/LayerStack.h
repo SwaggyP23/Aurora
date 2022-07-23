@@ -10,10 +10,15 @@ namespace Aurora {
 		LayerStack();
 		~LayerStack();
 
-		void pushLayer(Layer* layer);
-		void pushOverlay(Layer* layer);
-		void popLayer(Layer* layer);
-		void popOverlay(Layer* layer);
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* layer);
+		void PopLayer(Layer* layer);
+		void PopOverlay(Layer* layer);
+
+		size_t Size() const { return m_Layers.size(); }
+
+		Layer* operator[](uint32_t index) { return m_Layers[index]; }
+		const Layer* operator[](uint32_t index) const { return m_Layers[index]; }
 
 		std::vector<Layer*>::iterator begin() { return m_Layers.begin(); }
 		std::vector<Layer*>::iterator end() { return m_Layers.end(); }

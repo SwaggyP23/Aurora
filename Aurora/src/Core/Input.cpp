@@ -10,7 +10,7 @@ namespace Aurora {
 
 	bool Input::isKeyPressed(int keycode)
 	{
-		GLFWwindow* window = (GLFWwindow*)Application::GetApp().getWindow().getWindowPointer();
+		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 
 		int state = glfwGetKey(window, keycode);
 
@@ -19,32 +19,32 @@ namespace Aurora {
 
 	bool Input::isMouseButtonPressed(int button)
 	{
-		GLFWwindow* window = (GLFWwindow*)Application::GetApp().getWindow().getWindowPointer();
+		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 
 		int state = glfwGetMouseButton(window, button);
 
 		return state == Key::Press;
 	}
 
-	std::pair<float, float> Input::getMousePosition()
+	std::pair<float, float> Input::GetMousePosition()
 	{
-		GLFWwindow* window = (GLFWwindow*)Application::GetApp().getWindow().getWindowPointer();
+		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 		double x, y;
 		glfwGetCursorPos(window, &x, &y);
 
 		return { (float)x, (float)y };
 	}
 
-	float Input::getMouseX()
+	float Input::GetMouseX()
 	{
-		auto [x, y] = getMousePosition();
+		auto [x, y] = GetMousePosition();
 
 		return x;
 	}
 
-	float Input::getMouseY()
+	float Input::GetMouseY()
 	{
-		auto [x, y] = getMousePosition();
+		auto [x, y] = GetMousePosition();
 
 		return y;
 	}

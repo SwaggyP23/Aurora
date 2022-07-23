@@ -240,6 +240,13 @@ namespace Aurora {
 		delete[] s_Data.QuadVertexBufferBase;
 	}
 
+	void Renderer3D::OnWindowResize(uint32_t width, uint32_t height)
+	{
+		AR_PROFILE_FUNCTION();
+
+		RenderCommand::SetViewport(0, 0, width, height);
+	}
+
 	void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
 		AR_PROFILE_FUNCTION();

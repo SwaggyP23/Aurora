@@ -11,8 +11,10 @@
 #include <algorithm>
 #include <functional>
 #include <thread>
+#include <variant>
 
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <fstream>
 #include <filesystem>
@@ -22,6 +24,8 @@
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <queue>
+#include <deque>
 
 #include "Logging/Log.h"
 #include "Core/Base.h"

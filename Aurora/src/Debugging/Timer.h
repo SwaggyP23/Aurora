@@ -24,9 +24,9 @@ namespace Aurora {
 			return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
 		}
 
-		double ElapsedMicros() // returns time in microseconds
+		float ElapsedMillis() // returns time in microseconds
 		{
-			return Elapsed() * 1000.0f;
+			return (float)Elapsed() * 1000.0f;
 		}
 
 	private:
@@ -43,7 +43,7 @@ namespace Aurora {
 
 		~ScopedTimer()
 		{
-			AR_CORE_TRACE("[TIMER] {0} - {1}milliSecs", m_Name, (float)m_Timer.ElapsedMicros());
+			AR_CORE_TRACE("[TIMER] {0} - {1}milliSecs", m_Name, (float)m_Timer.ElapsedMillis());
 		}
 
 	private:
@@ -62,7 +62,7 @@ namespace Aurora {
 
 		~PerformanceTimer()
 		{
-			float time = (float)m_Timer.ElapsedMicros();
+			float time = (float)m_Timer.ElapsedMillis();
 			m_Time += time;
 			s_TimeMap[m_Name] = m_Time;
 		}

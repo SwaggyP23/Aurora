@@ -16,7 +16,7 @@ namespace Aurora {
 	enum class EventType
 	{
 		None = 0,
-		WindowResize, WindowClose,
+		WindowResize, WindowMinimize, WindowClose,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};

@@ -26,6 +26,8 @@ namespace Aurora {
 		static void Init();
 		static void ShutDown();
 
+		static void OnWindowResize(uint32_t width, uint32_t height);
+
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();

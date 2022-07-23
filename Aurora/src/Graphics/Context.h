@@ -13,8 +13,9 @@ namespace Aurora {
 		Context(GLFWwindow* windowHandle);
 		static Scope<Context> Create(GLFWwindow* handle);
 
-		void Init();
-		void SwapBuffers();
+		void Init() const;
+		void SwapBuffers() const;
+		void PollEvents() const;
 
 	private:
 		GLFWwindow* m_WindowHandle;

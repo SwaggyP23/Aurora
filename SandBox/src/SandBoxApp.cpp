@@ -7,20 +7,23 @@
 class Sandbox : public Aurora::Application
 {
 public:
-	Sandbox()
-		: Aurora::Application("SandBox App")
+	Sandbox(const Aurora::ApplicationSpecification& spec)
+		: Aurora::Application(spec)
 	{
-		//pushLayer(new SandBoxLayer());
-		pushLayer(new TestLayer());
-		//pushLayer(new GameLayer());
+		//PushLayer(new SandBoxLayer());
+		PushLayer(new TestLayer());
+		//PushLayer(new GameLayer());
 	}
 
-	~Sandbox()
-	{
-	}
 };
 
-Aurora::Application* Aurora::CreateApplication()
+Aurora::Application* Aurora::CreateApplication(int argc, char** argv)
 {
-	return new Sandbox();
+	ApplicationSpecification specification;
+	specification.Name = "Luna";
+	specification.WindowWidth = 1600;
+	specification.WindowHeight = 900;
+	specification.VSync = true;
+
+	return new Sandbox(specification);
 }
