@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Aurora.h"
+#include "Core/Base.h"
+
+#include <string>
+#include <fstream>
 
 namespace Aurora {
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Refs.h"
+#include "Logging/Log.h"
 
 #ifdef AURORA_DEBUG
 	#define AR_CORE_ASSERT(check, ...)  { if(!(check)) { AR_CORE_ERROR("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); }}

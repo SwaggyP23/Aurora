@@ -1,19 +1,16 @@
 #pragma once
 
-#ifndef _WINDOW_H_
-#define _WINDOW_H_
-
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <imgui/imgui.h>
-#include <functional>
-
 #include "Events/ApplicationEvents.h"
 #include "Events/MouseEvents.h"
 #include "Events/KeyEvents.h"
-
 #include "Graphics/Context.h"
+
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
+#include <imgui/imgui.h>
+#include <functional>
+
+struct GLFWwindow;
 
 namespace Aurora {
 
@@ -68,5 +65,3 @@ namespace Aurora {
 	};
 
 }
-
-#endif

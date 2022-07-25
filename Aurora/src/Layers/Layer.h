@@ -18,7 +18,7 @@ namespace Aurora {
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& e) {}
 
-		inline const std::string& getName() const { return m_Name; }
+		inline const std::string& GetName() const { return m_Name; }
 
 	protected:
 		std::string m_Name;

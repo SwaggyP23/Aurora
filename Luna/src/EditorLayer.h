@@ -1,8 +1,6 @@
 #pragma once
 #include <Aurora.h>
 
-#include "Panels/SceneHierarchyPanel.h"
-
 namespace Aurora {
 
 	class EditorLayer : public Layer
@@ -18,13 +16,55 @@ namespace Aurora {
 		virtual void OnEvent(Aurora::Event& e) override;
 
 
-	private: // Temporary things like textures for now
-		Ref<Aurora::Texture> m_ContainerTexture;
-		Ref<Aurora::Texture> m_QiyanaTexture;
-		Ref<Aurora::Texture> m_GroundTexture;
-		Ref<Aurora::Texture> m_CheckerTexture;
+	// Scene Hierarchy Panel
+	private:
+		void SetContext(const Ref<Scene>& context); // The context for this panel is the scene since it displays the scene's contents
+		void ShowSceneHierarchyUI();
 
-	private: // Main private stuff for this editor
+		Ref<Scene> m_Context;
+		Entity m_SelectionContext;
+		int m_NameCounter = 0;
+
+	// Components/Properties Panel
+	private:
+		void ShowComponentsUI();
+		void DrawEntityNode(Entity entity);
+		void DrawComponents(Entity entity);
+		void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float colomnWidth = 100.0f, float min = 0.0f, float max = 0.0f);
+
+	// Renderer Info/Stats Panels
+	private:
+		void ShowRendererStatsUI(); // This will eventually be moved to become a panel that is optionally displayed and not mandatory
+		void ShowRendererVendorInfoUI();
+
+		bool m_ShowRendererVendorInfo = false;
+
+	// Performance Panel
+	private:
+		void ShowPerformanceUI();
+
+		bool m_ShowPerformance = false;
+		float m_Peak = 0;
+
+	// This is the main style editing panel and everything such as fonts and such child it
+	private:
+		void ShowEditPanelUI();
+
+		bool m_ShowEditingPanel = false;
+
+	private:
+		void ShowFontPickerUI();
+
+		std::string m_SelectedFontName = "OpenSans, Medium";
+
+	private:
+		void ShowPanelPropertiesUI();
+
+	private: // Primary Panels for the editor
+		void EnableDocking();
+		void ShowMenuBarItems();
+		void ShowViewport();
+
 		EditorCamera m_EditorCamera;
 		Ref<Framebuffer> m_Framebuffer;
 		Ref<Scene> m_ActiveScene;
@@ -33,13 +73,9 @@ namespace Aurora {
 
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;
-		bool m_Performance = false;
-		float m_Peak = 0;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
-		// Panels...
-		SceneHierarchyPanel	m_SceneHierarchyPanel;
 	};
 
 }

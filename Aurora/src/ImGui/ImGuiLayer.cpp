@@ -33,10 +33,6 @@ namespace Aurora {
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-		// TODO: Change to Fonts library so that we can easily switch the font during the runtime
-		io.Fonts->AddFontFromFileTTF("resources/fonts/OpenSans/static/OpenSans/OpenSans-Bold.ttf", 18.0f);
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("resources/fonts/OpenSans/static/OpenSans/OpenSans-Regular.ttf", 18.0f);
-
 		ImGui::StyleColorsDark();
 
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -45,6 +41,8 @@ namespace Aurora {
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
+
+		LoadAndAddFonts();
 
 		SetDarkThemeColor();
 
@@ -64,6 +62,16 @@ namespace Aurora {
 		ImGui::DestroyContext();
 	}
 
+	void ImGuiLayer::OnEvent(Event& e)
+	{
+		if (m_BlockEvents)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
+			e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+		}
+	}
+
 	void ImGuiLayer::Begin()
 	{
 		AR_PROFILE_FUNCTION();
@@ -75,7 +83,7 @@ namespace Aurora {
 
 	void ImGuiLayer::End()
 	{
-		AR_PROFILE_FUNCTION();
+		AR_PROFILE_FUNCTION();			
 
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::GetApp();
@@ -139,14 +147,40 @@ namespace Aurora {
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 	}
 
-	void ImGuiLayer::OnEvent(Event& e)
+	void ImGuiLayer::LoadAndAddFonts()
 	{
-		if (m_BlockEvents)
-		{
-			ImGuiIO& io = ImGui::GetIO();
-			e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
-			e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
-		}
+		// Loading default fonts
+		m_Fonts.LoadFont("OpenSans", "resources/fonts/OpenSans");
+		m_Fonts.LoadFont("Teko", "resources/fonts/Teko");
+		m_Fonts.LoadFont("BebasNeue", "resources/fonts/BebasNeue");
+		m_Fonts.LoadFont("Edu NSW ACT", "resources/fonts/Edu NSW ACT Foundation");
+		m_Fonts.LoadFont("MochiyPopOne", "resources/fonts/MochiyPopOne");
+		m_Fonts.LoadFont("Chewy", "resources/fonts/Chewy");
+
+		m_Fonts.AddFont("OpenSans", FontIdentifier::Bold);
+		m_Fonts.AddFont("OpenSans", FontIdentifier::Italic);
+		m_Fonts.AddFont("OpenSans", FontIdentifier::Regular);
+		m_Fonts.AddFont("OpenSans", FontIdentifier::Medium);
+		m_Fonts.AddFont("OpenSans", FontIdentifier::Light);
+
+		m_Fonts.AddFont("Teko", FontIdentifier::Bold, 22.0f);
+		m_Fonts.AddFont("Teko", FontIdentifier::Regular, 25.0f);
+		m_Fonts.AddFont("Teko", FontIdentifier::Medium, 25.0f);
+		m_Fonts.AddFont("Teko", FontIdentifier::Light, 25.0f);
+
+		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.0f);
+		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Regular, 19.0f);
+		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.0f);
+
+		m_Fonts.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
+
+		m_Fonts.AddFont("Chewy", FontIdentifier::Regular, 20.0f);
+
+		m_Fonts.AddFont("BebasNeue", FontIdentifier::Regular, 22.0f);
+
+		// More fonts are to be added
+
+		m_Fonts.SetDefaultFont("OpenSans", FontIdentifier::Medium, 30.0f);
 	}
 
 }

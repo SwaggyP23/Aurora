@@ -9,24 +9,24 @@ namespace Aurora {
 	public:
 		virtual ~KeyEvent() = default;
 
-		inline int getKeyCode() const { return m_KeyCode; }
+		inline KeyCode GetKeyCode() const { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 
 	protected:
-		KeyEvent(int keycode)
+		KeyEvent(KeyCode keycode)
 			: m_KeyCode(keycode) {}
 
-		int m_KeyCode;
+		KeyCode m_KeyCode;
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(int keycode, int repeatCount)
+		KeyPressedEvent(KeyCode keycode, uint16_t repeatCount)
 			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
-		inline int getRepeatCount() const { return m_RepeatCount; }
+		inline uint16_t GetRepeatCount() const { return m_RepeatCount; }
 
 		std::string toString() const override
 		{
@@ -38,14 +38,14 @@ namespace Aurora {
 		EVENT_CLASS_TYPE(KeyPressed)
 
 	private:
-		int m_RepeatCount;
+		uint16_t m_RepeatCount;
 
 	};
 
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(int keycode)
+		KeyReleasedEvent(KeyCode keycode)
 			: KeyEvent(keycode) {}
 
 		std::string toString() const override
@@ -62,7 +62,7 @@ namespace Aurora {
 	class KeyTypedEvent : public KeyEvent
 	{
 	public:
-		KeyTypedEvent(int keycode)
+		KeyTypedEvent(KeyCode keycode)
 			: KeyEvent(keycode) {}
 
 		std::string toString() const override

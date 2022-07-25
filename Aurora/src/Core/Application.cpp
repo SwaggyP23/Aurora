@@ -1,8 +1,7 @@
 #include "Aurorapch.h"
 #include "Application.h"
 
-#include "Refs.h"
-#include "Renderer/Renderer.h"
+#include "Renderer/Renderer3D.h"
 #include "Utils/UtilFunctions.h"
 
 extern bool g_ApplicationRunning;
@@ -35,8 +34,7 @@ namespace Aurora {
 		else
 			m_Window->CentreWindow();
 
-		RendererProperties::Init();
-		Renderer3D::Init(); // This handles the Renderer3D initiation and the RenderCommand
+		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initiation
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -54,7 +52,7 @@ namespace Aurora {
 			delete layer;
 		}
 
-		Renderer::ShutDown(); // Move to Aurora Core Shutdown
+		Renderer3D::ShutDown(); // Move to Aurora Core Shutdown
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -140,7 +138,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		if (e.getWidth() == 0 || e.getHeight() == 0) {
+		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
 			m_Minimized = true;
 
 			return false;
@@ -148,7 +146,7 @@ namespace Aurora {
 
 		m_Minimized = false;
 
-		Renderer3D::OnWindowResize(e.getWidth(), e.getHeight());
+		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

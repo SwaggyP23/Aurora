@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Aurora.h"
+#include "Core/Base.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <string>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,30 +24,30 @@ namespace Aurora {
 
 		// Setting uniforms...
 
-		void setUniform1i(const GLchar* name, GLuint val) const;
-		void setUniformArrayi(const GLchar* name, GLint* vals, uint32_t count) const;
-		void setUniform1f(const GLchar* name, GLfloat val) const;
-		void setUniform2f(const GLchar* name, const glm::vec2& vector) const;
-		void setUniform3f(const GLchar* name, const glm::vec3& vector) const;
-		void setUniform4f(const GLchar* name, const glm::vec4& vector) const;
-		void setUniformMat3(const GLchar* name, const glm::mat3& matrix) const;
-		void setUniformMat3(const GLchar* name, const float* matrix) const;
-		void setUniformMat4(const GLchar* name, const glm::mat4& matrix) const;
-		void setUniformMat4(const GLchar* name, const float* matrix) const;
+		void SetUniform1i(const char* name, uint32_t val) const;
+		void SetUniformArrayi(const char* name, int* vals, uint32_t count) const;
+		void SetUniform1f(const char* name, float val) const;
+		void SetUniform2f(const char* name, const glm::vec2& vector) const;
+		void SetUniform3f(const char* name, const glm::vec3& vector) const;
+		void SetUniform4f(const char* name, const glm::vec4& vector) const;
+		void SetUniformMat3(const char* name, const glm::mat3& matrix) const;
+		void SetUniformMat3(const char* name, const float* matrix) const;
+		void SetUniformMat4(const char* name, const glm::mat4& matrix) const;
+		void SetUniformMat4(const char* name, const float* matrix) const;
 
-		inline const std::string& getName() const { return m_Name; }
-
-	private:
-		std::unordered_map<GLenum, std::string> splitSource(const std::string& source);
-		GLuint createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const;
-		GLint getUniformLocation(const std::string& name) const;
+		inline const std::string& GetName() const { return m_Name; }
 
 	private:
-		GLuint m_ShaderID;
+		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
+		uint32_t CreateShaderProgram(const std::unordered_map<uint32_t/*GLenum*/, std::string>& shaderSources) const;
+		int GetUniformLocation(const std::string& name) const;
+
+	private:
+		uint32_t m_ShaderID;
 		std::string m_FilePath;
 		std::string m_Name;
 
-		mutable std::unordered_map<std::string, GLint> m_UniformLocations;
+		mutable std::unordered_map<std::string, int> m_UniformLocations;
 
 	};
 

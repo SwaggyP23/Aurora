@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Aurora.h"
+#include "Core/Base.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <string>
 
 /*
  * With the new OpenGL version 4.5, the texture workflow is no longer Gen -> Bind -> Allocate -> Upload. 
@@ -30,13 +29,13 @@ namespace Aurora {
 		static Ref<Texture> Create(uint32_t width, uint32_t height);
 		static Ref<Texture> Create(const std::string& filePath);
 
-		void setData(void* data, uint32_t size);
+		void SetData(const void* data, uint32_t size);
 
-		void setTextureWrapping(TextureProperties wrapMode) const;
-		void setTextureFiltering(TextureProperties minFilter = TextureProperties::Nearest, TextureProperties magFilter = TextureProperties::Nearest) const;
+		void SetTextureWrapping(TextureProperties wrapMode) const;
+		void SetTextureFiltering(TextureProperties minFilter = TextureProperties::Nearest, TextureProperties magFilter = TextureProperties::Nearest) const;
 
-		void flipTextureVertically(bool state);
-		void loadTextureData();
+		void FlipTextureVertically(bool state);
+		void LoadTextureData();
 		// Internal format specifies in what format the texture is to be stored on the GPU
 		// format Specifies the format of the pixel data.
 
@@ -50,11 +49,11 @@ namespace Aurora {
 		bool operator==(const Texture& other) const { return m_TextID == other.m_TextID; }
 
 	private:
-		GLuint m_TextID = 0;
+		uint32_t m_TextID = 0;
 		std::string m_Path;
 		uint32_t m_Width, m_Height;
-		GLint m_InternalFormat;
-		GLenum m_DataFormat;
+		int m_InternalFormat;
+		uint32_t/*GLenum*/ m_DataFormat;
 
 	};
 

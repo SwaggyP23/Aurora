@@ -28,11 +28,11 @@ void SandBoxLayer::OnAttach()
 	m_GroundVertexArray = Aurora::VertexArray::Create();
 	Aurora::Ref<Aurora::VertexBuffer> m_GroundVertexBuffer = Aurora::VertexBuffer::Create(groundVertices, sizeof(groundVertices));
 	m_GroundVertexBuffer->bind();
-	m_GroundVertexBuffer->setLayout(m_GroundLayout);
-	m_GroundVertexArray->addVertexBuffer(m_GroundVertexBuffer);
+	m_GroundVertexBuffer->SetLayout(m_GroundLayout);
+	m_GroundVertexArray->AddVertexBuffer(m_GroundVertexBuffer);
 	Aurora::Ref<Aurora::IndexBuffer> m_GroundIndexBuffer = Aurora::IndexBuffer::Create(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
 	m_GroundIndexBuffer->bind();
-	m_GroundVertexArray->setIndexBuffer(m_GroundIndexBuffer);
+	m_GroundVertexArray->SetIndexBuffer(m_GroundIndexBuffer);
 
 	m_GroundVertexBuffer->unBind();
 	m_GroundIndexBuffer->unBind();
@@ -123,12 +123,12 @@ void SandBoxLayer::OnAttach()
 	m_SphereVertexArray = Aurora::VertexArray::Create();
 	Aurora::Ref<Aurora::VertexBuffer> m_SphereVertexBuffer = Aurora::VertexBuffer::Create(&data[0], (uint32_t)data.size() * sizeof(float));
 	m_SphereVertexBuffer->bind();
-	m_SphereVertexBuffer->setLayout(m_SphereLayout);
-	m_SphereVertexArray->addVertexBuffer(m_SphereVertexBuffer);
+	m_SphereVertexBuffer->SetLayout(m_SphereLayout);
+	m_SphereVertexArray->AddVertexBuffer(m_SphereVertexBuffer);
 
 	Aurora::Ref<Aurora::IndexBuffer> m_SphereIndexBuffer = Aurora::IndexBuffer::Create(&Sphereindices[0], (uint32_t)Sphereindices.size());
 	m_SphereIndexBuffer->bind();
-	m_SphereVertexArray->setIndexBuffer(m_SphereIndexBuffer);
+	m_SphereVertexArray->SetIndexBuffer(m_SphereIndexBuffer);
 
 	m_SphereVertexBuffer->unBind();
 	m_SphereIndexBuffer->unBind();
@@ -222,12 +222,12 @@ void SandBoxLayer::OnAttach()
 
 	Aurora::Ref<Aurora::VertexBuffer> m_VertexBuffer = Aurora::VertexBuffer::Create(vertices, sizeof(vertices));
 	m_VertexBuffer->bind();
-	m_VertexBuffer->setLayout(m_Layout);
-	m_VertexArray->addVertexBuffer(m_VertexBuffer);
+	m_VertexBuffer->SetLayout(m_Layout);
+	m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 
 	Aurora::Ref<Aurora::IndexBuffer> m_IndexBuffer = Aurora::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
 	m_IndexBuffer->bind();
-	m_VertexArray->setIndexBuffer(m_IndexBuffer);
+	m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 
 	m_VertexBuffer->unBind();
 	m_IndexBuffer->unBind();
@@ -235,9 +235,9 @@ void SandBoxLayer::OnAttach()
 	// for light source
 	m_LightVertexArray = Aurora::VertexArray::Create();
 	m_VertexBuffer->bind();
-	m_LightVertexArray->addVertexBuffer(m_VertexBuffer);
+	m_LightVertexArray->AddVertexBuffer(m_VertexBuffer);
 	m_IndexBuffer->bind();
-	m_LightVertexArray->setIndexBuffer(m_IndexBuffer);
+	m_LightVertexArray->SetIndexBuffer(m_IndexBuffer);
 
 	m_VertexBuffer->unBind();
 	m_IndexBuffer->unBind();
@@ -245,34 +245,34 @@ void SandBoxLayer::OnAttach()
 	// Creating textures
 	Aurora::Ref<Aurora::Texture> text1 = Aurora::Texture::Create("resources/textures/Lufi.png");
 	//text1->bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to bind and unbind
-	text1->flipTextureVertically(true);
-	text1->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	text1->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	text1->loadTextureData();
+	text1->FlipTextureVertically(true);
+	text1->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	text1->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text1->LoadTextureData();
 	//text1->unBind();
 
 	Aurora::Ref<Aurora::Texture> text2 = Aurora::Texture::Create("resources/textures/Qiyana2.png");
 	//text2->bind(1); // Only before the draw call we should bind the texture to its corresponding texture slot
-	text2->flipTextureVertically(true);
-	text2->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	text2->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	text2->loadTextureData();
+	text2->FlipTextureVertically(true);
+	text2->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	text2->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text2->LoadTextureData();
 	//text2->unBind();
 
 	Aurora::Ref<Aurora::Texture> text3 = Aurora::Texture::Create("resources/textures/checkerboard.png");
 	//text3->bind(2);
-	text3->flipTextureVertically(true);
-	text3->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	text3->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	text3->loadTextureData();
+	text3->FlipTextureVertically(true);
+	text3->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	text3->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text3->LoadTextureData();
 	//text3->unBind();
 
 	Aurora::Ref<Aurora::Texture> text4 = Aurora::Texture::Create("resources/textures/map.jpg");
 	//text4->bind(3);
-	text4->flipTextureVertically(true);
-	text4->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	text4->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	text4->loadTextureData();
+	text4->FlipTextureVertically(true);
+	text4->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	text4->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text4->LoadTextureData();
 	//text4->unBind();
 
 	m_Textures.push_back(text1);
@@ -281,16 +281,16 @@ void SandBoxLayer::OnAttach()
 	m_Textures.push_back(text4);
 
 	m_Shaders.Get("Basic")->bind();
-	m_Shaders.Get("Basic")->setUniform1i("texture1", 0);
-	m_Shaders.Get("Basic")->setUniform1i("texture2", 1);
+	m_Shaders.Get("Basic")->SetUniform1i("texture1", 0);
+	m_Shaders.Get("Basic")->SetUniform1i("texture2", 1);
 	m_Shaders.Get("Basic")->unBind();
 
 	m_Shaders.Get("Ground")->bind();
-	m_Shaders.Get("Ground")->setUniform1i("Groundtexture1", 2);
+	m_Shaders.Get("Ground")->SetUniform1i("Groundtexture1", 2);
 	m_Shaders.Get("Ground")->unBind();
 
 	m_Shaders.Get("Sphere")->bind();
-	m_Shaders.Get("Sphere")->setUniform1i("SphereTexture1", 3);
+	m_Shaders.Get("Sphere")->SetUniform1i("SphereTexture1", 3);
 	m_Shaders.Get("Sphere")->unBind();
 }
 
@@ -300,20 +300,20 @@ void SandBoxLayer::OnDetach()
 
 void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 {
-	Aurora::RenderCommand::setClearColor(m_Color);
+	Aurora::RenderCommand::SetClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
 	Aurora::Renderer::BeginScene(Aurora::CreateRef<Aurora::EditorCamera>(m_Camera));
 
 	m_Shaders.Get("Sphere")->bind();
-	m_Shaders.Get("Sphere")->setUniform4f("lightColor", m_LightColor);
-	m_Shaders.Get("Sphere")->setUniform1f("blend", m_Blend);
-	m_Shaders.Get("Sphere")->setUniform1f("ambientStrength", m_AmbLight);
-	m_Shaders.Get("Sphere")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Sphere")->setUniform3f("view_pos", m_Camera.GetPosition());
+	m_Shaders.Get("Sphere")->SetUniform4f("lightColor", m_LightColor);
+	m_Shaders.Get("Sphere")->SetUniform1f("blend", m_Blend);
+	m_Shaders.Get("Sphere")->SetUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders.Get("Sphere")->SetUniform3f("src_pos", m_LightTranslations);
+	m_Shaders.Get("Sphere")->SetUniform3f("view_pos", m_Camera.GetPosition());
 
-	m_Shaders.Get("Sphere")->setUniform4f("src_color", m_LightColor);
-	m_Shaders.Get("Sphere")->setUniform4f("un_color", m_UniColor);
+	m_Shaders.Get("Sphere")->SetUniform4f("src_color", m_LightColor);
+	m_Shaders.Get("Sphere")->SetUniform4f("un_color", m_UniColor);
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, m_SphereTransalations);
 	glm::vec3 angle = m_SphereRotations;
@@ -328,14 +328,14 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	Aurora::Renderer::DrawSphere(m_Shaders.Get("Sphere"), model, m_SphereVertexArray);
 
 	m_Shaders.Get("Basic")->bind();
-	m_Shaders.Get("Basic")->setUniform4f("lightColor", m_LightColor);
-	m_Shaders.Get("Basic")->setUniform1f("blend", m_Blend);
-	m_Shaders.Get("Basic")->setUniform1f("ambientStrength", m_AmbLight);
-	m_Shaders.Get("Basic")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Basic")->setUniform3f("view_pos", m_Camera.GetPosition());
+	m_Shaders.Get("Basic")->SetUniform4f("lightColor", m_LightColor);
+	m_Shaders.Get("Basic")->SetUniform1f("blend", m_Blend);
+	m_Shaders.Get("Basic")->SetUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders.Get("Basic")->SetUniform3f("src_pos", m_LightTranslations);
+	m_Shaders.Get("Basic")->SetUniform3f("view_pos", m_Camera.GetPosition());
 
-	m_Shaders.Get("Basic")->setUniform4f("src_color", m_LightColor);
-	m_Shaders.Get("Basic")->setUniform4f("un_color", m_UniColor);
+	m_Shaders.Get("Basic")->SetUniform4f("src_color", m_LightColor);
+	m_Shaders.Get("Basic")->SetUniform4f("un_color", m_UniColor);
 	for (uint32_t i = 0; i < m_CubePositions.size(); i++)
 	{
 		// calculate the model matrix for each object and pass it to shader before drawing
@@ -356,14 +356,14 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	}
 
 	m_Shaders.Get("Ground")->bind();
-	m_Shaders.Get("Ground")->setUniform4f("lightColor", m_LightColor);
-	m_Shaders.Get("Ground")->setUniform1f("blend", m_Blend);
-	m_Shaders.Get("Ground")->setUniform1f("ambientStrength", m_AmbLight);
-	m_Shaders.Get("Ground")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Ground")->setUniform3f("view_pos", m_Camera.GetPosition());
+	m_Shaders.Get("Ground")->SetUniform4f("lightColor", m_LightColor);
+	m_Shaders.Get("Ground")->SetUniform1f("blend", m_Blend);
+	m_Shaders.Get("Ground")->SetUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders.Get("Ground")->SetUniform3f("src_pos", m_LightTranslations);
+	m_Shaders.Get("Ground")->SetUniform3f("view_pos", m_Camera.GetPosition());
 
-	m_Shaders.Get("Ground")->setUniform4f("src_color", m_LightColor);
-	m_Shaders.Get("Ground")->setUniform4f("un_color", m_UniColor);
+	m_Shaders.Get("Ground")->SetUniform4f("src_color", m_LightColor);
+	m_Shaders.Get("Ground")->SetUniform4f("un_color", m_UniColor);
 	model = glm::translate(glm::mat4(1.0f), m_GroundTranslations);
 	model = glm::scale(model, m_GroundScales);
 
@@ -371,14 +371,14 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	Aurora::Renderer::DrawQuad(m_Shaders.Get("Ground"), model, m_GroundVertexArray);
 
 	m_Shaders.Get("Light")->bind();
-	m_Shaders.Get("Light")->setUniform4f("lightColor", m_LightColor);
-	m_Shaders.Get("Light")->setUniform1f("blend", m_Blend);
-	m_Shaders.Get("Light")->setUniform1f("ambientStrength", m_AmbLight);
-	m_Shaders.Get("Light")->setUniform3f("src_pos", m_LightTranslations);
-	m_Shaders.Get("Light")->setUniform3f("view_pos", m_Camera.GetPosition());
+	m_Shaders.Get("Light")->SetUniform4f("lightColor", m_LightColor);
+	m_Shaders.Get("Light")->SetUniform1f("blend", m_Blend);
+	m_Shaders.Get("Light")->SetUniform1f("ambientStrength", m_AmbLight);
+	m_Shaders.Get("Light")->SetUniform3f("src_pos", m_LightTranslations);
+	m_Shaders.Get("Light")->SetUniform3f("view_pos", m_Camera.GetPosition());
 
-	m_Shaders.Get("Light")->setUniform4f("src_color", m_LightColor);
-	m_Shaders.Get("Light")->setUniform4f("un_color", m_UniColor);
+	m_Shaders.Get("Light")->SetUniform4f("src_color", m_LightColor);
+	m_Shaders.Get("Light")->SetUniform4f("un_color", m_UniColor);
 	model = glm::translate(glm::mat4(1.0f), m_LightTranslations);
 	model = glm::scale(model, m_LightScales);
 
@@ -393,7 +393,7 @@ void SandBoxLayer::OnEvent(Aurora::Event& e)
 {
 	m_Camera.OnEvent(e);
 
-	if (Aurora::Input::isKeyPressed(Aurora::Key::R))
+	if (Aurora::Input::IsKeyPressed(Aurora::Key::R))
 		m_IsRPressed = !m_IsRPressed;
 }
 

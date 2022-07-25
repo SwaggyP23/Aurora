@@ -2,7 +2,7 @@ project "Aurora"
     kind "StaticLib"
     language "C++"
     cppdialect "C++17"
-    staticruntime "on"
+    staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
@@ -14,10 +14,10 @@ project "Aurora"
     {
         "src/**.h",
         "src/**.cpp",
-        "deps/stb_image/**.h",
-        "deps/stb_image/**.cpp",
-        "deps/glm/glm/**.hpp",
-        "deps/glm/glm/**.inl"
+        "dependencies/stb_image/**.h",
+        "dependencies/stb_image/**.cpp",
+        "dependencies/glm/glm/**.hpp",
+        "dependencies/glm/glm/**.inl"
     }
 
     defines
@@ -29,14 +29,14 @@ project "Aurora"
     includedirs
     {
         "src",
-        "deps/spdlog/include",
-        "%{IncludeDir.Glad}",
+        "dependencies/spdlog/include",
         "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}",
-        "%{IncludeDir.Optick}",
-        "%{IncludeDir.Entt}"
+        "%{IncludeDir.Entt}",
+        "%{IncludeDir.Optick}"
     }
 
     links
@@ -88,5 +88,5 @@ project "Aurora"
         {
         }
 
-    filter "files:deps/stb_image/**.cpp"
+    filter "files:dependencies/stb_image/**.cpp"
         flags { "NoPCH" }

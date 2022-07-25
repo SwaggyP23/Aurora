@@ -15,11 +15,11 @@ namespace Aurora {
 			return s_Instance;
 		}
 
-		void ImageLoader::LoadImageFile(const char* filePath)
+		void ImageLoader::LoadImageFile(const std::string& filePath)
 		{
 			AR_PROFILE_FUNCTION();
 
-			m_Data = (uint8_t*)stbi_load(filePath, (int*)&m_Width, (int*)&m_Height, (int*)&m_Channels, 0);
+			m_Data = (uint8_t*)stbi_load(filePath.c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_Channels, 0);
 		}
 
 		void ImageLoader::FreeImage()
@@ -29,7 +29,7 @@ namespace Aurora {
 			stbi_image_free(m_Data);
 		}
 
-		void ImageLoader::setFlipVertically(bool boolean)
+		void ImageLoader::SetFlipVertically(bool boolean)
 		{
 			AR_PROFILE_FUNCTION();
 

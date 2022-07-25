@@ -1,13 +1,6 @@
 #pragma once
 
-#ifndef _VERTEX_ARRAY_H_
-#define _VERTEX_ARRAY_H_
-
-#include "Aurora.h"
 #include "Buffer.h"
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 namespace Aurora {
 
@@ -19,14 +12,14 @@ namespace Aurora {
 
 		static Ref<VertexArray> Create();
 
-		void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
-		void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
+		void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
+		void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
 		void bind() const;
 		void unBind() const;
 
-		inline const std::vector<Ref<VertexBuffer>>& getVertexBuffers() const { return m_VertexBuffers; }
-		inline const Ref<IndexBuffer>& getIndexBuffer() const { return m_IndexBuffer; }
+		inline const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers; }
+		inline const Ref<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
 
 	private:
 		uint32_t m_ArrayId;
@@ -36,5 +29,3 @@ namespace Aurora {
 	};
 
 }
-
-#endif // !_VERTEX_ARRAY_H_

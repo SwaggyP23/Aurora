@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Base.h"
 #include "Window.h"
-#include "Core/TimeStep.h"
+#include "Layers/LayerStack.h"
 #include "Events/Events.h"
 #include "Events/ApplicationEvents.h"
-#include "Layers/LayerStack.h"
+#include "TimeStep.h"
 #include "ImGui/ImGuiLayer.h"
 
 int main(int argc, char** argv);

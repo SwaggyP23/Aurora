@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "RenderCommand.h"
 
+#include <glad/glad.h>
+
 namespace Aurora {
 
 	void RenderCommand::Init()
@@ -21,7 +23,7 @@ namespace Aurora {
 	{
 	}
 
-	void RenderCommand::setClearColor(const glm::vec4& color)
+	void RenderCommand::SetClearColor(const glm::vec4& color)
 	{
 		glClearColor(color.r, color.g, color.b, color.w);
 	}
@@ -41,7 +43,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		vertexArray->bind();
-		uint32_t count = indexCount ? vertexArray->getIndexBuffer()->getCount() : indexCount;
+		uint32_t count = indexCount ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 

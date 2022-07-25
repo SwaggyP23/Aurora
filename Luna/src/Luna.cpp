@@ -31,6 +31,8 @@ namespace Aurora {
 		specification.SetWindowResizable = true;
 		specification.VSync = true;
 
+		//specification.WorkingDirectory // Needs to be handled
+
 		return new Luna(specification);
 	}
 

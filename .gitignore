@@ -3,6 +3,7 @@ bin/
 Profiling/
 Build/
 Models/
+LogDump/
 
 Aurora.sln
 Aurora.vcxproj

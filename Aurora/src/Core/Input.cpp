@@ -4,11 +4,11 @@
 #include "KeyCodes.h"
 #include "Core/Application.h"
 
-#include <GLFW/glfw3.h>
+#include <glfw/glfw3.h>
 
 namespace Aurora {
 
-	bool Input::isKeyPressed(int keycode)
+	bool Input::IsKeyPressed(int keycode)
 	{
 		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 
@@ -17,7 +17,7 @@ namespace Aurora {
 		return state == Key::Press || state == Key::Repeat;
 	}
 
-	bool Input::isMouseButtonPressed(int button)
+	bool Input::IsMouseButtonPressed(int button)
 	{
 		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 

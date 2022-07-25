@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "VertexArray.h"
 
+#include <glad/glad.h>
+
 namespace Aurora {
 
 	static uint32_t ShaderDataTypeToOpenGLType(ShaderDataType type)
@@ -56,24 +58,24 @@ namespace Aurora {
 		glBindVertexArray(0);
 	}
 
-	void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+	void VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_ASSERT(vertexBuffer->getBufferLayout().getElements().size(), "Vertex Buffer had no layout!");
+		AR_CORE_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "Vertex Buffer had no layout!");
 
 		glBindVertexArray(m_ArrayId);
 		vertexBuffer->bind();
 
 		int index = 0;
-		const auto& layout = vertexBuffer->getBufferLayout();
+		const auto& layout = vertexBuffer->GetBufferLayout();
 		for (const auto& element : layout)
 		{
 			glVertexAttribPointer(index,
-				element.getComponentCount(),
+				element.GetComponentCount(),
 				ShaderDataTypeToOpenGLType(element.type),
 				element.normalized ? GL_TRUE : GL_FALSE,
-				layout.getStride(),
+				layout.GetStride(),
 				(const void*)element.offset);
 
 			glEnableVertexAttribArray(index++);
@@ -82,7 +84,7 @@ namespace Aurora {
 		m_VertexBuffers.push_back(vertexBuffer);
 	}
 
-	void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+	void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		AR_PROFILE_FUNCTION();
 

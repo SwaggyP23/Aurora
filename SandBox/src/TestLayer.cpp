@@ -14,16 +14,16 @@ void TestLayer::OnAttach()
 	AR_PROFILE_FUNCTION();
 
 	m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
-	m_ContainerTexture->flipTextureVertically(true);
-	m_ContainerTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_ContainerTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_ContainerTexture->loadTextureData();
+	m_ContainerTexture->FlipTextureVertically(true);
+	m_ContainerTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	m_ContainerTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_ContainerTexture->LoadTextureData();
 
 	m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
-	m_GroundTexture->flipTextureVertically(true);
-	m_GroundTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_GroundTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_GroundTexture->loadTextureData();
+	m_GroundTexture->FlipTextureVertically(true);
+	m_GroundTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	m_GroundTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_GroundTexture->LoadTextureData();
 }
 void TestLayer::OnDetach()
 {
@@ -34,7 +34,7 @@ void TestLayer::OnUpdate(Aurora::TimeStep ts)
 {
 	AR_PROFILE_FUNCTION();
 	
-	Aurora::RenderCommand::setClearColor(m_Color);
+	Aurora::RenderCommand::SetClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
 	Aurora::Renderer3D::ResetStats();

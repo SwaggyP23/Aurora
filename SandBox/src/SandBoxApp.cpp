@@ -1,8 +1,8 @@
 #include <Aurora.h>
+#include <Core/EntryPoint.h>
 #include "SandBoxLayer.h"
 #include "TestLayer.h"
 #include "Snake/GameLayer.h"
-#include <Core/EntryPoint.h>
 
 class Sandbox : public Aurora::Application
 {

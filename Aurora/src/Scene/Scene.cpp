@@ -1,7 +1,10 @@
 #include "Aurorapch.h"
 #include "Scene.h"
+#include "Entity.h"
 
 #include "Components.h"
+#include "ScriptableEntity.h"
+#include "Renderer/Renderer3D.h"
 
 namespace Aurora {
 

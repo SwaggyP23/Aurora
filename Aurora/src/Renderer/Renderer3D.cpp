@@ -57,12 +57,13 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
+		RendererProperties::Init();
 		RenderCommand::Init();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create((uint32_t)s_Data.MaxVertices * sizeof(QuadVertex));
-		s_Data.QuadVertexBuffer->setLayout({
+		s_Data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
 			{ ShaderDataType::Float3, "a_Normals"      },
@@ -71,7 +72,7 @@ namespace Aurora {
 			{ ShaderDataType::Float,  "a_TilingFactor" },
 			{ ShaderDataType::Int,    "a_Light"        }
 		});
-		s_Data.QuadVertexArray->addVertexBuffer(s_Data.QuadVertexBuffer);
+		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 
@@ -126,12 +127,12 @@ namespace Aurora {
 		}
 
 		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, (uint32_t)s_Data.MaxIndices);
-		s_Data.QuadVertexArray->setIndexBuffer(quadIB);
+		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
 		s_Data.WhiteTex = Texture::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
-		s_Data.WhiteTex->setData(&whiteTextureData, sizeof(uint32_t));
+		s_Data.WhiteTex->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		int samplers[s_Data.MaxTextureSlots];
 		for (int i = 0; i < s_Data.MaxTextureSlots; i++)
@@ -140,7 +141,7 @@ namespace Aurora {
 
 		s_Data.QuadShader = Shader::Create("resources/shaders/MainShader.glsl");
 		s_Data.QuadShader->bind();
-		s_Data.QuadShader->setUniformArrayi("u_Textures", samplers, s_Data.MaxTextureSlots);
+		s_Data.QuadShader->SetUniformArrayi("u_Textures", samplers, s_Data.MaxTextureSlots);
 
 		s_Data.TextureSlots[0] = s_Data.WhiteTex; // index 0 is for the white texture.
 
@@ -238,6 +239,7 @@ namespace Aurora {
 	void Renderer3D::ShutDown()
 	{
 		delete[] s_Data.QuadVertexBufferBase;
+		RendererProperties::ShutDown();
 	}
 
 	void Renderer3D::OnWindowResize(uint32_t width, uint32_t height)
@@ -255,21 +257,21 @@ namespace Aurora {
 
 		s_Data.QuadShader->bind();
 		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
-		s_Data.QuadShader->setUniform1i("material.specular", 2);
-		s_Data.QuadShader->setUniform1f("material.shininess", 50.0f);
+		s_Data.QuadShader->SetUniform1i("material.specular", 2);
+		s_Data.QuadShader->SetUniform1f("material.shininess", 50.0f);
 
 		// For light one
-		s_Data.QuadShader->setUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
-		s_Data.QuadShader->setUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
-		s_Data.QuadShader->setUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->setUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->setUniform3f("light[0].Specular", glm::vec3(1.0f));
-		s_Data.QuadShader->setUniform1f("light[0].Constant", 1.0f);
-		s_Data.QuadShader->setUniform1f("light[0].Linear", 0.009f);
-		s_Data.QuadShader->setUniform1f("light[0].Quadratic", 0.0032f);
+		s_Data.QuadShader->SetUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
+		s_Data.QuadShader->SetUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->SetUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
+		s_Data.QuadShader->SetUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
+		s_Data.QuadShader->SetUniform3f("light[0].Specular", glm::vec3(1.0f));
+		s_Data.QuadShader->SetUniform1f("light[0].Constant", 1.0f);
+		s_Data.QuadShader->SetUniform1f("light[0].Linear", 0.009f);
+		s_Data.QuadShader->SetUniform1f("light[0].Quadratic", 0.0032f);
 
-		s_Data.QuadShader->setUniform3f("u_ViewPosition", { 0.0f, 0.0f, 0.0f });
-		s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", viewProj);
+		s_Data.QuadShader->SetUniform3f("u_ViewPosition", { 0.0f, 0.0f, 0.0f });
+		s_Data.QuadShader->SetUniformMat4("u_ViewProjmatrix", viewProj);
 
 		StartBatch();
 	}
@@ -280,21 +282,21 @@ namespace Aurora {
 
 		s_Data.QuadShader->bind();
 		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
-		s_Data.QuadShader->setUniform1i("material.specular", 2);
-		s_Data.QuadShader->setUniform1f("material.shininess", 50.0f);
+		s_Data.QuadShader->SetUniform1i("material.specular", 2);
+		s_Data.QuadShader->SetUniform1f("material.shininess", 50.0f);
 
 		// For light one
-		s_Data.QuadShader->setUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
-		s_Data.QuadShader->setUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
-		s_Data.QuadShader->setUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->setUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->setUniform3f("light[0].Specular", glm::vec3(1.0f));
-		s_Data.QuadShader->setUniform1f("light[0].Constant", 1.0f);
-		s_Data.QuadShader->setUniform1f("light[0].Linear", 0.009f);
-		s_Data.QuadShader->setUniform1f("light[0].Quadratic", 0.0032f);
+		s_Data.QuadShader->SetUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
+		s_Data.QuadShader->SetUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->SetUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
+		s_Data.QuadShader->SetUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
+		s_Data.QuadShader->SetUniform3f("light[0].Specular", glm::vec3(1.0f));
+		s_Data.QuadShader->SetUniform1f("light[0].Constant", 1.0f);
+		s_Data.QuadShader->SetUniform1f("light[0].Linear", 0.009f);
+		s_Data.QuadShader->SetUniform1f("light[0].Quadratic", 0.0032f);
 
-		s_Data.QuadShader->setUniform3f("u_ViewPosition", camera.GetPosition());
-		s_Data.QuadShader->setUniformMat4("u_ViewProjmatrix", camera.GetViewProjection());
+		s_Data.QuadShader->SetUniform3f("u_ViewPosition", camera.GetPosition());
+		s_Data.QuadShader->SetUniformMat4("u_ViewProjmatrix", camera.GetViewProjection());
 		
 		StartBatch();
 	}
@@ -327,7 +329,7 @@ namespace Aurora {
 				s_Data.TextureSlots[i]->bind(i);
 
 			s_Data.QuadShader->bind();
-			s_Data.QuadShader->setUniform3f("u_SourcePos", { 1.0, 12.0f, 17.0f });
+			s_Data.QuadShader->SetUniform3f("u_SourcePos", { 1.0, 12.0f, 17.0f });
 			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 
 			s_Data.Stats.DrawCalls++;

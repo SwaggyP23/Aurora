@@ -11,22 +11,22 @@ void GameLayer::OnAttach()
 	AR_PROFILE_FUNCTION();
 
 	m_Texture = Aurora::Texture::Create("resources/textures/Pepsi.png");
-	m_Texture->flipTextureVertically(true);
-	m_Texture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_Texture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_Texture->loadTextureData();
+	m_Texture->FlipTextureVertically(true);
+	m_Texture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	m_Texture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_Texture->LoadTextureData();
 
 	m_AppTexture = Aurora::Texture::Create("resources/textures/apple.png");
-	m_AppTexture->flipTextureVertically(true);
-	m_AppTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_AppTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_AppTexture->loadTextureData();
+	m_AppTexture->FlipTextureVertically(true);
+	m_AppTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	m_AppTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_AppTexture->LoadTextureData();
 
 	m_SnakeTexture = Aurora::Texture::Create("resources/textures/Snake.png");
-	m_SnakeTexture->flipTextureVertically(true);
-	m_SnakeTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_SnakeTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_SnakeTexture->loadTextureData();
+	m_SnakeTexture->FlipTextureVertically(true);
+	m_SnakeTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
+	m_SnakeTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_SnakeTexture->LoadTextureData();
 }
 
 void GameLayer::OnDetach()
@@ -38,7 +38,7 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 {
 	AR_PROFILE_FUNCTION();
 
-	Aurora::RenderCommand::setClearColor(m_Color);
+	Aurora::RenderCommand::SetClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
 	Aurora::Renderer3D::BeginScene(m_Camera);
@@ -85,32 +85,32 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 
 void GameLayer::OnEvent(Aurora::Event& e)
 {
-	if (Aurora::Input::isKeyPressed(Aurora::Key::W) && !down) {
+	if (Aurora::Input::IsKeyPressed(Aurora::Key::W) && !down) {
 		m_Dir = Direction::Up;
 		up = true;
 		left = false;
 		right = false;
 	}
-	else if (Aurora::Input::isKeyPressed(Aurora::Key::A) && !right) {
+	else if (Aurora::Input::IsKeyPressed(Aurora::Key::A) && !right) {
 		m_Dir = Direction::Left;
 		left = true;
 		up = false;
 		down = false;
 	}
-	else if (Aurora::Input::isKeyPressed(Aurora::Key::S) && !up) {
+	else if (Aurora::Input::IsKeyPressed(Aurora::Key::S) && !up) {
 		m_Dir = Direction::Down;
 		down = true;
 		right = false;
 		left = false;
 	}
-	else if (Aurora::Input::isKeyPressed(Aurora::Key::D) && !left) {
+	else if (Aurora::Input::IsKeyPressed(Aurora::Key::D) && !left) {
 		m_Dir = Direction::Right;
 		right = true;
 		up = false;
 		down = false;
 	}
 
-	if (Aurora::Input::isKeyPressed(Aurora::Key::LeftAlt)) // This is for debugging
+	if (Aurora::Input::IsKeyPressed(Aurora::Key::LeftAlt)) // This is for debugging
 		m_Snake.IncParts();
 
 	m_Camera.OnEvent(e);

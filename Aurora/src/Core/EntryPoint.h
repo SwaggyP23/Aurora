@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Aurora.h"
 #include "Initializers.h"
 #include "Application.h"
 

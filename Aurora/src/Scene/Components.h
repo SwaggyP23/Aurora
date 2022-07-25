@@ -54,7 +54,7 @@ namespace Aurora {
 	struct CameraComponent
 	{
 		SceneCamera Camera;
-		bool Primary = true; // TODO: This should be in the Scene
+		bool Primary = true; // TODO: Try moving to scene
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
@@ -62,10 +62,11 @@ namespace Aurora {
 
 	};
 
-	// Forward declaring the class because it is not necessary to include...
+	// Forward declaring the class because so we dont include it
 	class ScriptableEntity;
 
 	// This is a NATIVE script component in the sense that this will be a C++ script, C# scripts are another type but too early for that
+	// To add a NativeScriptComponent to your entity use: entity.AddComponent<NativeScriptComponent>().Bind<** YOU SCRIPT COMPONENT **>();
 	struct NativeScriptComponent
 	{
 		ScriptableEntity* Instance = nullptr;

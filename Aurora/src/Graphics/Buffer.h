@@ -1,9 +1,10 @@
 #pragma once
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#include "Core/Base.h"
 
-#include "Aurora.h"
+#include <string>
+#include <initializer_list>
+#include <vector>
 
 namespace Aurora {
 
@@ -48,7 +49,7 @@ namespace Aurora {
 		BufferElement() = default;
 		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
 
-		uint32_t getComponentCount() const;
+		uint32_t GetComponentCount() const;
 	};
 
 	//////////////////////////
@@ -64,11 +65,11 @@ namespace Aurora {
 		BufferLayout(const std::initializer_list<BufferElement>& initList)
 			: m_Elements(initList)
 		{
-			calcStrideAndOffset();
+			CalcStrideAndOffset();
 		}
 
-		inline uint32_t getStride() const { return m_Stride; }
-		inline const std::vector<BufferElement>& getElements() const { return m_Elements; }
+		inline uint32_t GetStride() const { return m_Stride; }
+		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 
 		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
@@ -76,7 +77,7 @@ namespace Aurora {
 		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
 
 	private:
-		void calcStrideAndOffset();
+		void CalcStrideAndOffset();
 
 	private:
 		std::vector<BufferElement> m_Elements;
@@ -103,8 +104,8 @@ namespace Aurora {
 
 		void SetData(const void* data, uint32_t size);
 
-		inline const BufferLayout& getBufferLayout() const { return m_Layout; }
-		void setLayout(const BufferLayout& layout) { m_Layout = layout; }
+		inline const BufferLayout& GetBufferLayout() const { return m_Layout; }
+		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
 
 
 	private:
@@ -116,7 +117,7 @@ namespace Aurora {
 	// INDEX BUFFER!!
 	//////////////////////////
 
-	// Only supports 32-bit index buffers
+	// Only supports 32-bit index buffers, should add support for 16-bit index buffers
 	class IndexBuffer
 	{
 	public:
@@ -130,7 +131,7 @@ namespace Aurora {
 		void bind() const;
 		void unBind() const;
 
-		inline uint32_t getCount() const { return m_Count; }
+		inline uint32_t GetCount() const { return m_Count; }
 
 	private:
 		uint32_t m_BufferId;
@@ -138,5 +139,3 @@ namespace Aurora {
 	};
 
 }
-
-#endif // !_BUFFER_H_

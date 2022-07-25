@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "UtilFunctions.h"
 
+#include <glfw/glfw3.h>
+
 namespace Aurora {
 
 	namespace Utils {

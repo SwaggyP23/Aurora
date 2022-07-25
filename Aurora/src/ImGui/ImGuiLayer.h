@@ -4,6 +4,8 @@
 #include "Events/ApplicationEvents.h"
 #include "Events/MouseEvents.h"
 #include "Events/KeyEvents.h"
+#include "Utils/FontsLibrary.h"
+
 #include <glm/glm.hpp>
 
 namespace Aurora {
@@ -26,7 +28,13 @@ namespace Aurora {
 		void SetDarkThemeColor();
 
 	private:
+		void LoadAndAddFonts();
+
+	private:
 		bool m_BlockEvents = true;
+		FontsLibrary m_Fonts;
+
+		friend class EditorLayer; // I will friend these classes. The editor is build on ImGui so makes sense to be related to the ImGui layer
 
 	};
 
