@@ -414,7 +414,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowRendererVendorInfoUI()
 	{
-		ImGui::Begin("Renderer Vendor", &m_ShowRendererVendorInfo);
+		ImGui::Begin("Renderer Vendor", &m_ShowRendererVendorInfo, ImGuiWindowFlags_AlwaysAutoResize);
 
 		ImGui::Text("Vendor: %s", RendererProperties::GetRendererProperties()->Vendor);
 		ImGui::Text("Renderer: %s", RendererProperties::GetRendererProperties()->Renderer);
@@ -660,13 +660,13 @@ namespace Aurora {
 				if (ImGui::MenuItem("Serialize")) // TODO: Change these to their own function in case in the future somethings need to be added and it would look better
 				{
 					SceneSerializer serialize(m_ActiveScene);
-					serialize.SerializeToText("resources/savefiles/editor.aurora");
+					serialize.SerializeToText("resources/scenes/editor.aurora");
 				}
 
 				if (ImGui::MenuItem("Deserialize"))
 				{
 					SceneSerializer serialize(m_ActiveScene);
-					serialize.DeSerializeFromText("resources/savefiles/editor.aurora");
+					serialize.DeSerializeFromText("resources/scenes/editor.aurora");
 				}
 
 				ImGui::EndMenu();
