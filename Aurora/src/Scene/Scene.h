@@ -32,6 +32,7 @@ namespace Aurora {
 
 		friend class Entity;
 		friend class EditorLayer;
+		friend class SceneSerializer;
 
 	};
 

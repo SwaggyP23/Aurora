@@ -36,8 +36,10 @@ namespace Aurora {
 	private:
 		void ShowRendererStatsUI(); // This will eventually be moved to become a panel that is optionally displayed and not mandatory
 		void ShowRendererVendorInfoUI();
+		//void ShowRendererOverlay(); // To be implemented later
 
 		bool m_ShowRendererVendorInfo = false;
+		//bool m_ShowRendererOverlay = false;
 
 	// Performance Panel
 	private:
@@ -73,6 +75,7 @@ namespace Aurora {
 
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;
+		bool m_ShowDearImGuiDemoWindow = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

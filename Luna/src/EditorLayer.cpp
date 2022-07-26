@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include "Scene/Components.h"
+#include "Scene/SceneSerializer.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
@@ -518,8 +519,6 @@ namespace Aurora {
 	{
 		ImGuiLayer* layer = Application::GetApp().GetImGuiLayer();
 
-		ImGui::ShowDemoWindow();
-
 		std::vector<std::tuple<std::string, std::string, FontIdentifier>> sortedFontNames;
 		sortedFontNames.reserve(layer->m_Fonts.GetFontNamesAndIdentifier().size());
 
@@ -574,7 +573,29 @@ namespace Aurora {
 		if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
 			style.GrabRounding = style.FrameRounding;
 
+		ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
+
+		ImGui::SliderFloat("PopupRounding", &style.PopupRounding, 0.0f, 12.0f, "%.0f");
+
 		ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
+
+		bool border = (style.WindowBorderSize > 0.0f);
+		if (ImGui::Checkbox("WindowBorder", &border))
+			style.WindowBorderSize = border ? 1.0f : 0.0f;
+		
+		ImGui::SameLine();
+		border = (style.FrameBorderSize > 0.0f);
+		if (ImGui::Checkbox("FrameBorder", &border))
+			style.FrameBorderSize = border ? 1.0f : 0.0f;
+
+		ImGui::SameLine();
+		border = (style.PopupBorderSize > 0.0f);
+		if (ImGui::Checkbox("PopupBorder", &border))
+			style.PopupBorderSize = border ? 1.0f : 0.0f;
+
+		border = (style.TabBorderSize > 0.0f);
+		if (ImGui::Checkbox("TabBorder", &border))
+			style.TabBorderSize = border ? 1.0f : 0.0f;
 	}
 
 #pragma endregion
@@ -634,11 +655,27 @@ namespace Aurora {
 	{
 		if (ImGui::BeginMenuBar())
 		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Serialize")) // TODO: Change these to their own function in case in the future somethings need to be added and it would look better
+				{
+					SceneSerializer serialize(m_ActiveScene);
+					serialize.SerializeToText("resources/savefiles/editor.aurora");
+				}
+
+				if (ImGui::MenuItem("Deserialize"))
+				{
+					SceneSerializer serialize(m_ActiveScene);
+					serialize.DeSerializeFromText("resources/savefiles/editor.aurora");
+				}
+
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("Options"))
 			{
 				// Disabling fullscreen would allow the window to be moved to the front of other windows,
 				// which we can't undo at the moment without finer window depth/z control.
-
 				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) m_ShowPerformance = !m_ShowPerformance;
 				if (ImGui::MenuItem("Restart")) Application::GetApp().Restart();
 				if (ImGui::MenuItem("Exit")) Application::GetApp().Close();
@@ -660,6 +697,13 @@ namespace Aurora {
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Help"))
+			{
+				if (ImGui::MenuItem("Dear ImGui Demo", NULL, m_ShowDearImGuiDemoWindow)) m_ShowDearImGuiDemoWindow = !m_ShowDearImGuiDemoWindow;
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMenuBar();
 		}
 	}
@@ -667,7 +711,7 @@ namespace Aurora {
 	void EditorLayer::ShowViewport()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar);
+		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
 
 		m_ViewPortFocused = ImGui::IsWindowFocused();
 		m_ViewPortHovered = ImGui::IsWindowHovered();
@@ -697,11 +741,14 @@ namespace Aurora {
 
 		ShowMenuBarItems();
 
+		if (m_ShowDearImGuiDemoWindow)
+			ImGui::ShowDemoWindow(&m_ShowDearImGuiDemoWindow);
+
 		ShowSceneHierarchyUI();
 
 		ShowComponentsUI();
 
-		if (m_ShowRendererVendorInfo)
+		if(m_ShowRendererVendorInfo)
 			ShowRendererVendorInfoUI();
 
 		ShowRendererStatsUI();

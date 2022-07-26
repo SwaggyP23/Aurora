@@ -2,7 +2,7 @@ project "Premake"
 	kind "Utility"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("%{wks.location}/bin/Intermediates" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{

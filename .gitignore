@@ -4,6 +4,8 @@ Profiling/
 Build/
 Models/
 LogDump/
+savefiles/
+
 
 Aurora.sln
 Aurora.vcxproj
@@ -31,3 +33,6 @@ Glad.vcxproj.user
 Glad.vcxproj.filters
 
 Optick.vcxproj
+
+yaml-cpp.vcxproj
+yaml-cpp.vcxproj.filters

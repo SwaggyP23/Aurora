@@ -38,7 +38,8 @@ namespace Aurora {
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			style.WindowRounding = 0.0f;
+			style.WindowRounding = 6.0f;
+			style.PopupRounding = 6.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
@@ -123,13 +124,20 @@ namespace Aurora {
 
 		// Scroll Bar
 		//colors[ImGuiCol_ScrollbarBg] = ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f };
-		colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f };
-		colors[ImGuiCol_ScrollbarGrabActive] = ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f };
+		colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4{ 79.0f / 255.0f, 162.0f / 255.0f, 175.0f / 255.0f, 1.0f };
+		colors[ImGuiCol_ScrollbarGrabActive] = ImVec4{ 252.0f / 255.0f, 180.0f / 255.0f, 36.0f / 255.0f, 1.0f };
+
+		// Check Mark
+		colors[ImGuiCol_CheckMark] = ImVec4{ 252.0f / 255.0f, 180.0f / 255.0f, 36.0f / 255.0f, 1.0f };
+
+		// Slider Grab
+		colors[ImGuiCol_SliderGrab] = ImVec4{ 252.0f / 255.0f, 180.0f / 255.0f, 36.0f / 255.0f, 1.0f };
+		colors[ImGuiCol_SliderGrabActive] = ImVec4{ 250.0f / 255.0f, 83.0f / 255.0f , 147.0f / 255.0f, 1.0f };
 
 		// Resize Grip
-		colors[ImGuiCol_ResizeGrip] = ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f };
-		colors[ImGuiCol_ResizeGripHovered] = ImVec4{ 0.75f, 0.05f, 0.1f, 1.0f };
-		colors[ImGuiCol_ResizeGripActive] = ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f };
+		colors[ImGuiCol_ResizeGrip] = ImVec4{ 250.0f / 255.0f, 83.0f / 255.0f , 147.0f / 255.0f, 1.0f };
+		colors[ImGuiCol_ResizeGripHovered] = ImVec4{ 79.0f / 255.0f, 162.0f / 255.0f, 175.0f / 255.0f, 1.0f };
+		colors[ImGuiCol_ResizeGripActive] = ImVec4{ 252.0f / 255.0f, 180.0f / 255.0f, 36.0f/ 255.0f, 1.0f };
 
 		// Window
 		colors[ImGuiCol_WindowBg] = ImVec4{ 0.06f, 0.06f, 0.06f, 1.0f };

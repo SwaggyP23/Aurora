@@ -5,7 +5,7 @@ project "SandBox"
     staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
     files
     {

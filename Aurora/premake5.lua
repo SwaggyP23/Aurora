@@ -5,7 +5,7 @@ project "Aurora"
     staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
     pchheader "Aurorapch.h"
     pchsource "src/Aurorapch.cpp"
@@ -36,6 +36,7 @@ project "Aurora"
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}",
         "%{IncludeDir.Entt}",
+        "%{IncludeDir.Yaml}",
         "%{IncludeDir.Optick}"
     }
 
@@ -45,6 +46,7 @@ project "Aurora"
         "Glad",
         "ImGui",
         "Optick",
+        "yaml-cpp",
         "opengl32.lib"
     }
 

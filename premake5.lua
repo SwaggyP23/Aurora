@@ -24,6 +24,7 @@ group "Dependencies"
     include "Aurora/dependencies/Glad"
     include "Aurora/dependencies/ImGui/imgui"
     include "Aurora/dependencies/optick"
+    include "Aurora/dependencies/yaml-cpp"
 group ""
 
 group "Core"
