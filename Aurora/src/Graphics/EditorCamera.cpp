@@ -63,7 +63,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		if (Input::IsKeyPressed(Key::LeftControl))
+		if (Input::IsKeyPressed(Key::LeftAlt))
 		{
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
@@ -88,7 +88,7 @@ namespace Aurora {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		if (Input::IsKeyPressed(Key::LeftControl)) {
+		if (Input::IsKeyPressed(Key::LeftAlt)) {
 			float delta = e.GetYOffset() * 0.1f;
 			MouseZoom(delta);
 			UpdateView();

@@ -23,22 +23,22 @@ namespace Aurora {
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(KeyCode keycode, uint16_t repeatCount)
-			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
+		KeyPressedEvent(KeyCode keycode, bool isRepeat = false)
+			: KeyEvent(keycode), m_IsRepeat(isRepeat) {}
 
-		inline uint16_t GetRepeatCount() const { return m_RepeatCount; }
+		inline bool IsRepeat() const { return m_IsRepeat; }
 
 		std::string toString() const override
 		{
 			std::stringstream ss;
-			ss << "Key Pressed Event: " << m_KeyCode << " (" << m_RepeatCount << ")";
+			ss << "Key Pressed Event: " << m_KeyCode << " (" << m_IsRepeat << ")";
 			return ss.str();
 		}
 
 		EVENT_CLASS_TYPE(KeyPressed)
 
 	private:
-		uint16_t m_RepeatCount;
+		bool m_IsRepeat;
 
 	};
 

@@ -70,9 +70,9 @@ namespace Aurora {
 			}
 		}
 
-		if (mainCamera)
-		{
-			Renderer3D::BeginScene(mainCamera->GetProjection(), mainTransform);
+		//if (mainCamera)
+		//{
+			//Renderer3D::BeginScene(mainCamera->GetProjection(), mainTransform);
 
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto entity : view)
@@ -83,7 +83,7 @@ namespace Aurora {
 			}
 
 			Renderer3D::EndScene();
-		}
+		//}
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -103,10 +103,11 @@ namespace Aurora {
 		}
 	}
 
+	// TODO: ReWrite this system.
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		static_assert(false);
+		static_assert(sizeof(T) == 0);
 	}
 
 	template<>
@@ -122,7 +123,8 @@ namespace Aurora {
 	template<>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
-		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		if(m_ViewportWidth > 0 &&  m_ViewportHeight > 0)
+			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
 	template<>

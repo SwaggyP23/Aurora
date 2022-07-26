@@ -18,7 +18,7 @@ namespace Aurora {
 
 	// Scene Hierarchy Panel
 	private:
-		void SetContext(const Ref<Scene>& context); // The context for this panel is the scene since it displays the scene's contents
+		void SetContextForSceneHeirarchyPanel(const Ref<Scene>& context); // The context for this panel is the scene since it displays the scene's contents
 		void ShowSceneHierarchyUI();
 
 		Ref<Scene> m_Context;
@@ -59,19 +59,39 @@ namespace Aurora {
 
 		std::string m_SelectedFontName = "OpenSans, Medium";
 
+	// Properties Panel
 	private:
 		void ShowPanelPropertiesUI();
 
-	private: // Primary Panels for the editor
+	// File Dialogs and Scene helper functions
+	private:
+		void NewScene();
+		void OpenScene();
+		void OpenScene(const std::filesystem::path& path);
+		void SaveScene();
+		void SaveSceneAs();
+		void SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path);
+
+		std::filesystem::path m_EditorScenePath;
+
+	// Primary Panels for the editor
+	private:
 		void EnableDocking();
 		void ShowMenuBarItems();
 		void ShowViewport();
+		bool OnKeyPressed(KeyPressedEvent& e);
 
+	private:
 		EditorCamera m_EditorCamera;
 		Ref<Framebuffer> m_Framebuffer;
+
+		Ref<Scene> m_EditorScene;
 		Ref<Scene> m_ActiveScene;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+		glm::vec2 m_ViewPortBounds[2];
+
+		int m_GizmoType = -1;
 
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;

@@ -2,14 +2,20 @@
 
 #include "Scene/Components.h"
 #include "Scene/SceneSerializer.h"
+#include "Utils/UtilFunctions.h"
+#include "Utils/Math.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include <ImGuizmo/ImGuizmo.h>
+
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/compatibility.hpp>
 
 namespace Aurora {
+
+#pragma region EditorLayerMainMethods
 
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
@@ -26,8 +32,9 @@ namespace Aurora {
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
-		m_ActiveScene = Scene::Create();
-		SetContext(m_ActiveScene);
+		m_EditorScene = Scene::Create();
+		m_ActiveScene = m_EditorScene;
+		SetContextForSceneHeirarchyPanel(m_ActiveScene);
 
 		class CameraScript : public ScriptableEntity
 		{
@@ -79,6 +86,8 @@ namespace Aurora {
 		RenderCommand::SetClearColor(m_Color);
 		RenderCommand::Clear();
 
+		Renderer3D::BeginScene(m_EditorCamera);
+
 		m_ActiveScene->OnUpdate(ts);
 
 		m_Framebuffer->unBind();
@@ -87,13 +96,98 @@ namespace Aurora {
 	void EditorLayer::OnEvent(Event& e)
 	{
 		m_EditorCamera.OnEvent(e);
+
+		EventDispatcher dispatcher(e);
+		dispatcher.dispatch<KeyPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnKeyPressed));
 	}
+
+	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
+	{
+		if (e.IsRepeat())
+			return false;
+
+		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		switch (e.GetKeyCode())
+		{
+		    case Key::N:
+		    {
+		    	if (control)
+		    		NewScene();
+		    
+		    	break;
+		    }
+
+		    case Key::O:
+		    {
+		    	if (control)
+		    		OpenScene();
+
+				break;
+		    }
+
+		    case Key::S:
+		    {
+		    	if (control)
+		    	{
+		    		if (shift)
+		    			SaveSceneAs();
+		    		else
+		    			SaveScene();
+		    	}
+
+				break;
+		    }
+
+			// Gizmos
+			case Key::Q:
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = -1;
+
+				break;
+			}
+
+			case Key::W:
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+				break;
+			}
+
+			case Key::E:
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+
+				break;
+			}
+
+			case Key::R:
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = ImGuizmo::OPERATION::SCALE;
+
+				break;
+			}
+		}
+
+		return true;
+	}
+
+#pragma endregion
 
 #pragma region SceneHierarchyPanel
 
-	void EditorLayer::SetContext(const Ref<Scene>& context)
+	void EditorLayer::SetContextForSceneHeirarchyPanel(const Ref<Scene>& context)
 	{
 		m_Context = context;
+		m_SelectionContext = {};
+		// This is to prevent a bug from appearing and that is when an entity is selected and then we try to create a new scene
+		// however this might lead to bugs later if, IF we ever get to the point were we have multiple scene panels open at the same time and we want
+		// the selection context to go with every scene it is in
 	}
 
 	void EditorLayer::DrawEntityNode(Entity entity)
@@ -162,6 +256,77 @@ namespace Aurora {
 		}
 
 		ImGui::End();
+	}
+
+#pragma endregion
+
+	// NEED TO CHANGE SOME STUFF HERE FOR LATER
+#pragma region FileDialogs/Scene Helpers
+
+	void EditorLayer::NewScene()
+	{
+		m_ActiveScene = Scene::Create(); // Creating new scene
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		SetContextForSceneHeirarchyPanel(m_ActiveScene);
+		m_NameCounter = 0;
+
+		m_EditorScenePath = std::filesystem::path();
+	}
+
+	void EditorLayer::OpenScene()
+	{
+		// TO BE CHANGED
+		std::string filepath = Utils::WindowsFileDialogs::OpenFile("Aurora Scene (*.aurora)\0*.aurora\0");
+		
+		if (!filepath.empty())
+			OpenScene(filepath);
+	}
+
+	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	{
+		if (path.extension().string() != ".aurora")
+		{
+			AR_WARN("Could not load '{0}' - not an Aurora scene file!", path.filename().string());
+			
+			return;
+		}
+
+		Ref<Scene> newScene = Scene::Create();
+		SceneSerializer serializer(newScene);
+
+		if (serializer.DeSerializeFromText(path.string()))
+		{
+			m_EditorScene = newScene;
+			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			SetContextForSceneHeirarchyPanel(m_EditorScene);
+
+			m_ActiveScene = m_EditorScene;
+			m_EditorScenePath = path;
+		}
+	}
+
+	void EditorLayer::SaveScene()
+	{
+		if (!m_EditorScenePath.empty())
+			SerializeScene(m_ActiveScene, m_EditorScenePath);
+		else
+			SaveSceneAs();
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		std::string filepath = Utils::WindowsFileDialogs::SaveFile("Aurora Scene (*.aurora)\0*.aurora\0");
+		if (!filepath.empty())
+		{
+			SerializeScene(m_ActiveScene, filepath);
+			m_EditorScenePath = filepath;
+		}
+	}
+
+	void EditorLayer::SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path)
+	{
+		SceneSerializer serializer(scene);
+		serializer.SerializeToText(path.string());
 	}
 
 #pragma endregion
@@ -657,17 +822,23 @@ namespace Aurora {
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Serialize")) // TODO: Change these to their own function in case in the future somethings need to be added and it would look better
-				{
-					SceneSerializer serialize(m_ActiveScene);
-					serialize.SerializeToText("resources/scenes/editor.aurora");
-				}
+				if (ImGui::MenuItem("New", "Ctrl+N"))
+					NewScene();
 
-				if (ImGui::MenuItem("Deserialize"))
-				{
-					SceneSerializer serialize(m_ActiveScene);
-					serialize.DeSerializeFromText("resources/scenes/editor.aurora");
-				}
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Open...", "Ctrl+O")) // TODO: Change these to their own function in case in the future somethings need to be added and it would look better
+					OpenScene();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Save", "Ctrl+S"))
+					SaveScene();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+					SaveSceneAs();
 
 				ImGui::EndMenu();
 			}
@@ -677,7 +848,13 @@ namespace Aurora {
 				// Disabling fullscreen would allow the window to be moved to the front of other windows,
 				// which we can't undo at the moment without finer window depth/z control.
 				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) m_ShowPerformance = !m_ShowPerformance;
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Restart")) Application::GetApp().Restart();
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Exit")) Application::GetApp().Close();
 
 				ImGui::EndMenu();
@@ -725,6 +902,51 @@ namespace Aurora {
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
 		ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		// Gizmos...
+		if (m_SelectionContext && m_GizmoType != -1)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			
+			ImVec2 windowPos = ImGui::GetWindowPos();
+			float windowWidth = (float)ImGui::GetWindowWidth();
+			float windowHeight = (float)ImGui::GetWindowHeight();
+			ImGuizmo::SetRect(windowPos.x, windowPos.y, windowWidth, windowHeight);
+
+			// Editor camera
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+			// Entity transform
+			auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
+			glm::mat4 transform = tc.GetTransform();
+
+			// Snapping
+			bool snap = Input::IsKeyPressed(Key::LeftControl);
+			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+			// Snap to 45 degrees for rotation
+			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+				snapValue = 45.0f;
+
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+				nullptr, snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
+
+				glm::vec3 deltaRotation = rotation - tc.Rotation;
+				tc.Translation = translation;
+				tc.Rotation += deltaRotation;
+				tc.Scale = scale;
+			}
+		}
+
 		ImGui::End();
 		ImGui::PopStyleVar();
 

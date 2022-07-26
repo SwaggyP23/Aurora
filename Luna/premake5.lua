@@ -18,12 +18,14 @@ project "Luna"
         "%{wks.location}/Aurora/src",
         "%{wks.location}/Aurora/dependencies/spdlog/include",
         "%{wks.location}/Aurora/dependencies",
-        "%{IncludeDir.Glad}", -- These two should not be here but they give some dogshit include error
-        "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
-        "%{IncludeDir.ImGui}",-- This one also
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.Entt}",
-        "%{IncludeDir.Optick}"
+        "%{IncludeDir.Optick}",
+        "%{IncludeDir.choc}"
     }
 
     links

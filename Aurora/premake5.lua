@@ -17,7 +17,10 @@ project "Aurora"
         "dependencies/stb_image/**.h",
         "dependencies/stb_image/**.cpp",
         "dependencies/glm/glm/**.hpp",
-        "dependencies/glm/glm/**.inl"
+        "dependencies/glm/glm/**.inl",
+
+        "dependencies/ImGuizmo/ImGuizmo/ImGuizmo.h",
+        "dependencies/ImGuizmo/ImGuizmo/ImGuizmo.cpp"
     }
 
     defines
@@ -33,11 +36,13 @@ project "Aurora"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
+        "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Yaml}",
-        "%{IncludeDir.Optick}"
+        "%{IncludeDir.Optick}",
+        "%{IncludeDir.choc}"
     }
 
     links
@@ -91,4 +96,7 @@ project "Aurora"
         }
 
     filter "files:dependencies/stb_image/**.cpp"
+        flags { "NoPCH" }
+
+    filter "files:dependencies/ImGuizmo/**cpp"
         flags { "NoPCH" }

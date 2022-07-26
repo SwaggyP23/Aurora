@@ -1,14 +1,12 @@
 #include "Aurorapch.h"
 #include "ImGuiLayer.h"
 
+#include "Core/Application.h"
+
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_glfw.h>
 #include <ImGui/imgui_impl_opengl3.h>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "Core/Application.h"
+#include <ImGuizmo/ImGuizmo.h>
 
 namespace Aurora {
 
@@ -80,6 +78,8 @@ namespace Aurora {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGuizmo::BeginFrame();
 	}
 
 	void ImGuiLayer::End()
