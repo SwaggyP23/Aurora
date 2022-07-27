@@ -378,6 +378,7 @@ namespace Aurora {
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor)
 	{
 		AR_PROFILE_FUNCTION();
+		AR_PERF_TIMER("Renderer3D::DrawQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
@@ -469,6 +470,7 @@ namespace Aurora {
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor)
 	{
 		AR_PROFILE_FUNCTION();
+		AR_PERF_TIMER("Renderer3D::DrawRotatedQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();

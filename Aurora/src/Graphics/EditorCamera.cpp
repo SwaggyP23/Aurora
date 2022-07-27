@@ -75,6 +75,16 @@ namespace Aurora {
 				MouseRotate(delta);
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MouseZoom(delta.y);
+			else if (Input::IsKeyPressed(Key::F))
+				m_FocalPoint = glm::vec3{ 0.0f };
+			else if (Input::IsKeyPressed(Key::C))
+			{
+				m_FocalPoint = glm::vec3{ 0.0f };
+				m_Position = glm::vec3{ 0.0f, 5.0f, 0.0f };
+				m_Distance = 10.0f;
+				m_Pitch = 0.5f;
+				m_Yaw = 0.0f;
+			}
 		}
 
 		UpdateView();

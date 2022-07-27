@@ -30,7 +30,7 @@ namespace Aurora {
 		void ShowComponentsUI();
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
-		void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float colomnWidth = 100.0f, float min = 0.0f, float max = 0.0f);
+		void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float colomnWidth = 100.0f, float min = 0.0f, float max = 0.0f, float stepValue = 0.1f);
 
 	// Renderer Info/Stats Panels
 	private:
@@ -45,7 +45,7 @@ namespace Aurora {
 	private:
 		void ShowPerformanceUI();
 
-		bool m_ShowPerformance = false;
+		bool m_ShowPerformance = true;
 		float m_Peak = 0;
 
 	// This is the main style editing panel and everything such as fonts and such child it
@@ -62,6 +62,13 @@ namespace Aurora {
 	// Properties Panel
 	private:
 		void ShowPanelPropertiesUI();
+
+	// Help Panels and UI
+	private:
+		void ShowEditorCameraHelpUI();
+
+		bool m_ShowEditorCameraHelpUI = false;
+		bool m_ShowDearImGuiDemoWindow = false;
 
 	// File Dialogs and Scene helper functions
 	private:
@@ -89,13 +96,12 @@ namespace Aurora {
 		Ref<Scene> m_ActiveScene;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-		glm::vec2 m_ViewPortBounds[2];
+		glm::vec2 m_ViewportBounds[2];
 
 		int m_GizmoType = -1;
 
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;
-		bool m_ShowDearImGuiDemoWindow = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

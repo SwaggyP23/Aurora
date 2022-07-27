@@ -46,7 +46,7 @@ namespace Aurora {
 		void ProcessEvents();
 
 		inline float GetCPUTime() const { return m_CPUTime; }
-		inline float GetTimeSinceStart() const { return m_TimeSinceStart; }
+		inline long double GetTimeSinceStart() const { return m_TimeSinceStart; }
 		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 		inline Window& GetWindow() const { return *m_Window; }
 		inline static Application& GetApp() { return *s_Instance; }
@@ -66,7 +66,7 @@ namespace Aurora {
 		LayerStack m_LayerStack;
 
 		float m_FrameTime = 0.0f;
-		float m_TimeSinceStart = 0.0f;
+		long double m_TimeSinceStart = 0.0f;
 		float m_CPUTime = 0.0f;
 		TimeStep m_Timestep;
 

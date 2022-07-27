@@ -84,7 +84,7 @@ namespace Aurora {
 
 	void ImGuiLayer::End()
 	{
-		AR_PROFILE_FUNCTION();			
+		AR_PROFILE_FUNCTION();
 
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::GetApp();

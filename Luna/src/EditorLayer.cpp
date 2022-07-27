@@ -75,10 +75,10 @@ namespace Aurora {
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		if (m_ViewPortFocused)
-		{
-			m_EditorCamera.OnUpdate(ts);
-		}
+		//if (m_ViewPortFocused)
+		//{
+		m_EditorCamera.OnUpdate(ts);
+		//}
 
 		Renderer3D::ResetStats();
 
@@ -86,9 +86,8 @@ namespace Aurora {
 		RenderCommand::SetClearColor(m_Color);
 		RenderCommand::Clear();
 
-		Renderer3D::BeginScene(m_EditorCamera);
-
-		m_ActiveScene->OnUpdate(ts);
+		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+		//m_ActiveScene->OnUpdateRuntime(ts);
 
 		m_Framebuffer->unBind();
 	}
@@ -249,7 +248,7 @@ namespace Aurora {
 			if (ImGui::MenuItem("Create Empty Entity")) {
 				// If the user forgot to change the tag of newly created entities, the editor will provide an incrementing number beside the default name for distinguishing them, however does not update on deletion
 				std::string name = "Empty Entity " + std::to_string(m_NameCounter++);;
-				m_Context->CreateEntity(name.c_str());
+				m_SelectionContext = m_Context->CreateEntity(name.c_str());
 			}
 
 			ImGui::EndPopup();
@@ -379,7 +378,7 @@ namespace Aurora {
 		}
 	}
 
-	void EditorLayer::DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float colomnWidth, float min, float max)
+	void EditorLayer::DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float colomnWidth, float min, float max, float stepValue)
 	{
 		ImGuiLayer* layer = Application::GetApp().GetImGuiLayer();
 
@@ -409,7 +408,7 @@ namespace Aurora {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, 0.1f, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
+		ImGui::DragFloat("##X", &values.x, stepValue, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -423,7 +422,7 @@ namespace Aurora {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, 0.1f, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
+		ImGui::DragFloat("##Y", &values.y, stepValue, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -437,7 +436,7 @@ namespace Aurora {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, 0.1f, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
+		ImGui::DragFloat("##Z", &values.z, stepValue, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar(2);
@@ -489,7 +488,7 @@ namespace Aurora {
 				glm::vec3 rotation = glm::degrees(component.Rotation);
 				DrawVec3Control("Rotation", rotation);
 				component.Rotation = glm::radians(rotation);
-				DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f, 0.0f, 1000.0f);
+				DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f, 0.0f, 1000.0f, 0.025f);
 			});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](CameraComponent& component)
@@ -612,7 +611,7 @@ namespace Aurora {
 
 	static void ShowTimers()
 	{
-		auto& mp = PerformanceTimer::GetTimeMap();
+		std::unordered_map<std::string, float>& mp = PerformanceTimer::GetTimeMap();
 
 		std::vector<std::pair<std::string, float>> timerValues;
 		timerValues.reserve(mp.size());
@@ -620,9 +619,9 @@ namespace Aurora {
 			timerValues.emplace_back(name, val);
 
 		std::sort(timerValues.begin(), timerValues.end(), [](const std::pair<std::string, float>& a, const std::pair<std::string, float>& b) -> bool
-			{
-				return a.second > b.second;
-			});
+		{
+			return a.second > b.second;
+		});
 
 		for (auto& it : timerValues)
 		{
@@ -635,6 +634,7 @@ namespace Aurora {
 		ImGui::Begin("Performance", &m_ShowPerformance);
 
 		ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
+		ImGui::Text("V Sync: %s", Application::GetApp().GetWindow().IsVSync() ? "On" : "Off");
 		ImGui::Text("Peak FPS: %.f", m_Peak);
 		ImGui::Text("CPU Frame: %.3f ms", Application::GetApp().GetCPUTime());
 		ImGui::Text("Up Time: %.3f ms", Application::GetApp().GetTimeSinceStart());
@@ -765,6 +765,25 @@ namespace Aurora {
 
 #pragma endregion
 
+#pragma region HelpPanels/UI
+
+	void EditorLayer::ShowEditorCameraHelpUI()
+	{
+		ImGui::Begin("Editor Camera Controls:", &m_ShowEditorCameraHelpUI, ImGuiWindowFlags_AlwaysAutoResize);
+
+		ImGui::Text("These are the editor camera's controls:");
+		ImGui::Text("Press LeftAlt + MouseRightClick and move to Rotate.");
+		ImGui::Text("Press LeftAlt + MouseLeftClick and move to Pan.");
+		ImGui::Text("Press LeftAlt + ScrollWheel to zoom.");
+		ImGui::Text("Press LeftAlt + MouseMiddleButton and move to Zoom.");
+		ImGui::Text("Press LeftAlt + F key to reset the focal point.");
+		ImGui::Text("Press LeftAlt + C to reset all the camera.");
+
+		ImGui::End();
+	}
+
+#pragma endregion
+
 #pragma region EditorLayerPrimaryPanels
 
 	void EditorLayer::EnableDocking()
@@ -827,7 +846,7 @@ namespace Aurora {
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Open...", "Ctrl+O")) // TODO: Change these to their own function in case in the future somethings need to be added and it would look better
+				if (ImGui::MenuItem("Open...", "Ctrl+O"))
 					OpenScene();
 
 				ImGui::Separator();
@@ -845,13 +864,11 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Options"))
 			{
-				// Disabling fullscreen would allow the window to be moved to the front of other windows,
-				// which we can't undo at the moment without finer window depth/z control.
-				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) m_ShowPerformance = !m_ShowPerformance;
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Restart")) Application::GetApp().Restart();
+				if (ImGui::MenuItem("Restart"))
+				{
+					// TODO: Add a panel that pops up if the person has an open scene that asks if they want to save before restarting
+					Application::GetApp().Restart();
+				}
 
 				ImGui::Separator();
 
@@ -869,6 +886,10 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Info"))
 			{
+				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) m_ShowPerformance = !m_ShowPerformance;
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Renderer Info", NULL, m_ShowRendererVendorInfo)) m_ShowRendererVendorInfo = !m_ShowRendererVendorInfo;
 
 				ImGui::EndMenu();
@@ -876,6 +897,10 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Help"))
 			{
+				if (ImGui::MenuItem("Editor Camera", NULL, m_ShowEditorCameraHelpUI)) m_ShowEditorCameraHelpUI = !m_ShowEditorCameraHelpUI;
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Dear ImGui Demo", NULL, m_ShowDearImGuiDemoWindow)) m_ShowDearImGuiDemoWindow = !m_ShowDearImGuiDemoWindow;
 
 				ImGui::EndMenu();
@@ -890,12 +915,17 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
 
+		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		ImVec2 viewportOffset = ImGui::GetWindowPos();
+
+		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
 		m_ViewPortFocused = ImGui::IsWindowFocused();
 		m_ViewPortHovered = ImGui::IsWindowHovered();
 
-		// If viewport is not focused OR is not hovered -> Block events
-		// Which means if we lost focus however we are still hovered, that is not acceptable -> Block events
-		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused || !m_ViewPortHovered);
+		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused && !m_ViewPortHovered);
 
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = *(glm::vec2*)&viewPortPanelSize;
@@ -909,14 +939,19 @@ namespace Aurora {
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 			
-			ImVec2 windowPos = ImGui::GetWindowPos();
-			float windowWidth = (float)ImGui::GetWindowWidth();
-			float windowHeight = (float)ImGui::GetWindowHeight();
-			ImGuizmo::SetRect(windowPos.x, windowPos.y, windowWidth, windowHeight);
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);;
 
-			// Editor camera
+			// Camera
+
+			// Editor Camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+			// Runtime Camera
+			//auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			//const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			//const glm::mat4& cameraProjection = camera.GetProjection();
+			//glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
 
 			// Entity transform
 			auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
@@ -931,18 +966,21 @@ namespace Aurora {
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
+			glm::mat4 iden(1.0f);
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
 				nullptr, snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{
-				glm::vec3 translation, rotation, scale;
+				glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
 				Math::DecomposeTransform(transform, translation, rotation, scale);
 
 				glm::vec3 deltaRotation = rotation - tc.Rotation;
 				tc.Translation = translation;
-				tc.Rotation += deltaRotation;
+				tc.Rotation.x += deltaRotation.x;
+				tc.Rotation.y += deltaRotation.y;
+				tc.Rotation.z += deltaRotation.z;
 				tc.Scale = scale;
 			}
 		}
@@ -980,6 +1018,9 @@ namespace Aurora {
 
 		if (m_ShowEditingPanel)
 			ShowEditPanelUI();
+
+		if (m_ShowEditorCameraHelpUI)
+			ShowEditorCameraHelpUI();
 
 		ShowViewport();
 	}

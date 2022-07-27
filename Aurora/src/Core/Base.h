@@ -7,6 +7,9 @@
 #define AR_EXPAND_MACRO(x) x
 #define AR_STRINGIFY_MACRO(x) #x
 
+#define AR_PASTE_MACRO(x, y) x ## y
+#define AR_CONCAT_MACRO(x, y) AR_PASTE_MACRO(x, y)
+
 #ifdef AURORA_DEBUG
     #define AR_CORE_ASSERT(check, ...)  { if(!(check)) { AR_CORE_ERROR("Assertion '{0}' failed at: {1}:{2}", AR_STRINGIFY_MACRO(check), std::filesystem::path(__FILE__).filename().string(), __LINE__, __VA_ARGS__); __debugbreak(); }}
 #else

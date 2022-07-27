@@ -86,7 +86,6 @@ namespace Aurora {
 	void Application::RenderImGui()
 	{
 		AR_PROFILE_FUNCTION();
-		AR_PERF_TIMER("Application::RenderImGui"); // This does not show up on the performance pannel, see wassup
 
 		m_ImGuiLayer->Begin();
 
@@ -104,7 +103,7 @@ namespace Aurora {
 			AR_ENDF_TIMER(); // This is for the UI timers
 			AR_PROFILE_FRAME("Game Loop");
 
-			static uint64_t frameCounter = 0;
+			//static uint64_t frameCounter = 0;
 
 			ProcessEvents();
 
@@ -116,21 +115,20 @@ namespace Aurora {
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(m_Timestep);
-
 				}
 
-				RenderImGui();
+				RenderImGui(); // All the Perf timers dont work after this
 
 				m_CPUTime = cpuTimer.ElapsedMillis();
 				m_Window->Update();
 			}
 
 			float time = Utils::Time::GetTime();
-			m_FrameTime = time - m_TimeSinceStart;
+			m_FrameTime = time - (float)m_TimeSinceStart;
 			m_Timestep = glm::min<float>(m_FrameTime, 0.0333f);
 			m_TimeSinceStart = time;
 
-			frameCounter++; // This is to be displayed some time later when needed...
+			//frameCounter++; // This is to be displayed some time later when needed...
 		}
 	}
 

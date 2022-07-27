@@ -36,7 +36,22 @@ namespace Aurora {
 		m_Registry.destroy(entity);
 	}
 
-	void Scene::OnUpdate(TimeStep ts)
+	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera)
+	{
+		Renderer3D::BeginScene(camera);
+
+		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+		for (auto entity : view)
+		{
+			auto [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+
+			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
+		}
+
+		Renderer3D::EndScene();
+	}
+
+	void Scene::OnUpdateRuntime(TimeStep ts)
 	{
 		//Update Scripts...
 		{
@@ -70,9 +85,9 @@ namespace Aurora {
 			}
 		}
 
-		//if (mainCamera)
-		//{
-			//Renderer3D::BeginScene(mainCamera->GetProjection(), mainTransform);
+		if (mainCamera)
+		{
+			Renderer3D::BeginScene(mainCamera->GetProjection(), mainTransform);
 
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto entity : view)
@@ -83,7 +98,7 @@ namespace Aurora {
 			}
 
 			Renderer3D::EndScene();
-		//}
+		}
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -101,6 +116,19 @@ namespace Aurora {
 				cameraComponent.Camera.SetViewportSize(width, height);
 			}
 		}
+	}
+
+	Entity Scene::GetPrimaryCameraEntity()
+	{
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto entity : view)
+		{
+			const auto& camera = view.get<CameraComponent>(entity);
+			if (camera.Primary)
+				return Entity{ entity, this };
+		}
+
+		return {};
 	}
 
 	// TODO: ReWrite this system.

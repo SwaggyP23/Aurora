@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/TimeStep.h"
+#include "Graphics/EditorCamera.h"
 
 #include <entt/entt.hpp>
 
@@ -19,8 +20,12 @@ namespace Aurora {
 		Entity CreateEntity(const char* name = "");
 		void DestroyEntity(Entity entity);
 
-		void OnUpdate(TimeStep ts);
+		void OnUpdateEditor(TimeStep ts, EditorCamera& camera);
+		void OnUpdateRuntime(TimeStep ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
+
+		// This a conveniance function just in case
+		Entity GetPrimaryCameraEntity();
 
 	private:
 		template<typename T>
