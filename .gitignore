@@ -1,11 +1,8 @@
 .vs/
 bin/
-Profiling/
 Build/
 Models/
 LogDump/
-scenes/
-
 
 Aurora.sln
 Aurora.vcxproj
@@ -36,3 +33,6 @@ Optick.vcxproj
 
 yaml-cpp.vcxproj
 yaml-cpp.vcxproj.filters
+
+Premake.vcxproj
+Premake.vcxproj.filters

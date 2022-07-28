@@ -262,7 +262,7 @@ namespace Aurora {
 
 		// For light one
 		s_Data.QuadShader->SetUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
-		s_Data.QuadShader->SetUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->SetUniform3f("light[0].Direction", { 0.2f, 1.0f, 0.3f });
 		s_Data.QuadShader->SetUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
 		s_Data.QuadShader->SetUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
 		s_Data.QuadShader->SetUniform3f("light[0].Specular", glm::vec3(1.0f));
@@ -287,7 +287,7 @@ namespace Aurora {
 
 		// For light one
 		s_Data.QuadShader->SetUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
-		s_Data.QuadShader->SetUniform3f("light[0].Direction", { -0.2f, -1.0f, -0.3f });
+		s_Data.QuadShader->SetUniform3f("light[0].Direction", { -2.2f, 2.5f, -2.3f });
 		s_Data.QuadShader->SetUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
 		s_Data.QuadShader->SetUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
 		s_Data.QuadShader->SetUniform3f("light[0].Specular", glm::vec3(1.0f));

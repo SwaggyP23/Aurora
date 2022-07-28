@@ -9,7 +9,7 @@ namespace Aurora {
 
 	class Entity;
 
-	class Scene
+	class Scene // TODO: Add scene names
 	{
 	public:
 		Scene();
@@ -19,6 +19,8 @@ namespace Aurora {
 
 		Entity CreateEntity(const char* name = "");
 		void DestroyEntity(Entity entity);
+		void Clear();
+		inline size_t Size() const { return m_Registry.size(); }
 
 		void OnUpdateEditor(TimeStep ts, EditorCamera& camera);
 		void OnUpdateRuntime(TimeStep ts);

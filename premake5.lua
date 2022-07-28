@@ -9,7 +9,8 @@ workspace "Aurora"
         {
             "Profile",
             "Debug",
-            "Release"
+            "Release",
+            "Dist"
         }
 
         flags
@@ -25,6 +26,7 @@ group "Dependencies"
     include "Aurora/dependencies/ImGui/imgui"
     include "Aurora/dependencies/optick"
     include "Aurora/dependencies/yaml-cpp"
+    include "Tools/BuildSystem"
 group ""
 
 group "Core"

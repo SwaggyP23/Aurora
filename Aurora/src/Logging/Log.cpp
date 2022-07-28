@@ -1,6 +1,9 @@
 #include "Aurorapch.h"
 #include "Log.h"
 
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+
 namespace Aurora {
 
 	namespace logger {
@@ -11,7 +14,7 @@ namespace Aurora {
 		void Log::Init() 
 		{
 			std::vector<spdlog::sink_ptr> logSinks;
-			logSinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt>());
+			logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 			logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/Aurora.log", true));
 
 			logSinks[0]->set_pattern("%^[%T] %n(%l): %v%$");

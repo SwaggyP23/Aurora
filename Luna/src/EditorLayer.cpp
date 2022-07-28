@@ -75,10 +75,10 @@ namespace Aurora {
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		//if (m_ViewPortFocused)
-		//{
-		m_EditorCamera.OnUpdate(ts);
-		//}
+		if (!m_ImGuiItemFocused)
+		{
+			m_EditorCamera.OnUpdate(ts);
+		}
 
 		Renderer3D::ResetStats();
 
@@ -264,6 +264,7 @@ namespace Aurora {
 
 	void EditorLayer::NewScene()
 	{
+		m_ActiveScene->Clear();
 		m_ActiveScene = Scene::Create(); // Creating new scene
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
@@ -274,7 +275,6 @@ namespace Aurora {
 
 	void EditorLayer::OpenScene()
 	{
-		// TO BE CHANGED
 		std::string filepath = Utils::WindowsFileDialogs::OpenFile("Aurora Scene (*.aurora)\0*.aurora\0");
 		
 		if (!filepath.empty())
@@ -352,7 +352,7 @@ namespace Aurora {
 			if (typeid(T) != typeid(TransformComponent))
 			{
 				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
-				if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
+				if (ImGui::Button("X", ImVec2{ lineHeight, lineHeight }))
 				{
 					ImGui::OpenPopup("ComponentSettings"); // This is also just an id and not a tag that will be rendered
 				}
@@ -454,7 +454,12 @@ namespace Aurora {
 			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), tag.c_str());
 			if (ImGui::InputTextWithHint("##Tag", "Change entity name...", buffer, sizeof(buffer)))
+			{
 				tag = std::string(buffer);
+			}
+
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("ID: %#010x", 12387519348766); // TODO: Switch to UUID when implemented
 		}
 
 		ImGui::SameLine();
@@ -465,16 +470,22 @@ namespace Aurora {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			if (ImGui::MenuItem("Camera")) // This whole code here could be brought out to a templated function since the only vars are name and type
+			if (!entity.HasComponent<CameraComponent>())
 			{
-				m_SelectionContext.AddComponent<CameraComponent>();
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Camera")) // This whole code here could be brought out to a templated function since the only vars are name and type
+				{
+					m_SelectionContext.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
 
-			if (ImGui::MenuItem("Sprite Renderer"))
+			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
-				m_SelectionContext.AddComponent<SpriteRendererComponent>();
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Sprite Renderer"))
+				{
+					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
 
 			ImGui::EndPopup();
@@ -483,73 +494,89 @@ namespace Aurora {
 		ImGui::PopItemWidth();
 
 		DrawComponent<TransformComponent>("Transform", entity, [this](TransformComponent& component)
-			{
-				DrawVec3Control("Translation", component.Translation);
-				glm::vec3 rotation = glm::degrees(component.Rotation);
-				DrawVec3Control("Rotation", rotation);
-				component.Rotation = glm::radians(rotation);
-				DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f, 0.0f, 1000.0f, 0.025f);
-			});
+		{
+			DrawVec3Control("Translation", component.Translation);
+			glm::vec3 rotation = glm::degrees(component.Rotation);
+			DrawVec3Control("Rotation", rotation);
+			component.Rotation = glm::radians(rotation);
+			DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f, 0.0f, 1000.0f, 0.025f);
+		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](CameraComponent& component)
+		{
+			auto& camera = component.Camera;
+
+			ImGui::Checkbox("Primary", &component.Primary);
+
+			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
+			const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
+
+			if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
 			{
-				auto& camera = component.Camera;
-
-				ImGui::Checkbox("Primary", &component.Primary);
-
-				const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-				const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
-
-				if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+				for (int type = 0; type < 2; type++)
 				{
-					for (int type = 0; type < 2; type++)
+					bool isSelected = currentProjectionTypeString == projectionTypeString[type];
+					if (ImGui::Selectable(projectionTypeString[type], isSelected))
 					{
-						bool isSelected = currentProjectionTypeString == projectionTypeString[type];
-						if (ImGui::Selectable(projectionTypeString[type], isSelected))
-						{
-							currentProjectionTypeString = projectionTypeString[type];
-							camera.SetProjectionType((SceneCamera::ProjectionType)type);
-						}
-
-						if (isSelected)
-							ImGui::SetItemDefaultFocus();
+						currentProjectionTypeString = projectionTypeString[type];
+						camera.SetProjectionType((SceneCamera::ProjectionType)type);
 					}
 
-					ImGui::EndCombo();
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
 				}
 
-				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+				ImGui::EndCombo();
+			}
+
+			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+			{
+				float verticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
+				if (ImGui::DragFloat("Vertical FOV", &verticalFOV, 0.1f))
+					camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
+
+				float persNear = camera.GetPerspectiveNearClip();
+				if (ImGui::DragFloat("Near", &persNear, 0.1f))
+					camera.SetPerspectiveNearClip(persNear);
+
+				float persFar = camera.GetPerspectiveFarClip();
+				if (ImGui::DragFloat("Far", &persFar, 0.1f))
+					camera.SetPerspectiveFarClip(persFar);
+
+				if (ImGui::ButtonEx("Reset", ImVec2{ 55.0f, 25.0f }))
 				{
-					float verticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
-					if (ImGui::DragFloat("Vertical FOV", &verticalFOV, 0.1f))
-						camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
-
-					float persNear = camera.GetPerspectiveNearClip();
-					if (ImGui::DragFloat("Near", &persNear, 0.1f))
-						camera.SetPerspectiveNearClip(persNear);
-
-					float persFar = camera.GetPerspectiveFarClip();
-					if (ImGui::DragFloat("Far", &persFar, 0.1f))
-						camera.SetPerspectiveFarClip(persFar);
+					camera.SetPerspectiveVerticalFOV(glm::radians(45.0f));
+					camera.SetPerspectiveNearClip(0.01f);
+					camera.SetPerspectiveFarClip(1000.0f);
 				}
+			}
 
-				else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+			else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+			{
+				float orthoSize = camera.GetOrthographicSize();
+				if (ImGui::DragFloat("Size", &orthoSize, 0.1f))
+					camera.SetOrthographicSize(orthoSize);
+
+				float orthoNear = camera.GetOrthographicNearClip();
+				if (ImGui::DragFloat("Near", &orthoNear, 0.1f))
+					camera.SetOrthographicNearClip(orthoNear);
+
+				float orthoFar = camera.GetOrthographicFarClip();
+				if (ImGui::DragFloat("Far", &orthoFar, 0.1f))
+					camera.SetOrthographicFarClip(orthoFar);
+
+				if (ImGui::ButtonEx("Reset", ImVec2{ 55.0f, 25.0f }))
 				{
-					float orthoSize = camera.GetOrthographicSize();
-					if (ImGui::DragFloat("Size", &orthoSize, 0.1f))
-						camera.SetOrthographicSize(orthoSize);
-
-					float orthoNear = camera.GetOrthographicNearClip();
-					if (ImGui::DragFloat("Near", &orthoNear, 0.1f))
-						camera.SetOrthographicNearClip(orthoNear);
-
-					float orthoFar = camera.GetOrthographicFarClip();
-					if (ImGui::DragFloat("Far", &orthoFar, 0.1f))
-						camera.SetOrthographicFarClip(orthoFar);
-
-					ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+					camera.SetOrthographicSize(10.0f);
+					camera.SetOrthographicNearClip(-1.0f);
+					camera.SetOrthographicFarClip(1.0f);
 				}
-			});
+
+				ImGui::SameLine();
+
+				ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+			}
+		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
@@ -864,15 +891,13 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Options"))
 			{
-				if (ImGui::MenuItem("Restart"))
-				{
-					// TODO: Add a panel that pops up if the person has an open scene that asks if they want to save before restarting
-					Application::GetApp().Restart();
-				}
+				if (ImGui::MenuItem("Restart..."))
+					m_ShowRestartModal = true;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Exit")) Application::GetApp().Close();
+				if (ImGui::MenuItem("Exit..."))
+					m_ShowCloseModal = true;
 
 				ImGui::EndMenu();
 			}
@@ -948,10 +973,10 @@ namespace Aurora {
 			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Runtime Camera
-			//auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			//const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			//const glm::mat4& cameraProjection = camera.GetProjection();
-			//glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			// const glm::mat4& cameraProjection = camera.GetProjection();
+			// glm::mat4 cameraView2 = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
 
 			// Entity transform
 			auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
@@ -978,9 +1003,7 @@ namespace Aurora {
 
 				glm::vec3 deltaRotation = rotation - tc.Rotation;
 				tc.Translation = translation;
-				tc.Rotation.x += deltaRotation.x;
-				tc.Rotation.y += deltaRotation.y;
-				tc.Rotation.z += deltaRotation.z;
+				tc.Rotation += deltaRotation;
 				tc.Scale = scale;
 			}
 		}
@@ -988,7 +1011,74 @@ namespace Aurora {
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		if (ImGui::IsAnyItemHovered())
+			m_ImGuiItemFocused = true;
+		else
+			m_ImGuiItemFocused = false;
+
 		ImGui::End();
+	}
+	
+	void EditorLayer::ShowRestartModalUI()
+	{
+		ImGui::OpenPopup("Restart?");
+
+		// Always center this window when appearing
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::BeginPopupModal("Restart?", &m_ShowRestartModal, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::TextColored(ImVec4{ 0.7f, 0.4f, 0.3f, 1.0f }, "Are you sure...?");
+			ImGui::Text("Make sure you saved all your files and \nscenes before restarting!\n\n");
+
+			ImGui::Separator();
+
+			if (ImGui::Button("Restart", ImVec2(120, 0)))
+				Application::GetApp().Restart();
+
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				ImGui::CloseCurrentPopup();
+				m_ShowRestartModal = false;
+			}
+
+			ImGui::EndPopup();
+		}
+	}
+
+	void EditorLayer::ShowCloseModalUI()
+	{
+		ImGui::OpenPopup("Exit?");
+
+		// Always center this window when appearing
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::BeginPopupModal("Exit?", &m_ShowCloseModal, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::TextColored(ImVec4{ 0.7f, 0.4f, 0.3f, 1.0f }, "Are you sure...?");
+			ImGui::Text("Make sure you saved all your files and \nscenes before exiting!\n\n");
+
+			ImGui::Separator();
+
+			if (ImGui::Button("Exit", ImVec2(120, 0)))
+				Application::GetApp().Close();
+
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				ImGui::CloseCurrentPopup();
+				m_ShowCloseModal = false;
+			}
+
+			ImGui::EndPopup();
+		}
 	}
 
 #pragma endregion
@@ -1021,6 +1111,12 @@ namespace Aurora {
 
 		if (m_ShowEditorCameraHelpUI)
 			ShowEditorCameraHelpUI();
+
+		if (m_ShowRestartModal)
+			ShowRestartModalUI();
+
+		if (m_ShowCloseModal)
+			ShowCloseModalUI();
 
 		ShowViewport();
 	}

@@ -71,3 +71,13 @@ project "SandBox"
         links
         {
         }
+
+    filter "configurations:Dist"
+        defines "AURORA_DIST"
+        runtime "Release"
+        optimize "Speed"
+        inlining "Auto"
+
+        links
+        {
+        }

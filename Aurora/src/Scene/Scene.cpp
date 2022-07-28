@@ -36,6 +36,11 @@ namespace Aurora {
 		m_Registry.destroy(entity);
 	}
 
+	void Scene::Clear()
+	{
+		m_Registry.clear();
+	}
+
 	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera)
 	{
 		Renderer3D::BeginScene(camera);

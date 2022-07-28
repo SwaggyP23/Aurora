@@ -87,6 +87,11 @@ namespace Aurora {
 		void ShowMenuBarItems();
 		void ShowViewport();
 		bool OnKeyPressed(KeyPressedEvent& e);
+		void ShowRestartModalUI();
+		void ShowCloseModalUI();
+
+		bool m_ShowRestartModal = false;
+		bool m_ShowCloseModal = false;
 
 	private:
 		EditorCamera m_EditorCamera;
@@ -102,6 +107,7 @@ namespace Aurora {
 
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;
+		bool m_ImGuiItemFocused = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

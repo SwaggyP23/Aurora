@@ -126,7 +126,8 @@ vec3 CalcPointLight(vec3 normals, vec3 viewDirection)
 		Total += ambient;
 
 		// Diffuse
-		lightDirection = normalize(light[i].Position - Input.Position);
+		// lightDirection = normalize(light[i].Position - Input.Position); // This is for if i dont have directional lighting
+		lightDirection = normalize(light[0].Direction); // This is for directional lighting
 		diffuseImpact = max(dot(normals, lightDirection), 0.0f);
 		diffuse = light[i].Diffuse * diffuseImpact * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
 		diffuse *= attenuation;

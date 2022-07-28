@@ -95,6 +95,16 @@ project "Aurora"
         {
         }
 
+    filter "configurations:Dist"
+        defines "AURORA_DIST"
+        runtime "Release"
+        optimize "Speed"
+        inlining "Auto"
+
+        links
+        {
+        }
+
     filter "files:dependencies/stb_image/**.cpp"
         flags { "NoPCH" }
 

@@ -44,3 +44,8 @@ project "ImGui"
         runtime "Release"
         optimize "Speed"
         inlining "Auto"
+
+    filter "configurations:Dist"
+        runtime "Release"
+        optimize "Speed"
+        inlining "Auto"
