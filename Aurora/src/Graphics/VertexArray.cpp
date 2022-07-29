@@ -71,14 +71,60 @@ namespace Aurora {
 		const auto& layout = vertexBuffer->GetBufferLayout();
 		for (const auto& element : layout)
 		{
-			glVertexAttribPointer(index,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLType(element.type),
-				element.normalized ? GL_TRUE : GL_FALSE,
-				layout.GetStride(),
-				(const void*)element.offset);
+			switch (element.type)
+			{
+			    case ShaderDataType::Float:
+			    case ShaderDataType::Float2:
+			    case ShaderDataType::Float3:
+			    case ShaderDataType::Float4:
+			    {
+			    	glVertexAttribPointer(index,
+			    		element.GetComponentCount(),
+			    		ShaderDataTypeToOpenGLType(element.type),
+			    		element.normalized ? GL_TRUE : GL_FALSE,
+			    		layout.GetStride(),
+			    		(const void*)element.offset);
+			    
+			    	glEnableVertexAttribArray(index++);
+			    	break;
+			    }
+				case ShaderDataType::Int:
+				case ShaderDataType::Int2:
+				case ShaderDataType::Int3:
+				case ShaderDataType::Int4:
+				case ShaderDataType::Bool:
+				{
+					glVertexAttribIPointer(index,
+						element.GetComponentCount(),
+						ShaderDataTypeToOpenGLType(element.type),
+						layout.GetStride(),
+						(const void*)element.offset);
 
-			glEnableVertexAttribArray(index++);
+					glEnableVertexAttribArray(index++);
+					break;
+				}
+				case ShaderDataType::Mat3:
+				case ShaderDataType::Mat4: // Dunno what the F is this i just copied
+				{
+					uint8_t count = element.GetComponentCount();
+					for (uint8_t i = 0; i < count; i++)
+					{
+						glVertexAttribPointer(index,
+							count,
+							ShaderDataTypeToOpenGLType(element.type),
+							element.normalized ? GL_TRUE : GL_FALSE,
+							layout.GetStride(),
+							(const void*)(element.offset + sizeof(float) * count * i));
+						glVertexAttribDivisor(index, 1);
+
+						glEnableVertexAttribArray(index++);
+					}
+
+					break;
+				}
+			}
+
+			
 		}
 
 		m_VertexBuffers.push_back(vertexBuffer);

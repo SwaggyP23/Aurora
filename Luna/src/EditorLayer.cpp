@@ -28,6 +28,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		FramebufferSpecification fbSpec;
+		fbSpec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
@@ -82,14 +83,31 @@ namespace Aurora {
 
 		Renderer3D::ResetStats();
 
-		m_Framebuffer->bind();
-		RenderCommand::SetClearColor(m_Color);
+		m_Framebuffer->Bind();
+		RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f }); // TODO: Framebuffers should contain the clear colors and not called like that, and then maybe clear is called in begin scene
 		RenderCommand::Clear();
+		m_Framebuffer->ClearTextureAttachment(1, -1);
 
 		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 		//m_ActiveScene->OnUpdateRuntime(ts);
 
-		m_Framebuffer->unBind();
+		auto [mx, my] = ImGui::GetMousePos();
+		mx -= m_ViewportBounds[0].x;
+		my -= m_ViewportBounds[0].y;
+		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		my = viewportSize.y - my;
+
+		int mouseX = (int)mx;
+		int mouseY = (int)my;
+
+		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		{
+			// This is a very slow operation, and itself adds about 1-2 milliseconds to our CPU Frame, however this is just for the editor so...
+			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY); // Index 1 since the second buffer is the RED_INTEGER buffer
+			m_HoveredEntity = pixelData == -1 ? Entity{} : Entity{ (entt::entity)pixelData, m_ActiveScene.raw()};
+		}
+
+		m_Framebuffer->UnBind();
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -98,6 +116,7 @@ namespace Aurora {
 
 		EventDispatcher dispatcher(e);
 		dispatcher.dispatch<KeyPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.dispatch<MouseButtonPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnMouseButtonPressed));
 	}
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
@@ -174,6 +193,18 @@ namespace Aurora {
 		}
 
 		return true;
+	}
+
+	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	{
+		if (m_HoveredEntity && !ImGuizmo::IsOver())
+		{
+			m_SelectionContext = m_HoveredEntity;
+
+			return true;
+		}
+
+		return false;
 	}
 
 #pragma endregion
@@ -588,9 +619,6 @@ namespace Aurora {
 	{
 		ImGui::Begin("Properties");
 
-		ImGui::ColorEdit3("Clear Color", (float*)&m_Color); //  This should be removed and that clear color is just cleared to black once we add environment maps and cubemaps and directional light
-		ImGui::Separator();
-
 		if (m_SelectionContext)
 		{
 			DrawComponents(m_SelectionContext);
@@ -622,7 +650,12 @@ namespace Aurora {
 
 		float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 		m_Peak = peak;
-		ImGui::Text("Renderer Stats:");
+
+		std::string name = "None";
+		if (m_HoveredEntity)
+			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+
+		ImGui::Text("Hovered Entity: %s", name.c_str());
 		ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
 		ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
 		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
@@ -722,11 +755,11 @@ namespace Aurora {
 			{
 				switch (it.first.second)
 				{
-				case FontIdentifier::Bold:       idenType = ", Bold"; break;
-				case FontIdentifier::Italic:     idenType = ", Italic"; break;
-				case FontIdentifier::Regular:    idenType = ", Regular"; break;
-				case FontIdentifier::Medium:     idenType = ", Medium"; break;
-				case FontIdentifier::Light:      idenType = ", Light"; break;
+				    case FontIdentifier::Bold:       idenType = ", Bold"; break;
+				    case FontIdentifier::Italic:     idenType = ", Italic"; break;
+				    case FontIdentifier::Regular:    idenType = ", Regular"; break;
+				    case FontIdentifier::Medium:     idenType = ", Medium"; break;
+				    case FontIdentifier::Light:      idenType = ", Light"; break;
 				}
 
 				displayName = it.first.first;
@@ -891,6 +924,9 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Options"))
 			{
+				if (ImGui::MenuItem("Settings..."))
+					m_ShowSettingsUI = true;
+
 				if (ImGui::MenuItem("Restart..."))
 					m_ShowRestartModal = true;
 
@@ -1018,6 +1054,43 @@ namespace Aurora {
 
 		ImGui::End();
 	}
+
+	void EditorLayer::ShowSettingsUI()
+	{
+		// TODO: Make it so when someone changes the global settings of the editor they are saved in an auroraeditor.ini file and loaded when reopened
+		// Control settings such as enable back face culling, depth testing, blending, blend function...
+		ImGui::Begin("Settings", &m_ShowSettingsUI);
+
+		static bool enableCulling = true;
+		ImGui::Checkbox("Back-Face Culling", &enableCulling);
+		if (!enableCulling)
+			RenderCommand::Disable(FeatureControl::Culling);
+		else
+			RenderCommand::Enable(FeatureControl::Culling);
+
+		if (ImGui::BeginCombo("Culling Function", "whatever")) // TODO: Fix the naming to display in the combo label
+		{
+			if (ImGui::Selectable("Back"))
+			{
+				RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
+			}
+
+			if (ImGui::Selectable("Front"))
+			{
+				RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
+			}
+
+
+			if (ImGui::Selectable("Front and Back"))
+			{
+				RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::FrontAndBack);
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::End();
+	}
 	
 	void EditorLayer::ShowRestartModalUI()
 	{
@@ -1111,6 +1184,9 @@ namespace Aurora {
 
 		if (m_ShowEditorCameraHelpUI)
 			ShowEditorCameraHelpUI();
+
+		if (m_ShowSettingsUI)
+			ShowSettingsUI();
 
 		if (m_ShowRestartModal)
 			ShowRestartModalUI();

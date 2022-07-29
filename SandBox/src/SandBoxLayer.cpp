@@ -246,32 +246,32 @@ void SandBoxLayer::OnAttach()
 	Aurora::Ref<Aurora::Texture> text1 = Aurora::Texture::Create("resources/textures/Lufi.png");
 	//text1->bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to bind and unbind
 	text1->FlipTextureVertically(true);
-	text1->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	text1->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text1->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	text1->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text1->LoadTextureData();
 	//text1->unBind();
 
 	Aurora::Ref<Aurora::Texture> text2 = Aurora::Texture::Create("resources/textures/Qiyana2.png");
 	//text2->bind(1); // Only before the draw call we should bind the texture to its corresponding texture slot
 	text2->FlipTextureVertically(true);
-	text2->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	text2->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text2->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	text2->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text2->LoadTextureData();
 	//text2->unBind();
 
 	Aurora::Ref<Aurora::Texture> text3 = Aurora::Texture::Create("resources/textures/checkerboard.png");
 	//text3->bind(2);
 	text3->FlipTextureVertically(true);
-	text3->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	text3->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text3->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	text3->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text3->LoadTextureData();
 	//text3->unBind();
 
 	Aurora::Ref<Aurora::Texture> text4 = Aurora::Texture::Create("resources/textures/map.jpg");
 	//text4->bind(3);
 	text4->FlipTextureVertically(true);
-	text4->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	text4->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	text4->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	text4->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text4->LoadTextureData();
 	//text4->unBind();
 
@@ -283,15 +283,12 @@ void SandBoxLayer::OnAttach()
 	m_Shaders.Get("Basic")->bind();
 	m_Shaders.Get("Basic")->SetUniform1i("texture1", 0);
 	m_Shaders.Get("Basic")->SetUniform1i("texture2", 1);
-	m_Shaders.Get("Basic")->unBind();
 
 	m_Shaders.Get("Ground")->bind();
 	m_Shaders.Get("Ground")->SetUniform1i("Groundtexture1", 2);
-	m_Shaders.Get("Ground")->unBind();
 
 	m_Shaders.Get("Sphere")->bind();
 	m_Shaders.Get("Sphere")->SetUniform1i("SphereTexture1", 3);
-	m_Shaders.Get("Sphere")->unBind();
 }
 
 void SandBoxLayer::OnDetach()

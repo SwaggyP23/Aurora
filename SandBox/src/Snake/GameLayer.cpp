@@ -12,20 +12,20 @@ void GameLayer::OnAttach()
 
 	m_Texture = Aurora::Texture::Create("resources/textures/Pepsi.png");
 	m_Texture->FlipTextureVertically(true);
-	m_Texture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_Texture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_Texture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_Texture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	m_Texture->LoadTextureData();
 
 	m_AppTexture = Aurora::Texture::Create("resources/textures/apple.png");
 	m_AppTexture->FlipTextureVertically(true);
-	m_AppTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_AppTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_AppTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_AppTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	m_AppTexture->LoadTextureData();
 
 	m_SnakeTexture = Aurora::Texture::Create("resources/textures/Snake.png");
 	m_SnakeTexture->FlipTextureVertically(true);
-	m_SnakeTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_SnakeTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_SnakeTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_SnakeTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	m_SnakeTexture->LoadTextureData();
 }
 

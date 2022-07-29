@@ -50,7 +50,16 @@ namespace Aurora {
 		{
 			auto [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
+			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color, 0, (int)entity);
+		}
+
+		// entities with camera components are rendered as white planes for now!
+		auto cameraView = m_Registry.view<TransformComponent, CameraComponent>();
+		for (auto entity : cameraView)
+		{
+			auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
+
+			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 0, (int)entity);
 		}
 
 		Renderer3D::EndScene();
@@ -99,7 +108,7 @@ namespace Aurora {
 			{
 				auto[transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-				Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
+				Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color, (int)entity);
 			}
 
 			Renderer3D::EndScene();

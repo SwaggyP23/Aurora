@@ -15,14 +15,14 @@ void TestLayer::OnAttach()
 
 	m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
 	m_ContainerTexture->FlipTextureVertically(true);
-	m_ContainerTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_ContainerTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_ContainerTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_ContainerTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	m_ContainerTexture->LoadTextureData();
 
 	m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
 	m_GroundTexture->FlipTextureVertically(true);
-	m_GroundTexture->SetTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_GroundTexture->SetTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
+	m_GroundTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_GroundTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	m_GroundTexture->LoadTextureData();
 }
 void TestLayer::OnDetach()

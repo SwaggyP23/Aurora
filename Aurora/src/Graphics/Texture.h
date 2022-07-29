@@ -12,11 +12,24 @@
 
 namespace Aurora {
 
-	enum class TextureProperties
+	enum class TextureWrap // Wrapping settings
 	{
-		Repeat, MirrorredRepeat, ClampToEdge, ClampToBorder,                                   // Wrapping settings
-		Nearest, Linear,                                                                       // Filtering settings
-		MipMap_NearestNearest, MipMap_LinearNearest, MipMap_NearestLinear, MipMap_LinearLinear // MipMap Filtering settings
+		None = 0,
+		Repeat,
+		MirrorredRepeat, 
+		ClampToEdge, 
+		ClampToBorder
+	};
+
+	enum class TextureFilter // Filtering settings
+	{
+		None = 0, 
+		Nearest,
+		Linear,
+		MipMap_NearestNearest,
+		MipMap_LinearNearest,
+		MipMap_NearestLinear,
+		MipMap_LinearLinear
 	};
 
 	class Texture
@@ -31,8 +44,8 @@ namespace Aurora {
 
 		void SetData(const void* data, uint32_t size);
 
-		void SetTextureWrapping(TextureProperties wrapMode) const;
-		void SetTextureFiltering(TextureProperties minFilter = TextureProperties::Nearest, TextureProperties magFilter = TextureProperties::Nearest) const;
+		void SetTextureWrapping(TextureWrap wrapMode) const;
+		void SetTextureFiltering(TextureFilter minFilter = TextureFilter::Nearest, TextureFilter magFilter = TextureFilter::Nearest) const;
 
 		void FlipTextureVertically(bool state);
 		void LoadTextureData();

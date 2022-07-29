@@ -5,22 +5,94 @@
 
 namespace Aurora {
 
+	namespace Utils {
+
+		static GLenum GLFunctionFromEnum(OpenGLFunction func)
+		{
+			switch (func)
+			{
+			    case OpenGLFunction::None:                         return GL_NONE;
+			    case OpenGLFunction::Never:                        return GL_NEVER;
+			    case OpenGLFunction::Less:                         return GL_LESS;
+			    case OpenGLFunction::Equal:                        return GL_EQUAL;
+			    case OpenGLFunction::LessOrEqual:                  return GL_LEQUAL;
+			    case OpenGLFunction::Greater:                      return GL_GREATER;
+			    case OpenGLFunction::GreaterOrEqual:               return GL_GEQUAL;
+			    case OpenGLFunction::NotEqual:                     return GL_NOTEQUAL;
+			    case OpenGLFunction::Always:                       return GL_ALWAYS;
+				case OpenGLFunction::Zero:                         return GL_ZERO;
+				case OpenGLFunction::One:                          return GL_ONE;
+				case OpenGLFunction::SrcColor:                     return GL_SRC_COLOR;
+				case OpenGLFunction::OneMinusSrcColor:             return GL_ONE_MINUS_SRC_COLOR;
+				case OpenGLFunction::DstColor:                     return GL_DST_COLOR;
+				case OpenGLFunction::OneMinusDstColor:             return GL_ONE_MINUS_DST_COLOR;
+				case OpenGLFunction::SrcAlpha:                     return GL_SRC_ALPHA;
+				case OpenGLFunction::OneMinusSrcAlpha:             return GL_ONE_MINUS_SRC_ALPHA;
+				case OpenGLFunction::Front:                        return GL_FRONT;
+				case OpenGLFunction::Back:                         return GL_BACK;
+				case OpenGLFunction::FrontAndBack:                 return GL_FRONT_AND_BACK;
+			}
+
+			AR_CORE_ASSERT(false, "Unkown Function!");
+			return 0;
+		}
+
+		static GLenum GLFeatureFromFeatureControl(FeatureControl feat)
+		{
+			switch (feat)
+			{
+			    case FeatureControl::None:                return GL_NONE;
+			    case FeatureControl::DepthTesting:        return GL_DEPTH_TEST;
+			    case FeatureControl::Culling:             return GL_CULL_FACE;
+			    case FeatureControl::Blending:            return GL_BLEND;
+			    case FeatureControl::StencilTesting:      return GL_STENCIL_TEST;
+			}
+
+			AR_CORE_ASSERT(false, "Unkown Feature to enable!");
+			return 0;
+		}
+
+	}
+
 	void RenderCommand::Init()
 	{
+		// These are the defualt types of function and enables that the editor comes with right out of the box, things could be added or removed using the settings panel
 		AR_PROFILE_FUNCTION();
 
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
+		Enable(FeatureControl::DepthTesting);
+		SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
 
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		Enable(FeatureControl::Culling);
+		SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Enable(FeatureControl::Blending);
+		SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusSrcAlpha);
 	}
 
 	void RenderCommand::ShutDown()
 	{
+	}
+
+	void RenderCommand::Enable(FeatureControl feature)
+	{
+		glEnable(Utils::GLFeatureFromFeatureControl(feature));
+	}
+
+	void RenderCommand::Disable(FeatureControl feature)
+	{
+		glDisable(Utils::GLFeatureFromFeatureControl(feature));
+	}
+
+	void RenderCommand::SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function)
+	{
+		switch (feature)
+		{
+		    case Aurora::FeatureControl::None:                  break;
+		    case Aurora::FeatureControl::DepthTesting:          glDepthFunc(Utils::GLFunctionFromEnum(function)); break;
+		    case Aurora::FeatureControl::Culling:               glCullFace(Utils::GLFunctionFromEnum(function)); break;
+		    case Aurora::FeatureControl::Blending:              glBlendFunc(GL_SRC_ALPHA, Utils::GLFunctionFromEnum(function)); break;
+		    case Aurora::FeatureControl::StencilTesting:        AR_CORE_ASSERT(false, "Not Implemented!"); break;
+		}
 	}
 
 	void RenderCommand::SetClearColor(const glm::vec4& color)

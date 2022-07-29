@@ -34,23 +34,35 @@ namespace Aurora {
 		}
 	}
 
-	static GLenum GLTypeFromTextureProperties(TextureProperties Type)
+	static GLenum GLFilterTypeFromTextureFilter(TextureFilter type)
 	{
-		switch (Type)
+		switch (type)
 		{
-			case TextureProperties::Repeat:                      return GL_REPEAT;
-			case TextureProperties::MirrorredRepeat:             return GL_MIRRORED_REPEAT;
-			case TextureProperties::ClampToEdge:                 return GL_CLAMP_TO_EDGE;
-			case TextureProperties::ClampToBorder:               return GL_CLAMP_TO_BORDER;
-			case TextureProperties::Nearest:                     return GL_NEAREST;
-			case TextureProperties::Linear:                      return GL_LINEAR;
-			case TextureProperties::MipMap_NearestNearest:       return GL_NEAREST_MIPMAP_NEAREST;
-			case TextureProperties::MipMap_LinearNearest:        return GL_LINEAR_MIPMAP_NEAREST;
-			case TextureProperties::MipMap_NearestLinear:        return GL_NEAREST_MIPMAP_LINEAR;
-			case TextureProperties::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
+		    case TextureFilter::None:                        return GL_NONE;
+		    case TextureFilter::Nearest:                     return GL_NEAREST;
+		    case TextureFilter::Linear:                      return GL_LINEAR;
+			case TextureFilter::MipMap_NearestNearest:       return GL_NEAREST_MIPMAP_NEAREST;
+			case TextureFilter::MipMap_LinearNearest:        return GL_LINEAR_MIPMAP_NEAREST;
+			case TextureFilter::MipMap_NearestLinear:        return GL_NEAREST_MIPMAP_LINEAR;
+			case TextureFilter::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
 		}
 
-		AR_CORE_ASSERT(false, "Unkown texture Filtering/Wrapping type!");
+		AR_CORE_ASSERT(false, "Unknown Texture Filter!");
+		return 0;
+	}
+
+	static GLenum GLWrapTypeFromTextureWrap(TextureWrap type)
+	{
+		switch (type)
+		{
+		    case TextureWrap::None:               return GL_NONE;
+		    case TextureWrap::Repeat:             return GL_REPEAT;
+		    case TextureWrap::MirrorredRepeat:    return GL_MIRRORED_REPEAT;
+		    case TextureWrap::ClampToEdge:        return GL_CLAMP_TO_EDGE;
+		    case TextureWrap::ClampToBorder:      return GL_CLAMP_TO_BORDER;
+		}
+
+		AR_CORE_ASSERT(false, "Unknown Texture Wrap Mode!");
 		return 0;
 	}
 
@@ -76,8 +88,8 @@ namespace Aurora {
 
 		glTextureStorage2D(m_TextID, 1, GL_RGBA8, m_Width, m_Height);
 
-		SetTextureWrapping(TextureProperties::Repeat);
-		SetTextureFiltering(TextureProperties::MipMap_LinearLinear, TextureProperties::Linear);
+		SetTextureWrapping(TextureWrap::Repeat);
+		SetTextureFiltering(TextureFilter::MipMap_LinearLinear, TextureFilter::Linear);
 	}
 
 	Texture::Texture(const std::string& filePath)
@@ -106,20 +118,20 @@ namespace Aurora {
 		glDeleteTextures(1, &m_TextID);
 	}
 
-	void Texture::SetTextureWrapping(TextureProperties wrapMode) const
+	void Texture::SetTextureWrapping(TextureWrap wrapMode) const
 	{
 		AR_PROFILE_FUNCTION();
 
-		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_S, GLTypeFromTextureProperties(wrapMode));
-		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_T, GLTypeFromTextureProperties(wrapMode));
+		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_S, GLWrapTypeFromTextureWrap(wrapMode));
+		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_T, GLWrapTypeFromTextureWrap(wrapMode));
 	}
 
-	void Texture::SetTextureFiltering(TextureProperties minFilter, TextureProperties magFilter) const
+	void Texture::SetTextureFiltering(TextureFilter minFilter, TextureFilter magFilter) const
 	{
 		AR_PROFILE_FUNCTION();
 
-		glTextureParameteri(m_TextID, GL_TEXTURE_MIN_FILTER, GLTypeFromTextureProperties(minFilter));
-		glTextureParameteri(m_TextID, GL_TEXTURE_MAG_FILTER, GLTypeFromTextureProperties(magFilter));
+		glTextureParameteri(m_TextID, GL_TEXTURE_MIN_FILTER, GLFilterTypeFromTextureFilter(minFilter));
+		glTextureParameteri(m_TextID, GL_TEXTURE_MAG_FILTER, GLFilterTypeFromTextureFilter(magFilter));
 	}
 
 	void Texture::FlipTextureVertically(bool state)

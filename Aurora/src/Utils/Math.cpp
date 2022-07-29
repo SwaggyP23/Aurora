@@ -36,6 +36,7 @@ namespace Aurora::Math {
 	bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
 	{
 		// From glm::decompose in matrix_decompose.inl
+
 		using namespace glm;
 		using T = float;
 
@@ -99,6 +100,7 @@ namespace Aurora::Math {
 			rotation.x = atan2(-Row[2][0], Row[1][1]);
 			rotation.z = 0;
 		}
+
 
 		return true;
 	}

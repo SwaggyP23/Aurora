@@ -33,7 +33,9 @@ namespace Aurora {
 
 		glm::mat4 GetTransform()
 		{
-			return glm::translate(glm::mat4(1.0f), Translation) * glm::toMat4(glm::quat(Rotation)) * glm::scale(glm::mat4(1.0f), Scale);
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+
+			return glm::translate(glm::mat4(1.0f), Translation) * rotation * glm::scale(glm::mat4(1.0f), Scale);
 		}
 
 	};

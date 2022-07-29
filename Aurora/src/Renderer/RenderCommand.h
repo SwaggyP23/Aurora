@@ -7,11 +7,56 @@
 
 namespace Aurora {
 
+	enum class FeatureControl
+	{
+		None = 0,
+		DepthTesting,
+		Culling,
+		Blending,
+		StencilTesting
+	};
+
+	enum class OpenGLFunction
+	{
+		None = 0,
+
+		// Depth Testing
+		Never,
+		Less,
+		Equal,
+		LessOrEqual,
+		Greater,
+		GreaterOrEqual,
+		NotEqual,
+		Always,
+
+		// Blending
+		Zero,
+		One,
+		SrcColor,
+		OneMinusSrcColor,
+		DstColor,
+		OneMinusDstColor,
+		SrcAlpha,
+		OneMinusSrcAlpha,
+
+		// Culling
+		Front,
+		Back,
+		FrontAndBack
+
+		// Stencil has the same function types as depth testing so it is not necessary to specify more enums for it
+	};
+
 	class RenderCommand
 	{
 	public:
 		static void Init();
 		static void ShutDown();
+
+		static void Enable(FeatureControl feature); // TODO: Think of better naming for this api since its a disaster
+		static void Disable(FeatureControl feature);
+		static void SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function);
 
 		static void SetClearColor(const glm::vec4& color);
 		static void Clear();

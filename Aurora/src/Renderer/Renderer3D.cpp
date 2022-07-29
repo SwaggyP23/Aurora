@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "Renderer3D.h"
 
+// Everything concerning the entityIDs is EDITOR-ONLY since when making a game no one cares about entity ids in the shaders
+
 namespace Aurora {
 
 	Ref<Texture> Renderer3D::m_ContainerTexture;
@@ -14,6 +16,9 @@ namespace Aurora {
 		float TextureIndex;
 		float TilingFactor;
 		int light;
+
+		// This is for the editor only
+		int EntityID = -1;
 	};
 
 	// So for my laptop, it can not hit 60 fps if the MaxQuads is more than 1.5k since that is alot of memory to be transfered in one go
@@ -70,7 +75,8 @@ namespace Aurora {
 			{ ShaderDataType::Float2, "a_TexCoord"     },
 			{ ShaderDataType::Float,  "a_TexIndex"     },
 			{ ShaderDataType::Float,  "a_TilingFactor" },
-			{ ShaderDataType::Int,    "a_Light"        }
+			{ ShaderDataType::Int,    "a_Light"        },
+			{ ShaderDataType::Int,    "a_EntityID"     }
 		});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
@@ -329,7 +335,6 @@ namespace Aurora {
 				s_Data.TextureSlots[i]->bind(i);
 
 			s_Data.QuadShader->bind();
-			s_Data.QuadShader->SetUniform3f("u_SourcePos", { 1.0, 12.0f, 17.0f });
 			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 
 			s_Data.Stats.DrawCalls++;
@@ -342,7 +347,7 @@ namespace Aurora {
 		StartBatch();
 	}
 
-	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light)
+	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("Renderer3D::DrawQuad");
@@ -367,6 +372,7 @@ namespace Aurora {
 			s_Data.QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = TilingFactor;
 			s_Data.QuadVertexBufferPtr->light = light;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -375,7 +381,7 @@ namespace Aurora {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor)
+	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("Renderer3D::DrawQuad");
@@ -423,6 +429,7 @@ namespace Aurora {
 			s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
 			s_Data.QuadVertexBufferPtr->light = light;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -431,7 +438,7 @@ namespace Aurora {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light)// Should take a rotation!
+	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("Renderer3D::DrawRotatedQuad");
@@ -459,6 +466,7 @@ namespace Aurora {
 			s_Data.QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = TilingFactor;
 			s_Data.QuadVertexBufferPtr->light = light;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -467,7 +475,7 @@ namespace Aurora {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor)
+	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_PERF_TIMER("Renderer3D::DrawRotatedQuad");
@@ -511,6 +519,7 @@ namespace Aurora {
 			s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
 			s_Data.QuadVertexBufferPtr->light = light;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 

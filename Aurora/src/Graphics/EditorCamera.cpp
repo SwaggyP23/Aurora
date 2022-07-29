@@ -69,11 +69,11 @@ namespace Aurora {
 			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			m_InitialMousePosition = mouse;
 
-			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+			if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
 				MousePan(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+			else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
 				MouseRotate(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+			else if (Input::IsMouseButtonPressed(MouseButton::ButtonMiddle))
 				MouseZoom(delta.y);
 			else if (Input::IsKeyPressed(Key::F))
 				m_FocalPoint = glm::vec3{ 0.0f };

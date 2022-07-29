@@ -23,6 +23,7 @@ namespace Aurora {
 
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
+		Entity m_HoveredEntity;
 		int m_NameCounter = 0;
 
 	// Components/Properties Panel
@@ -86,10 +87,15 @@ namespace Aurora {
 		void EnableDocking();
 		void ShowMenuBarItems();
 		void ShowViewport();
+
 		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+
+		void ShowSettingsUI();
 		void ShowRestartModalUI();
 		void ShowCloseModalUI();
 
+		bool m_ShowSettingsUI = false;
 		bool m_ShowRestartModal = false;
 		bool m_ShowCloseModal = false;
 

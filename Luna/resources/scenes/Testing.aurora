@@ -2,7 +2,7 @@ Scene: UnNamed
 Entities:
   - Entity: 129861987
     TagComponent:
-      Tag: Empty Entity 0
+      Tag: Test Cube
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [0, 0.935496449, 0.493928164]
@@ -11,11 +11,11 @@ Entities:
       Color: [1, 0.764478743, 0, 1]
   - Entity: 129861987
     TagComponent:
-      Tag: Empty Entity 1
+      Tag: Camera
     TransformComponent:
-      Translation: [0, 0, 7.30000019]
+      Translation: [-3.52331257, -9.98750329e-06, 7.3117795]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [1.10866785, 1.27337384, 1.38999999]
     CameraComponent:
       Camera:
         ProjectionType: 0  # Perspective
