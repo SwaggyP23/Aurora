@@ -6,7 +6,7 @@ namespace Aurora {
 
 	using MouseCode = uint16_t;
 
-	namespace Mouse
+	namespace MouseButton
 	{
 		enum : MouseCode
 		{

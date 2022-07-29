@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core/Base.h"
+#include "Core/KeyCodes.h"
+#include "Core/MouseCodes.h"
 
 #include <string>
 #include <sstream>
@@ -16,7 +18,7 @@ namespace Aurora {
 	enum class EventType
 	{
 		None = 0,
-		WindowResize, WindowClose,
+		WindowResize, WindowMinimize, WindowClose,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
@@ -33,7 +35,7 @@ namespace Aurora {
 
 	#define EVENT_CLASS_TYPE(type) static EventType getStaticType() { return EventType::type; }\
 								virtual EventType getEventType() const override { return getStaticType(); }\
-								virtual const char* getName() const override { return #type; };
+								virtual const char* getName() const override { return AR_STRINGIFY_MACRO(type); };
 
 	#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 

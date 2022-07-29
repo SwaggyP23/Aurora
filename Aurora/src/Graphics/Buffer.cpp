@@ -1,13 +1,20 @@
 #include "Aurorapch.h"
 #include "Buffer.h"
 
-//////////////////////////
-// BUFFER ELEMENT!!
-//////////////////////////
+#include <glad/glad.h>
 
 namespace Aurora {
 
-	uint32_t BufferElement::getComponentCount() const
+	//////////////////////////
+	// BUFFER ELEMENT!!
+	//////////////////////////
+
+	BufferElement::BufferElement(ShaderDataType type, const std::string& name, bool normalized)
+		: name(name), type(type), size(ShaderDataTypeSize(type)), offset(0), normalized(normalized)
+	{
+	}
+
+	uint32_t BufferElement::GetComponentCount() const
 	{
 		switch (type)
 		{
@@ -32,7 +39,7 @@ namespace Aurora {
 	// BUFFER LAYOUT!!
 	//////////////////////////
 
-	void BufferLayout::calcStrideAndOffset()
+	void BufferLayout::CalcStrideAndOffset()
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -55,7 +62,7 @@ namespace Aurora {
 		return CreateRef<VertexBuffer>(size);
 	}
 
-	Ref<VertexBuffer> VertexBuffer::Create(GLfloat* vertices, uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
 	{
 		return CreateRef<VertexBuffer>(vertices, size);
 	}
@@ -69,7 +76,7 @@ namespace Aurora {
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 	}
 
-	VertexBuffer::VertexBuffer(GLfloat* vertices, uint32_t size)
+	VertexBuffer::VertexBuffer(float* vertices, uint32_t size)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -125,7 +132,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferId);
-		// Since we specified here that is is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
+		// Since we specified here that it is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
 		// otherwise it will not work
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);

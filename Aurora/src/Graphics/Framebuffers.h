@@ -6,15 +6,58 @@
  */
 
 #include "Core/Base.h"
+#include "Texture.h"
+
+#include <initializer_list>
+#include <glm/glm.hpp>
 
 namespace Aurora {
 
+	// TODO: Add more formats when the need arises
+	enum class FrameBufferTextureFormat
+	{
+		None = 0,
+
+		// Color
+		RGBA8,
+		RED_INTEGER,
+
+		// Depth / Stencil
+		DEPTH24STENCIL8,
+
+		// Defaults
+		Depth = DEPTH24STENCIL8
+	};
+
+	struct FrameBufferTextureSpecification
+	{
+		FrameBufferTextureSpecification() = default;
+		FrameBufferTextureSpecification(FrameBufferTextureFormat format)
+			: TextureFormat(format) {}
+
+		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
+		//TextureWrap Wrap; // TODO: add it when mousepicking is done
+		//TextureFilter Filter;
+	};
+
+	struct FrameBufferAttachmentSpecification
+	{
+		FrameBufferAttachmentSpecification() = default;
+		FrameBufferAttachmentSpecification(const std::initializer_list<FrameBufferTextureSpecification>& attachments)
+			: Attachments(attachments) {}
+
+		std::vector<FrameBufferTextureSpecification> Attachments;
+	};
+
 	struct FramebufferSpecification
 	{
-		uint32_t Width, Height;
+		uint32_t Width = 1280;
+		uint32_t Height = 720;
+		// glm::vec4 ClearColor; // TODO: Work out how this is going to work, and disable the ability to manually control the clear color
+		FrameBufferAttachmentSpecification Attachments;
 		uint32_t Samples = 1;
 
-		bool SwapChainTarget = false; // This is the equivalent of glBindFramebuffer(0);
+		bool SwapChainTarget = false; // This is the equivalent of glBindFramebuffer(0);, however that is for vulkan most probably
 	};
 
 	class Framebuffer
@@ -27,18 +70,25 @@ namespace Aurora {
 
 		void Invalidate();
 		void Resize(uint32_t width, uint32_t height);
+		int ReadPixel(uint32_t attachmentIndex, int x, int y);
 
-		void bind() const;
-		void unBind() const;
+		void Bind() const;
+		void UnBind() const;
+
+		void ClearTextureAttachment(uint32_t attachmentIndex, int data) const;
 
 		const FramebufferSpecification& GetSpecification() const { return m_Specification; }
-		uint32_t GetColorAttachmentID() const { return m_ColorAttachment; }
+		uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
 
 	private:
 		uint32_t m_BufferID = 0;
-		uint32_t m_ColorAttachment = 0;
-		uint32_t m_DepthAttachment = 0;
 		FramebufferSpecification m_Specification;
+
+		std::vector<FrameBufferTextureSpecification> m_ColorAttachmentsSpecification;
+		FrameBufferTextureSpecification m_DepthAttachmentSpecification = FrameBufferTextureFormat::None; // It does not make sense to have 2 depth buffers, i dont know if thats even possible
+
+		std::vector<uint32_t> m_ColorAttachments; // This is our color attachments IDs
+		uint32_t m_DepthAttachment = 0;
 
 	};
 

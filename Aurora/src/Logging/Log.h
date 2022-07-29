@@ -1,7 +1,6 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/fmt/ostr.h>
 
 #include <memory>
@@ -13,9 +12,10 @@ namespace Aurora {
 		{
 		public:
 			static void Init();
+			static void ShutDown();
 
-			static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
-			static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
+			static const std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
+			static const std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
 
 		private:
 			static std::shared_ptr<spdlog::logger> s_CoreLogger;
@@ -25,7 +25,7 @@ namespace Aurora {
 
 }
 
-#ifdef AURORA_DEBUG
+#ifndef AURORA_DIST
 
 	#define AR_CORE_TRACE(...)     ::Aurora::logger::Log::GetCoreLogger()->trace(__VA_ARGS__)
 	#define AR_CORE_INFO(...)      ::Aurora::logger::Log::GetCoreLogger()->info(__VA_ARGS__)

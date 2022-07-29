@@ -5,8 +5,7 @@
 
 TestLayer::TestLayer()
 	: Layer("BatchRenderer"),
-	m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-	m_OrthoCamera(Aurora::CreateRef<Aurora::OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+	m_Camera(Aurora::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 {
 }
 
@@ -15,16 +14,16 @@ void TestLayer::OnAttach()
 	AR_PROFILE_FUNCTION();
 
 	m_ContainerTexture = Aurora::Texture::Create("resources/textures/container2.png");
-	m_ContainerTexture->flipTextureVertically(true);
-	m_ContainerTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_ContainerTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_ContainerTexture->loadTextureData();
+	m_ContainerTexture->FlipTextureVertically(true);
+	m_ContainerTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_ContainerTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
+	m_ContainerTexture->LoadTextureData();
 
 	m_GroundTexture = Aurora::Texture::Create("resources/textures/ice.png");
-	m_GroundTexture->flipTextureVertically(true);
-	m_GroundTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_GroundTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_GroundTexture->loadTextureData();
+	m_GroundTexture->FlipTextureVertically(true);
+	m_GroundTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_GroundTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
+	m_GroundTexture->LoadTextureData();
 }
 void TestLayer::OnDetach()
 {
@@ -35,15 +34,12 @@ void TestLayer::OnUpdate(Aurora::TimeStep ts)
 {
 	AR_PROFILE_FUNCTION();
 	
-	Aurora::RenderCommand::setClearColor(m_Color);
+	Aurora::RenderCommand::SetClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
 	Aurora::Renderer3D::ResetStats();
 
-	if (m_Perspective)
-		Aurora::Renderer3D::BeginScene(m_Camera);
-	else
-		Aurora::Renderer3D::BeginScene(m_OrthoCamera);
+	Aurora::Renderer3D::BeginScene(m_Camera);
 
 	{
 		AR_PROFILE_SCOPE("Rendering");
@@ -77,25 +73,19 @@ void TestLayer::OnUpdate(Aurora::TimeStep ts)
 
 	Aurora::Renderer3D::EndScene();
 
-	if (m_Perspective)
-		m_Camera->OnUpdate(ts);
-	else
-		m_OrthoCamera->OnUpdate(ts);
+	m_Camera.OnUpdate(ts);
 }
 
 void TestLayer::OnEvent(Aurora::Event& e)
 {
-	if (m_Perspective)
-		m_Camera->OnEvent(e);
-	else
-		m_OrthoCamera->OnEvent(e);
+	m_Camera.OnEvent(e);
 }
 
 void TestLayer::OnImGuiRender()
 {
 	AR_PROFILE_FUNCTION();
 
-	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
+	Aurora::Application& app = Aurora::Application::GetApp(); // Currently imgui does nothing since its input is not passed on
 
 	ImGui::Begin("Editing Panel");
 	if (ImGui::CollapsingHeader("Cube")) {
@@ -120,13 +110,6 @@ void TestLayer::OnImGuiRender()
 	ImGui::Separator();
 	//ImGui::ShowDemoWindow(); // For reference
 
-	ImGui::Checkbox("Camera Type:", &m_Perspective);
-	ImGui::SameLine();
-	if (m_Perspective)
-		ImGui::Text("Perspective Camera!");
-	else
-		ImGui::Text("OrthoGraphic Camera!");
-
 	float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 	m_Peak = peak;
 	ImGui::Separator();
@@ -137,7 +120,6 @@ void TestLayer::OnImGuiRender()
 	ImGui::Text("Vertex Count: %d", Aurora::Renderer3D::GetStats().GetTotalVertexCount());
 	ImGui::Text("Index Count: %d", Aurora::Renderer3D::GetStats().GetTotalIndexCount());
 	ImGui::Text("Vertex Buffer Memory: %.3f MegaBytes", Aurora::Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
-	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 	ImGui::Text("Peak FPS: %.f", m_Peak);
 
 	ImGui::End();

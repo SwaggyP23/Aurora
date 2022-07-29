@@ -8,6 +8,7 @@ layout(location = 3) in vec2 a_TexCoords;
 layout(location = 4) in float a_TexIndex;
 layout(location = 5) in float a_TilingFactor;
 layout(location = 6) in int a_Light;
+layout(location = 7) in int a_EntityID;
 
 uniform mat4 u_ViewProjmatrix;
 
@@ -22,6 +23,7 @@ struct VertexOutput
 
 flat out float TexIndex; // Needs to be float and flat so that it does not get interpolated
 flat out int lightCube;
+flat out int EntityID;
 
 layout(location = 0) out VertexOutput Output;
 
@@ -34,6 +36,7 @@ void main()
 	TexIndex = a_TexIndex;
 	Output.TilingFactor = a_TilingFactor;
 	lightCube = a_Light;
+	EntityID = a_EntityID;
 
 	gl_Position = u_ViewProjmatrix * vec4(a_Position, 1.0f);
 }
@@ -42,6 +45,7 @@ void main()
 #version 450 core
 
 layout(location = 0) out vec4 o_Color;
+layout(location = 1) out int o_EntityID;
 
 uniform sampler2D u_Textures[32];
 uniform vec3 u_ViewPosition;
@@ -82,6 +86,7 @@ uniform Light light[1];
 
 flat in float TexIndex;
 flat in int lightCube;
+flat in int EntityID;
 
 layout(location = 0) in VertexOutput Input;
 
@@ -106,6 +111,7 @@ void main()
 	}
 
 	o_Color = FragColor;
+	o_EntityID = EntityID;
 }
 
 vec3 CalcPointLight(vec3 normals, vec3 viewDirection)
@@ -126,7 +132,8 @@ vec3 CalcPointLight(vec3 normals, vec3 viewDirection)
 		Total += ambient;
 
 		// Diffuse
-		lightDirection = normalize(light[i].Position - Input.Position);
+		// lightDirection = normalize(light[i].Position - Input.Position); // This is for if i dont have directional lighting
+		lightDirection = normalize(light[0].Direction); // This is for directional lighting
 		diffuseImpact = max(dot(normals, lightDirection), 0.0f);
 		diffuse = light[i].Diffuse * diffuseImpact * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
 		diffuse *= attenuation;

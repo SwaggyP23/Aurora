@@ -20,8 +20,7 @@ public:
 
 
 private:
-	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
-	Aurora::Ref<Aurora::EditorCamera> m_Camera;
+	Aurora::EditorCamera m_Camera;
 	Aurora::Ref<Aurora::Shader> modelShader;
 
 	Aurora::Ref<Aurora::Texture> m_ContainerTexture;
@@ -29,7 +28,6 @@ private:
 	Aurora::Ref<Aurora::Texture> m_GroundTexture;
 
 private: // ImGui stuff
-	bool m_Perspective = true;
 	float m_Peak = 0;
 
 	glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);

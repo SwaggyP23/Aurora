@@ -1,14 +1,11 @@
 #pragma once
 
-/*
- * The ImGuiLayer and Layers and Events system is all thanks to The Cherno which infact this whole thing 
- * is in thanks to him since he is the main reference and then there is also the LearnOpenGL Book
- */
-
 #include "Layers/Layer.h"
 #include "Events/ApplicationEvents.h"
 #include "Events/MouseEvents.h"
 #include "Events/KeyEvents.h"
+#include "Utils/FontsLibrary.h"
+
 #include <glm/glm.hpp>
 
 namespace Aurora {
@@ -23,13 +20,21 @@ namespace Aurora {
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event& e) override;
 
-		void begin();
-		void end();
+		void Begin();
+		void End();
 
 		void SetBlockEvents(bool state) { m_BlockEvents = state; }
 
+		void SetDarkThemeColor();
+
+	private:
+		void LoadAndAddFonts();
+
 	private:
 		bool m_BlockEvents = true;
+		FontsLibrary m_Fonts;
+
+		friend class EditorLayer; // I will friend these classes. The editor is build on ImGui so makes sense to be related to the ImGui layer
 
 	};
 

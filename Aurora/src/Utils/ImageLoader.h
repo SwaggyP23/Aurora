@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Aurora.h"
-
+#include <string>
 #include <stb_image/stb_image.h>
 
 namespace Aurora {
@@ -12,14 +11,14 @@ namespace Aurora {
 		{
 		public:
 			static ImageLoader& Get();
-			static void LoadImageFile(const char* filePath);
+			static void LoadImageFile(const std::string& filePath);
 			static void FreeImage();
-			static void setFlipVertically(bool boolean);
+			static void SetFlipVertically(bool boolean);
 
-			inline unsigned char* getData() const { return m_Data; }
-			inline uint32_t getWidth() const { return m_Width; }
-			inline uint32_t getHeight() const { return m_Height; }
-			inline uint32_t getChannels() const { return m_Channels; }
+			inline unsigned char* GetData() const { return m_Data; }
+			inline uint32_t GetWidth() const { return m_Width; }
+			inline uint32_t GetHeight() const { return m_Height; }
+			inline uint32_t GetChannels() const { return m_Channels; }
 
 		private:
 			ImageLoader() = default;

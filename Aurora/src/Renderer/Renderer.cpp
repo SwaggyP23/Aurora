@@ -11,20 +11,20 @@ namespace Aurora {
 
 	void Renderer::Init()
 	{
-		AR_PROFILE_FUNCTION();
-
-		RendererProperties::Init();
-		Renderer3D::Init();
-		RenderCommand::Init();
+		// Currently not in use
+		// AR_PROFILE_FUNCTION();
+		
+		// Renderer3D::Init();
+		// RenderCommand::Init();
 	}
 
 	void Renderer::ShutDown()
 	{
-		// PROFILE_FUNCTION(); Currently not needed since Application destructor profiles it
+		// Currently not in use
+		// PROFILE_FUNCTION();
 
-		Renderer3D::ShutDown();
-		RenderCommand::ShutDown();
-		RendererProperties::ShutDown();
+		// Renderer3D::ShutDown();
+		// RenderCommand::ShutDown();
 	}
 
 	void Renderer::BeginScene(const Ref<EditorCamera>& camera)
@@ -34,18 +34,11 @@ namespace Aurora {
 		s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
 	}
 
-	void Renderer::BeginScene(const Ref<OrthoGraphicCamera>& camera)
-	{
-		AR_PROFILE_FUNCTION();
-
-		s_SceneData->viewProjectionMatrix = camera->GetViewProjection();
-	}
-
 	void Renderer::EndScene()
 	{
 	}
 
-	void Renderer::onWindowResize(uint32_t width, uint32_t height)
+	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -56,9 +49,9 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-		shader->setUniformMat4("ml_matrix", model);
-		shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+		shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
+		shader->SetUniformMat4("ml_matrix", model);
+		shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 		VAO->bind();
 		RenderCommand::DrawIndexed(VAO, true);
@@ -68,9 +61,9 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		shader->setUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-		shader->setUniformMat4("ml_matrix", model);
-		shader->setUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+		shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
+		shader->SetUniformMat4("ml_matrix", model);
+		shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 		VAO->bind();
 		RenderCommand::DrawIndexed(VAO, false);

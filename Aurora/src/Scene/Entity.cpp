@@ -3,11 +3,14 @@
 
 namespace Aurora {
 
-
-
 	Entity::Entity(entt::entity handle, Scene* scene)
 		: m_EntityHandle(handle), m_Scene(scene)
 	{
+
 	}
 
+	Entity::~Entity()
+	{
+		//delete m_Scene; // Can not delete it since it invalidates the whole registry
+	}
 }

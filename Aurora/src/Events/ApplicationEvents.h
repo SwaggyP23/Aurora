@@ -10,8 +10,8 @@ namespace Aurora {
 		WindowResizeEvent(uint32_t width, uint32_t height)
 			: m_Width(width), m_Height(height) {}
 
-		inline uint32_t getWidth() const { return m_Width; }
-		inline uint32_t getHeight() const { return m_Height; }
+		inline uint32_t GetWidth() const { return m_Width; }
+		inline uint32_t GetHeight() const { return m_Height; }
 
 		std::string toString() const override
 		{
@@ -28,10 +28,36 @@ namespace Aurora {
 		uint32_t m_Height;
 	};
 
+	class WindowMinimizeEvent : public Event
+	{
+	public:
+		WindowMinimizeEvent() = default;
+
+		std::string toString() const override
+		{
+			std::stringstream ss;
+			ss << "Window Minimize Event!";
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMinimize)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
+	private:
+
+	};
+
 	class WindowCloseEvent : public Event
 	{
 	public:
 		WindowCloseEvent() = default;
+
+		std::string toString() const override
+		{
+			std::stringstream ss;
+			ss << "Window Close Event!";
+			return ss.str();
+		}
 
 		EVENT_CLASS_TYPE(WindowClose)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)

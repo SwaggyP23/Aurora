@@ -2,6 +2,8 @@
 
 #include "Events.h"
 
+#include <glm/glm.hpp>
+
 namespace Aurora {
 
 	class MouseMovedEvent : public Event
@@ -10,9 +12,9 @@ namespace Aurora {
 		MouseMovedEvent(float mx, float my)
 			: m_Mx(mx), m_My(my) {}
 
-		std::pair<float, float> getMousePos() const { return { m_Mx, m_My }; }
-		inline float getMouseX() const { return m_Mx; }
-		inline float getMouseY() const { return m_My; }
+		glm::vec2 GetMousePos() const { return { m_Mx, m_My }; }
+		inline float GetMouseX() const { return m_Mx; }
+		inline float GetMouseY() const { return m_My; }
 
 		std::string toString() const override
 		{
@@ -35,8 +37,8 @@ namespace Aurora {
 		MouseScrolledEvent(float xoff, float yoff)
 			: m_Xoffset(xoff), m_Yoffset(yoff) {}
 
-		inline float getXOffset() const { return m_Xoffset; }
-		inline float getYOffset() const { return m_Yoffset; }
+		inline float GetXOffset() const { return m_Xoffset; }
+		inline float GetYOffset() const { return m_Yoffset; }
 
 		std::string toString() const override
 		{
@@ -57,22 +59,22 @@ namespace Aurora {
 	public:
 		virtual ~MouseButtonEvent() = default;
 
-		inline int getButtonCode() const { return m_ButtonCode; }
+		inline MouseCode GetButtonCode() const { return m_ButtonCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 
 	protected:
-		MouseButtonEvent(int buttoncode)
+		MouseButtonEvent(MouseCode buttoncode)
 			: m_ButtonCode(buttoncode) {}
 
-		int m_ButtonCode;
+		MouseCode m_ButtonCode;
 
 	};
 
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(int mouseButton)
+		MouseButtonPressedEvent(MouseCode mouseButton)
 			: MouseButtonEvent(mouseButton) {}
 
 		std::string toString() const override
@@ -89,7 +91,7 @@ namespace Aurora {
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(int mouseButton)
+		MouseButtonReleasedEvent(MouseCode mouseButton)
 			: MouseButtonEvent(mouseButton) {}
 
 		std::string toString() const override

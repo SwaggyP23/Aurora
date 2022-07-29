@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef NOMINMAX
-#define NOMINMAX // This are for the random number generator
+    #define NOMINMAX // These are for the random number generator
 #endif // !NOMINMAX
 
 #include <iostream>
@@ -11,15 +11,21 @@
 #include <algorithm>
 #include <functional>
 #include <thread>
+#include <variant>
 
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
+
 #include <array>
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <queue>
+#include <deque>
 
 #include "Logging/Log.h"
 #include "Core/Base.h"

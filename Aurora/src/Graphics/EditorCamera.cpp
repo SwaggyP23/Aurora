@@ -9,7 +9,7 @@
 namespace Aurora {
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
-		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), m_Projection(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
+		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), Camera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
 	{
 		UpdateView();
 	}
@@ -63,18 +63,28 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		if (Input::isKeyPressed(Key::LeftControl))
+		if (Input::IsKeyPressed(Key::LeftAlt))
 		{
-			const glm::vec2& mouse{ Input::getMouseX(), Input::getMouseY() };
+			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			m_InitialMousePosition = mouse;
 
-			if (Input::isMouseButtonPressed(Mouse::ButtonLeft))
+			if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
 				MousePan(delta);
-			else if (Input::isMouseButtonPressed(Mouse::ButtonRight))
+			else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
 				MouseRotate(delta);
-			else if (Input::isMouseButtonPressed(Mouse::ButtonMiddle))
+			else if (Input::IsMouseButtonPressed(MouseButton::ButtonMiddle))
 				MouseZoom(delta.y);
+			else if (Input::IsKeyPressed(Key::F))
+				m_FocalPoint = glm::vec3{ 0.0f };
+			else if (Input::IsKeyPressed(Key::C))
+			{
+				m_FocalPoint = glm::vec3{ 0.0f };
+				m_Position = glm::vec3{ 0.0f, 5.0f, 0.0f };
+				m_Distance = 10.0f;
+				m_Pitch = 0.5f;
+				m_Yaw = 0.0f;
+			}
 		}
 
 		UpdateView();
@@ -88,11 +98,12 @@ namespace Aurora {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		if (Input::isKeyPressed(Key::LeftControl)) {
-			float delta = e.getYOffset() * 0.1f;
+		if (Input::IsKeyPressed(Key::LeftAlt)) {
+			float delta = e.GetYOffset() * 0.1f;
 			MouseZoom(delta);
 			UpdateView();
 		}
+
 		return false;
 	}
 

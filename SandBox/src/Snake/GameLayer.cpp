@@ -2,8 +2,7 @@
 
 GameLayer::GameLayer()
 	: Layer("BatchRenderer"),
-	m_Camera(Aurora::CreateRef<Aurora::EditorCamera>(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f)),
-	m_OrthoCamera(Aurora::CreateRef<Aurora::OrthoGraphicCamera>(16.0f / 9.0f, -100.0f, 100.0f))
+	m_Camera(Aurora::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
 {
 }
 
@@ -12,22 +11,22 @@ void GameLayer::OnAttach()
 	AR_PROFILE_FUNCTION();
 
 	m_Texture = Aurora::Texture::Create("resources/textures/Pepsi.png");
-	m_Texture->flipTextureVertically(true);
-	m_Texture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_Texture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_Texture->loadTextureData();
+	m_Texture->FlipTextureVertically(true);
+	m_Texture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_Texture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
+	m_Texture->LoadTextureData();
 
 	m_AppTexture = Aurora::Texture::Create("resources/textures/apple.png");
-	m_AppTexture->flipTextureVertically(true);
-	m_AppTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_AppTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_AppTexture->loadTextureData();
+	m_AppTexture->FlipTextureVertically(true);
+	m_AppTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_AppTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
+	m_AppTexture->LoadTextureData();
 
 	m_SnakeTexture = Aurora::Texture::Create("resources/textures/Snake.png");
-	m_SnakeTexture->flipTextureVertically(true);
-	m_SnakeTexture->setTextureWrapping(Aurora::TextureProperties::Repeat);
-	m_SnakeTexture->setTextureFiltering(Aurora::TextureProperties::MipMap_LinearLinear, Aurora::TextureProperties::Linear);
-	m_SnakeTexture->loadTextureData();
+	m_SnakeTexture->FlipTextureVertically(true);
+	m_SnakeTexture->SetTextureWrapping(Aurora::TextureWrap::Repeat);
+	m_SnakeTexture->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
+	m_SnakeTexture->LoadTextureData();
 }
 
 void GameLayer::OnDetach()
@@ -39,13 +38,10 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 {
 	AR_PROFILE_FUNCTION();
 
-	Aurora::RenderCommand::setClearColor(m_Color);
+	Aurora::RenderCommand::SetClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
-	if (m_Perspective)
-		Aurora::Renderer3D::BeginScene(m_Camera);
-	else
-		Aurora::Renderer3D::BeginScene(m_OrthoCamera);
+	Aurora::Renderer3D::BeginScene(m_Camera);
 
 	//glm::vec3 trans = m_Transalations;
 
@@ -84,53 +80,47 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 	if (m_Snake.checkCollision(Collision))
 		m_Generated = false;
 
-	if (m_Perspective)
-		m_Camera->OnUpdate(ts);
-	else
-		m_OrthoCamera->OnUpdate(ts);
+	m_Camera.OnUpdate(ts);
 }
 
 void GameLayer::OnEvent(Aurora::Event& e)
 {
-	if (Aurora::Input::isKeyPressed(Aurora::Key::W) && !down) {
+	if (Aurora::Input::IsKeyPressed(Aurora::Key::W) && !down) {
 		m_Dir = Direction::Up;
 		up = true;
 		left = false;
 		right = false;
 	}
-	else if (Aurora::Input::isKeyPressed(Aurora::Key::A) && !right) {
+	else if (Aurora::Input::IsKeyPressed(Aurora::Key::A) && !right) {
 		m_Dir = Direction::Left;
 		left = true;
 		up = false;
 		down = false;
 	}
-	else if (Aurora::Input::isKeyPressed(Aurora::Key::S) && !up) {
+	else if (Aurora::Input::IsKeyPressed(Aurora::Key::S) && !up) {
 		m_Dir = Direction::Down;
 		down = true;
 		right = false;
 		left = false;
 	}
-	else if (Aurora::Input::isKeyPressed(Aurora::Key::D) && !left) {
+	else if (Aurora::Input::IsKeyPressed(Aurora::Key::D) && !left) {
 		m_Dir = Direction::Right;
 		right = true;
 		up = false;
 		down = false;
 	}
 
-	if (Aurora::Input::isKeyPressed(Aurora::Key::LeftAlt)) // This is for debugging
+	if (Aurora::Input::IsKeyPressed(Aurora::Key::LeftAlt)) // This is for debugging
 		m_Snake.IncParts();
 
-	if (m_Perspective)
-		m_Camera->OnEvent(e);
-	else
-		m_OrthoCamera->OnEvent(e);
+	m_Camera.OnEvent(e);
 }
 
 void GameLayer::OnImGuiRender()
 {
 	AR_PROFILE_FUNCTION();
 
-	Aurora::Application& app = Aurora::Application::getApp(); // Currently imgui does nothing since its input is not passed on
+	Aurora::Application& app = Aurora::Application::GetApp(); // Currently imgui does nothing since its input is not passed on
 
 	ImGui::Begin("Editing Panel");
 	if (ImGui::CollapsingHeader("Cube")) {
@@ -144,16 +134,6 @@ void GameLayer::OnImGuiRender()
 
 	ImGui::Separator();
 	//ImGui::ShowDemoWindow(); // For reference
-
-	ImGui::Checkbox("Camera Type:", &m_Perspective);
-	ImGui::SameLine();
-	if (m_Perspective)
-		ImGui::Text("Perspective Camera!");
-	else
-		ImGui::Text("OrthoGraphic Camera!");
-
-
-	ImGui::Checkbox("V Sync ", &(app.getVSync()));
 
 	ImGui::End();
 }

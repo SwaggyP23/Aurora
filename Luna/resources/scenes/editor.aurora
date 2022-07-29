@@ -1,0 +1,29 @@
+Scene: UnNamed
+Entities:
+  - Entity: 129861987
+    TagComponent:
+      Tag: Cube 1
+    TransformComponent:
+      Translation: [0.0234669615, -0.021952454, -4.51742315]
+      Rotation: [0.385644197, -0.543694258, -0.747093439]
+      Scale: [5.54495525, 2.76080108, 5.85002422]
+    SpriteRendererComponent:
+      Color: [0.324383944, 0.980725586, 0.98841697, 1]
+  - Entity: 129861987
+    TagComponent:
+      Tag: Camera 2
+    TransformComponent:
+      Translation: [0, 0, 6.5999999]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0  # Perspective
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false

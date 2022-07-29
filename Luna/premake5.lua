@@ -2,10 +2,10 @@ project "Luna"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
-    staticruntime "on"
+    staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
     files
     {
@@ -16,14 +16,16 @@ project "Luna"
     includedirs
     {
         "%{wks.location}/Aurora/src",
-        "%{wks.location}/Aurora/deps/spdlog/include",
-        "%{wks.location}/Aurora/deps",
-        "%{IncludeDir.Glad}", -- These two should not be here but they give some dogshit include error
-        "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
-        "%{IncludeDir.ImGui}",-- This one also
+        "%{wks.location}/Aurora/dependencies/spdlog/include",
+        "%{wks.location}/Aurora/dependencies",
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.Entt}",
-        "%{IncludeDir.Optick}"
+        "%{IncludeDir.Optick}",
+        "%{IncludeDir.choc}"
     }
 
     links
@@ -63,6 +65,16 @@ project "Luna"
 
     filter "configurations:Release"
         defines "AURORA_RELEASE"
+        runtime "Release"
+        optimize "Speed"
+        inlining "Auto"
+
+        links
+        {
+        }
+
+    filter "configurations:Dist"
+        defines "AURORA_DIST"
         runtime "Release"
         optimize "Speed"
         inlining "Auto"

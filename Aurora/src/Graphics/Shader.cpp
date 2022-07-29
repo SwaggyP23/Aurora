@@ -1,45 +1,44 @@
 #include "Aurorapch.h"
 #include "Shader.h"
 
+#include <glad/glad.h>
+
 namespace Aurora {
 
 	namespace Utils {
 
-		enum class ShaderErrorType
+		enum class ShaderErrorType : uint16_t
 		{
-			None = -1,
-			vertexShader,
-			fragmentShader,
-			geometryShader
+			None = 0, VertexShader, FragmentShader, GeometryShader
 		};
 
-		static GLenum ShaderTypeFromString(const std::string& type)
+		static uint32_t/*GLenum*/ ShaderTypeFromString(const std::string& type)
 		{
 			if (type == "vertex")
 				return GL_VERTEX_SHADER;
-			if (type == "fragment")
+			else if (type == "fragment")
 				return GL_FRAGMENT_SHADER;
-			if (type == "geometry") // Geometry shaders are currently useless since i am not using them
+			else if (type == "geometry") // Geometry shaders are currently useless since ther are not being used
 				return GL_GEOMETRY_SHADER;
 
 			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return 0;
 		}
 
-		static ShaderErrorType ErrorTypeFromShaderType(GLenum shaderType)
+		static ShaderErrorType ErrorTypeFromShaderType(uint32_t/*GLenum*/ shaderType)
 		{
 			switch (shaderType)
 			{
-			case GL_VERTEX_SHADER:		return ShaderErrorType::vertexShader;
-			case GL_FRAGMENT_SHADER:	return ShaderErrorType::fragmentShader;
-			case GL_GEOMETRY_SHADER:	return ShaderErrorType::geometryShader;
+			    case GL_VERTEX_SHADER:		return ShaderErrorType::VertexShader;
+			    case GL_FRAGMENT_SHADER:	return ShaderErrorType::FragmentShader;
+			    case GL_GEOMETRY_SHADER:	return ShaderErrorType::GeometryShader;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return ShaderErrorType::None;
 		}
 
-		static void CheckShaderCompilation(GLuint shader, ShaderErrorType type)
+		static void CheckShaderCompilation(uint32_t shader, ShaderErrorType type)
 		{
 			GLint result;
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
@@ -51,11 +50,14 @@ namespace Aurora {
 
 				glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
 
-				if (type == ShaderErrorType::vertexShader)
+				if (type == ShaderErrorType::VertexShader)
 					AR_CORE_ERROR("Failed to compile Vertex Shader!!");
 
-				else if (type == ShaderErrorType::fragmentShader)
+				else if (type == ShaderErrorType::FragmentShader)
 					AR_CORE_ERROR("Failed to compile Fragment Shader!!");
+
+				else if (type == ShaderErrorType::GeometryShader)
+					AR_CORE_ERROR("Failed to compile Geometry Shader!!");
 
 				AR_CORE_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
 
@@ -99,9 +101,9 @@ namespace Aurora {
 
 		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
 
-		auto shaderSplitSources = splitSource(shaderFullSource);
+		auto shaderSplitSources = SplitSource(shaderFullSource);
 
-		m_ShaderID = createShaderProgram(shaderSplitSources);
+		m_ShaderID = CreateShaderProgram(shaderSplitSources);
 
 		size_t lastSlash = filePath.find_last_of("/\\");
 		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
@@ -111,11 +113,18 @@ namespace Aurora {
 		m_Name = filePath.substr(lastSlash, count);
 	}
 
-	std::unordered_map<GLenum, std::string> Shader::splitSource(const std::string& source)
+	Shader::~Shader()
+	{
+		AR_PROFILE_FUNCTION();
+
+		glDeleteProgram(m_ShaderID);
+	}
+
+	std::unordered_map<uint32_t/*GLenum*/, std::string> Shader::SplitSource(const std::string& source)
 	{ // Props to @TheCherno
 		AR_PROFILE_FUNCTION();
 
-		std::unordered_map<GLenum, std::string> shaderSources;
+		std::unordered_map<uint32_t/*GLenum*/, std::string> shaderSources;
 
 		const char* typeIdentifier = "#pragma";
 		size_t typeIdentifierLength = strlen(typeIdentifier);
@@ -138,7 +147,7 @@ namespace Aurora {
 		return shaderSources;
 	}
 
-	GLuint Shader::createShaderProgram(const std::unordered_map<GLenum, std::string>& shaderSources) const
+	uint32_t Shader::CreateShaderProgram(const std::unordered_map<uint32_t/*GLenum*/, std::string>& shaderSources) const
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -173,13 +182,6 @@ namespace Aurora {
 		return program;
 	}
 
-	Shader::~Shader()
-	{
-		AR_PROFILE_FUNCTION();
-
-		glDeleteProgram(m_ShaderID);
-	}
-
 	void Shader::bind() const
 	{
 		AR_PROFILE_FUNCTION();
@@ -192,57 +194,57 @@ namespace Aurora {
 		glUseProgram(0);
 	}
 
-	void Shader::setUniform1i(const GLchar* name, GLuint val) const
+	void Shader::SetUniform1i(const char* name, uint32_t val) const
 	{
-		glUniform1i(getUniformLocation(name), val);
+		glUniform1i(GetUniformLocation(name), val);
 	}
 
-	void Shader::setUniformArrayi(const GLchar* name, GLint* vals, uint32_t count) const
+	void Shader::SetUniformArrayi(const char* name, int* vals, uint32_t count) const
 	{
-		glUniform1iv(getUniformLocation(name), count, vals);
+		glUniform1iv(GetUniformLocation(name), count, vals);
 	}
 
-	void Shader::setUniform1f(const GLchar* name, GLfloat val) const
+	void Shader::SetUniform1f(const char* name, float val) const
 	{
-		glUniform1f(getUniformLocation(name), val);
+		glUniform1f(GetUniformLocation(name), val);
 	}
 
-	void Shader::setUniform2f(const GLchar* name, const glm::vec2& vector) const
+	void Shader::SetUniform2f(const char* name, const glm::vec2& vector) const
 	{
-		glUniform2f(getUniformLocation(name), vector.x, vector.y);
+		glUniform2f(GetUniformLocation(name), vector.x, vector.y);
 	}
 
-	void Shader::setUniform3f(const GLchar* name, const glm::vec3& vector) const
+	void Shader::SetUniform3f(const char* name, const glm::vec3& vector) const
 	{
-		glUniform3f(getUniformLocation(name), vector.x, vector.y, vector.z);
+		glUniform3f(GetUniformLocation(name), vector.x, vector.y, vector.z);
 	}
 
-	void Shader::setUniform4f(const GLchar* name, const glm::vec4& vector) const
+	void Shader::SetUniform4f(const char* name, const glm::vec4& vector) const
 	{
-		glUniform4f(getUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
+		glUniform4f(GetUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
 	}
 
-	void Shader::setUniformMat3(const GLchar* name, const glm::mat3& matrix) const
+	void Shader::SetUniformMat3(const char* name, const glm::mat3& matrix) const
 	{
-		glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
-	void Shader::setUniformMat3(const GLchar* name, const float* matrix) const
+	void Shader::SetUniformMat3(const char* name, const float* matrix) const
 	{
-		glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, matrix);
+		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, matrix);
 	}
 
-	void Shader::setUniformMat4(const GLchar* name, const glm::mat4& matrix) const
+	void Shader::SetUniformMat4(const char* name, const glm::mat4& matrix) const
 	{
-		glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
-	void Shader::setUniformMat4(const GLchar* name, const float* matrix) const
+	void Shader::SetUniformMat4(const char* name, const float* matrix) const
 	{
-		glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrix);
+		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, matrix);
 	}
 
-	GLint Shader::getUniformLocation(const std::string& name) const // To be instrumented
+	int Shader::GetUniformLocation(const std::string& name) const // To be instrumented
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -270,7 +272,7 @@ namespace Aurora {
 
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
-		const std::string& name = shader->getName();
+		const std::string& name = shader->GetName();
 		Add(name, shader);
 	}
 

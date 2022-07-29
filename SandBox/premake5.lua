@@ -2,10 +2,10 @@ project "SandBox"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
-    staticruntime "on"
+    staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
     files
     {
@@ -16,8 +16,8 @@ project "SandBox"
     includedirs
     {
         "%{wks.location}/Aurora/src",
-        "%{wks.location}/Aurora/deps/spdlog/include",
-        "%{wks.location}/Aurora/deps",
+        "%{wks.location}/Aurora/dependencies/spdlog/include",
+        "%{wks.location}/Aurora/dependencies",
         "%{IncludeDir.Glad}", -- These two should not be here but they give some dogshit include error
         "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
         "%{IncludeDir.ImGui}",-- This one also
@@ -64,6 +64,16 @@ project "SandBox"
 
     filter "configurations:Release"
         defines "AURORA_RELEASE"
+        runtime "Release"
+        optimize "Speed"
+        inlining "Auto"
+
+        links
+        {
+        }
+
+    filter "configurations:Dist"
+        defines "AURORA_DIST"
         runtime "Release"
         optimize "Speed"
         inlining "Auto"

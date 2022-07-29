@@ -2,23 +2,31 @@ include "Dependencies.lua"
 
 workspace "Aurora"
 
-    architecture "x64"
+    architecture "x86_64"
     startproject "Luna"
 
         configurations 
         {
             "Profile",
             "Debug",
-            "Release"
+            "Release",
+            "Dist"
+        }
+
+        flags
+        {
+            "MultiProcessorCompile"
         }
 
 outputdir = "%{cfg.architecture}-%{cfg.buildcfg}"
 
 group "Dependencies"
-    include "Aurora/deps/GLFW"
-    include "Aurora/deps/Glad"
-    include "Aurora/deps/ImGui/imgui"
-    include "Aurora/deps/optick"
+    include "Aurora/dependencies/GLFW"
+    include "Aurora/dependencies/Glad"
+    include "Aurora/dependencies/ImGui/imgui"
+    include "Aurora/dependencies/optick"
+    include "Aurora/dependencies/yaml-cpp"
+    include "Tools/BuildSystem"
 group ""
 
 group "Core"

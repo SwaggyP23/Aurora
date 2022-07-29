@@ -2,10 +2,10 @@ project "Aurora"
     kind "StaticLib"
     language "C++"
     cppdialect "C++17"
-    staticruntime "on"
+    staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("%{wks.location}/bin/Intermedieates/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
     pchheader "Aurorapch.h"
     pchsource "src/Aurorapch.cpp"
@@ -14,10 +14,13 @@ project "Aurora"
     {
         "src/**.h",
         "src/**.cpp",
-        "deps/stb_image/**.h",
-        "deps/stb_image/**.cpp",
-        "deps/glm/glm/**.hpp",
-        "deps/glm/glm/**.inl"
+        "dependencies/stb_image/**.h",
+        "dependencies/stb_image/**.cpp",
+        "dependencies/glm/glm/**.hpp",
+        "dependencies/glm/glm/**.inl",
+
+        "dependencies/ImGuizmo/ImGuizmo/ImGuizmo.h",
+        "dependencies/ImGuizmo/ImGuizmo/ImGuizmo.cpp"
     }
 
     defines
@@ -29,14 +32,17 @@ project "Aurora"
     includedirs
     {
         "src",
-        "deps/spdlog/include",
-        "%{IncludeDir.Glad}",
+        "dependencies/spdlog/include",
         "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
+        "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}",
+        "%{IncludeDir.Entt}",
+        "%{IncludeDir.Yaml}",
         "%{IncludeDir.Optick}",
-        "%{IncludeDir.Entt}"
+        "%{IncludeDir.choc}"
     }
 
     links
@@ -45,6 +51,7 @@ project "Aurora"
         "Glad",
         "ImGui",
         "Optick",
+        "yaml-cpp",
         "opengl32.lib"
     }
 
@@ -88,5 +95,18 @@ project "Aurora"
         {
         }
 
-    filter "files:deps/stb_image/**.cpp"
+    filter "configurations:Dist"
+        defines "AURORA_DIST"
+        runtime "Release"
+        optimize "Speed"
+        inlining "Auto"
+
+        links
+        {
+        }
+
+    filter "files:dependencies/stb_image/**.cpp"
+        flags { "NoPCH" }
+
+    filter "files:dependencies/ImGuizmo/**cpp"
         flags { "NoPCH" }

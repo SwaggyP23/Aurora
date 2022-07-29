@@ -1,5 +1,7 @@
 #pragma once
 
+// This should be changed from taking a plain old pointer to taking some sort of a weak pointer when i create it.
+
 #include "Scene.h"
 #include "Components.h"
 
@@ -13,13 +15,16 @@ namespace Aurora {
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
+		~Entity();
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
 			AR_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
+			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<T>(*this, component);
 
-			return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			return component;
 		}
 
 		template<typename T>
@@ -41,7 +46,7 @@ namespace Aurora {
 		template<typename T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.try_get<T>(m_EntityHandle) == nullptr ? false : true;
+			return m_Scene->m_Registry.try_get<T>(m_EntityHandle) ? true : false;
 		}
 
 		operator bool() const { return m_EntityHandle != entt::null; }

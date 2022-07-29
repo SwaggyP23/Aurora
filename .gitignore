@@ -1,8 +1,8 @@
 .vs/
 bin/
-Profiling/
 Build/
 Models/
+LogDump/
 
 Aurora.sln
 Aurora.vcxproj
@@ -30,3 +30,9 @@ Glad.vcxproj.user
 Glad.vcxproj.filters
 
 Optick.vcxproj
+
+yaml-cpp.vcxproj
+yaml-cpp.vcxproj.filters
+
+Premake.vcxproj
+Premake.vcxproj.filters

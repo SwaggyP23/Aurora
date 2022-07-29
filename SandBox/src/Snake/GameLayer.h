@@ -19,15 +19,13 @@ public:
 
 
 private:
-	Aurora::Ref<Aurora::OrthoGraphicCamera> m_OrthoCamera;
-	Aurora::Ref<Aurora::EditorCamera> m_Camera;
+	Aurora::EditorCamera m_Camera;
 
 	Aurora::Ref<Aurora::Texture> m_Texture;
 	Aurora::Ref<Aurora::Texture> m_AppTexture;
 	Aurora::Ref<Aurora::Texture> m_SnakeTexture;
 
 private: // ImGui stuff
-	bool m_Perspective = true;
 	bool m_GameOver = false;
 	bool m_Eaten = false;
 	bool m_Generated = false;

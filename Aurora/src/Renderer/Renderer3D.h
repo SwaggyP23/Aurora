@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Graphics/EditorCamera.h"
-#include "Graphics/OrthographicCamera.h"
 
 #include "RenderCommand.h"
 #include "RendererPorperties.h"
@@ -27,16 +26,19 @@ namespace Aurora {
 		static void Init();
 		static void ShutDown();
 
-		static void BeginScene(const Ref<EditorCamera>& camera);
-		static void BeginScene(const Ref<OrthoGraphicCamera>& camera);
+		static void OnWindowResize(uint32_t width, uint32_t height);
+
+		static void BeginScene(const Camera& camera, const glm::mat4& transform);
+		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
 		static void Flush();
 
-		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light = 0);
-		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f));
+		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light = 0, int entityID = -1);
+		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f), int entityID = -1);
 
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light = 0);
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f)); 
+		// Rotated Quad function are given the rotation in radians directly since that is what is stored in the TransformComponent
+		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light = 0, int entityID = -1);
+		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f), int entityID = -1);
 
 		struct Statistics
 		{

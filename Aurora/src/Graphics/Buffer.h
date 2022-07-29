@@ -1,12 +1,10 @@
 #pragma once
 
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#include "Core/Base.h"
 
-#include "Aurora.h"
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <string>
+#include <initializer_list>
+#include <vector>
 
 namespace Aurora {
 
@@ -19,38 +17,17 @@ namespace Aurora {
 	{
 		switch (type)
 		{
-		    case ShaderDataType::Float:   return 4;
-		    case ShaderDataType::Float2:  return 4 * 2;
-		    case ShaderDataType::Float3:  return 4 * 3;
-		    case ShaderDataType::Float4:  return 4 * 4;
-		    case ShaderDataType::Mat3:	  return 4 * 3 * 3;
-		    case ShaderDataType::Mat4:    return 4 * 4 * 4;
-		    case ShaderDataType::Int:	  return 4;
-		    case ShaderDataType::Int2:	  return 4 * 2;
-		    case ShaderDataType::Int3:	  return 4 * 3;
-		    case ShaderDataType::Int4:	  return 4 * 4;
-		    case ShaderDataType::Bool:    return 1;
-		}
-
-		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
-		return 0;
-	}
-
-	static uint32_t ShaderDataTypeToOpenGLType(ShaderDataType type)
-	{
-		switch (type)
-		{
-		case ShaderDataType::Float:   return GL_FLOAT;
-		case ShaderDataType::Float2:  return GL_FLOAT;
-		case ShaderDataType::Float3:  return GL_FLOAT;
-		case ShaderDataType::Float4:  return GL_FLOAT;
-		case ShaderDataType::Mat3:	  return GL_FLOAT;
-		case ShaderDataType::Mat4:    return GL_FLOAT;
-		case ShaderDataType::Int:	  return GL_INT;
-		case ShaderDataType::Int2:	  return GL_INT;
-		case ShaderDataType::Int3:	  return GL_INT;
-		case ShaderDataType::Int4:	  return GL_INT;
-		case ShaderDataType::Bool:    return GL_BOOL;
+			case ShaderDataType::Float:   return 4;
+			case ShaderDataType::Float2:  return 4 * 2;
+			case ShaderDataType::Float3:  return 4 * 3;
+			case ShaderDataType::Float4:  return 4 * 4;
+			case ShaderDataType::Mat3:	  return 4 * 3 * 3;
+			case ShaderDataType::Mat4:    return 4 * 4 * 4;
+			case ShaderDataType::Int:	  return 4;
+			case ShaderDataType::Int2:	  return 4 * 2;
+			case ShaderDataType::Int3:	  return 4 * 3;
+			case ShaderDataType::Int4:	  return 4 * 4;
+			case ShaderDataType::Bool:    return 1;
 		}
 
 		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
@@ -70,13 +47,9 @@ namespace Aurora {
 		bool normalized;
 
 		BufferElement() = default;
+		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
 
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
-			: name(name), type(type), size(ShaderDataTypeSize(type)), offset(0), normalized(normalized)
-		{
-		}
-
-		uint32_t getComponentCount() const;
+		uint32_t GetComponentCount() const;
 	};
 
 	//////////////////////////
@@ -92,11 +65,11 @@ namespace Aurora {
 		BufferLayout(const std::initializer_list<BufferElement>& initList)
 			: m_Elements(initList)
 		{
-			calcStrideAndOffset();
+			CalcStrideAndOffset();
 		}
 
-		inline uint32_t getStride() const { return m_Stride; }
-		inline const std::vector<BufferElement>& getElements() const { return m_Elements; }
+		inline uint32_t GetStride() const { return m_Stride; }
+		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 
 		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
@@ -104,7 +77,7 @@ namespace Aurora {
 		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
 
 	private:
-		void calcStrideAndOffset();
+		void CalcStrideAndOffset();
 
 	private:
 		std::vector<BufferElement> m_Elements;
@@ -131,8 +104,8 @@ namespace Aurora {
 
 		void SetData(const void* data, uint32_t size);
 
-		inline const BufferLayout& getBufferLayout() const { return m_Layout; }
-		void setLayout(const BufferLayout& layout) { m_Layout = layout; }
+		inline const BufferLayout& GetBufferLayout() const { return m_Layout; }
+		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
 
 
 	private:
@@ -144,7 +117,7 @@ namespace Aurora {
 	// INDEX BUFFER!!
 	//////////////////////////
 
-	// Only supports 32-bit index buffers
+	// Only supports 32-bit index buffers, should add support for 16-bit index buffers
 	class IndexBuffer
 	{
 	public:
@@ -158,7 +131,7 @@ namespace Aurora {
 		void bind() const;
 		void unBind() const;
 
-		inline uint32_t getCount() const { return m_Count; }
+		inline uint32_t GetCount() const { return m_Count; }
 
 	private:
 		uint32_t m_BufferId;
@@ -166,5 +139,3 @@ namespace Aurora {
 	};
 
 }
-
-#endif // !_BUFFER_H_
