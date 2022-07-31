@@ -17,8 +17,8 @@ namespace Aurora {
 		Shader(const std::string& filePath);
 		~Shader();
 
-		void bind() const;
-		void unBind() const;
+		void Bind() const;
+		void UnBind() const;
 
 		static Ref<Shader> Create(const std::string& filepath);
 
@@ -36,6 +36,7 @@ namespace Aurora {
 		void SetUniformMat4(const char* name, const float* matrix) const;
 
 		inline const std::string& GetName() const { return m_Name; }
+		inline const std::string& GetFilePath() const { return m_FilePath; }
 
 	private:
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);

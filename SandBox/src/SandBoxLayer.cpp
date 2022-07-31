@@ -27,15 +27,15 @@ void SandBoxLayer::OnAttach()
 	// For ground...
 	m_GroundVertexArray = Aurora::VertexArray::Create();
 	Aurora::Ref<Aurora::VertexBuffer> m_GroundVertexBuffer = Aurora::VertexBuffer::Create(groundVertices, sizeof(groundVertices));
-	m_GroundVertexBuffer->bind();
+	m_GroundVertexBuffer->Bind();
 	m_GroundVertexBuffer->SetLayout(m_GroundLayout);
 	m_GroundVertexArray->AddVertexBuffer(m_GroundVertexBuffer);
 	Aurora::Ref<Aurora::IndexBuffer> m_GroundIndexBuffer = Aurora::IndexBuffer::Create(groundIndices, sizeof(groundIndices) / sizeof(uint32_t));
-	m_GroundIndexBuffer->bind();
+	m_GroundIndexBuffer->Bind();
 	m_GroundVertexArray->SetIndexBuffer(m_GroundIndexBuffer);
 
-	m_GroundVertexBuffer->unBind();
-	m_GroundIndexBuffer->unBind();
+	m_GroundVertexBuffer->UnBind();
+	m_GroundIndexBuffer->UnBind();
 
 	// For sphere..
 	std::vector<glm::vec3> positions;
@@ -122,16 +122,16 @@ void SandBoxLayer::OnAttach()
 
 	m_SphereVertexArray = Aurora::VertexArray::Create();
 	Aurora::Ref<Aurora::VertexBuffer> m_SphereVertexBuffer = Aurora::VertexBuffer::Create(&data[0], (uint32_t)data.size() * sizeof(float));
-	m_SphereVertexBuffer->bind();
+	m_SphereVertexBuffer->Bind();
 	m_SphereVertexBuffer->SetLayout(m_SphereLayout);
 	m_SphereVertexArray->AddVertexBuffer(m_SphereVertexBuffer);
 
 	Aurora::Ref<Aurora::IndexBuffer> m_SphereIndexBuffer = Aurora::IndexBuffer::Create(&Sphereindices[0], (uint32_t)Sphereindices.size());
-	m_SphereIndexBuffer->bind();
+	m_SphereIndexBuffer->Bind();
 	m_SphereVertexArray->SetIndexBuffer(m_SphereIndexBuffer);
 
-	m_SphereVertexBuffer->unBind();
-	m_SphereIndexBuffer->unBind();
+	m_SphereVertexBuffer->UnBind();
+	m_SphereIndexBuffer->UnBind();
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,
@@ -221,73 +221,73 @@ void SandBoxLayer::OnAttach()
 	m_VertexArray = Aurora::VertexArray::Create();
 
 	Aurora::Ref<Aurora::VertexBuffer> m_VertexBuffer = Aurora::VertexBuffer::Create(vertices, sizeof(vertices));
-	m_VertexBuffer->bind();
+	m_VertexBuffer->Bind();
 	m_VertexBuffer->SetLayout(m_Layout);
 	m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 
 	Aurora::Ref<Aurora::IndexBuffer> m_IndexBuffer = Aurora::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
-	m_IndexBuffer->bind();
+	m_IndexBuffer->Bind();
 	m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 
-	m_VertexBuffer->unBind();
-	m_IndexBuffer->unBind();
+	m_VertexBuffer->UnBind();
+	m_IndexBuffer->UnBind();
 
 	// for light source
 	m_LightVertexArray = Aurora::VertexArray::Create();
-	m_VertexBuffer->bind();
+	m_VertexBuffer->Bind();
 	m_LightVertexArray->AddVertexBuffer(m_VertexBuffer);
-	m_IndexBuffer->bind();
+	m_IndexBuffer->Bind();
 	m_LightVertexArray->SetIndexBuffer(m_IndexBuffer);
 
-	m_VertexBuffer->unBind();
-	m_IndexBuffer->unBind();
+	m_VertexBuffer->UnBind();
+	m_IndexBuffer->UnBind();
 
 	// Creating textures
 	Aurora::Ref<Aurora::Texture> text1 = Aurora::Texture::Create("resources/textures/Lufi.png");
-	//text1->bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to bind and unbind
+	//text1->Bind(); // With OpenGL 4.5 and new CreateTextures api it is not necessary anymore to Bind and UnBind
 	text1->FlipTextureVertically(true);
 	text1->SetTextureWrapping(Aurora::TextureWrap::Repeat);
 	text1->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text1->LoadTextureData();
-	//text1->unBind();
+	//text1->UnBind();
 
 	Aurora::Ref<Aurora::Texture> text2 = Aurora::Texture::Create("resources/textures/Qiyana2.png");
-	//text2->bind(1); // Only before the draw call we should bind the texture to its corresponding texture slot
+	//text2->Bind(1); // Only before the draw call we should Bind the texture to its corresponding texture slot
 	text2->FlipTextureVertically(true);
 	text2->SetTextureWrapping(Aurora::TextureWrap::Repeat);
 	text2->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text2->LoadTextureData();
-	//text2->unBind();
+	//text2->UnBind();
 
 	Aurora::Ref<Aurora::Texture> text3 = Aurora::Texture::Create("resources/textures/checkerboard.png");
-	//text3->bind(2);
+	//text3->Bind(2);
 	text3->FlipTextureVertically(true);
 	text3->SetTextureWrapping(Aurora::TextureWrap::Repeat);
 	text3->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text3->LoadTextureData();
-	//text3->unBind();
+	//text3->UnBind();
 
 	Aurora::Ref<Aurora::Texture> text4 = Aurora::Texture::Create("resources/textures/map.jpg");
-	//text4->bind(3);
+	//text4->Bind(3);
 	text4->FlipTextureVertically(true);
 	text4->SetTextureWrapping(Aurora::TextureWrap::Repeat);
 	text4->SetTextureFiltering(Aurora::TextureFilter::MipMap_LinearLinear, Aurora::TextureFilter::Linear);
 	text4->LoadTextureData();
-	//text4->unBind();
+	//text4->UnBind();
 
 	m_Textures.push_back(text1);
 	m_Textures.push_back(text2);
 	m_Textures.push_back(text3);
 	m_Textures.push_back(text4);
 
-	m_Shaders.Get("Basic")->bind();
+	m_Shaders.Get("Basic")->Bind();
 	m_Shaders.Get("Basic")->SetUniform1i("texture1", 0);
 	m_Shaders.Get("Basic")->SetUniform1i("texture2", 1);
 
-	m_Shaders.Get("Ground")->bind();
+	m_Shaders.Get("Ground")->Bind();
 	m_Shaders.Get("Ground")->SetUniform1i("Groundtexture1", 2);
 
-	m_Shaders.Get("Sphere")->bind();
+	m_Shaders.Get("Sphere")->Bind();
 	m_Shaders.Get("Sphere")->SetUniform1i("SphereTexture1", 3);
 }
 
@@ -302,7 +302,7 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 
 	Aurora::Renderer::BeginScene(Aurora::CreateRef<Aurora::EditorCamera>(m_Camera));
 
-	m_Shaders.Get("Sphere")->bind();
+	m_Shaders.Get("Sphere")->Bind();
 	m_Shaders.Get("Sphere")->SetUniform4f("lightColor", m_LightColor);
 	m_Shaders.Get("Sphere")->SetUniform1f("blend", m_Blend);
 	m_Shaders.Get("Sphere")->SetUniform1f("ambientStrength", m_AmbLight);
@@ -321,10 +321,10 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 
 	model = glm::scale(model, m_SphereScales);
 
-	m_Textures[3]->bind(3);
+	m_Textures[3]->Bind(3);
 	Aurora::Renderer::DrawSphere(m_Shaders.Get("Sphere"), model, m_SphereVertexArray);
 
-	m_Shaders.Get("Basic")->bind();
+	m_Shaders.Get("Basic")->Bind();
 	m_Shaders.Get("Basic")->SetUniform4f("lightColor", m_LightColor);
 	m_Shaders.Get("Basic")->SetUniform1f("blend", m_Blend);
 	m_Shaders.Get("Basic")->SetUniform1f("ambientStrength", m_AmbLight);
@@ -347,12 +347,12 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 
 		model = glm::scale(model, m_Scales);
 
-		m_Textures[0]->bind();
-		m_Textures[1]->bind(1);
+		m_Textures[0]->Bind();
+		m_Textures[1]->Bind(1);
 		Aurora::Renderer::DrawQuad(m_Shaders.Get("Basic"), model, m_VertexArray);
 	}
 
-	m_Shaders.Get("Ground")->bind();
+	m_Shaders.Get("Ground")->Bind();
 	m_Shaders.Get("Ground")->SetUniform4f("lightColor", m_LightColor);
 	m_Shaders.Get("Ground")->SetUniform1f("blend", m_Blend);
 	m_Shaders.Get("Ground")->SetUniform1f("ambientStrength", m_AmbLight);
@@ -364,10 +364,10 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	model = glm::translate(glm::mat4(1.0f), m_GroundTranslations);
 	model = glm::scale(model, m_GroundScales);
 
-	m_Textures[2]->bind(2);
+	m_Textures[2]->Bind(2);
 	Aurora::Renderer::DrawQuad(m_Shaders.Get("Ground"), model, m_GroundVertexArray);
 
-	m_Shaders.Get("Light")->bind();
+	m_Shaders.Get("Light")->Bind();
 	m_Shaders.Get("Light")->SetUniform4f("lightColor", m_LightColor);
 	m_Shaders.Get("Light")->SetUniform1f("blend", m_Blend);
 	m_Shaders.Get("Light")->SetUniform1f("ambientStrength", m_AmbLight);

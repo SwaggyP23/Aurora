@@ -21,7 +21,8 @@ namespace Aurora {
 
 		double Elapsed() // returns time in seconds
 		{
-			return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
+			return std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(std::chrono::high_resolution_clock::now() - m_Start).count() / 1000.0f;
+			//return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
 		}
 
 		float ElapsedMillis() // returns time in microseconds
@@ -85,4 +86,4 @@ namespace Aurora {
 }
 
 #define AR_PERF_TIMER(name)     ::Aurora::PerformanceTimer AR_CONCAT_MACRO(timer, __LINE__)(name); AR_CONCAT_MACRO(timer, __LINE__).SetPerFrameTime(AR_CONCAT_MACRO(timer, __LINE__).GetPreviousTime())
-#define AR_ENDF_TIMER()              for(auto&[name, time] : PerformanceTimer::GetTimeMap()) { time = 0; }
+#define AR_ENDF_TIMER()         for(auto&[name, time] : PerformanceTimer::GetTimeMap()) { time = 0; }

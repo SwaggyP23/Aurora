@@ -24,6 +24,16 @@ namespace Aurora {
 			glBindTexture(TextureTarget(multisampled), id);
 		}
 
+		static void CreateRenderBuffer(uint32_t* outID, uint32_t count)
+		{
+			glCreateRenderbuffers(1, outID);
+		}
+
+		static void BindRenderBuffer(bool multisampled, uint32_t id)
+		{
+			glBindRenderbuffer(GL_RENDERBUFFER, id);
+		}
+
 		static void AttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, int index)
 		{
 			bool multiSampled = samples > 1;
@@ -47,26 +57,17 @@ namespace Aurora {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multiSampled), id, 0);
 		}
 
-		static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
+		static void AttachDepthRenderBuffer(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
 		{
 			bool multiSampled = samples > 1;
 
 			if (multiSampled)
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+				glNamedRenderbufferStorageMultisample(id, samples, format, width, height);
 			else
-			{
 				// 2. Allocated Memory for the textures
-				glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height); // TODO: In the future it could be something other than GL_UNSIGNED_BYTE therefore a conversion fucntion is needed on the type
+				glNamedRenderbufferStorage(id, format, width, height);
 
-				// TODO: Filtering and Wrapping Change to use my texture api and this stuff is to set from the framebufferSpecification
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			}
-
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multiSampled), id, 0);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachmentType, GL_RENDERBUFFER, id);
 		}
 
 		static bool IsDepthFormat(FrameBufferTextureFormat format)
@@ -120,7 +121,7 @@ namespace Aurora {
 
 		glDeleteFramebuffers(1, &m_BufferID);
 		glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
-		glDeleteTextures(1, &m_DepthAttachment);
+		glDeleteRenderbuffers(1, &m_DepthAttachment);
 	}
 
 	void Framebuffer::Invalidate() // When something has changed in the framebuffer and it is no longer valid this function is called
@@ -131,7 +132,7 @@ namespace Aurora {
 		{
 			glDeleteFramebuffers(1, &m_BufferID);
 			glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
-			glDeleteTextures(1, &m_DepthAttachment);
+			glDeleteRenderbuffers(1, &m_DepthAttachment);
 
 			m_ColorAttachments.clear();
 			m_DepthAttachment = 0;
@@ -165,12 +166,12 @@ namespace Aurora {
 
 		if (m_DepthAttachmentSpecification.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			Utils::CreateTextures(multiSample, &m_DepthAttachment, 1);
-			Utils::BindTexture(multiSample, m_DepthAttachment);
+			Utils::CreateRenderBuffer(&m_DepthAttachment, 1);
+			Utils::BindRenderBuffer(multiSample, m_DepthAttachment);
 			switch (m_DepthAttachmentSpecification.TextureFormat)
 			{
 			    case FrameBufferTextureFormat::DEPTH24STENCIL8:
-			    	Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+			    	Utils::AttachDepthRenderBuffer(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 			    	break;
 			}
 		}

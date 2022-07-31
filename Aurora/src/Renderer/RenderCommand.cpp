@@ -37,6 +37,21 @@ namespace Aurora {
 			return 0;
 		}
 
+		static GLenum GLEquationfromOpenGLEquation(OpenGLEquation eq)
+		{
+			switch (eq)
+			{
+			    case Aurora::OpenGLEquation::Add:                 return GL_FUNC_ADD;
+			    case Aurora::OpenGLEquation::Subtract:            return GL_FUNC_SUBTRACT;
+			    case Aurora::OpenGLEquation::ReverseSubtract:     return GL_FUNC_REVERSE_SUBTRACT;
+			    case Aurora::OpenGLEquation::Minimum:             return GL_MIN;
+			    case Aurora::OpenGLEquation::Maximum:             return GL_MAX;
+			}
+
+			AR_CORE_ASSERT(false, "Unkown Function Equation!");
+			return 0;
+		}
+
 		static GLenum GLFeatureFromFeatureControl(FeatureControl feat)
 		{
 			switch (feat)
@@ -62,6 +77,9 @@ namespace Aurora {
 		Enable(FeatureControl::DepthTesting);
 		SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
 
+		//Enable(FeatureControl::StencilTesting); // Not implemented currently
+		//SetFeatureControlFunction(FeatureControl::StencilTesting, OpenGLFunction::Always);
+
 		Enable(FeatureControl::Culling);
 		SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
 
@@ -83,6 +101,11 @@ namespace Aurora {
 		glDisable(Utils::GLFeatureFromFeatureControl(feature));
 	}
 
+	void RenderCommand::SetBlendFunctionEquation(OpenGLEquation equation)
+	{
+		glBlendEquation(Utils::GLEquationfromOpenGLEquation(equation));
+	}
+
 	void RenderCommand::SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function)
 	{
 		switch (feature)
@@ -102,7 +125,7 @@ namespace Aurora {
 
 	void RenderCommand::Clear()
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
 	void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -114,7 +137,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		vertexArray->bind();
+		vertexArray->Bind();
 		uint32_t count = indexCount ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}

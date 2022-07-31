@@ -2,6 +2,10 @@
 #include "Renderer3D.h"
 
 // Everything concerning the entityIDs is EDITOR-ONLY since when making a game no one cares about entity ids in the shaders
+// Aurora Uses a clockwise orientation to determine the backfaces of each quad for back face culling
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 namespace Aurora {
 
@@ -50,6 +54,8 @@ namespace Aurora {
 		glm::vec3 QuadNormalPositions[24];
 
 		uint32_t quadVertexCount = 24;
+
+		Ref<Shader> MaterialShader;
 
 		glm::vec2 textureCoords[24];
 
@@ -145,8 +151,9 @@ namespace Aurora {
 			samplers[i] = i;
 		// This is the sampler that will be submitted to OpenGL and in which OpenGL will be sampling the textures from according to the passed index
 
+		s_Data.MaterialShader = Shader::Create("resources/shaders/NewShader.glsl");
 		s_Data.QuadShader = Shader::Create("resources/shaders/MainShader.glsl");
-		s_Data.QuadShader->bind();
+		s_Data.QuadShader->Bind();
 		s_Data.QuadShader->SetUniformArrayi("u_Textures", samplers, s_Data.MaxTextureSlots);
 
 		s_Data.TextureSlots[0] = s_Data.WhiteTex; // index 0 is for the white texture.
@@ -261,7 +268,7 @@ namespace Aurora {
 
 		glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
 
-		s_Data.QuadShader->bind();
+		s_Data.QuadShader->Bind();
 		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
 		s_Data.QuadShader->SetUniform1i("material.specular", 2);
 		s_Data.QuadShader->SetUniform1f("material.shininess", 50.0f);
@@ -277,7 +284,7 @@ namespace Aurora {
 		s_Data.QuadShader->SetUniform1f("light[0].Quadratic", 0.0032f);
 
 		s_Data.QuadShader->SetUniform3f("u_ViewPosition", { 0.0f, 0.0f, 0.0f });
-		s_Data.QuadShader->SetUniformMat4("u_ViewProjmatrix", viewProj);
+		s_Data.QuadShader->SetUniformMat4("u_ViewProjMatrix", viewProj);
 
 		StartBatch();
 	}
@@ -286,7 +293,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		s_Data.QuadShader->bind();
+		s_Data.QuadShader->Bind();
 		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
 		s_Data.QuadShader->SetUniform1i("material.specular", 2);
 		s_Data.QuadShader->SetUniform1f("material.shininess", 50.0f);
@@ -301,8 +308,8 @@ namespace Aurora {
 		s_Data.QuadShader->SetUniform1f("light[0].Linear", 0.009f);
 		s_Data.QuadShader->SetUniform1f("light[0].Quadratic", 0.0032f);
 
-		s_Data.QuadShader->SetUniform3f("u_ViewPosition", camera.GetPosition());
-		s_Data.QuadShader->SetUniformMat4("u_ViewProjmatrix", camera.GetViewProjection());
+		s_Data.QuadShader->SetUniform3f("u_CameraPos", camera.GetPosition());
+		s_Data.QuadShader->SetUniformMat4("u_ViewProjMatrix", camera.GetViewProjection());
 		
 		StartBatch();
 	}
@@ -330,11 +337,12 @@ namespace Aurora {
 			// Casting to one byte to actually do a correct calculation, otherwise it tells you the number of elements only since these are QuadVertex.
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+
 			// Bind Textures
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-				s_Data.TextureSlots[i]->bind(i);
+				s_Data.TextureSlots[i]->Bind(i);
 
-			s_Data.QuadShader->bind();
+			s_Data.QuadShader->Bind();
 			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 
 			s_Data.Stats.DrawCalls++;
@@ -449,11 +457,8 @@ namespace Aurora {
 		const float whiteTexIndex = 0.0f; // White texture.
 		const float TilingFactor = 1.0f; // TilingFactor.
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotations.x, { 1.0f, 0.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), rotations.y, { 0.0f, 1.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), rotations.z, { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), scale);
+		glm::mat4 Rotation = glm::toMat4(glm::quat(rotations));
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * Rotation * glm::scale(glm::mat4(1.0f), scale);
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));
 
@@ -502,11 +507,8 @@ namespace Aurora {
 
 		const int light = 0;
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotations.x, { 1.0f, 0.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), rotations.y, { 0.0f, 1.0f, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), rotations.z, { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), scale);
+		glm::mat4 Rotation = glm::toMat4(glm::quat(rotations));
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * Rotation * glm::scale(glm::mat4(1.0f), scale);
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));
 

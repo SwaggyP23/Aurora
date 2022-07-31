@@ -52,8 +52,8 @@ namespace Aurora {
 		// Internal format specifies in what format the texture is to be stored on the GPU
 		// format Specifies the format of the pixel data.
 
-		void bind(uint32_t slot = 0) const;
-		void unBind(uint32_t slot = 0) const;
+		void Bind(uint32_t slot = 0) const;
+		void UnBind(uint32_t slot = 0) const;
 
 		inline unsigned int GetWidth() const { return m_Width; }
 		inline unsigned int GetHeight() const { return m_Height; }

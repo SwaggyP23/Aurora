@@ -53,7 +53,7 @@ namespace Aurora {
 		shader->SetUniformMat4("ml_matrix", model);
 		shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
-		VAO->bind();
+		VAO->Bind();
 		RenderCommand::DrawIndexed(VAO, true);
 	}
 
@@ -65,7 +65,7 @@ namespace Aurora {
 		shader->SetUniformMat4("ml_matrix", model);
 		shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
-		VAO->bind();
+		VAO->Bind();
 		RenderCommand::DrawIndexed(VAO, false);
 	}
 

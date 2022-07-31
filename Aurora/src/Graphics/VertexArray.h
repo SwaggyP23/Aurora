@@ -15,8 +15,8 @@ namespace Aurora {
 		void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
 		void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
-		void bind() const;
-		void unBind() const;
+		void Bind() const;
+		void UnBind() const;
 
 		inline const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers; }
 		inline const Ref<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }

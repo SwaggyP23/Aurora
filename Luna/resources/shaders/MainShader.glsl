@@ -1,6 +1,7 @@
 #pragma vertex
 #version 450 core
 
+// TODO: Change whatever this shit is with all these layouts
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec4 a_Color;
 layout(location = 2) in vec3 a_Normals;
@@ -10,7 +11,12 @@ layout(location = 5) in float a_TilingFactor;
 layout(location = 6) in int a_Light;
 layout(location = 7) in int a_EntityID;
 
-uniform mat4 u_ViewProjmatrix;
+//layout(std140, binding = 0) uniform Camera // This is the uniform buffer and this is written in vulkan type and vulkan does not support plain uniforms
+//{
+//	mat4 u_ViewProjMatrix;
+//};
+
+uniform mat4 u_ViewProjMatrix; // Temp untill i learn about UBOs
 
 struct VertexOutput
 {
@@ -23,9 +29,10 @@ struct VertexOutput
 
 flat out float TexIndex; // Needs to be float and flat so that it does not get interpolated
 flat out int lightCube;
-flat out int EntityID;
+flat out int v_EntityID; // Temporary untill i reach uniform buffer objects in learn opengl
 
 layout(location = 0) out VertexOutput Output;
+//layout(location = 5) out flat int v_EntityID; // 5 since VertexOutput contains 5 attributes
 
 void main()
 {
@@ -36,9 +43,9 @@ void main()
 	TexIndex = a_TexIndex;
 	Output.TilingFactor = a_TilingFactor;
 	lightCube = a_Light;
-	EntityID = a_EntityID;
+	v_EntityID = a_EntityID;
 
-	gl_Position = u_ViewProjmatrix * vec4(a_Position, 1.0f);
+	gl_Position = u_ViewProjMatrix * vec4(a_Position, 1.0f);
 }
 
 #pragma fragment
@@ -86,16 +93,18 @@ uniform Light light[1];
 
 flat in float TexIndex;
 flat in int lightCube;
-flat in int EntityID;
+flat in int v_EntityID; // Temporary untill i reach uniform buffer objects in learn opengl
 
 layout(location = 0) in VertexOutput Input;
+//layout(location = 5) in flat int v_EntityID;
 
 vec3 CalcPointLight(vec3 normals, vec3 viewDirection);
 
 void main()
 {
 	vec4 FragColor;
-	if(lightCube == 0){
+	if(lightCube == 0)
+	{
 		// Diffuse
 		vec3 norm = normalize(Input.Normals);
 		// Specular
@@ -109,9 +118,9 @@ void main()
 	{
 		FragColor = Input.Color;// This is for light source cubes
 	}
-
+	
 	o_Color = FragColor;
-	o_EntityID = EntityID;
+	o_EntityID = v_EntityID;
 }
 
 vec3 CalcPointLight(vec3 normals, vec3 viewDirection)

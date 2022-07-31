@@ -46,14 +46,14 @@ namespace Aurora {
 		glDeleteVertexArrays(1, &m_ArrayId);
 	}
 
-	void VertexArray::bind() const
+	void VertexArray::Bind() const
 	{
 		AR_PROFILE_FUNCTION();
 
 		glBindVertexArray(m_ArrayId);
 	}
 
-	void VertexArray::unBind() const
+	void VertexArray::UnBind() const
 	{
 		glBindVertexArray(0);
 	}
@@ -65,7 +65,7 @@ namespace Aurora {
 		AR_CORE_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "Vertex Buffer had no layout!");
 
 		glBindVertexArray(m_ArrayId);
-		vertexBuffer->bind();
+		vertexBuffer->Bind();
 
 		int index = 0;
 		const auto& layout = vertexBuffer->GetBufferLayout();
@@ -135,7 +135,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glBindVertexArray(m_ArrayId);
-		indexBuffer->bind();
+		indexBuffer->Bind();
 
 		m_IndexBuffer = indexBuffer;
 	}

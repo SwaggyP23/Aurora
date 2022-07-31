@@ -79,6 +79,7 @@ namespace Aurora {
 		bool operator==(const RefCountedObject& other) const { return m_Ptr == other.m_Ptr; }
 		bool operator!=(const RefCountedObject& other) const { return !(*this == other); }
 
+		operator bool() const { return m_Ptr != nullptr; }
 		operator T* () const { return m_Ptr; }
 		T* operator&() const { return m_Ptr; }
 

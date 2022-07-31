@@ -31,6 +31,37 @@ namespace Aurora {
 		return entity;
 	}
 
+	Entity Scene::CopyEntity(Entity entity)
+	{
+		AR_CORE_ASSERT(false, "Needs Rework");
+
+		static uint32_t nameIncremet = 1;
+		std::string name = entity.GetComponent<TagComponent>().Tag;
+		Entity result = CreateEntity(name.c_str());
+
+		glm::vec3 translation, rotation, scale;
+		translation = entity.GetComponent<TransformComponent>().Translation;
+		rotation = entity.GetComponent<TransformComponent>().Rotation;
+		scale = entity.GetComponent<TransformComponent>().Scale;
+		result.GetComponent<TransformComponent>().Translation = translation;
+		result.GetComponent<TransformComponent>().Rotation = rotation;
+		result.GetComponent<TransformComponent>().Scale = scale;
+
+		if (entity.HasComponent<SpriteRendererComponent>())
+		{
+			glm::vec4 color = entity.GetComponent<SpriteRendererComponent>().Color;
+			result.AddComponent<SpriteRendererComponent>(color);
+		}
+
+		if (entity.HasComponent<CameraComponent>())
+		{
+			CameraComponent cc = entity.GetComponent<CameraComponent>();
+			result.AddComponent<CameraComponent>(cc);
+		}
+
+		return result;
+	}
+
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);

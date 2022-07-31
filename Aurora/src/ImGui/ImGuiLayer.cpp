@@ -176,9 +176,9 @@ namespace Aurora {
 		m_Fonts.AddFont("Teko", FontIdentifier::Medium, 25.0f);
 		m_Fonts.AddFont("Teko", FontIdentifier::Light, 25.0f);
 
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.0f);
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Regular, 19.0f);
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.0f);
+		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.5f);
+		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Regular, 19.5f);
+		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.5f);
 
 		m_Fonts.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
 

@@ -92,14 +92,14 @@ namespace Aurora {
 		glDeleteBuffers(1, &m_BufferID);
 	}
 
-	void VertexBuffer::bind() const
+	void VertexBuffer::Bind() const
 	{
 		AR_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 	}
 
-	void VertexBuffer::unBind() const
+	void VertexBuffer::UnBind() const
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -145,14 +145,14 @@ namespace Aurora {
 		glDeleteBuffers(1, &m_BufferId);
 	}
 
-	void IndexBuffer::bind() const
+	void IndexBuffer::Bind() const
 	{
 		AR_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
 	}
 
-	void IndexBuffer::unBind() const
+	void IndexBuffer::UnBind() const
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}

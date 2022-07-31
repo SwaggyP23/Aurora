@@ -182,14 +182,14 @@ namespace Aurora {
 		return program;
 	}
 
-	void Shader::bind() const
+	void Shader::Bind() const
 	{
 		AR_PROFILE_FUNCTION();
 
 		glUseProgram(m_ShaderID);
 	}
 
-	void Shader::unBind() const
+	void Shader::UnBind() const
 	{
 		glUseProgram(0);
 	}

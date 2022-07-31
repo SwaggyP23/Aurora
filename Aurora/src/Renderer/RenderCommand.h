@@ -10,10 +10,19 @@ namespace Aurora {
 	enum class FeatureControl
 	{
 		None = 0,
-		DepthTesting,
-		Culling,
 		Blending,
-		StencilTesting
+		Culling,
+		DepthTesting,
+		StencilTesting // Not implemented yet!
+	};
+
+	enum class OpenGLEquation
+	{
+		Add,
+		Subtract,
+		ReverseSubtract,
+		Minimum,
+		Maximum
 	};
 
 	enum class OpenGLFunction
@@ -57,6 +66,7 @@ namespace Aurora {
 		static void Enable(FeatureControl feature); // TODO: Think of better naming for this api since its a disaster
 		static void Disable(FeatureControl feature);
 		static void SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function);
+		static void SetBlendFunctionEquation(OpenGLEquation equation);
 
 		static void SetClearColor(const glm::vec4& color);
 		static void Clear();

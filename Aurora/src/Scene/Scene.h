@@ -18,6 +18,7 @@ namespace Aurora {
 		static Ref<Scene> Create();
 
 		Entity CreateEntity(const char* name = "");
+		Entity CopyEntity(Entity entity);
 		void DestroyEntity(Entity entity);
 		void Clear();
 		inline size_t Size() const { return m_Registry.size(); }

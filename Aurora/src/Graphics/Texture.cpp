@@ -176,7 +176,7 @@ namespace Aurora {
 		Utils::ImageLoader::Get().FreeImage();
 	}
 
-	void Texture::bind(uint32_t slot) const
+	void Texture::Bind(uint32_t slot) const
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -184,7 +184,7 @@ namespace Aurora {
 
 	}
 
-	void Texture::unBind(uint32_t slot) const
+	void Texture::UnBind(uint32_t slot) const
 	{
 		// This currently maybe works, however it throws OpenGL error 1282, need to take a look at the specification and if ever that error pops up check here
 		glBindTextureUnit(slot, 0);
