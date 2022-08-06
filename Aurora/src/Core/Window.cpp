@@ -312,6 +312,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
+		m_Window = nullptr;
 		glfwTerminate();
 	}
 

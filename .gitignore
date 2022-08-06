@@ -1,6 +1,7 @@
 .vs/
 bin/
 LogDump/
+SandBox/resources/textures/
 
 # specific models to ignore since they are not working
 Luna/resources/models/brz
