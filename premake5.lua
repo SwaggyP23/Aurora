@@ -26,6 +26,8 @@ group "Dependencies"
     include "Aurora/dependencies/ImGui/imgui"
     include "Aurora/dependencies/optick"
     include "Aurora/dependencies/yaml-cpp"
+    include "Aurora/dependencies/zlib"
+    include "Aurora/dependencies/assimp"
     include "Tools/BuildSystem"
 group ""
 

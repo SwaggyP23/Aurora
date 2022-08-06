@@ -5,7 +5,23 @@
 
 namespace Aurora {
 
+	RenderFlags RenderCommand::m_Flags;
+
 	namespace Utils {
+
+		static GLenum GLTypeFromRenderFlags(RenderFlags flag)
+		{
+			switch (flag)
+			{
+			    case Aurora::RenderFlags::None:            return GL_NONE;
+			    case Aurora::RenderFlags::Triangles:       return GL_TRIANGLES;
+			    case Aurora::RenderFlags::WireFrame:       return GL_LINES;
+			    case Aurora::RenderFlags::Vertices:        return GL_POINTS;
+			}
+
+			AR_CORE_ASSERT(false, "Unkown Render Flag!");
+			return 0;
+		}
 
 		static GLenum GLFunctionFromEnum(OpenGLFunction func)
 		{
@@ -91,6 +107,11 @@ namespace Aurora {
 	{
 	}
 
+	void RenderCommand::SetRenderFlag(RenderFlags flag)
+	{
+		m_Flags = flag;
+	}
+
 	void RenderCommand::Enable(FeatureControl feature)
 	{
 		glEnable(Utils::GLFeatureFromFeatureControl(feature));
@@ -138,8 +159,8 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		vertexArray->Bind();
-		uint32_t count = indexCount ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
+		glDrawElements(Utils::GLTypeFromRenderFlags(m_Flags), count, GL_UNSIGNED_INT, nullptr);
 	}
 
 }

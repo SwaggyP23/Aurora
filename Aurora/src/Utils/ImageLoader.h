@@ -1,29 +1,31 @@
 #pragma once
 
-#include <string>
-#include <stb_image/stb_image.h>
-
 namespace Aurora {
 
 	namespace Utils {
 
+		struct ImageData
+		{
+			uint8_t* PixelData = nullptr;
+			uint32_t Width = 0;
+			uint32_t Height = 0;
+			uint16_t Channels = 0;
+		};
+
 		class ImageLoader
 		{
 		public:
-			static ImageLoader& Get();
-			static void LoadImageFile(const std::string& filePath);
+			static ImageData LoadImageFile(const std::string& filePath);
 			static void FreeImage();
+
+			// This is to be used before calling LoadImageFile()!
 			static void SetFlipVertically(bool boolean);
 
-			inline unsigned char* GetData() const { return m_Data; }
-			inline uint32_t GetWidth() const { return m_Width; }
-			inline uint32_t GetHeight() const { return m_Height; }
-			inline uint32_t GetChannels() const { return m_Channels; }
+			static inline ImageData GetImageData() { return m_ImageData; }
 
 		private:
-			ImageLoader() = default;
-			static uint8_t* m_Data;
-			static uint32_t m_Width, m_Height, m_Channels;
+			static ImageData m_ImageData;
+			static bool m_Loading;
 
 		};
 

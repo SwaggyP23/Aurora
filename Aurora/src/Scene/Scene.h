@@ -1,7 +1,11 @@
 #pragma once
 
+#include "Core/Base.h"
 #include "Core/TimeStep.h"
 #include "Graphics/EditorCamera.h"
+#include "Graphics/Shader.h"
+#include "Graphics/Model.h"
+#include "Graphics/CubeTexture.h" // TODO: Temp...
 
 #include <entt/entt.hpp>
 
@@ -35,6 +39,9 @@ namespace Aurora {
 		void OnComponentAdded(Entity entity, T& component); // If we have custom components this will not work since it will need the proper overload which is not provided
 
 	private:
+		Ref<Shader> m_ModelShader; // TODO: These are both Temp...
+		Ref<CubeTexture> m_EnvironmentMap;
+
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 

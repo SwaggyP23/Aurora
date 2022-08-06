@@ -47,24 +47,27 @@ namespace Aurora {
 		void SetTextureWrapping(TextureWrap wrapMode) const;
 		void SetTextureFiltering(TextureFilter minFilter = TextureFilter::Nearest, TextureFilter magFilter = TextureFilter::Nearest) const;
 
+		// Set to true before calling LoadTextureData() if you want to flip the texture!
 		void FlipTextureVertically(bool state);
 		void LoadTextureData();
-		// Internal format specifies in what format the texture is to be stored on the GPU
-		// format Specifies the format of the pixel data.
 
 		void Bind(uint32_t slot = 0) const;
 		void UnBind(uint32_t slot = 0) const;
 
-		inline unsigned int GetWidth() const { return m_Width; }
-		inline unsigned int GetHeight() const { return m_Height; }
-		inline unsigned int GetTextureID() const { return m_TextID; }
+		inline uint32_t GetWidth() const { return m_Width; }
+		inline uint32_t GetHeight() const { return m_Height; }
+		inline uint32_t GetTextureID() const { return m_TextureID; }
 
-		bool operator==(const Texture& other) const { return m_TextID == other.m_TextID; }
+		bool operator==(const Texture& other) const { return m_TextureID == other.m_TextureID; }
 
 	private:
-		uint32_t m_TextID = 0;
+		uint32_t m_TextureID = 0;
 		std::string m_Path;
+
 		uint32_t m_Width, m_Height;
+
+		// Internal format specifies in what format the texture is to be stored on the GPU
+        // format Specifies the format of the pixel data.
 		int m_InternalFormat;
 		uint32_t/*GLenum*/ m_DataFormat;
 

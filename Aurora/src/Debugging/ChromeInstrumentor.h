@@ -46,6 +46,9 @@ namespace Aurora {
         {
             std::lock_guard lock(m_Mutex);
             
+            if (!std::filesystem::exists(filepath))
+                std::filesystem::create_directory(filepath);
+
             m_OutputStream.open(filepath);
             if (m_OutputStream.is_open())
             {
@@ -127,6 +130,10 @@ namespace Aurora {
 
     class InstrumentationTimer
     {
+    private:
+        using HighResClock = std::chrono::high_resolution_clock;
+        using MicroSeconds = std::chrono::microseconds;
+
     public:
         InstrumentationTimer(const char* name)
             : m_Name(name), m_Stopped(false)
@@ -142,10 +149,10 @@ namespace Aurora {
 
         void Stop()
         {
-            std::chrono::high_resolution_clock::time_point endTimepoint = std::chrono::high_resolution_clock::now();
+            HighResClock::time_point endTimepoint = HighResClock::now();
 
             auto highResStart = FloatingPointMicroseconds{ m_Start.time_since_epoch() };
-            auto elapsedTime = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch() - std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch();
+            auto elapsedTime = std::chrono::time_point_cast<MicroSeconds>(endTimepoint).time_since_epoch() - std::chrono::time_point_cast<MicroSeconds>(m_Start).time_since_epoch();
 
             Instrumentor::Get().WriteProfile({ m_Name, highResStart, elapsedTime, std::this_thread::get_id() });
 
@@ -154,7 +161,7 @@ namespace Aurora {
 
     private:
         const char* m_Name;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
+        std::chrono::time_point<HighResClock> m_Start;
         bool m_Stopped;
 
     };

@@ -8,8 +8,6 @@
  * Create Weak_Pointers
  */
 
-#include "Logging/Log.h"
-
 template<typename... > struct typelist;
 
 namespace Aurora {

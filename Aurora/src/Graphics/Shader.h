@@ -11,6 +11,15 @@
 
 namespace Aurora {
 
+	namespace Utils {
+
+		enum class ShaderErrorType : uint16_t
+		{
+			None = 0, VertexShader, FragmentShader, GeometryShader
+		};
+
+	}
+
 	class Shader
 	{
 	public:
@@ -42,6 +51,8 @@ namespace Aurora {
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
 		uint32_t CreateShaderProgram(const std::unordered_map<uint32_t/*GLenum*/, std::string>& shaderSources) const;
 		int GetUniformLocation(const std::string& name) const;
+		void CheckProgramLinkage(uint32_t program, const std::vector<uint32_t>& shaderIDs) const;
+		void CheckShaderCompilation(uint32_t shader, Utils::ShaderErrorType type) const;
 
 	private:
 		uint32_t m_ShaderID;

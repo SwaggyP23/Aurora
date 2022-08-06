@@ -23,6 +23,7 @@ namespace Aurora {
 
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
+		Entity m_GroundEntity;
 		Entity m_HoveredEntity;
 		int m_NameCounter = 0;
 
@@ -113,7 +114,7 @@ namespace Aurora {
 
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;
-		bool m_ImGuiItemFocused = false;
+		bool m_ImGuiItemHovered = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

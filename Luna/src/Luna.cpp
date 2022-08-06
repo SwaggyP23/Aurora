@@ -30,8 +30,9 @@ namespace Aurora {
 		specification.StartMaximized = true;
 		specification.SetWindowResizable = true;
 		specification.VSync = true;
+		specification.ApplicationWindowIconPath = "../Resources/Icons/AuroraIcon1.png";
 
-		//specification.WorkingDirectory // Needs to be handled
+		//specification.WorkingDirectory // TODO: Needs to be handled...
 
 		return new Luna(specification);
 	}

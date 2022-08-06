@@ -3,6 +3,7 @@
 // TODO: to be added, mesh components by refering to darianopolis on discord
 
 #include "SceneCamera.h"
+#include "Graphics/Model.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -10,6 +11,8 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace Aurora {
+
+	// TODO: Add the UUID component
 
 	struct TagComponent
 	{
@@ -22,6 +25,7 @@ namespace Aurora {
 
 	};
 
+	// TODO: Use quaternions for rotation...
 	struct TransformComponent
 	{
 		glm::vec3 Translation{ 0.0f }, Rotation{ 0.0f }, Scale{ 1.0f }; // The rotation is stored in radians
@@ -40,6 +44,19 @@ namespace Aurora {
 
 	};
 
+	// TODO: Rework...
+	struct ModelComponent
+	{
+		Model model;
+
+		ModelComponent() = default;
+		ModelComponent(const std::string& filepath)
+			: model(filepath) {}
+		ModelComponent(const ModelComponent&) = default;
+
+	};
+
+	// TODO: Rework...
 	struct SpriteRendererComponent
 	{// This should contain a Ref<Material/MaterialInstance> and a shader to that material...(Materials are capable of holding both the shader and data
 		glm::vec4 Color{ 1.0f };

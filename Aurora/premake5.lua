@@ -42,11 +42,13 @@ project "Aurora"
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Yaml}",
         "%{IncludeDir.Optick}",
-        "%{IncludeDir.choc}"
+        "%{IncludeDir.choc}",
+        "%{IncludeDir.assimp}"
     }
 
     links
     {
+        "Assimp",
         "GLFW",
         "Glad",
         "ImGui",

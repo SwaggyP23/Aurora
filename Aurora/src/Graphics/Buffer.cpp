@@ -5,6 +5,23 @@
 
 namespace Aurora {
 
+	namespace Utils {
+
+		static GLenum GLDrawHintTypeFromEnum(VertexBufferDrawHint hint)
+		{
+			switch (hint)
+			{
+			    case Aurora::VertexBufferDrawHint::None:        return GL_NONE;
+			    case Aurora::VertexBufferDrawHint::Static:      return GL_STATIC_DRAW;
+			    case Aurora::VertexBufferDrawHint::Dynamic:     return GL_DYNAMIC_DRAW;
+			}
+
+			AR_CORE_ASSERT(false, "Unkown draw hint type!");
+			return 0;
+		}
+
+	}
+
 	//////////////////////////
 	// BUFFER ELEMENT!!
 	//////////////////////////
@@ -57,32 +74,32 @@ namespace Aurora {
 	// VERTEX BUFFER!!
 	//////////////////////////
 
-	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, VertexBufferDrawHint drawHint)
 	{
-		return CreateRef<VertexBuffer>(size);
+		return CreateRef<VertexBuffer>(size, drawHint);
 	}
 
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, VertexBufferDrawHint drawHint)
 	{
-		return CreateRef<VertexBuffer>(vertices, size);
+		return CreateRef<VertexBuffer>(vertices, size, drawHint);
 	}
 
-	VertexBuffer::VertexBuffer(uint32_t size)
+	VertexBuffer::VertexBuffer(uint32_t size, VertexBufferDrawHint drawHint)
 	{
 		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, size, nullptr, Utils::GLDrawHintTypeFromEnum(drawHint));
 	}
 
-	VertexBuffer::VertexBuffer(float* vertices, uint32_t size)
+	VertexBuffer::VertexBuffer(float* vertices, uint32_t size, VertexBufferDrawHint drawHint)
 	{
 		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ARRAY_BUFFER, size, (const void*)vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, size, (const void*)vertices, Utils::GLDrawHintTypeFromEnum(drawHint));
 	}
 
 	VertexBuffer::~VertexBuffer()

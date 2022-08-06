@@ -2,9 +2,12 @@
 #include "Scene.h"
 #include "Entity.h"
 
+#include "Graphics/Model.h"
 #include "Components.h"
 #include "ScriptableEntity.h"
 #include "Renderer/Renderer3D.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Aurora {
 
@@ -15,6 +18,8 @@ namespace Aurora {
 
 	Scene::Scene()
 	{
+		m_ModelShader = Shader::Create("resources/shaders/model.glsl"); // TODO: Temp...
+		m_EnvironmentMap = CubeTexture::Create("resources/textures/skybox");
 	}
 
 	Scene::~Scene()
@@ -76,6 +81,8 @@ namespace Aurora {
 	{
 		Renderer3D::BeginScene(camera);
 
+		Renderer3D::DrawSkyBox(m_EnvironmentMap);
+
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)
 		{
@@ -91,6 +98,24 @@ namespace Aurora {
 			auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
 			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 0, (int)entity);
+		}
+
+		auto ModelView = m_Registry.view<TransformComponent, ModelComponent>(); // TODO: Rework...!!!
+		for (auto entity : ModelView)
+		{
+			auto[transform, modelComp] = ModelView.get<TransformComponent, ModelComponent>(entity);
+
+			auto model = modelComp.model;
+
+			auto rotation = glm::toMat4(glm::quat(transform.Rotation));
+			auto trans = glm::translate(glm::mat4(1.0f), transform.Translation) * rotation * glm::scale(glm::mat4(1.0f), transform.Scale);
+
+			m_ModelShader->Bind();
+			m_ModelShader->SetUniform1i("u_EntityID", (uint32_t)entity);
+			m_ModelShader->SetUniformMat4("model", glm::value_ptr(trans));
+			m_ModelShader->SetUniformMat4("viewproj", glm::value_ptr(camera.GetViewProjection()));
+			m_ModelShader->SetUniform3f("lightPos", { 1.2f, 3.0f, 2.0f });
+			model.Draw(*(m_ModelShader.raw()));
 		}
 
 		Renderer3D::EndScene();
@@ -198,6 +223,11 @@ namespace Aurora {
 	{
 		if(m_ViewportWidth > 0 &&  m_ViewportHeight > 0)
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<ModelComponent>(Entity entity, ModelComponent& component)
+	{
 	}
 
 	template<>

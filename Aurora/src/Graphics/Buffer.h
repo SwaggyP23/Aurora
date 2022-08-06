@@ -50,6 +50,7 @@ namespace Aurora {
 		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
 
 		uint32_t GetComponentCount() const;
+
 	};
 
 	//////////////////////////
@@ -82,22 +83,30 @@ namespace Aurora {
 	private:
 		std::vector<BufferElement> m_Elements;
 		uint32_t m_Stride;
+
 	};
 
 	//////////////////////////
 	// VERTEX BUFFER!!
 	//////////////////////////
 
+	enum class VertexBufferDrawHint
+	{
+		None = 0,
+		Static,
+		Dynamic
+	};
+
 	class VertexBuffer
 	{
 	public:
 		VertexBuffer() = default;
-		VertexBuffer(uint32_t size);
-		VertexBuffer(float* vertices, uint32_t size);
+		VertexBuffer(uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
+		VertexBuffer(float* vertices, uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
 		~VertexBuffer();
 
-		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
 
 		void Bind() const;
 		void UnBind() const;
@@ -111,6 +120,8 @@ namespace Aurora {
 	private:
 		uint32_t m_BufferID;
 		BufferLayout m_Layout;
+		VertexBufferDrawHint m_DrawHint;
+
 	};
 
 	//////////////////////////
@@ -136,6 +147,7 @@ namespace Aurora {
 	private:
 		uint32_t m_BufferId;
 		uint32_t m_Count;
+
 	};
 
 }

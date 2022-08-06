@@ -119,7 +119,9 @@ void main()
 		FragColor = Input.Color;// This is for light source cubes
 	}
 	
+//	FragColor = vec4(0.1f, 0.1f, 0.1f, 1.0f);
 	o_Color = FragColor;
+	//o_Color = Input.Color;
 	o_EntityID = v_EntityID;
 }
 
@@ -137,7 +139,7 @@ vec3 CalcPointLight(vec3 normals, vec3 viewDirection)
 
 		// Ambient
 		ambient = light[i].Ambient * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
-		ambient *= attenuation;
+		ambient *= attenuation / attenuation;
 		Total += ambient;
 
 		// Diffuse
@@ -145,15 +147,15 @@ vec3 CalcPointLight(vec3 normals, vec3 viewDirection)
 		lightDirection = normalize(light[0].Direction); // This is for directional lighting
 		diffuseImpact = max(dot(normals, lightDirection), 0.0f);
 		diffuse = light[i].Diffuse * diffuseImpact * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
-		diffuse *= attenuation;
+		diffuse *= attenuation / attenuation;
 		Total += diffuse;
 
 		// Specular
-		reflectionDir = reflect(-lightDirection, normals);
-		spec = pow(max(dot(reflectionDir, viewDirection), 0.0f), material.shininess);
-		specular = light[i].Specular * spec * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
-		specular *= attenuation;
-		Total += specular;
+//		reflectionDir = reflect(-lightDirection, normals);
+//		spec = pow(max(dot(reflectionDir, viewDirection), 0.0f), material.shininess);
+//		specular = light[i].Specular * spec * texture(u_Textures[int(TexIndex)], Input.TexCoords).rgb;
+//		specular *= attenuation;
+//		Total += specular;
 	}
 
 	return Total;

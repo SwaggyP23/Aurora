@@ -5,9 +5,6 @@
 #include "Events/KeyEvents.h"
 #include "Graphics/Context.h"
 
-#include <glad/glad.h>
-#include <glfw/glfw3.h>
-#include <imgui/imgui.h>
 #include <functional>
 
 struct GLFWwindow;
@@ -22,6 +19,8 @@ namespace Aurora {
 		bool VSync = true;
 		bool Resizable = false;
 		bool Decorated = true;
+
+		std::string WindowIconPath;
 
 		std::function<void(Event&)> EventCallback;
 	};
@@ -40,20 +39,22 @@ namespace Aurora {
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_Specification.EventCallback = callback; }
 
-		void Maximize();
-		void CentreWindow();
+		void CreateMaximized();
+		void CreateCentred();
 
 		void SetVSync(bool state);
 		inline bool IsVSync() const { return m_Specification.VSync; }
 
 		void PollEvents() const;
 		void Update() const;
+		void Maximize() const;
 
 		inline uint32_t GetWidth() const { return m_Specification.Width; }
 		inline uint32_t GetHeight() const { return m_Specification.Height; }
 		inline GLFWwindow* GetWindowPointer() const { return m_Window; }
 
 	private:
+		void SetIconImage();
 		void SetGLFWCallbacks();
 		void ShutDown();
 

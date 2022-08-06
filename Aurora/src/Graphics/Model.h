@@ -1,22 +1,86 @@
 #pragma once
 
-#include "Core/Base.h"
+#ifndef MODEL_H
+#define MODEL_H
+
 #include "Mesh.h"
+
+#include <string>
+#include <vector>
+
+struct aiScene;
+struct aiNode;
+struct aiMesh;
+struct aiMaterial;
+enum aiTextureType;
+
+namespace Aurora {
+
+    class Model
+    {
+    public:
+        // model data 
+        std::vector<TextureMesh> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+        std::vector<Mesh>    meshes;
+        std::string directory;
+        bool gammaCorrection;
+
+        Model() = default;
+        // constructor, expects a filepath to a 3D model.
+        Model(std::string path, bool gamma = false);
+
+        // draws the model, and thus all its meshes
+        void Draw(Aurora::Shader& shader);
+
+    private:
+        // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
+        void loadModel(std::string& path);
+
+        // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+        void processNode(aiNode* node, const aiScene* scene);
+
+        Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+
+        // checks all material textures of a given type and loads the textures if they're not loaded yet.
+        // the required info is returned as a Texture struct.
+		std::vector<TextureMesh> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+
+    };
+
+}
+
+#endif
+/*
+
+#include "Core/Base.h"
+#include "Texture.h"
+#include "Mesh.h"
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 namespace Aurora {
 
 	class Model
 	{
 	public:
-		Model(const std::string& path/*material*/);
+		Model() = default;
+		Model(const std::string& path/*material);
 		~Model();
 
 		void Draw();
 
-		inline const Ref<Mesh>& GetMesh() const { return m_Mesh; }
+		inline const std::vector<Mesh>& GetMesh() const { return m_Meshes; }
+		
+	private:
+		void processNode(aiNode* node, const aiScene* scene);
+		Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
 	private:
-		Ref<Mesh> m_Mesh;
+		std::vector<Mesh> m_Meshes;
+		std::vector<Texture> m_Textures;
+		std::string m_Directory;
 
 		struct VertexSet
 		{
@@ -44,4 +108,4 @@ namespace Aurora {
 
 	};
 
-}
+}*/

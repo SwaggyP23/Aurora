@@ -8,6 +8,10 @@ namespace Aurora {
 
 	class Timer
 	{
+	private:
+		using HighResClock = std::chrono::high_resolution_clock;
+		using NanoSeconds = std::chrono::nanoseconds;
+
 	public:
 		Timer()
 		{
@@ -16,22 +20,21 @@ namespace Aurora {
 
 		void Reset()
 		{
-			m_Start = std::chrono::high_resolution_clock::now();
+			m_Start = HighResClock::now();
 		}
 
 		double Elapsed() // returns time in seconds
 		{
-			return std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(std::chrono::high_resolution_clock::now() - m_Start).count() / 1000.0f;
-			//return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
+			return std::chrono::duration_cast<NanoSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
 		}
 
-		float ElapsedMillis() // returns time in microseconds
+		float ElapsedMillis() // returns time in milliseconds
 		{
 			return (float)Elapsed() * 1000.0f;
 		}
 
 	private:
-		std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
+		std::chrono::time_point<HighResClock> m_Start;
 	};
 
 	class ScopedTimer

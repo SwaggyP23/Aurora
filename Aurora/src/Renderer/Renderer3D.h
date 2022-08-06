@@ -7,6 +7,7 @@
 
 #include "Graphics/VertexArray.h"
 #include "Graphics/Texture.h"
+#include "Graphics/CubeTexture.h"
 #include "Graphics/Shader.h"
 
 /*
@@ -32,6 +33,8 @@ namespace Aurora {
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
 		static void Flush();
+
+		static void DrawSkyBox(const Ref<CubeTexture>& skybox);
 
 		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light = 0, int entityID = -1);
 		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f), int entityID = -1);

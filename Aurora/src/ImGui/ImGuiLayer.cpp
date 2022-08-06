@@ -3,6 +3,10 @@
 
 #include "Core/Application.h"
 
+#include <glm/glm.hpp>
+
+#include <glfw/glfw3.h>
+
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_glfw.h>
 #include <ImGui/imgui_impl_opengl3.h>
@@ -104,6 +108,8 @@ namespace Aurora {
 
 	void ImGuiLayer::SetDarkThemeColor()
 	{
+		AR_PROFILE_FUNCTION();
+
 		auto& colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
 
@@ -157,6 +163,8 @@ namespace Aurora {
 
 	void ImGuiLayer::LoadAndAddFonts()
 	{
+		AR_PROFILE_FUNCTION();
+
 		// Loading default fonts
 		m_Fonts.LoadFont("OpenSans", "resources/fonts/OpenSans");
 		m_Fonts.LoadFont("Teko", "resources/fonts/Teko");

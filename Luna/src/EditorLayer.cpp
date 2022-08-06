@@ -1,10 +1,5 @@
 #include "EditorLayer.h"
 
-#include "Scene/Components.h"
-#include "Scene/SceneSerializer.h"
-#include "Utils/UtilFunctions.h"
-#include "Utils/Math.h"
-
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include <ImGuizmo/ImGuizmo.h>
@@ -29,14 +24,13 @@ namespace Aurora {
 				ImGui::EndTooltip();
 			}
 		}
-
 	}
 
 #pragma region EditorLayerMainMethods
 
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
-		m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
+		m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
 	{
 	}
 
@@ -53,6 +47,16 @@ namespace Aurora {
 		m_EditorScene = Scene::Create();
 		m_ActiveScene = m_EditorScene;
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
+
+		auto plane = m_ActiveScene->CreateEntity();
+		m_GroundEntity = plane;
+		auto& name = m_GroundEntity.GetComponent<TagComponent>();
+		name.Tag = "Floor plane";
+		auto& tc = m_GroundEntity.GetComponent<TransformComponent>();
+		tc.Scale = glm::vec3{ 200.0f, 0.5f, 200.0f };
+		auto& sp = m_GroundEntity.AddComponent<SpriteRendererComponent>();
+		sp.Color = { 0.6f, 0.6f, 0.6f, 1.0f };
+
 
 		class CameraScript : public ScriptableEntity
 		{
@@ -93,7 +97,7 @@ namespace Aurora {
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		if (!m_ImGuiItemFocused)
+		if (!m_ImGuiItemHovered)
 		{
 			m_EditorCamera.OnUpdate(ts);
 		}
@@ -561,6 +565,20 @@ namespace Aurora {
 				}
 			}
 
+			if (!entity.HasComponent<ModelComponent>())
+			{
+				if (ImGui::MenuItem("Model Component"))
+				{
+					std::string path = Utils::WindowsFileDialogs::OpenFile("Model file");
+					if (path != "")
+					{
+						m_SelectionContext.AddComponent<ModelComponent>(path);
+					}
+
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
 			ImGui::EndPopup();
 		}
 
@@ -651,6 +669,15 @@ namespace Aurora {
 			}
 		});
 
+		DrawComponent<ModelComponent>("Model", entity, [](ModelComponent& component)
+		{
+			std::string path = component.model.directory;
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			strcpy_s(buffer, sizeof(buffer), path.c_str());
+			ImGui::InputTextWithHint("##Filepath", "Filepath...", buffer, sizeof(buffer));
+		});
+
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
@@ -703,6 +730,22 @@ namespace Aurora {
 		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
 		ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
 		ImGui::Text("Vertex Buffer Usage: %.3f Megabytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
+
+		static bool wireFrame = false;
+		static bool vertices = false;
+		if (ImGui::Checkbox("WireFrame", &wireFrame))
+		{
+			RenderCommand::SetRenderFlag(RenderFlags::WireFrame);
+			vertices = false;
+		}
+
+		if (ImGui::Checkbox("Vertices", &vertices))
+		{
+			RenderCommand::SetRenderFlag(RenderFlags::Vertices);
+			wireFrame = false;
+		}
+		if (!wireFrame && !vertices)
+			RenderCommand::SetRenderFlag(RenderFlags::Triangles);
 
 		ImGui::End();
 	}
@@ -1091,10 +1134,7 @@ namespace Aurora {
 		ImGui::End();
 		ImGui::PopStyleVar();
 
-		if (ImGui::IsAnyItemHovered())
-			m_ImGuiItemFocused = true;
-		else
-			m_ImGuiItemFocused = false;
+		m_ImGuiItemHovered = ImGui::IsAnyItemHovered() ? true : false;
 
 		ImGui::End();
 	}

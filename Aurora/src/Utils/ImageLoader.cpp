@@ -1,32 +1,36 @@
 #include "Aurorapch.h"
 #include "ImageLoader.h"
 
+#include <stb_image/stb_image.h>
+
 namespace Aurora {
 
 	namespace Utils {
 
-		unsigned char* ImageLoader::m_Data;
-		uint32_t ImageLoader::m_Width, ImageLoader::m_Height, ImageLoader::m_Channels;
+		ImageData ImageLoader::m_ImageData;
+		bool ImageLoader::m_Loading;
 
-		ImageLoader& ImageLoader::Get()
-		{
-			static ImageLoader s_Instance;
-
-			return s_Instance;
-		}
-
-		void ImageLoader::LoadImageFile(const std::string& filePath)
+		ImageData ImageLoader::LoadImageFile(const std::string& filePath)
 		{
 			AR_PROFILE_FUNCTION();
 
-			m_Data = (uint8_t*)stbi_load(filePath.c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_Channels, 0);
+			AR_CORE_ASSERT(std::filesystem::exists(filePath), "Path does not exist!");
+			AR_CORE_ASSERT(!m_Loading, "You forgot to free an image after loading one somewhere!");
+
+			m_Loading = true;
+			m_ImageData.PixelData = (uint8_t*)stbi_load(filePath.c_str(), (int*)&m_ImageData.Width, (int*)&m_ImageData.Height, (int*)&m_ImageData.Channels, 0);
+
+			return m_ImageData;
 		}
 
 		void ImageLoader::FreeImage()
 		{
 			AR_PROFILE_FUNCTION();
 
-			stbi_image_free(m_Data);
+			AR_CORE_ASSERT(m_Loading, "Trying to call FreeImage without calling LoadImageFile which is not allowed!");
+
+			m_Loading = false;
+			stbi_image_free(m_ImageData.PixelData);
 		}
 
 		void ImageLoader::SetFlipVertically(bool boolean)
