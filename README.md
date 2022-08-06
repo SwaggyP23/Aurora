@@ -1,6 +1,7 @@
 # Aurora 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://github.com/SwaggyP23/Aurora/blob/main/LICENSE)
-![Aurora Logo](/Resources/Icons/Auroraicon1.png?raw=true "Aurora")
+
+![\t\tAurora Logo](/Resources/Icons/Auroraicon1.png?raw=true "Aurora")
 
 - Aurora Engine is a very primitive 3D engine based on [Hazel 2D Engine](https://github.com/TheCherno/Hazel). 
 
@@ -30,12 +31,12 @@ git clone --recursive https://github.com/SwaggyP23/Aurora.git
 2. After you end the profile session by exiting the program, go to the root directory of the project (*the one with your .sln file*) and from there go to SandBox/Luna -> Profiling.
 
 3. Aurora provides two ways of profiling:
-- - There is the way of profiling and visualizing using `chrome://tracing/` which provides a limited amount of data but is not bad.
-- - There is also the more usable way of profiling with **Optick**!
+    - There is the way of profiling and visualizing using `chrome://tracing/` which provides a limited amount of data but is not bad.
+    - There is also the more usable way of profiling with **Optick**!
 
 ### Using Optick
 
-- Optick is a separate application that is also provided with the repository (*inside Tools folder*). If you are not on windows you will need to get the executable for your platform from [their repo}(https://github.com/bombomby/optick)
+- Optick is a separate application that is also provided with the repository (*inside Tools folder*). If you are not on windows you will need to get the executable for your platform from [their repository](https://github.com/bombomby/optick)
 - Open the Optick app and then load the .opt files found in the Profiling/Optick folder and you will be able to visualize all your profiling data!
 
 ## <ins>Libraries Used:</ins>
