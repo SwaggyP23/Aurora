@@ -18,19 +18,21 @@ project "Luna"
         "%{wks.location}/Aurora/src",
         "%{wks.location}/Aurora/dependencies/spdlog/include",
         "%{wks.location}/Aurora/dependencies",
-        "%{IncludeDir.Glad}",
-        "%{IncludeDir.GLFW}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.Entt}",
-        "%{IncludeDir.Optick}",
-        "%{IncludeDir.choc}"
+        "%{IncludeDir.Optick}"
     }
 
     links
     {
         "Aurora"
+    }
+
+    postbuildcommands
+    {
+        ("{COPY} %{wks.location}/Aurora/dependencies/assimp/bin/" .. outputdir .. "/Assimp/Assimp.dll %{cfg.targetdir}")
     }
 
     filter "system:windows"

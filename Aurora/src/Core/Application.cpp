@@ -26,13 +26,14 @@ namespace Aurora {
 		windowSpec.Decorated = specification.WindowDecorated;
 		windowSpec.VSync = specification.VSync;
 		windowSpec.Resizable = specification.SetWindowResizable;
+		windowSpec.WindowIconPath = specification.ApplicationWindowIconPath;
 		m_Window = Window::Create(windowSpec);
 		m_Window->Init();
 		m_Window->SetEventCallback(AR_SET_EVENT_FN(Application::OnEvent));
 		if (specification.StartMaximized)
-			m_Window->Maximize();
+			m_Window->CreateMaximized();
 		else
-			m_Window->CentreWindow();
+			m_Window->CreateCentred();
 
 		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initiation
 
@@ -73,12 +74,16 @@ namespace Aurora {
 
 	void Application::PopLayer(Layer* layer)
 	{
+		AR_PROFILE_FUNCTION();
+
 		m_LayerStack.PopLayer(layer);
 		layer->OnDetach();
 	}
 
 	void Application::PopOverlay(Layer* layer)
 	{
+		AR_PROFILE_FUNCTION();
+
 		m_LayerStack.PopOverlay(layer);
 		layer->OnDetach();
 	}
@@ -103,7 +108,7 @@ namespace Aurora {
 			AR_ENDF_TIMER(); // This is for the UI timers
 			AR_PROFILE_FRAME("Game Loop");
 
-			//static uint64_t frameCounter = 0;
+			// static uint64_t frameCounter = 0;
 
 			ProcessEvents();
 
@@ -117,7 +122,7 @@ namespace Aurora {
 						layer->OnUpdate(m_Timestep);
 				}
 
-				RenderImGui(); // All the Perf timers dont work after this
+				RenderImGui(); // All the Perf timers dont work after this // TODO: Fix!
 
 				m_CPUTime = cpuTimer.ElapsedMillis();
 				m_Window->Update();
@@ -128,7 +133,7 @@ namespace Aurora {
 			m_Timestep = glm::min<float>(m_FrameTime, 0.0333f);
 			m_TimeSinceStart = time;
 
-			//frameCounter++; // This is to be displayed some time later when needed...
+			// frameCounter++; // This is to be displayed some time later when needed...
 		}
 	}
 
@@ -146,15 +151,23 @@ namespace Aurora {
 
 		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
 
+		return false; // TODO: Check why we return true of false in these functions...!
+	}
+
+	bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
+	{
+		m_Minimized = true;
+
 		return false;
 	}
 
-	//bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
-	//{
-	//	m_Minimized = true;
+	bool Application::OnWindowMaximize(WindowMaximizeEvent& e)
+	{
+		m_Minimized = false;
+		m_Window->Maximize();
 
-	//	return false;
-	//}
+		return false;
+	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
@@ -186,7 +199,8 @@ namespace Aurora {
 
 		EventDispatcher dispatcher(e);
 		dispatcher.dispatch<WindowCloseEvent>(AR_SET_EVENT_FN(Application::OnWindowClose));
-		//dispatcher.dispatch<WindowMinimizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMinimize));
+		dispatcher.dispatch<WindowMinimizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMinimize));
+		dispatcher.dispatch<WindowMaximizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMaximize));
 		dispatcher.dispatch<WindowResizeEvent>(AR_SET_EVENT_FN(Application::OnWindowResize));
 		//LOG_INFO("{0}", e);
 

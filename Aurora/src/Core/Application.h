@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Base.h"
-#include "Window.h"
-#include "Layers/LayerStack.h"
 #include "Events/Events.h"
 #include "Events/ApplicationEvents.h"
+#include "Layers/LayerStack.h"
 #include "TimeStep.h"
+#include "Window.h"
+
 #include "ImGui/ImGuiLayer.h"
 
 int main(int argc, char** argv);
@@ -14,15 +15,30 @@ namespace Aurora {
 
 	struct ApplicationSpecification
 	{
+		// Name of the application
 		std::string Name = "Aurora Application";
+
+		// Size of the application window
 		uint32_t WindowWidth = 1280;
 		uint32_t WindowHeight = 720;
+
+		// Decorated window
 		bool WindowDecorated = true;
+
+		// V-Sync
 		bool VSync = true;
+
+		// Start the window in maximized mode
 		bool StartMaximized = false;
+
+		// This makes the window not resizable. Note: Better to set to true if StartMaximized is set to false!
 		bool SetWindowResizable = false;
 
+		// TODO: Set working directory
 		std::string WorkingDirectory;
+
+		// Sets the path for the application's icon
+		std::string ApplicationWindowIconPath = "../Resources/Icons/AuroraIcon1.png";
 	};
 
 	class Application
@@ -56,7 +72,8 @@ namespace Aurora {
 		void Run();
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
-		//bool OnWindowMinimize(WindowMinimizeEvent& e); // Should find a way to properly dispatch the window minimize events
+		bool OnWindowMinimize(WindowMinimizeEvent& e);
+		bool OnWindowMaximize(WindowMaximizeEvent& e);
 
 	private:
 		ApplicationSpecification m_Specification;

@@ -46,7 +46,7 @@ namespace Aurora {
 		template<typename T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.try_get<T>(m_EntityHandle) ? true : false;
+			return m_Scene->m_Registry.has<T>(m_EntityHandle);
 		}
 
 		operator bool() const { return m_EntityHandle != entt::null; }

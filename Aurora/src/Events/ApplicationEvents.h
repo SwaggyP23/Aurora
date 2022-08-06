@@ -26,6 +26,7 @@ namespace Aurora {
 	private:
 		uint32_t m_Width;
 		uint32_t m_Height;
+
 	};
 
 	class WindowMinimizeEvent : public Event
@@ -43,7 +44,22 @@ namespace Aurora {
 		EVENT_CLASS_TYPE(WindowMinimize)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
-	private:
+	};
+
+	class WindowMaximizeEvent : public Event
+	{
+	public:
+		WindowMaximizeEvent() = default;
+
+		std::string toString() const override
+		{
+			std::stringstream ss;
+			ss << "Window Maximize Event!";
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMaximize)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
 	};
 
@@ -61,6 +77,7 @@ namespace Aurora {
 
 		EVENT_CLASS_TYPE(WindowClose)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
 	};
 
 }

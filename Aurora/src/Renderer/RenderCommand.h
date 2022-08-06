@@ -7,13 +7,30 @@
 
 namespace Aurora {
 
+	enum class RenderFlags
+	{
+		None = 0,
+		Triangles,
+		WireFrame,
+		Vertices
+	};
+
 	enum class FeatureControl
 	{
 		None = 0,
-		DepthTesting,
-		Culling,
 		Blending,
-		StencilTesting
+		Culling,
+		DepthTesting,
+		StencilTesting // Not implemented yet!
+	};
+
+	enum class OpenGLEquation
+	{
+		Add,
+		Subtract,
+		ReverseSubtract,
+		Minimum,
+		Maximum
 	};
 
 	enum class OpenGLFunction
@@ -54,9 +71,13 @@ namespace Aurora {
 		static void Init();
 		static void ShutDown();
 
+		static void SetRenderFlag(RenderFlags flag);
+		static RenderFlags GetRenderFlag() { return m_Flags; }
+
 		static void Enable(FeatureControl feature); // TODO: Think of better naming for this api since its a disaster
 		static void Disable(FeatureControl feature);
 		static void SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function);
+		static void SetBlendFunctionEquation(OpenGLEquation equation);
 
 		static void SetClearColor(const glm::vec4& color);
 		static void Clear();
@@ -64,6 +85,9 @@ namespace Aurora {
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
 		static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0);
+
+	private:
+		static RenderFlags m_Flags;
 
 	};
 

@@ -18,6 +18,7 @@ namespace Aurora {
 			: m_KeyCode(keycode) {}
 
 		KeyCode m_KeyCode;
+
 	};
 
 	class KeyPressedEvent : public KeyEvent

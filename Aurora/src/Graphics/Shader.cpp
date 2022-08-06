@@ -7,11 +7,6 @@ namespace Aurora {
 
 	namespace Utils {
 
-		enum class ShaderErrorType : uint16_t
-		{
-			None = 0, VertexShader, FragmentShader, GeometryShader
-		};
-
 		static uint32_t/*GLenum*/ ShaderTypeFromString(const std::string& type)
 		{
 			if (type == "vertex")
@@ -38,55 +33,6 @@ namespace Aurora {
 			return ShaderErrorType::None;
 		}
 
-		static void CheckShaderCompilation(uint32_t shader, ShaderErrorType type)
-		{
-			GLint result;
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-			if (!result) {
-				GLint length;
-
-				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-				std::vector<char> errorMessage(length);
-
-				glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
-
-				if (type == ShaderErrorType::VertexShader)
-					AR_CORE_ERROR("Failed to compile Vertex Shader!!");
-
-				else if (type == ShaderErrorType::FragmentShader)
-					AR_CORE_ERROR("Failed to compile Fragment Shader!!");
-
-				else if (type == ShaderErrorType::GeometryShader)
-					AR_CORE_ERROR("Failed to compile Geometry Shader!!");
-
-				AR_CORE_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
-
-				glDeleteShader(shader);
-			}
-		}
-
-		static void CheckProgramLinkage(GLuint program, const std::vector<GLuint>& shaderIDs)
-		{
-			GLint result;
-			glGetProgramiv(program, GL_LINK_STATUS, &result);
-			if (!result)
-			{
-				GLint length;
-
-				glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-				std::vector<char> errorMessage(length);
-
-				glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
-				AR_CORE_ERROR("Failed to link program!");
-				AR_CORE_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
-
-				glDeleteProgram(program);
-
-				for (auto id : shaderIDs)
-					glDeleteShader(id);
-			}
-		}
-
 	}
 
 	Ref<Shader> Shader::Create(const std::string& filepath)
@@ -99,18 +45,18 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
-
-		auto shaderSplitSources = SplitSource(shaderFullSource);
-
-		m_ShaderID = CreateShaderProgram(shaderSplitSources);
-
 		size_t lastSlash = filePath.find_last_of("/\\");
 		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
 
 		size_t lastDot = filePath.rfind('.');
 		size_t count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filePath.substr(lastSlash, count);
+
+		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
+
+		auto shaderSplitSources = SplitSource(shaderFullSource);
+
+		m_ShaderID = CreateShaderProgram(shaderSplitSources);
 	}
 
 	Shader::~Shader()
@@ -162,14 +108,14 @@ namespace Aurora {
 			glShaderSource(shader, 1, &shaderCStr, NULL);
 			glCompileShader(shader);
 
-			Utils::CheckShaderCompilation(shader, Utils::ErrorTypeFromShaderType(type));
+			CheckShaderCompilation(shader, Utils::ErrorTypeFromShaderType(type));
 
 			glAttachShader(program, shader);
 		}
 
 		glLinkProgram(program);
 
-		Utils::CheckProgramLinkage(program, ShaderIDs);
+		CheckProgramLinkage(program, ShaderIDs);
 
 		glValidateProgram(program);
 		for (auto id : ShaderIDs) {
@@ -182,14 +128,14 @@ namespace Aurora {
 		return program;
 	}
 
-	void Shader::bind() const
+	void Shader::Bind() const
 	{
 		AR_PROFILE_FUNCTION();
 
 		glUseProgram(m_ShaderID);
 	}
 
-	void Shader::unBind() const
+	void Shader::UnBind() const
 	{
 		glUseProgram(0);
 	}
@@ -299,6 +245,55 @@ namespace Aurora {
 	bool ShaderLibrary::Exists(const std::string& name) const // This always crashes
 	{
 		return m_Shaders.find(name) != m_Shaders.end();
+	}
+
+	void Shader::CheckShaderCompilation(uint32_t shader, Utils::ShaderErrorType type) const
+	{
+		GLint result;
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+		if (!result) {
+			GLint length;
+
+			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+			std::vector<char> errorMessage(length);
+
+			glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
+
+			if (type == Utils::ShaderErrorType::VertexShader)
+				AR_CORE_ERROR("Failed to compile Vertex Shader!!");
+
+			else if (type == Utils::ShaderErrorType::FragmentShader)
+				AR_CORE_ERROR("Failed to compile Fragment Shader!!");
+
+			else if (type == Utils::ShaderErrorType::GeometryShader)
+				AR_CORE_ERROR("Failed to compile Geometry Shader!!");
+
+			AR_CORE_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+
+			glDeleteShader(shader);
+		}
+	}
+
+	void Shader::CheckProgramLinkage(uint32_t program, const std::vector<uint32_t>& shaderIDs) const
+	{
+		GLint result;
+		glGetProgramiv(program, GL_LINK_STATUS, &result);
+		if (!result)
+		{
+			GLint length;
+
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+			std::vector<char> errorMessage(length);
+
+			glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
+			AR_CORE_ERROR("Failed to link program {0}!", m_Name);
+			AR_CORE_ERROR("Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+
+			glDeleteProgram(program);
+
+			for (auto id : shaderIDs)
+				glDeleteShader(id);
+		}
 	}
 
 }

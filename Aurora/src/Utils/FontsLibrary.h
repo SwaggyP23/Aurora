@@ -70,6 +70,8 @@ namespace Aurora {
 		const char* m_ErrorToken = "Not Available";
 
 		uint32_t m_Incrementor = 0;
+
+		// A map of map provides very easy acces to the data, though it might not be the most efficient, it is good enough for the purposes of its usage!! So it is good enough.
 		std::unordered_map<std::string, std::unordered_map<FontIdentifier, std::filesystem::path>> m_Directories;
 		std::unordered_map<std::pair<std::string, FontIdentifier>, uint32_t> m_FontIndices;
 

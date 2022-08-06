@@ -13,7 +13,7 @@ namespace Aurora {
 			GLenum DataFormat = 0;
 		};
 
-		Formats getFormatsFromChannels(int channels)
+		static Formats GetFormatsFromChannels(int channels)
 		{
 			GLint internalFormat = 0;
 			GLenum dataFormat = 0;
@@ -84,9 +84,9 @@ namespace Aurora {
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 
-		glTextureStorage2D(m_TextID, 1, GL_RGBA8, m_Width, m_Height);
+		glTextureStorage2D(m_TextureID, 1, GL_RGBA8, m_Width, m_Height);
 
 		SetTextureWrapping(TextureWrap::Repeat);
 		SetTextureFiltering(TextureFilter::MipMap_LinearLinear, TextureFilter::Linear);
@@ -97,7 +97,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextID);
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 	}
 
 	void Texture::SetData(const void* data, uint32_t size)
@@ -108,35 +108,35 @@ namespace Aurora {
 		uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
 		AR_CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
 #endif
-		glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+		glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 
 	Texture::~Texture()
 	{
 		AR_PROFILE_FUNCTION();
 
-		glDeleteTextures(1, &m_TextID);
+		glDeleteTextures(1, &m_TextureID);
 	}
 
 	void Texture::SetTextureWrapping(TextureWrap wrapMode) const
 	{
 		AR_PROFILE_FUNCTION();
 
-		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_S, GLWrapTypeFromTextureWrap(wrapMode));
-		glTextureParameteri(m_TextID, GL_TEXTURE_WRAP_T, GLWrapTypeFromTextureWrap(wrapMode));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GLWrapTypeFromTextureWrap(wrapMode));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GLWrapTypeFromTextureWrap(wrapMode));
 	}
 
 	void Texture::SetTextureFiltering(TextureFilter minFilter, TextureFilter magFilter) const
 	{
 		AR_PROFILE_FUNCTION();
 
-		glTextureParameteri(m_TextID, GL_TEXTURE_MIN_FILTER, GLFilterTypeFromTextureFilter(minFilter));
-		glTextureParameteri(m_TextID, GL_TEXTURE_MAG_FILTER, GLFilterTypeFromTextureFilter(magFilter));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, GLFilterTypeFromTextureFilter(minFilter));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, GLFilterTypeFromTextureFilter(magFilter));
 	}
 
 	void Texture::FlipTextureVertically(bool state)
 	{
-		Utils::ImageLoader::Get().SetFlipVertically(state);
+		Utils::ImageLoader::SetFlipVertically(state);
 	}
 
 	void Texture::LoadTextureData()
@@ -146,47 +146,47 @@ namespace Aurora {
 		// load image
 		const char* path = m_Path.c_str();
 
-		Utils::ImageLoader::Get().LoadImageFile(path);
+		auto& imageData = Utils::ImageLoader::LoadImageFile(path);
 
-		m_Width = Utils::ImageLoader::Get().GetWidth();
-		m_Height = Utils::ImageLoader::Get().GetHeight();
+		m_Width = imageData.Width;
+		m_Height = imageData.Height;
 
-		if (Utils::ImageLoader::Get().GetData())
+		if (imageData.PixelData)
 		{
-			AR_PROFILE_SCOPE("Texture Storage! Texture::loadTextureData()!");
+			AR_PROFILE_SCOPE("Texture Storage! Texture::loadTextureData()");
 
-			int channels = Utils::ImageLoader::Get().GetChannels();
+			int channels = imageData.Channels;
 			AR_CORE_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
 
-			Utils::Formats texFormat = Utils::getFormatsFromChannels(channels);
+			Utils::Formats texFormat = Utils::GetFormatsFromChannels(channels);
 			m_InternalFormat = texFormat.InternalFormat;
 			m_DataFormat = texFormat.DataFormat;
 
 			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
 
-			glTextureStorage2D(m_TextID, 5, m_InternalFormat, m_Width, m_Height); // level is number of mipmaps
-			glTextureSubImage2D(m_TextID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, Utils::ImageLoader::Get().GetData());
+			glTextureStorage2D(m_TextureID, 4, m_InternalFormat, m_Width, m_Height); // level is number of mipmaps
+			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imageData.PixelData);
 			// the first 0 is the index of the first level/mipmap
 
-			glGenerateTextureMipmap(m_TextID);
+			glGenerateTextureMipmap(m_TextureID);
 		}
 		else
 			AR_CORE_ERROR("Failed to load Texture! {0}", m_Path);
 
-		Utils::ImageLoader::Get().FreeImage();
+		Utils::ImageLoader::FreeImage();
 	}
 
-	void Texture::bind(uint32_t slot) const
+	void Texture::Bind(uint32_t slot) const
 	{
 		AR_PROFILE_FUNCTION();
 
-		glBindTextureUnit(slot, m_TextID);
+		glBindTextureUnit(slot, m_TextureID);
 
 	}
 
-	void Texture::unBind(uint32_t slot) const
+	void Texture::UnBind(uint32_t slot) const
 	{
-		// This currently maybe works, however it throws OpenGL error 1282, need to take a look at the specification and if ever that error pops up check here
+		// TODO: This currently maybe works, however it throws OpenGL error 1282, need to take a look at the specification and if ever that error pops up check here
 		glBindTextureUnit(slot, 0);
 		//glBindTexture(GL_TEXTURE_2D, 0);
 	}

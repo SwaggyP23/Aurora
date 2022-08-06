@@ -18,18 +18,20 @@ project "SandBox"
         "%{wks.location}/Aurora/src",
         "%{wks.location}/Aurora/dependencies/spdlog/include",
         "%{wks.location}/Aurora/dependencies",
-        "%{IncludeDir.Glad}", -- These two should not be here but they give some dogshit include error
-        "%{IncludeDir.GLFW}", -- These two should not be here but they give some dogshit include error
-        "%{IncludeDir.ImGui}",-- This one also
+        "%{IncludeDir.ImGui}", -- This is to be removed later when SandBox is cleaned
         "%{IncludeDir.glm}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Optick}"
-
     }
 
     links
     {
         "Aurora"
+    }
+
+    postbuildcommands
+    {
+        ("{COPY} %{wks.location}/Aurora/dependencies/assimp/bin/" .. outputdir .. "/Assimp/Assimp.dll %{cfg.targetdir}")
     }
 
     filter "system:windows"

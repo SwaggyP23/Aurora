@@ -1,10 +1,5 @@
 #include "EditorLayer.h"
 
-#include "Scene/Components.h"
-#include "Scene/SceneSerializer.h"
-#include "Utils/UtilFunctions.h"
-#include "Utils/Math.h"
-
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include <ImGuizmo/ImGuizmo.h>
@@ -15,11 +10,27 @@
 
 namespace Aurora {
 
+	namespace Utils {
+
+		static void ShowHelpMarker(const char* description)
+		{
+			ImGui::TextDisabled("(?)");
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextUnformatted(description);
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+			}
+		}
+	}
+
 #pragma region EditorLayerMainMethods
 
 	EditorLayer::EditorLayer()
 		: Layer("BatchRenderer"),
-		m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
+		m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
 	{
 	}
 
@@ -36,6 +47,16 @@ namespace Aurora {
 		m_EditorScene = Scene::Create();
 		m_ActiveScene = m_EditorScene;
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
+
+		auto plane = m_ActiveScene->CreateEntity();
+		m_GroundEntity = plane;
+		auto& name = m_GroundEntity.GetComponent<TagComponent>();
+		name.Tag = "Floor plane";
+		auto& tc = m_GroundEntity.GetComponent<TransformComponent>();
+		tc.Scale = glm::vec3{ 200.0f, 0.5f, 200.0f };
+		auto& sp = m_GroundEntity.AddComponent<SpriteRendererComponent>();
+		sp.Color = { 0.6f, 0.6f, 0.6f, 1.0f };
+
 
 		class CameraScript : public ScriptableEntity
 		{
@@ -76,7 +97,7 @@ namespace Aurora {
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		if (!m_ImGuiItemFocused)
+		if (!m_ImGuiItemHovered)
 		{
 			m_EditorCamera.OnUpdate(ts);
 		}
@@ -106,7 +127,7 @@ namespace Aurora {
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY); // Index 1 since the second buffer is the RED_INTEGER buffer
 			m_HoveredEntity = pixelData == -1 ? Entity{} : Entity{ (entt::entity)pixelData, m_ActiveScene.raw()};
 		}
-
+		
 		m_Framebuffer->UnBind();
 	}
 
@@ -126,6 +147,8 @@ namespace Aurora {
 
 		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		bool isSomethingSelected = m_SelectionContext ? true : false;
 
 		switch (e.GetKeyCode())
 		{
@@ -157,6 +180,29 @@ namespace Aurora {
 
 				break;
 		    }
+
+			case Key::D:
+			{
+				// TODO: Needs rework...
+				if (control && isSomethingSelected)
+				{
+					m_SelectionContext = m_ActiveScene->CopyEntity(m_SelectionContext);
+				}
+
+				break;
+			}
+
+			case Key::Delete:
+			{
+				if (isSomethingSelected)
+				{
+					m_ActiveScene->DestroyEntity(m_SelectionContext);
+					m_SelectionContext = {};
+					m_NameCounter--;
+				}
+
+				break;
+			}
 
 			// Gizmos
 			case Key::Q:
@@ -197,7 +243,7 @@ namespace Aurora {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (m_HoveredEntity && !ImGuizmo::IsOver())
+		if (m_HoveredEntity && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 		{
 			m_SelectionContext = m_HoveredEntity;
 
@@ -501,6 +547,7 @@ namespace Aurora {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
+			// TODO: Change the following if statements to a component templated static function since they are just repeated code
 			if (!entity.HasComponent<CameraComponent>())
 			{
 				if (ImGui::MenuItem("Camera")) // This whole code here could be brought out to a templated function since the only vars are name and type
@@ -515,6 +562,20 @@ namespace Aurora {
 				if (ImGui::MenuItem("Sprite Renderer"))
 				{
 					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!entity.HasComponent<ModelComponent>())
+			{
+				if (ImGui::MenuItem("Model Component"))
+				{
+					std::string path = Utils::WindowsFileDialogs::OpenFile("Model file");
+					if (path != "")
+					{
+						m_SelectionContext.AddComponent<ModelComponent>(path);
+					}
+
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -609,6 +670,15 @@ namespace Aurora {
 			}
 		});
 
+		DrawComponent<ModelComponent>("Model", entity, [](ModelComponent& component)
+		{
+			std::string path = component.model.directory;
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			strcpy_s(buffer, sizeof(buffer), path.c_str());
+			ImGui::InputTextWithHint("##Filepath", "Filepath...", buffer, sizeof(buffer));
+		});
+
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
@@ -661,6 +731,22 @@ namespace Aurora {
 		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
 		ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
 		ImGui::Text("Vertex Buffer Usage: %.3f Megabytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
+
+		static bool wireFrame = false;
+		static bool vertices = false;
+		if (ImGui::Checkbox("WireFrame", &wireFrame))
+		{
+			RenderCommand::SetRenderFlag(RenderFlags::WireFrame);
+			vertices = false;
+		}
+
+		if (ImGui::Checkbox("Vertices", &vertices))
+		{
+			RenderCommand::SetRenderFlag(RenderFlags::Vertices);
+			wireFrame = false;
+		}
+		if (!wireFrame && !vertices)
+			RenderCommand::SetRenderFlag(RenderFlags::Triangles);
 
 		ImGui::End();
 	}
@@ -927,6 +1013,8 @@ namespace Aurora {
 				if (ImGui::MenuItem("Settings..."))
 					m_ShowSettingsUI = true;
 
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Restart..."))
 					m_ShowRestartModal = true;
 
@@ -1032,7 +1120,7 @@ namespace Aurora {
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
 				nullptr, snap ? snapValues : nullptr);
 
-			if (ImGuizmo::IsUsing())
+			if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(Key::LeftAlt))
 			{
 				glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
 				Math::DecomposeTransform(transform, translation, rotation, scale);
@@ -1047,47 +1135,223 @@ namespace Aurora {
 		ImGui::End();
 		ImGui::PopStyleVar();
 
-		if (ImGui::IsAnyItemHovered())
-			m_ImGuiItemFocused = true;
-		else
-			m_ImGuiItemFocused = false;
+		m_ImGuiItemHovered = ImGui::IsAnyItemHovered() ? true : false;
 
 		ImGui::End();
+	}
+
+	template<typename UIFunction>
+	static void DrawSettingsFeatureCheckbox(const std::string& name, const std::string& description, bool* controller, FeatureControl feature, UIFunction func)
+	{
+		ImGui::Text((name + ":").c_str());
+		ImGui::SameLine();
+		Utils::ShowHelpMarker(description.c_str());
+
+		ImGui::Checkbox(("##" + name).c_str(), controller);
+		ImGui::SameLine();
+
+		if (!(*controller))
+			RenderCommand::Disable(feature);
+		else
+			RenderCommand::Enable(feature);
+
+		func();
 	}
 
 	void EditorLayer::ShowSettingsUI()
 	{
 		// TODO: Make it so when someone changes the global settings of the editor they are saved in an auroraeditor.ini file and loaded when reopened
 		// Control settings such as enable back face culling, depth testing, blending, blend function...
+		// TODO: Add explanation in the HelpMarker for each setting in each combo!
+		static bool enableCulling = true;
+		static bool enableBlending = true;
+		static bool enableDepthTesting = true;
+
+		static std::string cullOption = "Back";
+		static std::string blendOption = "One Minus Source Alpha";
+		static std::string depthOption = "Less";
+		static std::string blendEquation = "Add";
+
 		ImGui::Begin("Settings", &m_ShowSettingsUI);
 
-		static bool enableCulling = true;
-		ImGui::Checkbox("Back-Face Culling", &enableCulling);
-		if (!enableCulling)
-			RenderCommand::Disable(FeatureControl::Culling);
-		else
-			RenderCommand::Enable(FeatureControl::Culling);
-
-		if (ImGui::BeginCombo("Culling Function", "whatever")) // TODO: Fix the naming to display in the combo label
+		std::string blendDesc = "Blending is the technique that allows and implements the \"Transparency\" within objects.";
+		DrawSettingsFeatureCheckbox("Blending", blendDesc, &enableBlending, FeatureControl::Blending, []()
 		{
-			if (ImGui::Selectable("Back"))
+			if (ImGui::BeginCombo("Blending Function", blendOption.c_str()))
 			{
-				RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
+				if (ImGui::Selectable("Zero"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::Zero);
+					blendOption = "Zero";
+				}
+
+				else if (ImGui::Selectable("One"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::One);
+					blendOption = "One";
+				}
+
+				else if (ImGui::Selectable("Source Color"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::SrcColor);
+					blendOption = "Source Color";
+				}
+
+				else if (ImGui::Selectable("Source Alpha"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::SrcAlpha);
+					blendOption = "Source Alpha";
+				}
+
+				else if (ImGui::Selectable("Destination Color"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::DstColor);
+					blendOption = "Destination Color";
+				}
+
+				else if (ImGui::Selectable("One Minus Source Color"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusSrcColor);
+					blendOption = "One Minus Source Color";
+				}
+
+				else if (ImGui::Selectable("One Minus Source Alpha"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusSrcAlpha);
+					blendOption = "One Minus Source Alpha";
+				}
+
+				else if (ImGui::Selectable("One Minus Destination Color"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusDstColor);
+					blendOption = "One Minus Destination Color";
+				}
+
+				ImGui::EndCombo();
+			}
+		});
+
+		// Blend equation
+		ImGui::Indent(32.5f);
+		if (ImGui::BeginCombo("Blending Equation", blendEquation.c_str())) // TODO: Fix the naming to display in the combo label
+		{
+			if (ImGui::Selectable("Add"))
+			{
+				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Add);
+				blendEquation = "Add";
 			}
 
-			if (ImGui::Selectable("Front"))
+			else if (ImGui::Selectable("Subtract"))
 			{
-				RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
+				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Subtract);
+				blendEquation = "Subtract";
 			}
 
-
-			if (ImGui::Selectable("Front and Back"))
+			else if (ImGui::Selectable("Reverse Subtract"))
 			{
-				RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::FrontAndBack);
+				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::ReverseSubtract);
+				blendEquation = "Reverse Subtract";
+			}
+
+			else if (ImGui::Selectable("Minimum"))
+			{
+				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Minimum);
+				blendEquation = "Minimum";
+			}
+
+			else if (ImGui::Selectable("Maximum"))
+			{
+				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Maximum);
+				blendEquation = "Maximum";
 			}
 
 			ImGui::EndCombo();
 		}
+		ImGui::Unindent(32.5f);
+
+		std::string cullingDesc = "Culling is used to specify to the renderer what face is not to be processed thus reducing processing time.";
+		DrawSettingsFeatureCheckbox("Culling", cullingDesc, &enableCulling, FeatureControl::Culling, []()
+		{
+			if (ImGui::BeginCombo("Culling Function", cullOption.c_str())) // TODO: Fix the naming to display in the combo label
+			{
+				if (ImGui::Selectable("Back"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
+					cullOption = "Back";
+				}
+
+				else if (ImGui::Selectable("Front"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
+					cullOption = "Front";
+				}
+
+				else if (ImGui::Selectable("Front and Back"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::FrontAndBack);
+					cullOption = "FronAndBack";
+				}
+
+				ImGui::EndCombo();
+			}
+		});
+
+		std::string depthDesc = "Depth testing is what allows for 3D objects to appear on the screen via a depth buffer.";
+		DrawSettingsFeatureCheckbox("DepthTesting", depthDesc, &enableDepthTesting, FeatureControl::DepthTesting, []()
+		{
+			if (ImGui::BeginCombo("Depth Function", depthOption.c_str()))
+			{
+				if (ImGui::Selectable("Never"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Never);
+					depthOption = "Never";
+				}
+
+				else if (ImGui::Selectable("Equal"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Equal);
+					depthOption = "Equal";
+				}
+
+				else if (ImGui::Selectable("Not Equal"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::NotEqual);
+					depthOption = "Not Equal";
+				}
+
+				else if (ImGui::Selectable("Less"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
+					depthOption = "Less";
+				}
+
+				if (ImGui::Selectable("Less Or Equal"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::LessOrEqual);
+					depthOption = "Less Or Equal";
+				}
+
+				else if (ImGui::Selectable("Greater"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Greater);
+					depthOption = "Greater";
+				}
+
+				else if (ImGui::Selectable("Greater Or Equal"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::GreaterOrEqual);
+					depthOption = "Greater Or Equal";
+				}
+
+				else if (ImGui::Selectable("Always"))
+				{
+					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Always);
+					depthOption = "Always";
+				}
+
+				ImGui::EndCombo();
+			}
+		});
 
 		ImGui::End();
 	}

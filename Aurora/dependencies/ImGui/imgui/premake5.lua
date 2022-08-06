@@ -5,7 +5,7 @@ project "ImGui"
     staticruntime "off"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin/Intermediates" .. outputdir .. "/%{prj.name}")
+    objdir ("bin/Intermediates/" .. outputdir .. "/%{prj.name}")
 
     files
     {

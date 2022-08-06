@@ -23,8 +23,8 @@ Entities:
       Tag: A2
     TransformComponent:
       Translation: [-0.752792478, 2.50746727, 4.13839388]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [0.330000013, 0.399944991, 2.98955989]
+      Rotation: [1.57079601, 0, 0]
+      Scale: [0.330000013, 0.399944961, 2.98955965]
     SpriteRendererComponent:
       Color: [0, 0.548262835, 1, 1]
   - Entity: 129861987

@@ -1,6 +1,10 @@
 #include "Aurorapch.h"
 #include "Window.h"
 
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
+#include <imgui/imgui.h>
+
 namespace Aurora {
 
 	static void MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -54,7 +58,7 @@ namespace Aurora {
 
 	Window::~Window()
 	{
-		ShutDown(); // Mayeb this function and function like it should go into the Aurora Shutdown Core
+		ShutDown(); // Maybe this function and function like it should go into the Aurora Shutdown Core in the Initializers header
 	}
 
 	void Window::SetVSync(bool state)
@@ -81,6 +85,13 @@ namespace Aurora {
 #endif
 
 		m_Context->SwapBuffers();
+	}
+
+	void Window::Maximize() const
+	{
+		AR_PROFILE_FUNCTION();
+
+		glfwMaximizeWindow(m_Window);
 	}
 
 	bool Window::Init()
@@ -110,13 +121,20 @@ namespace Aurora {
 		return true;
 	}
 
-	void Window::Maximize()
+	void Window::CreateMaximized()
 	{
+		AR_PROFILE_FUNCTION();
+
 		m_Window = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Title.c_str(), NULL, NULL);
-		glfwMaximizeWindow(m_Window);
 		AR_CORE_ASSERT(m_Window, "Failed to initialize the window!");
+		
+		glfwMaximizeWindow(m_Window);
+
 		m_Context = Context::Create(m_Window);
-		m_Context->Init();
+		m_Context->Init();		
+
+		SetIconImage();
+		SetVSync(m_Specification.VSync); // A context needs to be current for this which is done in m_Context->Init();
 
 #ifdef AURORA_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
@@ -128,15 +146,23 @@ namespace Aurora {
 		SetGLFWCallbacks();
 	}
 
-	void Window::CentreWindow()
+	void Window::CreateCentred()
 	{
+		AR_PROFILE_FUNCTION();
+
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
 		m_Window = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Title.c_str(), NULL, NULL);
-		glfwSetWindowPos(m_Window, (mode->width - m_Specification.Width) / 2, (mode->height - m_Specification.Height) / 2);
 		AR_CORE_ASSERT(m_Window, "Failed to initialize the window!");
+
+		glfwSetWindowPos(m_Window, (mode->width - m_Specification.Width) / 2, (mode->height - m_Specification.Height) / 2);
+
 		m_Context = Context::Create(m_Window);
 		m_Context->Init();
+
+		SetIconImage();
+		SetVSync(m_Specification.VSync); // A context needs to be current for this which is done in m_Context->Init();
 
 #ifdef AURORA_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
@@ -146,10 +172,28 @@ namespace Aurora {
 		glfwSetWindowUserPointer(m_Window, &m_Specification);
 
 		SetGLFWCallbacks();
+	}
+
+	void Window::SetIconImage()
+	{
+		AR_PROFILE_FUNCTION();
+
+		auto& imageData = Utils::ImageLoader::LoadImageFile(m_Specification.WindowIconPath);
+
+		GLFWimage images[1];
+		images[0].width = imageData.Width;
+		images[0].height = imageData.Height;
+		images[0].pixels = imageData.PixelData;
+
+		glfwSetWindowIcon(m_Window, 1, images);
+
+		Utils::ImageLoader::FreeImage(); // Free image right after glfw copies its data internally
 	}
 
 	void Window::SetGLFWCallbacks()
 	{
+		AR_PROFILE_FUNCTION();
+
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowSpecification& data = *(WindowSpecification*)glfwGetWindowUserPointer(window);
@@ -166,6 +210,28 @@ namespace Aurora {
 
 			WindowCloseEvent event;
 			data.EventCallback(event);
+		});
+
+		glfwSetWindowIconifyCallback(m_Window, [](GLFWwindow* window, int iconified)
+		{
+			WindowSpecification& data = *(WindowSpecification*)glfwGetWindowUserPointer(window);
+
+			if (iconified)
+			{
+				WindowMinimizeEvent event;
+				data.EventCallback(event);
+			}
+		});
+
+		glfwSetWindowMaximizeCallback(m_Window, [](GLFWwindow* window, int maximized) 
+		{
+			WindowSpecification& data = *(WindowSpecification*)glfwGetWindowUserPointer(window);
+
+			if (maximized)
+			{
+				WindowMaximizeEvent event;
+				data.EventCallback(event);
+			}
 		});
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)

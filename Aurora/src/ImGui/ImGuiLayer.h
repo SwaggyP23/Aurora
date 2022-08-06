@@ -6,8 +6,6 @@
 #include "Events/KeyEvents.h"
 #include "Utils/FontsLibrary.h"
 
-#include <glm/glm.hpp>
-
 namespace Aurora {
 
 	class ImGuiLayer : public Layer
@@ -34,7 +32,7 @@ namespace Aurora {
 		bool m_BlockEvents = true;
 		FontsLibrary m_Fonts;
 
-		friend class EditorLayer; // I will friend these classes. The editor is build on ImGui so makes sense to be related to the ImGui layer
+		friend class EditorLayer; // The editor is build on ImGui so makes sense to be related to the ImGui layer
 
 	};
 

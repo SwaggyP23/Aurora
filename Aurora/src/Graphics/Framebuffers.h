@@ -3,6 +3,10 @@
 /*
  * Framebuffers are a very useful tool, they can be used to renderer the scene into a texture which is our case, we can also use them for
  * alot of post-processing effects and other stuff
+ * As for the depth attachment for framebuffers, via this implementation, it is defaulted to use render buffers for the Depth/Stencil 
+ * attachment and that is because these attachments are rarely to ever be directly read from therefore it is more optimized to attach them
+ * as render buffers.
+ * TODO: Add the choice to specify whether to use  render buffers are texture2Ds for the depth and stencil attachments
  */
 
 #include "Core/Base.h"

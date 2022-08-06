@@ -5,7 +5,23 @@
 
 namespace Aurora {
 
+	RenderFlags RenderCommand::m_Flags;
+
 	namespace Utils {
+
+		static GLenum GLTypeFromRenderFlags(RenderFlags flag)
+		{
+			switch (flag)
+			{
+			    case Aurora::RenderFlags::None:            return GL_NONE;
+			    case Aurora::RenderFlags::Triangles:       return GL_TRIANGLES;
+			    case Aurora::RenderFlags::WireFrame:       return GL_LINES;
+			    case Aurora::RenderFlags::Vertices:        return GL_POINTS;
+			}
+
+			AR_CORE_ASSERT(false, "Unkown Render Flag!");
+			return 0;
+		}
 
 		static GLenum GLFunctionFromEnum(OpenGLFunction func)
 		{
@@ -37,6 +53,21 @@ namespace Aurora {
 			return 0;
 		}
 
+		static GLenum GLEquationfromOpenGLEquation(OpenGLEquation eq)
+		{
+			switch (eq)
+			{
+			    case Aurora::OpenGLEquation::Add:                 return GL_FUNC_ADD;
+			    case Aurora::OpenGLEquation::Subtract:            return GL_FUNC_SUBTRACT;
+			    case Aurora::OpenGLEquation::ReverseSubtract:     return GL_FUNC_REVERSE_SUBTRACT;
+			    case Aurora::OpenGLEquation::Minimum:             return GL_MIN;
+			    case Aurora::OpenGLEquation::Maximum:             return GL_MAX;
+			}
+
+			AR_CORE_ASSERT(false, "Unkown Function Equation!");
+			return 0;
+		}
+
 		static GLenum GLFeatureFromFeatureControl(FeatureControl feat)
 		{
 			switch (feat)
@@ -62,6 +93,9 @@ namespace Aurora {
 		Enable(FeatureControl::DepthTesting);
 		SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
 
+		//Enable(FeatureControl::StencilTesting); // Not implemented currently
+		//SetFeatureControlFunction(FeatureControl::StencilTesting, OpenGLFunction::Always);
+
 		Enable(FeatureControl::Culling);
 		SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
 
@@ -73,6 +107,11 @@ namespace Aurora {
 	{
 	}
 
+	void RenderCommand::SetRenderFlag(RenderFlags flag)
+	{
+		m_Flags = flag;
+	}
+
 	void RenderCommand::Enable(FeatureControl feature)
 	{
 		glEnable(Utils::GLFeatureFromFeatureControl(feature));
@@ -81,6 +120,11 @@ namespace Aurora {
 	void RenderCommand::Disable(FeatureControl feature)
 	{
 		glDisable(Utils::GLFeatureFromFeatureControl(feature));
+	}
+
+	void RenderCommand::SetBlendFunctionEquation(OpenGLEquation equation)
+	{
+		glBlendEquation(Utils::GLEquationfromOpenGLEquation(equation));
 	}
 
 	void RenderCommand::SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function)
@@ -102,7 +146,7 @@ namespace Aurora {
 
 	void RenderCommand::Clear()
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
 	void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -114,9 +158,9 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		vertexArray->bind();
-		uint32_t count = indexCount ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		vertexArray->Bind();
+		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
+		glDrawElements(Utils::GLTypeFromRenderFlags(m_Flags), count, GL_UNSIGNED_INT, nullptr);
 	}
 
 }

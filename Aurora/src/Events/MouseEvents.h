@@ -2,8 +2,6 @@
 
 #include "Events.h"
 
-#include <glm/glm.hpp>
-
 namespace Aurora {
 
 	class MouseMovedEvent : public Event
@@ -12,7 +10,7 @@ namespace Aurora {
 		MouseMovedEvent(float mx, float my)
 			: m_Mx(mx), m_My(my) {}
 
-		glm::vec2 GetMousePos() const { return { m_Mx, m_My }; }
+		std::pair<float, float> GetMousePos() const { return { m_Mx, m_My }; }
 		inline float GetMouseX() const { return m_Mx; }
 		inline float GetMouseY() const { return m_My; }
 
@@ -52,6 +50,7 @@ namespace Aurora {
 
 	private:
 		float m_Xoffset, m_Yoffset;
+
 	};
 
 	class MouseButtonEvent : public Event
