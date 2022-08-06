@@ -21,7 +21,7 @@ workspace "Aurora"
 outputdir = "%{cfg.architecture}-%{cfg.buildcfg}"
 
 group "Dependencies"
-    include "Aurora/dependencies/GLFW"
+    include "Aurora/dependencies/glfw"
     include "Aurora/dependencies/Glad"
     include "Aurora/dependencies/ImGui/imgui"
     include "Aurora/dependencies/optick"

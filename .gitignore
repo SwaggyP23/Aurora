@@ -1,12 +1,12 @@
 .vs/
 bin/
-Build/
 LogDump/
 
 # specific models to ignore since they are not working
 Luna/resources/models/brz
 Luna/resources/models/gtr
 Luna/resources/models/mcl
+Luna/resources/models/rock
 
 Aurora.sln
 Aurora.vcxproj
@@ -45,4 +45,4 @@ Assimp.vcxproj
 Assimp.vcxproj.user
 Assimp.vcxproj.filters
 
-zlib.vcxproj
+zlibStatic.vcxproj

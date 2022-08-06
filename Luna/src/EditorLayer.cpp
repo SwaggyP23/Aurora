@@ -148,7 +148,7 @@ namespace Aurora {
 		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
-		bool select = m_SelectionContext ? true : false;
+		bool isSomethingSelected = m_SelectionContext ? true : false;
 
 		switch (e.GetKeyCode())
 		{
@@ -183,7 +183,8 @@ namespace Aurora {
 
 			case Key::D:
 			{
-				if (control && select)
+				// TODO: Needs rework...
+				if (control && isSomethingSelected)
 				{
 					m_SelectionContext = m_ActiveScene->CopyEntity(m_SelectionContext);
 				}
@@ -193,7 +194,7 @@ namespace Aurora {
 
 			case Key::Delete:
 			{
-				if (select)
+				if (isSomethingSelected)
 				{
 					m_ActiveScene->DestroyEntity(m_SelectionContext);
 					m_SelectionContext = {};

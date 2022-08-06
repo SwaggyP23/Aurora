@@ -1,6 +1,6 @@
 
 IncludeDir = {}
-IncludeDir["GLFW"]      = "%{wks.location}/Aurora/dependencies/GLFW/include"
+IncludeDir["GLFW"]      = "%{wks.location}/Aurora/dependencies/glfw/include"
 IncludeDir["Glad"]      = "%{wks.location}/Aurora/dependencies/Glad/include"
 IncludeDir["ImGui"]     = "%{wks.location}/Aurora/dependencies/ImGui"
 IncludeDir["ImGuizmo"]  = "%{wks.location}/Aurora/dependencies/ImGuizmo"
