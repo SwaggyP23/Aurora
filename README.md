@@ -1,7 +1,7 @@
 # Aurora 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://github.com/SwaggyP23/Aurora/blob/main/LICENSE)
 
-![\t\tAurora Logo](/Resources/Icons/Auroraicon1.png?raw=true "Aurora")
+![Aurora Logo](/Resources/Icons/Auroraicon1.png?raw=true "Aurora")
 
 - Aurora Engine is a very primitive 3D engine based on [Hazel 2D Engine](https://github.com/TheCherno/Hazel). 
 
