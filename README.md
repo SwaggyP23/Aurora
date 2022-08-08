@@ -4,8 +4,6 @@
     <img alt='Aurora' src=Resources/Icons/Auroraicon1.png>
 </p>
 
-![Aurora Logo](/Resources/Icons/Auroraicon1.png?raw=true "Aurora")
-
 - Aurora Engine is a very primitive 3D engine based on [Hazel 2D Engine](https://github.com/TheCherno/Hazel). 
 
 - First was based on the book called [LearnOpenGL - Graphics Programming](https://learnopengl.com/) made by Joey de Vries.
