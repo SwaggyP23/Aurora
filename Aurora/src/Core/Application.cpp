@@ -202,7 +202,6 @@ namespace Aurora {
 		dispatcher.dispatch<WindowMinimizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMinimize));
 		dispatcher.dispatch<WindowMaximizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMaximize));
 		dispatcher.dispatch<WindowResizeEvent>(AR_SET_EVENT_FN(Application::OnWindowResize));
-		//LOG_INFO("{0}", e);
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{

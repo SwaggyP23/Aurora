@@ -7,6 +7,8 @@ namespace Aurora {
 
 	void FontsLibrary::SetDefaultFont(const std::string& fontName, FontIdentifier type, float fontSize)
 	{
+		AR_PROFILE_FUNCTION();
+
 #if AURORA_DEBUG
 		std::string FontType;
 		switch (type)
@@ -19,7 +21,7 @@ namespace Aurora {
 		}
 #endif
 
-		AR_CORE_ASSERT(FontType != m_ErrorToken, "Font is not supported!");
+		AR_CORE_ASSERT(FontType != m_ErrorToken, "[FontsLibrary]: Font is not supported!");
 
 		AddFont(fontName, type);
 		
@@ -43,7 +45,7 @@ namespace Aurora {
 		}
 #endif
 
-		AR_CORE_ASSERT(FontType != m_ErrorToken, "Font is not supported!"); // Check the temporary Font and the FontIdentifier that you pushed!
+		AR_CORE_ASSERT(FontType != m_ErrorToken, "[FontsLibrary]: Font is not supported!"); // Check the temporary Font and the FontIdentifier that you pushed!
 
 		std::pair<std::string, FontIdentifier> fontQualifier = std::make_pair(fontName, type);
 
@@ -59,7 +61,9 @@ namespace Aurora {
 
 	void FontsLibrary::PopTemporaryFont()
 	{
-		AR_CORE_ASSERT(m_PushedTemporaryFont, "No temporary font has been pushed, so this function is called in the wrong place or should not be called!")
+		AR_PROFILE_FUNCTION();
+
+		AR_CORE_ASSERT(m_PushedTemporaryFont, "[FontsLibrary]: No temporary font has been pushed, so this function is called in the wrong place or should not be called!")
 
 		ImGui::PopFont();
 		m_PushedTemporaryFont = false;
@@ -67,6 +71,8 @@ namespace Aurora {
 
 	void FontsLibrary::AddFont(const std::string& fontName, FontIdentifier type, float fontSize)
 	{
+		AR_PROFILE_FUNCTION();
+
 #if AURORA_DEBUG
 		std::string FontType;
 		switch (type)
@@ -79,7 +85,7 @@ namespace Aurora {
 		}
 #endif
 
-		AR_CORE_ASSERT(FontType != m_ErrorToken, "Font is not supported!");
+		AR_CORE_ASSERT(FontType != m_ErrorToken, "[FontsLibrary]: Font is not supported!");
 
 		ImGuiIO& io = ImGui::GetIO();
 		std::string path = m_Directories[fontName][type].string();
@@ -98,7 +104,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_ASSERT(m_Directories.find(fontName) == m_Directories.end(), "Font already added!");
+		AR_CORE_ASSERT(m_Directories.find(fontName) == m_Directories.end(), "[FontsLibrary]: Font already added!");
 
 		for (const auto& it : std::filesystem::directory_iterator{ directory })
 		{
@@ -184,6 +190,8 @@ namespace Aurora {
 
 	FontTypes FontsLibrary::GetFont(const std::string& fontName)
 	{
+		AR_PROFILE_FUNCTION();
+
 		FontTypes res;
 		
 		AR_CORE_ASSERT(m_Directories.find(fontName) != m_Directories.end(), "This font is not added to the library!");

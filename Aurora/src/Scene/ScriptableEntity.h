@@ -4,6 +4,7 @@
 
 namespace Aurora {
 
+	// Interface-like class...
 	class ScriptableEntity
 	{
 	public:

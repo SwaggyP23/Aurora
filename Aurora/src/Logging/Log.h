@@ -27,17 +27,17 @@ namespace Aurora {
 
 #ifndef AURORA_DIST
 
-	#define AR_CORE_TRACE(...)     ::Aurora::logger::Log::GetCoreLogger()->trace(__VA_ARGS__)
-	#define AR_CORE_INFO(...)      ::Aurora::logger::Log::GetCoreLogger()->info(__VA_ARGS__)
-	#define AR_CORE_WARN(...)      ::Aurora::logger::Log::GetCoreLogger()->warn(__VA_ARGS__)
-	#define AR_CORE_ERROR(...)     ::Aurora::logger::Log::GetCoreLogger()->error(__VA_ARGS__)
-	#define AR_CORE_CRITICAL(...)  ::Aurora::logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
+	#define AR_CORE_TRACE(...)     ::Aurora::Logger::Log::GetCoreLogger()->trace(__VA_ARGS__)
+	#define AR_CORE_INFO(...)      ::Aurora::Logger::Log::GetCoreLogger()->info(__VA_ARGS__)
+	#define AR_CORE_WARN(...)      ::Aurora::Logger::Log::GetCoreLogger()->warn(__VA_ARGS__)
+	#define AR_CORE_ERROR(...)     ::Aurora::Logger::Log::GetCoreLogger()->error(__VA_ARGS__)
+	#define AR_CORE_CRITICAL(...)  ::Aurora::Logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
-	#define AR_TRACE(...)          ::Aurora::logger::Log::GetClientLogger()->trace(__VA_ARGS__)
-	#define AR_INFO(...)           ::Aurora::logger::Log::GetClientLogger()->info(__VA_ARGS__)
-	#define AR_WARN(...)           ::Aurora::logger::Log::GetClientLogger()->warn(__VA_ARGS__)
-	#define AR_ERROR(...)          ::Aurora::logger::Log::GetClientLogger()->error(__VA_ARGS__)
-	#define AR_CRITICAL(...)       ::Aurora::logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
+	#define AR_TRACE(...)          ::Aurora::Logger::Log::GetClientLogger()->trace(__VA_ARGS__)
+	#define AR_INFO(...)           ::Aurora::Logger::Log::GetClientLogger()->info(__VA_ARGS__)
+	#define AR_WARN(...)           ::Aurora::Logger::Log::GetClientLogger()->warn(__VA_ARGS__)
+	#define AR_ERROR(...)          ::Aurora::Logger::Log::GetClientLogger()->error(__VA_ARGS__)
+	#define AR_CRITICAL(...)       ::Aurora::Logger::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 #else
 

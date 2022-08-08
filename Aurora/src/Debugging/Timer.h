@@ -47,7 +47,7 @@ namespace Aurora {
 
 		~ScopedTimer()
 		{
-			AR_CORE_TRACE("[TIMER] {0} - {1} milliSecs", m_Name, (float)m_Timer.ElapsedMillis());
+			AR_CORE_TRACE("[TIMER]: {0} - {1} milliSecs", m_Name, (float)m_Timer.ElapsedMillis());
 		}
 
 	private:

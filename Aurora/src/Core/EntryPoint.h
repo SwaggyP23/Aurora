@@ -19,7 +19,7 @@ namespace Aurora {
 			Aurora::Application* app = Aurora::CreateApplication(argc, argv);
 			AR_PROFILE_END_SESSION("ApplicationStartup");
 
-			AR_CORE_ASSERT(app, "Application is null!");
+			AR_CORE_ASSERT(app, "[Main]: Application is null!");
 
 			AR_PROFILE_BEGIN_SESSION("ApplicationRuntime", "Profiling");
 			app->Run();

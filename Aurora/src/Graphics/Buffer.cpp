@@ -16,7 +16,7 @@ namespace Aurora {
 			    case Aurora::VertexBufferDrawHint::Dynamic:     return GL_DYNAMIC_DRAW;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown draw hint type!");
+			AR_CORE_ASSERT(false, "[Buffer]: Unkown draw hint type!");
 			return 0;
 		}
 
@@ -48,7 +48,7 @@ namespace Aurora {
 		    case ShaderDataType::Bool:    return 1;
 		}
 
-		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "[Buffer]: Unkown Shader Data Type!");
 		return 0;
 	}
 

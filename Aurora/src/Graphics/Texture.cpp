@@ -30,7 +30,7 @@ namespace Aurora {
 				dataFormat = GL_RGB;
 			}
 
-			AR_CORE_ASSERT(internalFormat & dataFormat, "Format is not supported. Format is null!");
+			AR_CORE_ASSERT(internalFormat & dataFormat, "[Texture]: Format is not supported. Format is null!");
 
 			return { internalFormat, dataFormat };
 		}
@@ -49,7 +49,7 @@ namespace Aurora {
 			case TextureFilter::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
 		}
 
-		AR_CORE_ASSERT(false, "Unknown Texture Filter!");
+		AR_CORE_ASSERT(false, "[Texture]: Unknown Texture Filter!");
 		return 0;
 	}
 
@@ -64,7 +64,7 @@ namespace Aurora {
 		    case TextureWrap::ClampToBorder:      return GL_CLAMP_TO_BORDER;
 		}
 
-		AR_CORE_ASSERT(false, "Unknown Texture Wrap Mode!");
+		AR_CORE_ASSERT(false, "[Texture]: Unknown Texture Wrap Mode!");
 		return 0;
 	}
 
@@ -108,7 +108,7 @@ namespace Aurora {
 
 #ifdef AURORA_DEBUG
 		uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
-		AR_CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
+		AR_CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "[Texture]: Data must be an entire texture!");
 #endif
 		glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
@@ -158,13 +158,13 @@ namespace Aurora {
 			AR_PROFILE_SCOPE("Texture Storage! Texture::loadTextureData()");
 
 			int channels = imageData.Channels;
-			AR_CORE_WARN("Number of channels for texture {0} is: {1}", m_Path, channels);
+			AR_CORE_WARN("[Texture]: Number of channels for texture {0} is: {1}", m_Path, channels);
 
 			Utils::Formats texFormat = Utils::GetFormatsFromChannels(channels);
 			m_InternalFormat = texFormat.InternalFormat;
 			m_DataFormat = texFormat.DataFormat;
 
-			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
+			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "[Texture]: Formats are not set!");
 
 			glTextureStorage2D(m_TextureID, 4, m_InternalFormat, m_Width, m_Height); // level is number of mipmaps
 			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imageData.PixelData);
@@ -173,7 +173,7 @@ namespace Aurora {
 			glGenerateTextureMipmap(m_TextureID);
 		}
 		else
-			AR_CORE_ERROR("Failed to load Texture! {0}", m_Path);
+			AR_CORE_ERROR("[Texture]: Failed to load Texture! {0}", m_Path);
 
 		Utils::ImageLoader::FreeImage();
 	}
@@ -183,14 +183,13 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glBindTextureUnit(slot, m_TextureID);
-
 	}
 
 	void Texture::UnBind(uint32_t slot) const
 	{
-		// TODO: This currently maybe works, however it throws OpenGL error 1282, need to take a look at the specification and if ever that error pops up check here
+		AR_PROFILE_FUNCTION();
+
 		glBindTextureUnit(slot, 0);
-		//glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 }

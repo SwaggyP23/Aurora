@@ -108,12 +108,6 @@ project "Aurora"
         {
         }
 
-    filter { "system:windows", "configurations:Dist" }
-        buildoptions
-        {
-            "/SUBSYSTEM:WINDOWS"
-        }
-
     filter "files:dependencies/stb_image/**.cpp"
         flags { "NoPCH" }
 

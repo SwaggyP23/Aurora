@@ -98,7 +98,7 @@ namespace Aurora {
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, imageData.PixelData);
 			}
 			else
-				AR_CORE_ERROR("Failed to load face: {0}.", cubeFaces[i]);
+				AR_CORE_ERROR("[CubeTexture]: Failed to load face: {0}.", cubeFaces[i]);
 
 			Utils::ImageLoader::FreeImage();
 		}
@@ -147,7 +147,7 @@ namespace Aurora {
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, imageData.PixelData);
 			}
 			else
-				AR_CORE_ERROR("Failed to load face: {0}.", m_Filepaths[i]);
+				AR_CORE_ERROR("[CubeTexture]: Failed to load face: {0}.", m_Filepaths[i]);
 
 			Utils::ImageLoader::FreeImage();
 		}

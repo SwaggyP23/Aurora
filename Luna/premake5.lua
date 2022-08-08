@@ -87,7 +87,4 @@ project "Luna"
         }
 
     filter { "system:windows", "configurations:Dist" }
-        buildoptions
-        {
-            "/SUBSYSTEM:WINDOWS"
-        }
+        kind "WindowedApp"

@@ -9,6 +9,8 @@ namespace Aurora {
 
 	namespace Utils {
 
+#ifdef AR_PLATFORM_WINDOWS
+		// TODO: Add other platform support
 		class WindowsFileDialogs
 		{
 		public:
@@ -17,6 +19,8 @@ namespace Aurora {
 			static std::string SaveFile(const char* filter);
 
 		};
+
+#endif
 
 		class FileReader
 		{

@@ -38,14 +38,14 @@ namespace Aurora {
 		}
 		
 		if (severity == 0x9146)
-			AR_CORE_CRITICAL("GL Callback: Type: {0}, Severity: {1}, Message: {2}", ErrorType, Severity, message);
+			AR_CORE_CRITICAL("[Window]: GL Callback: Type: {0}, Severity: {1}, Message: {2}", ErrorType, Severity, message);
 		else if (severity == 0x9147)
-			AR_CORE_WARN("GL Callback: Type: {0}, Severity: {1}, Message: {2}", ErrorType, Severity, message);
+			AR_CORE_WARN("[Window]: GL Callback: Type: {0}, Severity: {1}, Message: {2}", ErrorType, Severity, message);
 	}
 
 	static void error_callback(int error, const char* description)
 	{
-		AR_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
+		AR_CORE_ERROR("[Window]: GLFW Error ({0}): {1}", error, description);
 	}
 
 	Scope<Window> Window::Create(const WindowSpecification& spec)
@@ -83,7 +83,7 @@ namespace Aurora {
 #ifdef AURORA_DEBUG
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
-			AR_CORE_ERROR("OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
+			AR_CORE_ERROR("[Window]: OpenGL Error: {0}, Function: {1}", error, __FUNCTION__);
 #endif
 
 		m_Context->SwapBuffers();
@@ -100,10 +100,10 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_INFO("Creating window {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
+		AR_CORE_INFO("[Window]: Creating window {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
 		int success = glfwInit();
-		AR_CORE_ASSERT(success, "Failed to initialize glfw!");
+		AR_CORE_ASSERT(success, "[Window]: Failed to initialize glfw!");
 
 #ifdef AURORA_DEBUG
 		glfwSetErrorCallback(error_callback);
@@ -128,7 +128,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		m_Window = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Title.c_str(), NULL, NULL);
-		AR_CORE_ASSERT(m_Window, "Failed to initialize the window!");
+		AR_CORE_ASSERT(m_Window, "[Window]: Failed to initialize the window!");
 		
 		glfwMaximizeWindow(m_Window);
 
@@ -156,7 +156,7 @@ namespace Aurora {
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
 		m_Window = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Title.c_str(), NULL, NULL);
-		AR_CORE_ASSERT(m_Window, "Failed to initialize the window!");
+		AR_CORE_ASSERT(m_Window, "[Window]: Failed to initialize the window!");
 
 		glfwSetWindowPos(m_Window, (mode->width - m_Specification.Width) / 2, (mode->height - m_Specification.Height) / 2);
 

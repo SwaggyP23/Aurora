@@ -1,5 +1,5 @@
 project "SandBox"
-    kind "ConsoleApp"
+    kind "WindowedApp" -- SandBox is a windowed app always since it is a testing runtime testing environment
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
@@ -83,10 +83,4 @@ project "SandBox"
 
         links
         {
-        }
-
-    filter { "system:windows", "configurations:Dist" }
-        buildoptions
-        {
-            "/SUBSYSTEM:WINDOWS"
         }

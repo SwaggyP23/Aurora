@@ -1,8 +1,10 @@
 #pragma once
 
-#ifndef NOMINMAX
-    #define NOMINMAX // These are for the random number generator
-#endif // !NOMINMAX
+#ifdef AR_PLATFORM_WINDOWS
+    #ifndef NOMINMAX
+        #define NOMINMAX // These are for the random number generator
+    #endif // !NOMINMAX
+#endif
 
 #include <iostream>
 #include <stdint.h>
@@ -33,4 +35,6 @@
 #include "Debugging/Instrumentation.h"
 #include "Debugging/Timer.h"
 
-#include <Windows.h>
+#ifdef AR_PLATFORM_WINDOWS
+    #include <Windows.h>
+#endif
