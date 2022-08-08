@@ -102,16 +102,17 @@ namespace Aurora {
 
 		for (const auto& it : std::filesystem::directory_iterator{ directory })
 		{
-			std::string entryName = it.path().string();
-			
+			std::string entryStringNmae = it.path().string();
+			std::string_view entryName = entryStringNmae.c_str();
+
 			size_t lastSlash = entryName.find_last_of("/\\");
-			lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+			lastSlash = lastSlash == std::string_view::npos ? 0 : lastSlash + 1;
 
 			size_t lastPeriod = entryName.rfind('.');
-			size_t count = lastPeriod == std::string::npos ? entryName.size() - lastSlash : lastPeriod - lastSlash;
-			std::string Name = entryName.substr(lastSlash, count);
+			size_t count = lastPeriod == std::string_view::npos ? entryName.size() - lastSlash : lastPeriod - lastSlash;
+			std::string_view Name = entryName.substr(lastSlash, count);
 
-			std::string extension = entryName.substr(lastPeriod, lastPeriod + 2);
+			std::string_view extension = entryName.substr(lastPeriod, lastPeriod + 2);
 
 			if (extension == ".ttf")
 			{

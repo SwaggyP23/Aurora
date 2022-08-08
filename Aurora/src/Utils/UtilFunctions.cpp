@@ -62,19 +62,11 @@ namespace Aurora {
 
 		std::ifstream FileReader::m_Stream;
 
-		FileReader::FileReader()
-		{
-		}
-
-		FileReader& FileReader::Get()
-		{
-			static FileReader s_Instance;
-			return s_Instance;
-		}
-
-		std::string FileReader::ReadFile(const std::string& filePath)
+		std::string FileReader::ReadTextFile(const std::string& filePath)
 		{
 			AR_PROFILE_FUNCTION();
+
+			AR_CORE_ASSERT(std::filesystem::exists(filePath), "Filepath provided does not exist!");
 
 			std::string result;
 			std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII

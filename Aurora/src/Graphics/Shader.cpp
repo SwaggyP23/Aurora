@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "Shader.h"
 
+#include "Utils/UtilFunctions.h"
+
 #include <glad/glad.h>
 
 namespace Aurora {
@@ -52,7 +54,7 @@ namespace Aurora {
 		size_t count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filePath.substr(lastSlash, count);
 
-		std::string shaderFullSource = Utils::FileReader::Get().ReadFile(filePath);
+		std::string shaderFullSource = Utils::FileReader::ReadTextFile(filePath);
 
 		auto shaderSplitSources = SplitSource(shaderFullSource);
 

@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "Texture.h"
 
+#include "Utils/ImageLoader.h"
+
 #include <glad/glad.h>
 
 namespace Aurora {

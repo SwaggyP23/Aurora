@@ -7,7 +7,7 @@
 
 namespace Aurora {
 
-	namespace logger {
+	namespace Logger {
 		class Log
 		{
 		public:

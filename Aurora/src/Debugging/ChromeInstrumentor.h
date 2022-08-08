@@ -57,7 +57,7 @@ namespace Aurora {
             }
             else
             {
-                if(logger::Log::GetCoreLogger())
+                if(Logger::Log::GetCoreLogger())
                     AR_CORE_ERROR("Chrome Instrumentor could not open file: {0}", filepath);
             }
         }

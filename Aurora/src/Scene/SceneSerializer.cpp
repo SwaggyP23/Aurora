@@ -209,7 +209,9 @@ namespace Aurora {
 		outPut << YAML::BeginMap;
 
 		outPut << YAML::Key << "Scene" << YAML::Value << "UnNamed"; // TODO: Add scene names
-		outPut << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+		outPut << YAML::Key << "Entities" << YAML::Value;
+
+		outPut << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
 			Entity entity = { entityID, m_Scene.raw() };
@@ -240,19 +242,19 @@ namespace Aurora {
 
 	bool SceneSerializer::DeSerializeFromText(const std::string& filepath)
 	{
-#if AURORA_DEBUG
-		size_t lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash;
-		std::string fileSysPath = filepath.substr(0, lastSlash);
-#endif
+		AR_CORE_ASSERT(std::filesystem::exists(filepath), "Path does not exist");
 
-		AR_CORE_ASSERT(std::filesystem::exists(fileSysPath), "Path does not exist");
+		YAML::Node data;
 
-		std::ifstream fin(filepath); // TODO: Change this to use the YAML::LoadFile API...
-		std::stringstream strStream;
-		strStream << fin.rdbuf(); // Reads the whole file buffer into the stringstream
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch (YAML::ParserException e)
+		{
+			AR_CORE_ERROR("Failed to load .aurora file '{0}'\n\t{1}", filepath, e.what());
+		}
 
-		YAML::Node data = YAML::Load(strStream.str()); // This is the root node of the file to be Deserialized
 		if (!data["Scene"])
 			return false; // If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
 

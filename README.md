@@ -1,5 +1,8 @@
-# Aurora 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://github.com/SwaggyP23/Aurora/blob/main/LICENSE)
+# Aurora
+
+<p align='center'>
+    <img alt='Aurora' src=Resources/Icons/Auroraicon1.png>
+</p>
 
 ![Aurora Logo](/Resources/Icons/Auroraicon1.png?raw=true "Aurora")
 

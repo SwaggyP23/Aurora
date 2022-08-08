@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "Window.h"
 
+#include "Utils/ImageLoader.h"
+
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <imgui/imgui.h>

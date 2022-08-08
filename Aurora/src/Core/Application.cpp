@@ -53,7 +53,7 @@ namespace Aurora {
 			delete layer;
 		}
 
-		Renderer3D::ShutDown(); // Move to Aurora Core Shutdown
+		Renderer3D::ShutDown(); // Look into moving to Aurora Core Shutdown with similar shutdown functions
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -151,14 +151,14 @@ namespace Aurora {
 
 		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
 
-		return false; // TODO: Check why we return true of false in these functions...!
+		return true; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
 	{
 		m_Minimized = true;
 
-		return false;
+		return true; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	bool Application::OnWindowMaximize(WindowMaximizeEvent& e)
@@ -166,7 +166,7 @@ namespace Aurora {
 		m_Minimized = false;
 		m_Window->Maximize();
 
-		return false;
+		return true; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
@@ -174,7 +174,7 @@ namespace Aurora {
 		m_Running = false;
 		g_ApplicationRunning = false;
 
-		return true;
+		return true; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	void Application::Close()

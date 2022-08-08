@@ -40,6 +40,7 @@ project "Luna"
 
         defines
         {
+            "AR_PLATFORM_WINDOWS"
         }
 
     filter "configurations:Profile"
@@ -83,4 +84,10 @@ project "Luna"
 
         links
         {
+        }
+
+    filter { "system:windows", "configurations:Dist" }
+        buildoptions
+        {
+            "/SUBSYSTEM:WINDOWS"
         }

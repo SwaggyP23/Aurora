@@ -62,6 +62,7 @@ project "Aurora"
 
         defines
         {
+            "AR_PLATFORM_WINDOWS"
         }
 
     filter "configurations:Profile"
@@ -105,6 +106,12 @@ project "Aurora"
 
         links
         {
+        }
+
+    filter { "system:windows", "configurations:Dist" }
+        buildoptions
+        {
+            "/SUBSYSTEM:WINDOWS"
         }
 
     filter "files:dependencies/stb_image/**.cpp"

@@ -39,6 +39,7 @@ project "SandBox"
 
         defines
         {
+            "AR_PLATFORM_WINDOWS"
         }
 
     filter "configurations:Profile"
@@ -82,4 +83,10 @@ project "SandBox"
 
         links
         {
+        }
+
+    filter { "system:windows", "configurations:Dist" }
+        buildoptions
+        {
+            "/SUBSYSTEM:WINDOWS"
         }
