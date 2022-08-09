@@ -29,8 +29,7 @@ namespace Aurora {
 #pragma region EditorLayerMainMethods
 
 	EditorLayer::EditorLayer()
-		: Layer("BatchRenderer"),
-		m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
+		: Layer("EditorLayer"), m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
 	{
 	}
 
@@ -88,8 +87,8 @@ namespace Aurora {
 		AR_PERF_TIMER("EditorLayer::OnUpdate");
 
 		// Framebuffer resizing... This stops the blacked out frames we would get when resizing...
-		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification(); m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f 
-			&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
@@ -336,7 +335,7 @@ namespace Aurora {
 
 #pragma endregion
 
-	// NEED TO CHANGE SOME STUFF HERE FOR LATER
+	// TODO: NEED TO CHANGE SOME STUFF HERE FOR LATER
 #pragma region FileDialogs/Scene Helpers
 
 	void EditorLayer::NewScene()

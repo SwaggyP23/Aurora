@@ -128,7 +128,7 @@ namespace Aurora {
 	// INDEX BUFFER!!
 	//////////////////////////
 
-	// Only supports 32-bit index buffers, should add support for 16-bit index buffers
+	// TODO: Only supports 32-bit index buffers, should add support for 16-bit index buffers
 	class IndexBuffer
 	{
 	public:

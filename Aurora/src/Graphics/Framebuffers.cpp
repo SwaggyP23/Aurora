@@ -43,9 +43,9 @@ namespace Aurora {
 			else
 			{
 				// 2. Allocated Memory for the textures
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr); // In the future it could be something other than GL_UNSIGNED_BYTE therefore a conversion fucntion is needed on the type
+				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
+				// In the future it could be something other than GL_UNSIGNED_BYTE therefore a conversion function is needed on the type
 				
-				// TODO: Filtering and Wrapping Change to use my texture api and this stuff is to set from the framebufferSpecification
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -104,12 +104,12 @@ namespace Aurora {
 	Framebuffer::Framebuffer(const FramebufferSpecification& spec)
 		: m_Specification(spec)
 	{
-		for (auto format : spec.Attachments.Attachments)
+		for (const auto& format : spec.Attachments.Attachments)
 		{
-			if (!Utils::IsDepthFormat(format.TextureFormat))
-				m_ColorAttachmentsSpecification.emplace_back(format);
-			else
+			if (Utils::IsDepthFormat(format.TextureFormat))
 				m_DepthAttachmentSpecification = format;
+			else
+				m_ColorAttachmentsSpecification.emplace_back(format);
 		}
 
 		Invalidate();
@@ -154,6 +154,7 @@ namespace Aurora {
 				Utils::BindTexture(multiSample, m_ColorAttachments[i]);
 				switch (m_ColorAttachmentsSpecification[i].TextureFormat)
 				{
+					// TODO: Each time a format is added this switch is to be expanded. For now only 2
 				    case FrameBufferTextureFormat::RGBA8:
 				    	Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, (int)i);
 				    	break;
@@ -218,7 +219,7 @@ namespace Aurora {
 		return pixelData;
 	}
 
-	// This should be changed from taking just an integer back to const void* and figuring the type later
+	// TODO: This should be changed from taking just an integer back to const void* and figuring the type later
 	void Framebuffer::ClearTextureAttachment(uint32_t attachmentIndex, int data) const
 	{
 		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "[Framebuffer]: Attachment index can not be more than the available attachments");
@@ -226,12 +227,13 @@ namespace Aurora {
 		// m_ColorAttachments and m_ColorAttachmentsSpecification are always equal in size the indexing matches perfectly
 		auto& spec = m_ColorAttachmentsSpecification[attachmentIndex];
 
-		// TODO: GL_INT should be implied from the spec.Textureformat via a switch static function, also with it is the TODO that is up top on line 59
+		// TODO: GL_INT should be implied from the spec.Textureformat via a switch static function
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::GLInternalFormatFromFramebufferTextureFormat(spec.TextureFormat), GL_INT, &data);
 	}
 
 	void Framebuffer::Bind() const
 	{
+		// TODO: Binding a framebuffer should manage its clear color / clear info
 		AR_PROFILE_FUNCTION();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, m_BufferID);

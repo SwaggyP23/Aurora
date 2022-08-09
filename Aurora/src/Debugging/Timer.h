@@ -18,19 +18,19 @@ namespace Aurora {
 			Reset();
 		}
 
-		void Reset()
+		void Timer::Reset()
 		{
 			m_Start = HighResClock::now();
 		}
 
-		double Elapsed() // returns time in seconds
+		float Timer::Elapsed() // Returns time in seconds
 		{
 			return std::chrono::duration_cast<NanoSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
 		}
 
-		float ElapsedMillis() // returns time in milliseconds
+		float Timer::ElapsedMillis() // in milliseconds
 		{
-			return (float)Elapsed() * 1000.0f;
+			return Elapsed() * 1000.0f;
 		}
 
 	private:

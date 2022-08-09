@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Logging/Log.h"
-#include "Utils/Random.h"
+#include "Random.h"
 
 namespace Aurora {
 
 	static void InitializeCore()
 	{
 		Logger::Log::Init();
-		Utils::Random::Init();
+		Random::Init();
 	}
 
 	static void ShutdownCore()

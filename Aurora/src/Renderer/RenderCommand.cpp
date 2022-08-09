@@ -14,9 +14,9 @@ namespace Aurora {
 			switch (flag)
 			{
 			    case Aurora::RenderFlags::None:            return GL_NONE;
-			    case Aurora::RenderFlags::Triangles:       return GL_TRIANGLES;
-			    case Aurora::RenderFlags::WireFrame:       return GL_LINES;
-			    case Aurora::RenderFlags::Vertices:        return GL_POINTS;
+			    case Aurora::RenderFlags::Triangles:       return GL_FILL;
+			    case Aurora::RenderFlags::WireFrame:       return GL_LINE;
+			    case Aurora::RenderFlags::Vertices:        return GL_POINT;
 			}
 
 			AR_CORE_ASSERT(false, "[RenderCommand]: Unkown Render Flag!");
@@ -110,6 +110,7 @@ namespace Aurora {
 	void RenderCommand::SetRenderFlag(RenderFlags flag)
 	{
 		m_Flags = flag;
+		glPolygonMode(GL_FRONT_AND_BACK, Utils::GLTypeFromRenderFlags(flag));
 	}
 
 	void RenderCommand::Enable(FeatureControl feature)
@@ -160,7 +161,7 @@ namespace Aurora {
 
 		vertexArray->Bind();
 		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
-		glDrawElements(Utils::GLTypeFromRenderFlags(m_Flags), count, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 
 }

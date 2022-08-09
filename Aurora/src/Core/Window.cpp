@@ -100,7 +100,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_INFO("[Window]: Creating window {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
+		AR_CORE_DEBUG("[Window]: Creating window {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
 		int success = glfwInit();
 		AR_CORE_ASSERT(success, "[Window]: Failed to initialize glfw!");

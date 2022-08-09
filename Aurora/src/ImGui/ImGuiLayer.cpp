@@ -15,7 +15,7 @@
 namespace Aurora {
 
 	ImGuiLayer::ImGuiLayer()
-		: Layer("ImGui")
+		: Layer("ImGuiLayer")
 	{
 	}
 

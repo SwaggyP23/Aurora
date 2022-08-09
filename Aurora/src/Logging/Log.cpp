@@ -31,7 +31,7 @@ namespace Aurora {
 			s_ClientLogger->set_level(spdlog::level::trace);
 			s_ClientLogger->flush_on(spdlog::level::trace);
 
-			AR_CORE_INFO("[Log]: Initialized logger! Initialization took: {}ms", timer.ElapsedMillis());
+			AR_CORE_DEBUG("[Log]: Initialized logger! Initialization took: {}ms", timer.ElapsedMillis());
 		}
 
 		void Log::ShutDown()

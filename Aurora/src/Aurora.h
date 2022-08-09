@@ -9,6 +9,7 @@
 #include "Layers/Layer.h"
 
 #include "Core/TimeStep.h"
+#include "Core/Random.h"
 
 #include "Core/Input.h"
 #include "Core/KeyCodes.h"
