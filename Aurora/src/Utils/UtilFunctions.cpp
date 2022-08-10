@@ -18,7 +18,7 @@ namespace Aurora {
 #ifdef AR_PLATFORM_WINDOWS
 
 		// This is literally WinAPI boiler plate code
-		std::string WindowsFileDialogs::OpenFile(const char* filter)
+		std::filesystem::path WindowsFileDialogs::OpenFileDialog(const char* filter)
 		{
 			OPENFILENAMEA ofn; // common dialog box structure
 			CHAR szFile[260] = { 0 }; // If using TCHAR macro
@@ -35,14 +35,16 @@ namespace Aurora {
 
 			if (GetOpenFileNameA(&ofn) == TRUE)
 			{
-				return ofn.lpstrFile;
+				std::string fp = ofn.lpstrFile;
+				std::replace(fp.begin(), fp.end(), '\\', '/');
+				return std::filesystem::path(fp);
 			}
 			
-			return std::string();
+			return std::filesystem::path();
 		}
 
 		// This is literally WinAPI boiler plate code
-		std::string WindowsFileDialogs::SaveFile(const char* filter)
+		std::filesystem::path WindowsFileDialogs::SaveFileDialog(const char* filter)
 		{
 			OPENFILENAMEA ofn; // common dialog box structure
 			CHAR szFile[260] = { 0 }; // If using TCHAR macro
@@ -59,10 +61,12 @@ namespace Aurora {
 
 			if (GetSaveFileNameA(&ofn) == TRUE)
 			{
-				return ofn.lpstrFile;
+				std::string fp = ofn.lpstrFile;
+				std::replace(fp.begin(), fp.end(), '\\', '/');
+				return std::filesystem::path(fp);
 			}
 
-			return std::string();
+			return std::filesystem::path();
 		}
 
 #endif
@@ -73,7 +77,7 @@ namespace Aurora {
 		{
 			AR_PROFILE_FUNCTION();
 
-			AR_CORE_ASSERT(std::filesystem::exists(filePath), "[FileReader]: Filepath provided does not exist!");
+			AR_CORE_ASSERT(std::filesystem::exists(filePath), "FileReader", "Filepath provided does not exist!");
 
 			std::string result;
 			std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
@@ -89,12 +93,12 @@ namespace Aurora {
 				}
 				else
 				{
-					AR_CORE_ERROR("[FileReader]: Could not read from file {0}", filePath);
+					AR_CORE_ERROR_TAG("FileReader", "Could not read from file{0}", filePath);
 				}
 			}
 			else
 			{
-				AR_CORE_ASSERT(false, "[FileReader]: Could not open file {0}", filePath);
+				AR_CORE_ASSERT(false, "FileReader", "Could not open file{0}", filePath);
 			}
 
 			return result;

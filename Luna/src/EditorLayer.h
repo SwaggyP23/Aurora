@@ -61,10 +61,6 @@ namespace Aurora {
 
 		std::string m_SelectedFontName = "OpenSans, Medium";
 
-	// Properties Panel
-	private:
-		void ShowPanelPropertiesUI();
-
 	// Help Panels and UI
 	private:
 		void ShowEditorCameraHelpUI();

@@ -46,12 +46,12 @@ project "Luna"
     filter "configurations:Profile"
         defines
         {
-            "AURORA_DEBUG",
+            "AURORA_RELEASE",
             "AURORA_CORE_PROFILE"
         }
 
-        runtime "Debug"
-        symbols "on"
+        runtime "Release"
+        optimize "on"
 
         links
         {

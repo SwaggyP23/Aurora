@@ -43,7 +43,7 @@ namespace Aurora {
         }
         else
         {
-            AR_CORE_ERROR("Texture failed to load at path: {0}", path);
+            AR_CORE_ERROR_TAG("TempModel", "Texture failed to load at path: {0}", path);
             stbi_image_free(data);
         }
 
@@ -70,7 +70,7 @@ namespace Aurora {
         // check for errors
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
-            AR_CORE_ERROR("ERROR::ASSIMP->{0}", importer.GetErrorString());
+            AR_CORE_ERROR_TAG("ERROR::ASSIMP", "->{0}", importer.GetErrorString());
             return;
         }
         // retrieve the directory path of the filepath

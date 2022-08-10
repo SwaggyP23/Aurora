@@ -1,8 +1,8 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "Logging/Log.h"
+
+#include <unordered_map>
 
 namespace Aurora {
 
@@ -47,7 +47,7 @@ namespace Aurora {
 
 		~ScopedTimer()
 		{
-			AR_CORE_TRACE("[TIMER]: {0} - {1} milliSecs", m_Name, (float)m_Timer.ElapsedMillis());
+			AR_CORE_TRACE_TAG("TIMER", "{0} - {1} milliSecs", m_Name, (float)m_Timer.ElapsedMillis());
 		}
 
 	private:
@@ -55,38 +55,45 @@ namespace Aurora {
 		Timer m_Timer;
 	};
 
-	class PerformanceTimer
+	class PerformanceProfiler
 	{
 	public:
-		PerformanceTimer(std::string name)
-			: m_Name(name), m_Timer() {}
-
-		void SetPerFrameTime(float time)
+		void SetPerFrameTiming(const char* name, float time)
 		{
-			m_Time = time;
+			if (m_PerFrameData.find(name) == m_PerFrameData.end())
+				m_PerFrameData[name] = 0.0f;
+
+			m_PerFrameData[name] += time;
 		}
 
-		~PerformanceTimer()
-		{
-			float time = (float)m_Timer.ElapsedMillis();
-			m_Time += time;
-			s_TimeMap[m_Name] = m_Time;
-		}
-
-		float GetPreviousTime() { return m_Time; }
-
-		static std::unordered_map<std::string, float>& GetTimeMap() { return s_TimeMap; }
+		void Clear() { m_PerFrameData.clear(); }
+		const std::unordered_map<const char*, float>& GetPerFrameData() const { return m_PerFrameData; }
 
 	private:
-		std::string m_Name;
-		Timer m_Timer;
-		float m_Time = 0;
-		float m_Threshold = 3.0f;
+		std::unordered_map<const char*, float> m_PerFrameData;
 
-		static std::unordered_map<std::string, float> s_TimeMap;
+	};
+
+	class PerFrameTimer
+	{
+	public:
+		PerFrameTimer(const char* name, PerformanceProfiler* profiler)
+			: m_Name(name), m_Profiler(profiler) {}
+
+		~PerFrameTimer()
+		{
+			float time = (float)m_Timer.ElapsedMillis();
+			m_Profiler->SetPerFrameTiming(m_Name, time);
+		}
+
+	private:
+		const char* m_Name;
+		PerformanceProfiler* m_Profiler;
+		Timer m_Timer;
+
 	};
 
 }
 
-#define AR_PERF_TIMER(name)     ::Aurora::PerformanceTimer AR_CONCAT_MACRO(timer, __LINE__)(name); AR_CONCAT_MACRO(timer, __LINE__).SetPerFrameTime(AR_CONCAT_MACRO(timer, __LINE__).GetPreviousTime())
-#define AR_ENDF_TIMER()         for(auto&[name, time] : PerformanceTimer::GetTimeMap()) { time = 0; }
+#define AR_SCOPE_PERF(name)      Aurora::PerFrameTimer timer__LINE__(name, Aurora::Application::GetApp().GetPerformanceProfiler())
+#define AR_SCOPED_TIMER(name)    Aurora::ScopedTimer timer__LINE__(name)

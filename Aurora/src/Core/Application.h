@@ -5,6 +5,7 @@
 #include "Events/ApplicationEvents.h"
 #include "Layers/LayerStack.h"
 #include "TimeStep.h"
+#include "Debugging/Timer.h"
 #include "Window.h"
 
 #include "ImGui/ImGuiLayer.h"
@@ -47,12 +48,14 @@ namespace Aurora {
 		Application(const ApplicationSpecification& specification);
 		virtual ~Application();
 
-		void Close();
+		// This acts as the restart also
 		void Restart();
+		void Close();
 
 		void RenderImGui();
 
 		virtual void OnInit() {}
+		virtual void OnShutdown();
 		virtual void OnEvent(Event& e);
 
 		void PushLayer(Layer* layer);
@@ -62,11 +65,16 @@ namespace Aurora {
 		void ProcessEvents();
 
 		inline float GetCPUTime() const { return m_CPUTime; }
-		inline long double GetTimeSinceStart() const { return m_TimeSinceStart; }
+		inline long double GetLastFrameTime() const { return m_LastFrameTime; }
+
 		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
+
 		inline Window& GetWindow() const { return *m_Window; }
+
 		inline static Application& GetApp() { return *s_Instance; }
 		inline const ApplicationSpecification& GetSpecification() const { return m_Specification; }
+
+		inline PerformanceProfiler* GetPerformanceProfiler() const { return m_Profiler; }
 
 	private:
 		void Run();
@@ -83,10 +91,12 @@ namespace Aurora {
 		LayerStack m_LayerStack;
 
 		float m_FrameTime = 0.0f;
-		long double m_TimeSinceStart = 0.0f;
+		long double m_LastFrameTime = 0.0f;
 		float m_CPUTime = 0.0f;
 		TimeStep m_Timestep;
+		PerformanceProfiler* m_Profiler = nullptr; // TODO: Should be null in Dist
 
+		bool m_Restart = false;
 		bool m_Running = true;
 		bool m_Minimized = false;
 

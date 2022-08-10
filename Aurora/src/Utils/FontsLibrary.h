@@ -56,7 +56,7 @@ namespace Aurora {
 
 		FontTypes GetFont(const std::string& fontName);
 
-		inline std::unordered_map<std::pair<std::string, FontIdentifier>, uint32_t> GetFontNamesAndIdentifier() const { return m_FontIndices; }
+		inline const std::unordered_map<std::pair<std::string, FontIdentifier>, uint32_t>& GetFontNamesAndIdentifier() const { return m_FontIndices; }
 
 	private:
 		bool m_BoldHandled = false;

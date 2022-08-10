@@ -71,8 +71,7 @@ namespace Aurora {
 	struct CameraComponent
 	{
 		SceneCamera Camera;
-		bool Primary = true; // TODO: Try moving to scene
-		bool FixedAspectRatio = false;
+		bool Primary = true;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;

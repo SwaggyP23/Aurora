@@ -18,7 +18,7 @@ namespace Aurora {
 			else if (type == "geometry")
 				return GL_GEOMETRY_SHADER;
 
-			AR_CORE_ASSERT(false, "[Shader]: Unknown shader type!");
+			AR_CORE_ASSERT(false, "Shader", "Unknown shader type!");
 			return 0;
 		}
 
@@ -31,7 +31,7 @@ namespace Aurora {
 			    case GL_GEOMETRY_SHADER:	return ShaderErrorType::GeometryShader;
 			}
 
-			AR_CORE_ASSERT(false, "[Shader]: Unknown shader type!");
+			AR_CORE_ASSERT(false, "Shader", "Unknown shader type!");
 			return ShaderErrorType::None;
 		}
 
@@ -125,7 +125,7 @@ namespace Aurora {
 			glDeleteShader(id); // This flags the shader for deletion but is not deleted untill it is not linked to any other program, in our case that is directly here since it is already detached
 		}
 
-		AR_CORE_ASSERT(program, "[Shader]: Program is null!");
+		AR_CORE_ASSERT(program, "Shader", "Program is null!");
 
 		return program;
 	}
@@ -214,7 +214,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_ASSERT(!Exists(name), "[Shader]: Shader already exists!");
+		AR_CORE_ASSERT(!Exists(name), "Shader", "Shader already exists!");
 		m_Shaders[name] = shader;
 	}
 
@@ -240,7 +240,7 @@ namespace Aurora {
 
 	Ref<Shader> ShaderLibrary::Get(const std::string& name)
 	{
-		AR_CORE_ASSERT(Exists(name), "[Shader]: Shader not found!");
+		AR_CORE_ASSERT(Exists(name), "Shader", "Shader not found!");
 		return m_Shaders[name];
 	}
 
@@ -262,15 +262,15 @@ namespace Aurora {
 			glGetShaderInfoLog(shader, length, &length, &errorMessage[0]);
 
 			if (type == Utils::ShaderErrorType::VertexShader)
-				AR_CORE_ERROR("[Shader]: Failed to compile Vertex Shader!!");
+				AR_CORE_ERROR_TAG("Shader", "Failed to compile Vertex Shader!!");
 
 			else if (type == Utils::ShaderErrorType::FragmentShader)
-				AR_CORE_ERROR("[Shader]: Failed to compile Fragment Shader!!");
+				AR_CORE_ERROR_TAG("Shader", "Failed to compile Fragment Shader!!");
 
 			else if (type == Utils::ShaderErrorType::GeometryShader)
-				AR_CORE_ERROR("[Shader]: Failed to compile Geometry Shader!!");
+				AR_CORE_ERROR_TAG("Shader", "Failed to compile Geometry Shader!!");
 
-			AR_CORE_ERROR("[Shader]: Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+			AR_CORE_ERROR_TAG("Shader", "Error message in function{0}: {1}", __FUNCTION__, &errorMessage[0]);
 
 			glDeleteShader(shader);
 		}
@@ -288,8 +288,8 @@ namespace Aurora {
 			std::vector<char> errorMessage(length);
 
 			glGetProgramInfoLog(program, length, NULL, &errorMessage[0]);
-			AR_CORE_ERROR("[Shader]: Failed to link program {0}!", m_Name);
-			AR_CORE_ERROR("[Shader]: Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
+			AR_CORE_ERROR_TAG("Shader", "Failed to link program {0}!", m_Name);
+			AR_CORE_ERROR_TAG("Shader", "Error message in function {0}: {1}", __FUNCTION__, &errorMessage[0]);
 
 			glDeleteProgram(program);
 

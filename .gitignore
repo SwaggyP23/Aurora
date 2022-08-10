@@ -36,11 +36,14 @@ Glad.vcxproj.user
 Glad.vcxproj.filters
 
 Optick.vcxproj
+Optick.vcxproj.user
 
 yaml-cpp.vcxproj
+yaml-cpp.vcxproj.user
 yaml-cpp.vcxproj.filters
 
 Premake.vcxproj
+Premake.vcxproj.user
 Premake.vcxproj.filters
 
 Assimp.vcxproj
@@ -48,3 +51,4 @@ Assimp.vcxproj.user
 Assimp.vcxproj.filters
 
 zlibStatic.vcxproj
+zlibStatic.vcxproj.user

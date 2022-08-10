@@ -14,7 +14,7 @@ namespace Aurora {
 	Context::Context(GLFWwindow* windowHandle)
 		: m_WindowHandle(windowHandle)
 	{
-		AR_CORE_ASSERT(m_WindowHandle, "[Context]: Window handle is null!");
+		AR_CORE_ASSERT(m_WindowHandle, "Context", "Window handle is null!");
 	}
 
 	void Context::Init() const
@@ -24,9 +24,9 @@ namespace Aurora {
 		glfwMakeContextCurrent(m_WindowHandle);
 
 		int gladSuccess = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		AR_CORE_ASSERT(gladSuccess, "[Context]: Failed to initialize glad!");
+		AR_CORE_ASSERT(gladSuccess, "Context", "Failed to initialize glad!");
 
-		AR_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "[Context]: OpenGL version is less that 4.5!");
+		AR_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "Context", "OpenGL version is less that 4.5!");
 	}
 
 	void Context::SwapBuffers() const

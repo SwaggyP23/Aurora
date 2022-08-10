@@ -33,8 +33,8 @@ project "ImGui"
         systemversion "latest"
 
     filter "configurations:Profile"
-        runtime "Debug"
-        symbols "on"
+        runtime "Release"
+        optimize "on"
 
     filter "configurations:Debug"
         runtime "Debug"

@@ -15,8 +15,8 @@ namespace Aurora {
 		{
 		public:
 			// Returns empty strings if cancelled
-			static std::string OpenFile(const char* filter);
-			static std::string SaveFile(const char* filter);
+			static std::filesystem::path OpenFileDialog(const char* filter);
+			static std::filesystem::path SaveFileDialog(const char* filter);
 
 		};
 

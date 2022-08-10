@@ -4,6 +4,8 @@
 // Everything concerning the entityIDs is EDITOR-ONLY since when making a game no one cares about entity ids in the shaders
 // Aurora Uses a clockwise orientation to determine the backfaces of each quad for back face culling
 
+#include "Core/Application.h"
+
 #include <glad/glad.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -35,8 +37,8 @@ namespace Aurora {
 	{
 		static const size_t MaxQuads = 1000;
 		static const size_t MaxVertices = MaxQuads * 24;
-		static const size_t MaxIndices = MaxQuads * 36;
-		static const size_t MaxTextureSlots = 16; // 16 for Luna and 32 for SandBox which is stupid
+		static const size_t MaxIndices = MaxQuads * 36; // Sill in the 16-bit range
+		static const size_t MaxTextureSlots = 16;
 		// const size_t MaxTextureSlots = RendererProperties::GetRendererProperties()->TextureSlots;
 
 		Ref<VertexArray> SkyBoxVertexArray;
@@ -108,7 +110,8 @@ namespace Aurora {
 		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 
 		uint32_t offset = 0;
-		for (uint32_t i = 0; i < s_Data.MaxIndices; i += 36)
+		uint32_t i;
+		for (i = 0; i < s_Data.MaxIndices; i += 36)
 		{
 			quadIndices[i + 0] = offset + 0;
 			quadIndices[i + 1] = offset + 2;
@@ -210,7 +213,7 @@ namespace Aurora {
 
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 
-		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, (uint32_t)s_Data.MaxIndices);
+		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 		s_Data.SkyBoxVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
@@ -381,7 +384,7 @@ namespace Aurora {
 	void Renderer3D::Flush()
 	{
 		AR_PROFILE_FUNCTION();
-		AR_PERF_TIMER("Renderer3D::Flush");
+		AR_SCOPE_PERF("Renderer3D::Flush");
 
 		if (s_Data.QuadIndexCount)
 		{
@@ -413,7 +416,7 @@ namespace Aurora {
 		skybox->Bind();
 
 		auto flag = RenderCommand::GetRenderFlag();
-		RenderCommand::SetRenderFlag(RenderFlags::Triangles);
+		RenderCommand::SetRenderFlag(RenderFlags::Fill);
 		RenderCommand::DrawIndexed(s_Data.SkyBoxVertexArray, 36);
 		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
 		RenderCommand::SetRenderFlag(flag);
@@ -422,7 +425,7 @@ namespace Aurora {
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
-		AR_PERF_TIMER("Renderer3D::DrawQuad");
+		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
@@ -456,7 +459,7 @@ namespace Aurora {
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
-		AR_PERF_TIMER("Renderer3D::DrawQuad");
+		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
@@ -513,7 +516,7 @@ namespace Aurora {
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
-		AR_PERF_TIMER("Renderer3D::DrawRotatedQuad");
+		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
@@ -547,7 +550,7 @@ namespace Aurora {
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
-		AR_PERF_TIMER("Renderer3D::DrawRotatedQuad");
+		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
