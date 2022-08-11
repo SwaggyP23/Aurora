@@ -30,7 +30,7 @@ namespace Aurora {
 			case ShaderDataType::Bool:    return 1;
 		}
 
-		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "Buffer", "Unkown Shader Data Type!");
 		return 0;
 	}
 
@@ -128,7 +128,7 @@ namespace Aurora {
 	// INDEX BUFFER!!
 	//////////////////////////
 
-	// Only supports 32-bit index buffers, should add support for 16-bit index buffers
+	// TODO: Only supports 32-bit index buffers, should add support for 16-bit index buffers
 	class IndexBuffer
 	{
 	public:

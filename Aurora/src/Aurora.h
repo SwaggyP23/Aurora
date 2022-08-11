@@ -9,12 +9,14 @@
 #include "Layers/Layer.h"
 
 #include "Core/TimeStep.h"
+#include "Core/Random.h"
 
 #include "Core/Input.h"
 #include "Core/KeyCodes.h"
 #include "Core/MouseCodes.h"
 
 #include "ImGui/ImGuiLayer.h"
+#include "ImGui/ImGuizmo.h"
 
 #include "Scene/Scene.h"
 #include "Scene/SceneSerializer.h"

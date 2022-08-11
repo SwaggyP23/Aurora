@@ -10,7 +10,7 @@ namespace Aurora {
 	enum class RenderFlags
 	{
 		None = 0,
-		Triangles,
+		Fill,
 		WireFrame,
 		Vertices
 	};

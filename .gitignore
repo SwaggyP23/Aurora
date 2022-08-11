@@ -1,12 +1,14 @@
 .vs/
 bin/
 LogDump/
+# SandBox/resources/textures/
 
 # specific models to ignore since they are not working
 Luna/resources/models/brz
 Luna/resources/models/gtr
 Luna/resources/models/mcl
 Luna/resources/models/rock
+Luna/resources/models/zeus
 
 Aurora.sln
 Aurora.vcxproj
@@ -34,15 +36,8 @@ Glad.vcxproj.user
 Glad.vcxproj.filters
 
 Optick.vcxproj
-
-yaml-cpp.vcxproj
-yaml-cpp.vcxproj.filters
+Optick.vcxproj.user
 
 Premake.vcxproj
+Premake.vcxproj.user
 Premake.vcxproj.filters
-
-Assimp.vcxproj
-Assimp.vcxproj.user
-Assimp.vcxproj.filters
-
-zlibStatic.vcxproj

@@ -12,12 +12,15 @@ namespace Aurora {
 
 	Application::Application(const ApplicationSpecification& specification)
 	{
+		AR_PROFILE_BEGIN_SESSION("ApplicationStartup", "Profiling");
 		AR_PROFILE_FUNCTION();
 
 		s_Instance = this;
 
 		if (!m_Specification.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Specification.WorkingDirectory);
+
+		m_Profiler = new PerformanceProfiler();
 
 		WindowSpecification windowSpec;
 		windowSpec.Title = specification.Name;
@@ -39,10 +42,13 @@ namespace Aurora {
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
+
+		AR_PROFILE_END_SESSION("ApplicationStartup");
 	}
 
 	Application::~Application()
 	{
+		AR_PROFILE_BEGIN_SESSION("ApplicationShutdown", "Profiling");
 		AR_PROFILE_FUNCTION();
 
 		m_Window->SetEventCallback([](Event& e) {});
@@ -53,7 +59,7 @@ namespace Aurora {
 			delete layer;
 		}
 
-		Renderer3D::ShutDown(); // Move to Aurora Core Shutdown
+		Renderer3D::ShutDown(); // Look into moving to Aurora Core Shutdown with similar shutdown functions
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -91,21 +97,25 @@ namespace Aurora {
 	void Application::RenderImGui()
 	{
 		AR_PROFILE_FUNCTION();
+		AR_SCOPE_PERF("Application::RenderImGui");
 
 		m_ImGuiLayer->Begin();
 
 		for (Layer* layer : m_LayerStack)
 			layer->OnImGuiRender();
 
+		m_Profiler->Clear();
+
 		m_ImGuiLayer->End();
 	}
 
 	void Application::Run()
 	{
+		AR_PROFILE_BEGIN_SESSION("ApplicationRuntime", "Profiling");
+
 		OnInit();
 		while (m_Running) // Render Loop.
 		{
-			AR_ENDF_TIMER(); // This is for the UI timers
 			AR_PROFILE_FRAME("Game Loop");
 
 			// static uint64_t frameCounter = 0;
@@ -117,6 +127,7 @@ namespace Aurora {
 				Timer cpuTimer;
 				{
 					AR_PROFILE_SCOPE("Application Layer::OnUpdate");
+					AR_SCOPE_PERF("Application Layer::OnUpdate");
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(m_Timestep);
@@ -129,12 +140,17 @@ namespace Aurora {
 			}
 
 			float time = Utils::Time::GetTime();
-			m_FrameTime = time - (float)m_TimeSinceStart;
+			m_FrameTime = time - (float)m_LastFrameTime;
 			m_Timestep = glm::min<float>(m_FrameTime, 0.0333f);
-			m_TimeSinceStart = time;
+			m_LastFrameTime = time;
 
 			// frameCounter++; // This is to be displayed some time later when needed...
 		}
+
+		if(!m_Restart)
+			OnShutdown();
+
+		AR_PROFILE_END_SESSION("ApplicationRuntime");
 	}
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
@@ -151,14 +167,14 @@ namespace Aurora {
 
 		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
 
-		return false; // TODO: Check why we return true of false in these functions...!
+		return true; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
 	{
 		m_Minimized = true;
 
-		return false;
+		return true; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	bool Application::OnWindowMaximize(WindowMaximizeEvent& e)
@@ -166,7 +182,7 @@ namespace Aurora {
 		m_Minimized = false;
 		m_Window->Maximize();
 
-		return false;
+		return true; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
@@ -174,18 +190,23 @@ namespace Aurora {
 		m_Running = false;
 		g_ApplicationRunning = false;
 
-		return true;
+		return true; // This return is what sets the Handled bool in the event to true or false
+	}
+
+	void Application::Restart()
+	{
+		m_Restart = true;
+		Close();
 	}
 
 	void Application::Close()
 	{
 		m_Running = false;
-		g_ApplicationRunning = false;
 	}
 
-	void Application::Restart()
+	void Application::OnShutdown()
 	{
-		m_Running = false;
+		g_ApplicationRunning = false;
 	}
 
 	void Application::ProcessEvents()
@@ -202,7 +223,6 @@ namespace Aurora {
 		dispatcher.dispatch<WindowMinimizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMinimize));
 		dispatcher.dispatch<WindowMaximizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMaximize));
 		dispatcher.dispatch<WindowResizeEvent>(AR_SET_EVENT_FN(Application::OnWindowResize));
-		//LOG_INFO("{0}", e);
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{

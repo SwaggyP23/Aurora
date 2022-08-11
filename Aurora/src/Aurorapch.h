@@ -1,8 +1,10 @@
 #pragma once
 
-#ifndef NOMINMAX
-    #define NOMINMAX // These are for the random number generator
-#endif // !NOMINMAX
+#ifdef AR_PLATFORM_WINDOWS
+    #ifndef NOMINMAX
+        #define NOMINMAX // These are for the random number generator
+    #endif // !NOMINMAX
+#endif
 
 #include <iostream>
 #include <stdint.h>
@@ -29,9 +31,10 @@
 
 #include "Logging/Log.h"
 #include "Core/Base.h"
-#include "Utils/Utils.h" // Since they are utils, they are available throught the engine
 
 #include "Debugging/Instrumentation.h"
 #include "Debugging/Timer.h"
 
-#include <Windows.h>
+#ifdef AR_PLATFORM_WINDOWS
+    #include <Windows.h>
+#endif

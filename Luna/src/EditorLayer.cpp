@@ -2,7 +2,6 @@
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include <ImGuizmo/ImGuizmo.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
@@ -24,13 +23,13 @@ namespace Aurora {
 				ImGui::EndTooltip();
 			}
 		}
+
 	}
 
 #pragma region EditorLayerMainMethods
 
 	EditorLayer::EditorLayer()
-		: Layer("BatchRenderer"),
-		m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
+		: Layer("EditorLayer"), m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
 	{
 	}
 
@@ -85,11 +84,11 @@ namespace Aurora {
 	void EditorLayer::OnUpdate(TimeStep ts)
 	{
 		AR_PROFILE_FUNCTION();
-		AR_PERF_TIMER("EditorLayer::OnUpdate");
+		AR_SCOPE_PERF("EditorLayer::OnUpdate");
 
 		// Framebuffer resizing... This stops the blacked out frames we would get when resizing...
-		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification(); m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f 
-			&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
@@ -125,7 +124,7 @@ namespace Aurora {
 		{
 			// This is a very slow operation, and itself adds about 1-2 milliseconds to our CPU Frame, however this is just for the editor so...
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY); // Index 1 since the second buffer is the RED_INTEGER buffer
-			m_HoveredEntity = pixelData == -1 ? Entity{} : Entity{ (entt::entity)pixelData, m_ActiveScene.raw()};
+			m_HoveredEntity = pixelData == -1 ? Entity::nullEntity : Entity{ (entt::entity)pixelData, m_ActiveScene.raw()};
 		}
 		
 		m_Framebuffer->UnBind();
@@ -243,9 +242,13 @@ namespace Aurora {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (m_HoveredEntity && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+		if (!ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 		{
 			m_SelectionContext = m_HoveredEntity;
+			if (m_HoveredEntity != Entity::nullEntity)
+				m_SelectionContext = m_HoveredEntity;
+			else
+				m_SelectionContext = {};
 
 			return true;
 		}
@@ -270,9 +273,11 @@ namespace Aurora {
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 1.0f, 1.0f, 0.529f, 0.235f });
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		ImGui::PopStyleColor();
 
 		if (ImGui::IsItemClicked())
 		{
@@ -316,7 +321,7 @@ namespace Aurora {
 			DrawEntityNode(entity);
 		});
 
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+		if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft) && ImGui::IsWindowHovered())
 			m_SelectionContext = {};
 
 		// Right clicking on a blank space menu
@@ -336,7 +341,7 @@ namespace Aurora {
 
 #pragma endregion
 
-	// NEED TO CHANGE SOME STUFF HERE FOR LATER
+	// TODO: NEED TO CHANGE SOME STUFF HERE FOR LATER
 #pragma region FileDialogs/Scene Helpers
 
 	void EditorLayer::NewScene()
@@ -352,7 +357,7 @@ namespace Aurora {
 
 	void EditorLayer::OpenScene()
 	{
-		std::string filepath = Utils::WindowsFileDialogs::OpenFile("Aurora Scene (*.aurora)\0*.aurora\0");
+		std::filesystem::path filepath = Utils::WindowsFileDialogs::OpenFileDialog("Aurora Scene (*.aurora)\0*.aurora\0");
 		
 		if (!filepath.empty())
 			OpenScene(filepath);
@@ -391,7 +396,8 @@ namespace Aurora {
 
 	void EditorLayer::SaveSceneAs()
 	{
-		std::string filepath = Utils::WindowsFileDialogs::SaveFile("Aurora Scene (*.aurora)\0*.aurora\0");
+		std::filesystem::path filepath = Utils::WindowsFileDialogs::SaveFileDialog("Aurora Scene (*.aurora)\0*.aurora\0");
+
 		if (!filepath.empty())
 		{
 			SerializeScene(m_ActiveScene, filepath);
@@ -409,8 +415,8 @@ namespace Aurora {
 
 #pragma region ComponentsPanel
 
-	template<typename T, typename UIFunction>
-	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
+	template<typename T, typename UIFunction, typename ResetFunction>
+	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction, ResetFunction resetFunction, int texID = -1)
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
@@ -432,6 +438,20 @@ namespace Aurora {
 				if (ImGui::Button("X", ImVec2{ lineHeight, lineHeight }))
 				{
 					ImGui::OpenPopup("ComponentSettings"); // This is also just an id and not a tag that will be rendered
+				}
+
+				ImGui::SameLine((float)(contentRegionAvail.x - 1.5 * lineHeight));
+				if (ImGui::Button("R", ImVec2{ lineHeight, lineHeight }))
+				{
+					resetFunction(component);
+				}
+			}
+			else
+			{
+				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
+				if (ImGui::Button("R", ImVec2{ lineHeight, lineHeight }))
+				{
+					resetFunction(component);
 				}
 			}
 
@@ -521,6 +541,49 @@ namespace Aurora {
 		ImGui::PopID();
 	}
 
+	template<typename Component>
+	static void DrawPopUpMenuItems(std::string_view compName, Entity entity, Entity& selectionContext)
+	{
+		if (typeid(Component).hash_code() != typeid(ModelComponent).hash_code())
+		{
+			if (!entity.HasComponent<Component>())
+			{
+				if (ImGui::MenuItem(compName.data()))
+				{
+					selectionContext.AddComponent<Component>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+		}
+		else
+		{
+			if (!entity.HasComponent<Component>())
+			{
+				if (ImGui::MenuItem(compName.data()))
+				{
+					std::filesystem::path path = Utils::WindowsFileDialogs::OpenFileDialog("Model file");
+
+					if (path != "")
+					{
+						selectionContext.AddComponent<ModelComponent>(path.string());
+					}
+
+					ImGui::CloseCurrentPopup();
+				}
+			}
+		}
+	}
+
+	static void StartNextDoubleColumn(std::string_view text)
+	{
+		ImGui::Columns(1);
+		ImGui::Separator();
+
+		ImGui::Columns(2);
+		ImGui::Text(text.data());
+		ImGui::NextColumn();
+	}
+
 	void EditorLayer::DrawComponents(Entity entity)
 	{
 		if (entity.HasComponent<TagComponent>())
@@ -547,38 +610,9 @@ namespace Aurora {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			// TODO: Change the following if statements to a component templated static function since they are just repeated code
-			if (!entity.HasComponent<CameraComponent>())
-			{
-				if (ImGui::MenuItem("Camera")) // This whole code here could be brought out to a templated function since the only vars are name and type
-				{
-					m_SelectionContext.AddComponent<CameraComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<SpriteRendererComponent>())
-			{
-				if (ImGui::MenuItem("Sprite Renderer"))
-				{
-					m_SelectionContext.AddComponent<SpriteRendererComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<ModelComponent>())
-			{
-				if (ImGui::MenuItem("Model Component"))
-				{
-					std::string path = Utils::WindowsFileDialogs::OpenFile("Model file");
-					if (path != "")
-					{
-						m_SelectionContext.AddComponent<ModelComponent>(path);
-					}
-
-					ImGui::CloseCurrentPopup();
-				}
-			}
+			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
+			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
+			DrawPopUpMenuItems<ModelComponent>("Model Component", entity, m_SelectionContext);
 
 			ImGui::EndPopup();
 		}
@@ -592,18 +626,36 @@ namespace Aurora {
 			DrawVec3Control("Rotation", rotation);
 			component.Rotation = glm::radians(rotation);
 			DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f, 0.0f, 1000.0f, 0.025f);
+		},
+		[](TransformComponent& component) // Reset function
+		{
+			component.Translation = glm::vec3(0.0f);
+
+			component.Rotation = glm::vec3(0.0f);
+
+			component.Scale = glm::vec3(1.0f);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](CameraComponent& component)
 		{
 			auto& camera = component.Camera;
 
-			ImGui::Checkbox("Primary", &component.Primary);
+			ImGui::Columns(2);
+
+			ImGui::SetColumnWidth(0, 100.0f);
+			ImGui::Text("Primary");
+
+			ImGui::NextColumn();
+
+			ImGui::Checkbox("##Primary", &component.Primary);
 
 			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
 			const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
 
-			if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+			StartNextDoubleColumn("Projection");
+
+			ImGui::PushItemWidth(-1);
+			if (ImGui::BeginCombo("##Projection", currentProjectionTypeString))
 			{
 				for (int type = 0; type < 2; type++)
 				{
@@ -620,53 +672,89 @@ namespace Aurora {
 
 				ImGui::EndCombo();
 			}
+			ImGui::PopItemWidth();
+
+			ImGui::Columns(1);
+			ImGui::Separator();
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
+				ImGui::Columns(2);
+
+				ImGui::Text("Vertical FOV");
+				ImGui::NextColumn();
+
+				ImGui::PushItemWidth(-1);
 				float verticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
-				if (ImGui::DragFloat("Vertical FOV", &verticalFOV, 0.1f))
+				if (ImGui::DragFloat("##Vertical FOV", &verticalFOV, 0.1f))
 					camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
+				ImGui::PopItemWidth();
 
+				StartNextDoubleColumn("Near");
+
+				ImGui::PushItemWidth(-1);
 				float persNear = camera.GetPerspectiveNearClip();
-				if (ImGui::DragFloat("Near", &persNear, 0.1f))
+				if (ImGui::DragFloat("##Near", &persNear, 0.1f))
 					camera.SetPerspectiveNearClip(persNear);
+				ImGui::PopItemWidth();
 
+				StartNextDoubleColumn("Far");
+
+				ImGui::PushItemWidth(-1);
 				float persFar = camera.GetPerspectiveFarClip();
-				if (ImGui::DragFloat("Far", &persFar, 0.1f))
+				if (ImGui::DragFloat("##Far", &persFar, 0.1f))
 					camera.SetPerspectiveFarClip(persFar);
+				ImGui::PopItemWidth();
 
-				if (ImGui::ButtonEx("Reset", ImVec2{ 55.0f, 25.0f }))
-				{
-					camera.SetPerspectiveVerticalFOV(glm::radians(45.0f));
-					camera.SetPerspectiveNearClip(0.01f);
-					camera.SetPerspectiveFarClip(1000.0f);
-				}
+				ImGui::Columns(1);
 			}
 
 			else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 			{
+				ImGui::Columns(2);
+
+				ImGui::Text("Size");
+				ImGui::NextColumn();
+
+				ImGui::PushItemWidth(-1);
 				float orthoSize = camera.GetOrthographicSize();
-				if (ImGui::DragFloat("Size", &orthoSize, 0.1f))
+				if (ImGui::DragFloat("##Size", &orthoSize, 0.1f))
 					camera.SetOrthographicSize(orthoSize);
+				ImGui::PopItemWidth();
 
+				StartNextDoubleColumn("Near");
+
+				ImGui::PushItemWidth(-1);
 				float orthoNear = camera.GetOrthographicNearClip();
-				if (ImGui::DragFloat("Near", &orthoNear, 0.1f))
+				if (ImGui::DragFloat("##Near", &orthoNear, 0.1f))
 					camera.SetOrthographicNearClip(orthoNear);
+				ImGui::PopItemWidth();
 
+				StartNextDoubleColumn("Far");
+
+				ImGui::PushItemWidth(-1);
 				float orthoFar = camera.GetOrthographicFarClip();
-				if (ImGui::DragFloat("Far", &orthoFar, 0.1f))
+				if (ImGui::DragFloat("##Far", &orthoFar, 0.1f))
 					camera.SetOrthographicFarClip(orthoFar);
+				ImGui::PopItemWidth();
 
-				if (ImGui::ButtonEx("Reset", ImVec2{ 55.0f, 25.0f }))
-				{
-					camera.SetOrthographicSize(10.0f);
-					camera.SetOrthographicNearClip(-1.0f);
-					camera.SetOrthographicFarClip(1.0f);
-				}
-
-				ImGui::SameLine();
-
-				ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+				ImGui::Columns(1);
+			}
+		}, 
+		[](CameraComponent& component) // Reset Function
+		{
+			auto& camera = component.Camera;
+			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+			{
+				camera.SetPerspectiveVerticalFOV(glm::radians(45.0f));
+				camera.SetPerspectiveNearClip(0.01f);
+				camera.SetPerspectiveFarClip(1000.0f);
+			}
+			else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+			{
+				camera.SetOrthographicSize(10.0f);
+				camera.SetOrthographicNearClip(-1.0f);
+				camera.SetOrthographicFarClip(1.0f);
 			}
 		});
 
@@ -677,11 +765,28 @@ namespace Aurora {
 			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), path.c_str());
 			ImGui::InputTextWithHint("##Filepath", "Filepath...", buffer, sizeof(buffer));
+		},
+		[](ModelComponent& component)
+		{
+			AR_DEBUG("WASSUP NOTHING TO RESET");
 		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
-			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+			ImGui::Columns(2);
+
+			ImGui::SetColumnWidth(0, 100.0f);
+			ImGui::Text("Color");
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color));
+			ImGui::PopItemWidth();
+		},
+		[](SpriteRendererComponent& component)
+		{
+			glm::vec4& color = component.Color;
+			color = glm::vec4(1.0f);
 		});
 	}
 
@@ -746,7 +851,7 @@ namespace Aurora {
 			wireFrame = false;
 		}
 		if (!wireFrame && !vertices)
-			RenderCommand::SetRenderFlag(RenderFlags::Triangles);
+			RenderCommand::SetRenderFlag(RenderFlags::Fill);
 
 		ImGui::End();
 	}
@@ -757,9 +862,10 @@ namespace Aurora {
 
 	static void ShowTimers()
 	{
-		std::unordered_map<std::string, float>& mp = PerformanceTimer::GetTimeMap();
 
-		std::vector<std::pair<std::string, float>> timerValues;
+		const std::unordered_map<const char*, float>& mp = Application::GetApp().GetPerformanceProfiler()->GetPerFrameData();
+
+		std::vector<std::pair<const char*, float>> timerValues;
 		timerValues.reserve(mp.size());
 		for (auto& [name, val] : mp)
 			timerValues.emplace_back(name, val);
@@ -771,7 +877,7 @@ namespace Aurora {
 
 		for (auto& it : timerValues)
 		{
-			ImGui::Text("%.4f, %s", it.second, it.first.c_str());
+			ImGui::Text("%.4f, %s", it.second, it.first);
 		}
 	}
 
@@ -783,7 +889,7 @@ namespace Aurora {
 		ImGui::Text("V Sync: %s", Application::GetApp().GetWindow().IsVSync() ? "On" : "Off");
 		ImGui::Text("Peak FPS: %.f", m_Peak);
 		ImGui::Text("CPU Frame: %.3f ms", Application::GetApp().GetCPUTime());
-		ImGui::Text("Up Time: %.3f ms", Application::GetApp().GetTimeSinceStart());
+		ImGui::Text("Last Frame Time: %.3f ms", Application::GetApp().GetLastFrameTime());
 
 		if (ImGui::TreeNodeEx("CPU Timers (Milliseconds)", ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed))
 		{
@@ -812,9 +918,9 @@ namespace Aurora {
 			ImGui::TreePop();
 		}
 
-		if (ImGui::TreeNodeEx("Panel Properties", flags))
+		if (ImGui::TreeNodeEx("Editor Style", flags))
 		{
-			ShowPanelPropertiesUI();
+			ImGui::ShowStyleEditor();
 
 			ImGui::TreePop();
 		}
@@ -867,46 +973,6 @@ namespace Aurora {
 
 			ImGui::EndCombo();
 		}
-	}
-
-#pragma endregion
-
-#pragma region PanelPropertiesUI
-
-	void EditorLayer::ShowPanelPropertiesUI()
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-
-		int window_menu_button_position = style.WindowMenuButtonPosition + 1;
-		if (ImGui::Combo("WindowMenuButtonPosition", (int*)&window_menu_button_position, "None\0Left\0Right\0"))
-			style.WindowMenuButtonPosition = window_menu_button_position - 1;
-
-		if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
-			style.GrabRounding = style.FrameRounding;
-
-		ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
-
-		ImGui::SliderFloat("PopupRounding", &style.PopupRounding, 0.0f, 12.0f, "%.0f");
-
-		ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
-
-		bool border = (style.WindowBorderSize > 0.0f);
-		if (ImGui::Checkbox("WindowBorder", &border))
-			style.WindowBorderSize = border ? 1.0f : 0.0f;
-		
-		ImGui::SameLine();
-		border = (style.FrameBorderSize > 0.0f);
-		if (ImGui::Checkbox("FrameBorder", &border))
-			style.FrameBorderSize = border ? 1.0f : 0.0f;
-
-		ImGui::SameLine();
-		border = (style.PopupBorderSize > 0.0f);
-		if (ImGui::Checkbox("PopupBorder", &border))
-			style.PopupBorderSize = border ? 1.0f : 0.0f;
-
-		border = (style.TabBorderSize > 0.0f);
-		if (ImGui::Checkbox("TabBorder", &border))
-			style.TabBorderSize = border ? 1.0f : 0.0f;
 	}
 
 #pragma endregion
@@ -1059,6 +1125,61 @@ namespace Aurora {
 		}
 	}
 
+	float EditorLayer::GetSnapValue()
+	{
+		switch (m_GizmoType)
+		{
+		    case ImGuizmo::OPERATION::TRANSLATE: return 0.5f;
+			case ImGuizmo::OPERATION::ROTATE:    return 45.0f;
+			case ImGuizmo::OPERATION::SCALE:     return 0.5f;
+		}
+
+		AR_ASSERT(false, "Unkown Gizmo operation type");
+		return 0.0f;
+	}
+
+	void EditorLayer::ManipulateGizmos()
+	{
+		// Camera
+
+		// Editor Camera
+		const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+		glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+		// Runtime Camera
+		// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+		// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+		// const glm::mat4& cameraProjection = camera.GetProjection();
+		// glm::mat4 cameraView2 = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+		// Entity transform
+		auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
+		glm::mat4 transform = tc.GetTransform();
+
+		// Snapping
+		bool snap = Input::IsKeyPressed(Key::LeftControl);
+
+		float snapValue = GetSnapValue();
+
+		float snapValues[3] = { snapValue, snapValue, snapValue };
+
+		glm::mat4 iden(1.0f);
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+			nullptr, snap ? snapValues : nullptr);
+
+		if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(Key::LeftAlt))
+		{
+			glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
+			Math::DecomposeTransform(transform, translation, rotation, scale);
+
+			glm::vec3 deltaRotation = rotation - tc.Rotation;
+			tc.Translation = translation;
+			tc.Rotation += deltaRotation;
+			tc.Scale = scale;
+		}
+	}
+
 	void EditorLayer::ShowViewport()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -1090,46 +1211,7 @@ namespace Aurora {
 			
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);;
 
-			// Camera
-
-			// Editor Camera
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
-
-			// Runtime Camera
-			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			// const glm::mat4& cameraProjection = camera.GetProjection();
-			// glm::mat4 cameraView2 = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
-
-			// Entity transform
-			auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
-
-			// Snapping
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-			// Snap to 45 degrees for rotation
-			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f;
-
-			float snapValues[3] = { snapValue, snapValue, snapValue };
-
-			glm::mat4 iden(1.0f);
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-				nullptr, snap ? snapValues : nullptr);
-
-			if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(Key::LeftAlt))
-			{
-				glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
-				Math::DecomposeTransform(transform, translation, rotation, scale);
-
-				glm::vec3 deltaRotation = rotation - tc.Rotation;
-				tc.Translation = translation;
-				tc.Rotation += deltaRotation;
-				tc.Scale = scale;
-			}
+			ManipulateGizmos();
 		}
 
 		ImGui::End();

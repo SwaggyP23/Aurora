@@ -19,12 +19,12 @@ namespace Aurora {
 		s_Props->GLSLVersion = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (int*)&s_Props->TextureSlots);
 
-		AR_CORE_INFO("OpenGL Info:");
-		AR_CORE_INFO("   --> Vendor: {0}", s_Props->Vendor);
-		AR_CORE_INFO("   --> Renderer: {0}", s_Props->Renderer);
-		AR_CORE_INFO("   --> OpenGL Version: {0}", s_Props->Version);
-		AR_CORE_INFO("   --> GLSL Version: {0}", s_Props->GLSLVersion);
-		AR_CORE_INFO("   --> Texture Slots: {0}", s_Props->TextureSlots);
+		AR_CORE_INFO_TAG("Renderer", "Renderer Info:");
+		AR_CORE_INFO_TAG("Renderer", "   --> Vendor: {0}", s_Props->Vendor);
+		AR_CORE_INFO_TAG("Renderer", "   --> Renderer: {0}", s_Props->Renderer);
+		AR_CORE_INFO_TAG("Renderer", "   --> OpenGL Version: {0}", s_Props->Version);
+		AR_CORE_INFO_TAG("Renderer", "   --> GLSL Version: {0}", s_Props->GLSLVersion);
+		AR_CORE_INFO_TAG("Renderer", "   --> Texture Slots: {0}", s_Props->TextureSlots);
 	}
 
 	void RendererProperties::ShutDown()

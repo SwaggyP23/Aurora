@@ -22,7 +22,7 @@ namespace Aurora {
 			case ShaderDataType::Bool:	        return GL_BOOL;
 		}
 
-		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "VertexArray", "Unkown Shader Data Type!");
 		return 0;
 	}
 
@@ -62,7 +62,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "Vertex Buffer had no layout!");
+		AR_CORE_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "VertexArray", "Vertex Buffer had no layout!");
 
 		glBindVertexArray(m_ArrayId);
 		vertexBuffer->Bind();
@@ -106,8 +106,8 @@ namespace Aurora {
 				case ShaderDataType::Mat3:
 				case ShaderDataType::Mat4: // Dunno what the F is this i just copied
 				{
-					uint8_t count = element.GetComponentCount();
-					for (uint8_t i = 0; i < count; i++)
+					Byte count = element.GetComponentCount();
+					for (Byte i = 0; i < count; i++)
 					{
 						glVertexAttribPointer(index,
 							count,

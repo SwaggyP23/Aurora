@@ -38,7 +38,7 @@ namespace Aurora {
 
 	Entity Scene::CopyEntity(Entity entity)
 	{
-		AR_CORE_ASSERT(false, "Needs Rework");
+		AR_CORE_ASSERT(false, "Scene", "Needs Rework");
 
 		static uint32_t nameIncremet = 1;
 		std::string name = entity.GetComponent<TagComponent>().Tag;
@@ -181,10 +181,7 @@ namespace Aurora {
 		for (auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
-			if (!cameraComponent.FixedAspectRatio)
-			{
-				cameraComponent.Camera.SetViewportSize(width, height);
-			}
+			cameraComponent.Camera.SetViewportSize(width, height);
 		}
 	}
 

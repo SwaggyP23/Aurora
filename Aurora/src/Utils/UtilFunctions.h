@@ -9,23 +9,25 @@ namespace Aurora {
 
 	namespace Utils {
 
+#ifdef AR_PLATFORM_WINDOWS
+		// TODO: Add other platform support
 		class WindowsFileDialogs
 		{
 		public:
 			// Returns empty strings if cancelled
-			static std::string OpenFile(const char* filter);
-			static std::string SaveFile(const char* filter);
+			static std::filesystem::path OpenFileDialog(const char* filter);
+			static std::filesystem::path SaveFileDialog(const char* filter);
 
 		};
+
+#endif
 
 		class FileReader
 		{
 		public:
-			static FileReader& Get();
-			static std::string ReadFile(const std::string& filePath);
+			static std::string ReadTextFile(const std::string& filePath);
 
 		private:
-			FileReader();
 			static std::ifstream m_Stream;
 
 		};

@@ -10,8 +10,8 @@ namespace Aurora {
 	class Layer // This is an interface
 	{
 	public:
-		Layer(const std::string& name = "Default layer");
-		virtual ~Layer();
+		Layer(const std::string& name = "Default Layer");
+		virtual ~Layer() = default;
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
@@ -19,10 +19,12 @@ namespace Aurora {
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& e) {}
 
-		inline const std::string& GetName() const { return m_Name; }
+		inline const std::string& GetDebugName() const { return m_DebugName; }
+		inline void SetDebugName(const std::string& name) { m_DebugName = name; }
 
 	protected:
-		std::string m_Name;
+		std::string m_DebugName;
+
 	};
 
 }

@@ -3,7 +3,10 @@
 
 #include "Core/Application.h"
 
-#include <commdlg.h>
+#ifdef AR_PLATFORM_WINDOWS
+	#include <commdlg.h>
+#endif
+
 #include <glfw/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <glfw/glfw3native.h>
@@ -12,8 +15,10 @@ namespace Aurora {
 
 	namespace Utils {
 
+#ifdef AR_PLATFORM_WINDOWS
+
 		// This is literally WinAPI boiler plate code
-		std::string WindowsFileDialogs::OpenFile(const char* filter)
+		std::filesystem::path WindowsFileDialogs::OpenFileDialog(const char* filter)
 		{
 			OPENFILENAMEA ofn; // common dialog box structure
 			CHAR szFile[260] = { 0 }; // If using TCHAR macro
@@ -30,14 +35,16 @@ namespace Aurora {
 
 			if (GetOpenFileNameA(&ofn) == TRUE)
 			{
-				return ofn.lpstrFile;
+				std::string fp = ofn.lpstrFile;
+				std::replace(fp.begin(), fp.end(), '\\', '/');
+				return std::filesystem::path(fp);
 			}
 			
-			return std::string();
+			return std::filesystem::path();
 		}
 
 		// This is literally WinAPI boiler plate code
-		std::string WindowsFileDialogs::SaveFile(const char* filter)
+		std::filesystem::path WindowsFileDialogs::SaveFileDialog(const char* filter)
 		{
 			OPENFILENAMEA ofn; // common dialog box structure
 			CHAR szFile[260] = { 0 }; // If using TCHAR macro
@@ -54,27 +61,23 @@ namespace Aurora {
 
 			if (GetSaveFileNameA(&ofn) == TRUE)
 			{
-				return ofn.lpstrFile;
+				std::string fp = ofn.lpstrFile;
+				std::replace(fp.begin(), fp.end(), '\\', '/');
+				return std::filesystem::path(fp);
 			}
 
-			return std::string();
+			return std::filesystem::path();
 		}
+
+#endif
 
 		std::ifstream FileReader::m_Stream;
 
-		FileReader::FileReader()
-		{
-		}
-
-		FileReader& FileReader::Get()
-		{
-			static FileReader s_Instance;
-			return s_Instance;
-		}
-
-		std::string FileReader::ReadFile(const std::string& filePath)
+		std::string FileReader::ReadTextFile(const std::string& filePath)
 		{
 			AR_PROFILE_FUNCTION();
+
+			AR_CORE_ASSERT(std::filesystem::exists(filePath), "FileReader", "Filepath provided does not exist!");
 
 			std::string result;
 			std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
@@ -90,12 +93,12 @@ namespace Aurora {
 				}
 				else
 				{
-					AR_CORE_ERROR("Could not read from file {0}", filePath);
+					AR_CORE_ERROR_TAG("FileReader", "Could not read from file{0}", filePath);
 				}
 			}
 			else
 			{
-				AR_CORE_ASSERT(false, "Could not open file {0}", filePath);
+				AR_CORE_ASSERT(false, "FileReader", "Could not open file{0}", filePath);
 			}
 
 			return result;

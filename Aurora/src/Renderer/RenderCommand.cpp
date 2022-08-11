@@ -14,12 +14,12 @@ namespace Aurora {
 			switch (flag)
 			{
 			    case Aurora::RenderFlags::None:            return GL_NONE;
-			    case Aurora::RenderFlags::Triangles:       return GL_TRIANGLES;
-			    case Aurora::RenderFlags::WireFrame:       return GL_LINES;
-			    case Aurora::RenderFlags::Vertices:        return GL_POINTS;
+			    case Aurora::RenderFlags::Fill:       return GL_FILL;
+			    case Aurora::RenderFlags::WireFrame:       return GL_LINE;
+			    case Aurora::RenderFlags::Vertices:        return GL_POINT;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Render Flag!");
+			AR_CORE_ASSERT(false, "RenderCommand", "Unkown Render Flag!");
 			return 0;
 		}
 
@@ -49,7 +49,7 @@ namespace Aurora {
 				case OpenGLFunction::FrontAndBack:                 return GL_FRONT_AND_BACK;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Function!");
+			AR_CORE_ASSERT(false, "RenderCommand", "Unkown Function!");
 			return 0;
 		}
 
@@ -64,7 +64,7 @@ namespace Aurora {
 			    case Aurora::OpenGLEquation::Maximum:             return GL_MAX;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Function Equation!");
+			AR_CORE_ASSERT(false, "RenderCommand", "Unkown Function Equation!");
 			return 0;
 		}
 
@@ -79,7 +79,7 @@ namespace Aurora {
 			    case FeatureControl::StencilTesting:      return GL_STENCIL_TEST;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Feature to enable!");
+			AR_CORE_ASSERT(false, "RenderCommand", "Unkown Feature to enable!");
 			return 0;
 		}
 
@@ -101,6 +101,8 @@ namespace Aurora {
 
 		Enable(FeatureControl::Blending);
 		SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusSrcAlpha);
+
+		m_Flags = RenderFlags::Fill;
 	}
 
 	void RenderCommand::ShutDown()
@@ -110,6 +112,7 @@ namespace Aurora {
 	void RenderCommand::SetRenderFlag(RenderFlags flag)
 	{
 		m_Flags = flag;
+		glPolygonMode(GL_FRONT_AND_BACK, Utils::GLTypeFromRenderFlags(flag));
 	}
 
 	void RenderCommand::Enable(FeatureControl feature)
@@ -135,7 +138,7 @@ namespace Aurora {
 		    case Aurora::FeatureControl::DepthTesting:          glDepthFunc(Utils::GLFunctionFromEnum(function)); break;
 		    case Aurora::FeatureControl::Culling:               glCullFace(Utils::GLFunctionFromEnum(function)); break;
 		    case Aurora::FeatureControl::Blending:              glBlendFunc(GL_SRC_ALPHA, Utils::GLFunctionFromEnum(function)); break;
-		    case Aurora::FeatureControl::StencilTesting:        AR_CORE_ASSERT(false, "Not Implemented!"); break;
+		    case Aurora::FeatureControl::StencilTesting:        AR_CORE_ASSERT(false, "RenderCommand", "Not Implemented!"); break;
 		}
 	}
 
@@ -160,7 +163,7 @@ namespace Aurora {
 
 		vertexArray->Bind();
 		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
-		glDrawElements(Utils::GLTypeFromRenderFlags(m_Flags), count, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 
 }

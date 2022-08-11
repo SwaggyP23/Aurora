@@ -1,5 +1,7 @@
 #pragma once
 
+// !!-------DEPRECATED---------!!
+
 /*
  * This is now a deprecated Profiler, it was used mainly before introducing Optick into the engine and all the profiled information were
  * dumped into a json file which then was displayed in Chrome://tracing. It was good as DIY profiling however it is nothing compared
@@ -57,8 +59,8 @@ namespace Aurora {
             }
             else
             {
-                if(logger::Log::GetCoreLogger())
-                    AR_CORE_ERROR("Chrome Instrumentor could not open file: {0}", filepath);
+                if(Logger::Log::GetCoreLogger())
+                    AR_CORE_ERROR_TAG("Instrumentor", "Chrome Instrumentor could not open file: {0}", filepath);
             }
         }
 

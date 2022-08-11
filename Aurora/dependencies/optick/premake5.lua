@@ -12,6 +12,8 @@ project "Optick"
 		"optick/**.cpp"
 	}
 
+    removefiles "optick/optick_gpu.vulkan.cpp"
+
     links
     {
     }
@@ -20,8 +22,8 @@ project "Optick"
         systemversion "latest"
 
     filter "configurations:Profile"
-        runtime "Debug"
-        symbols "on"
+        runtime "Release"
+        optimize "on"
 
     filter "configurations:Debug"
         runtime "Debug"

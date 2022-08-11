@@ -6,7 +6,7 @@ namespace Aurora {
 
 		struct ImageData
 		{
-			uint8_t* PixelData = nullptr;
+			Byte* PixelData = nullptr;
 			uint32_t Width = 0;
 			uint32_t Height = 0;
 			uint16_t Channels = 0;

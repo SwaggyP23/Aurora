@@ -49,7 +49,7 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 
 
 	if (!m_Generated) {
-		m_X = Aurora::Utils::Random::Float(), m_Y = Aurora::Utils::Random::Float();
+		m_X = Aurora::Random::Float(), m_Y = Aurora::Random::Float();
 		m_Generated = true;
 	}
 	Aurora::Renderer3D::DrawQuad({ m_X, m_Y, 0.0f }, { 1.0f, 1.0f, 0.5f }, m_AppTexture, 1.0f);

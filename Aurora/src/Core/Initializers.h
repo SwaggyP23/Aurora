@@ -1,20 +1,24 @@
 #pragma once
 
 #include "Logging/Log.h"
-#include "Renderer/RendererPorperties.h"
-#include "Utils/Random.h"
+#include "Random.h"
 
 namespace Aurora {
 
 	static void InitializeCore()
 	{
-		logger::Log::Init();
-		Utils::Random::Init();
+		Logger::Log::Init();
+		Random::Init();
+
+		AR_CORE_TRACE_TAG("Core", "Aurora Engine");
+		AR_CORE_TRACE_TAG("Core", "Initializing...");
 	}
 
 	static void ShutdownCore()
 	{
-		logger::Log::ShutDown();
+		AR_CORE_TRACE_TAG("Core", "Shutting down...");
+
+		Logger::Log::ShutDown();
 	}
 
 }

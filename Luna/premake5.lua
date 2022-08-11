@@ -19,7 +19,6 @@ project "Luna"
         "%{wks.location}/Aurora/dependencies/spdlog/include",
         "%{wks.location}/Aurora/dependencies",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Optick}"
@@ -30,30 +29,32 @@ project "Luna"
         "Aurora"
     }
 
-    postbuildcommands
-    {
-        ("{COPY} %{wks.location}/Aurora/dependencies/assimp/bin/" .. outputdir .. "/Assimp/Assimp.dll %{cfg.targetdir}")
-    }
-
     filter "system:windows"
         systemversion "latest"
 
         defines
         {
+            "AR_PLATFORM_WINDOWS"
         }
 
     filter "configurations:Profile"
         defines
         {
-            "AURORA_DEBUG",
+            "AURORA_RELEASE",
             "AURORA_CORE_PROFILE"
         }
 
-        runtime "Debug"
-        symbols "on"
+        runtime "Release"
+        optimize "on"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Debug"
@@ -63,6 +64,12 @@ project "Luna"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Release"
@@ -73,6 +80,12 @@ project "Luna"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Dist"
@@ -83,4 +96,13 @@ project "Luna"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
         }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
+        }
+
+    filter { "system:windows", "configurations:Dist" }
+        kind "WindowedApp"

@@ -61,10 +61,6 @@ namespace Aurora {
 
 		std::string m_SelectedFontName = "OpenSans, Medium";
 
-	// Properties Panel
-	private:
-		void ShowPanelPropertiesUI();
-
 	// Help Panels and UI
 	private:
 		void ShowEditorCameraHelpUI();
@@ -87,7 +83,11 @@ namespace Aurora {
 	private:
 		void EnableDocking();
 		void ShowMenuBarItems();
+
+		float GetSnapValue();
 		void ShowViewport();
+
+		void ManipulateGizmos();
 
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);

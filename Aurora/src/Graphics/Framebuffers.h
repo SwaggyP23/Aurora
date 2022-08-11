@@ -57,9 +57,9 @@ namespace Aurora {
 	{
 		uint32_t Width = 1280;
 		uint32_t Height = 720;
-		// glm::vec4 ClearColor; // TODO: Work out how this is going to work, and disable the ability to manually control the clear color
+		// glm::vec4 ClearColor; // TODO: Work out how this is going to work, each FB should have its own clear value
 		FrameBufferAttachmentSpecification Attachments;
-		uint32_t Samples = 1;
+		uint32_t Samples = 1; // This is for multisampling and anit-aliasing
 
 		bool SwapChainTarget = false; // This is the equivalent of glBindFramebuffer(0);, however that is for vulkan most probably
 	};
@@ -82,7 +82,7 @@ namespace Aurora {
 		void ClearTextureAttachment(uint32_t attachmentIndex, int data) const;
 
 		const FramebufferSpecification& GetSpecification() const { return m_Specification; }
-		uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
+		uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Framebuffer", "Index cant be greater than the size");  return m_ColorAttachments[index]; }
 
 	private:
 		uint32_t m_BufferID = 0;

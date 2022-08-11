@@ -11,8 +11,16 @@ namespace Aurora {
 
 	class Entity
 	{
+	private:
+		using nulltype = entt::internal::null;
+
 	public:
-		Entity() = default;
+		static constexpr entt::internal::null nullEntity = {};
+
+	public:
+		constexpr Entity() noexcept = default;
+		constexpr Entity(nulltype) noexcept
+		: m_EntityHandle(nullEntity) {}
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
 		~Entity();
@@ -20,7 +28,7 @@ namespace Aurora {
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			AR_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
+			AR_CORE_ASSERT(!HasComponent<T>(), "Entity", "Entity already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 
@@ -30,7 +38,7 @@ namespace Aurora {
 		template<typename T>
 		T& GetComponent()
 		{
-			AR_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			AR_CORE_ASSERT(HasComponent<T>(), "Entity", "Entity does not have component!");
 
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
@@ -38,7 +46,7 @@ namespace Aurora {
 		template<typename T>
 		void RemoveComponent()
 		{
-			AR_CORE_ASSERT(HasComponent<T>(), "Entity already has component!");
+			AR_CORE_ASSERT(HasComponent<T>(), "Entity", "Entity already has component!");
 
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
@@ -61,6 +69,7 @@ namespace Aurora {
 
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
+		bool operator!=(nulltype other) const { return !(m_EntityHandle == other); }
 
 	private:
 		entt::entity m_EntityHandle{ entt::null };

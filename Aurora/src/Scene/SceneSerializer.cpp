@@ -177,7 +177,6 @@ namespace Aurora {
 			out << YAML::EndMap; // Camera!
 
 			out << YAML::Key << "Primary" << YAML::Value << cameraComp.Primary;
-			out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComp.FixedAspectRatio;
 
 			out << YAML::EndMap; // Camera Component
 		}
@@ -204,12 +203,16 @@ namespace Aurora {
 
 	void SceneSerializer::SerializeToText(const std::string& filepath)
 	{
+		AR_PROFILE_FUNCTION();
+
 		YAML::Emitter outPut;
 
 		outPut << YAML::BeginMap;
 
 		outPut << YAML::Key << "Scene" << YAML::Value << "UnNamed"; // TODO: Add scene names
-		outPut << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+		outPut << YAML::Key << "Entities" << YAML::Value;
+
+		outPut << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
 			Entity entity = { entityID, m_Scene.raw() };
@@ -235,29 +238,31 @@ namespace Aurora {
 
 	void SceneSerializer::SerializeToBinary(const std::string& filepath)
 	{
-		AR_CORE_ASSERT(false, "Not Implemented!");
+		AR_CORE_ASSERT(false, "SceneSerializer", "Not Implemented!");
 	}
 
 	bool SceneSerializer::DeSerializeFromText(const std::string& filepath)
 	{
-#if AURORA_DEBUG
-		size_t lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash;
-		std::string fileSysPath = filepath.substr(0, lastSlash);
-#endif
+		AR_PROFILE_FUNCTION();
 
-		AR_CORE_ASSERT(std::filesystem::exists(fileSysPath), "Path does not exist");
+		AR_CORE_ASSERT(std::filesystem::exists(filepath), "SceneSerializer", "Path does not exist");
 
-		std::ifstream fin(filepath); // TODO: Change this to use the YAML::LoadFile API...
-		std::stringstream strStream;
-		strStream << fin.rdbuf(); // Reads the whole file buffer into the stringstream
+		YAML::Node data;
 
-		YAML::Node data = YAML::Load(strStream.str()); // This is the root node of the file to be Deserialized
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch (YAML::ParserException e)
+		{
+			AR_CORE_ERROR_TAG("SceneSerializer", "Failed to load.aurora file '{0}'\n\t{1}", filepath, e.what());
+		}
+
 		if (!data["Scene"])
 			return false; // If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		AR_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+		AR_CORE_TRACE_TAG("SceneSerializer", "Deserializing scene '{0}'", sceneName);
 
 		YAML::Node entities = data["Entities"]; // This is the entities node that exists under the scene
 		if (entities)
@@ -273,7 +278,7 @@ namespace Aurora {
 					entityName = tagComponent["Tag"].as<std::string>();
 				}
 
-				AR_CORE_TRACE("Deserialized entity with ID '{0}', name '{1}'", uuid, entityName);
+				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID '{0}', name '{1}'", uuid, entityName);
 
 				Entity deserializedEntity = m_Scene->CreateEntity(entityName.c_str());
 
@@ -304,7 +309,6 @@ namespace Aurora {
 					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 
 					cc.Primary = cameraComp["Primary"].as<bool>();
-					cc.FixedAspectRatio = cameraComp["FixedAspectRatio"].as<bool>();
 				}
 
 				YAML::Node spriteRendComp = entity["SpriteRendererComponent"];
@@ -322,7 +326,7 @@ namespace Aurora {
 
 	bool SceneSerializer::DeSerializeFromBinary(const std::string& filepath)
 	{
-		AR_CORE_ASSERT(false, "Not Implemented!");
+		AR_CORE_ASSERT(false, "SceneSerializer", "Not Implemented!");
 
 		return false;
 	}
