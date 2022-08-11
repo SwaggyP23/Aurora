@@ -14,13 +14,13 @@ project "Aurora"
     {
         "src/**.h",
         "src/**.cpp",
-        "dependencies/stb_image/**.h",
-        "dependencies/stb_image/**.cpp",
-        "dependencies/glm/glm/**.hpp",
-        "dependencies/glm/glm/**.inl",
 
-        "dependencies/ImGuizmo/ImGuizmo/ImGuizmo.h",
-        "dependencies/ImGuizmo/ImGuizmo/ImGuizmo.cpp"
+        "dependencies/stb/**.h",
+        "dependencies/stb/**.cpp",
+
+        "dependencies/yaml-cpp/include/**.h",
+        "dependencies/yaml-cpp/src/**.h",
+        "dependencies/yaml-cpp/src/**.cpp"
     }
 
     defines
@@ -36,24 +36,22 @@ project "Aurora"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.stb_image}",
+        "%{IncludeDir.stb}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Yaml}",
-        "%{IncludeDir.Optick}",
         "%{IncludeDir.choc}",
-        "%{IncludeDir.assimp}"
+        "%{IncludeDir.assimp}",
+
+        "%{IncludeDir.Optick}"
     }
 
     links
     {
-        "Assimp",
         "GLFW",
         "Glad",
         "ImGui",
         "Optick",
-        "yaml-cpp",
         "opengl32.lib"
     }
 
@@ -108,8 +106,8 @@ project "Aurora"
         {
         }
 
-    filter "files:dependencies/stb_image/**.cpp"
+    filter "files:dependencies/stb/**.cpp"
         flags { "NoPCH" }
 
-    filter "files:dependencies/ImGuizmo/**cpp"
+    filter "files:dependencies/yaml-cpp/src/**.cpp"
         flags { "NoPCH" }

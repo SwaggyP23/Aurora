@@ -83,7 +83,11 @@ namespace Aurora {
 	private:
 		void EnableDocking();
 		void ShowMenuBarItems();
+
+		float GetSnapValue();
 		void ShowViewport();
+
+		void ManipulateGizmos();
 
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);

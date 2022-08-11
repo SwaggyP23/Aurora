@@ -106,8 +106,8 @@ namespace Aurora {
 				case ShaderDataType::Mat3:
 				case ShaderDataType::Mat4: // Dunno what the F is this i just copied
 				{
-					uint8_t count = element.GetComponentCount();
-					for (uint8_t i = 0; i < count; i++)
+					Byte count = element.GetComponentCount();
+					for (Byte i = 0; i < count; i++)
 					{
 						glVertexAttribPointer(index,
 							count,

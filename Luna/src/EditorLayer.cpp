@@ -2,7 +2,6 @@
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include <ImGuizmo/ImGuizmo.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
@@ -125,7 +124,7 @@ namespace Aurora {
 		{
 			// This is a very slow operation, and itself adds about 1-2 milliseconds to our CPU Frame, however this is just for the editor so...
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY); // Index 1 since the second buffer is the RED_INTEGER buffer
-			m_HoveredEntity = pixelData == -1 ? Entity{} : Entity{ (entt::entity)pixelData, m_ActiveScene.raw()};
+			m_HoveredEntity = pixelData == -1 ? Entity::nullEntity : Entity{ (entt::entity)pixelData, m_ActiveScene.raw()};
 		}
 		
 		m_Framebuffer->UnBind();
@@ -243,9 +242,13 @@ namespace Aurora {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (m_HoveredEntity && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+		if (!ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 		{
 			m_SelectionContext = m_HoveredEntity;
+			if (m_HoveredEntity != Entity::nullEntity)
+				m_SelectionContext = m_HoveredEntity;
+			else
+				m_SelectionContext = {};
 
 			return true;
 		}
@@ -270,9 +273,11 @@ namespace Aurora {
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 1.0f, 1.0f, 0.529f, 0.235f });
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		ImGui::PopStyleColor();
 
 		if (ImGui::IsItemClicked())
 		{
@@ -316,7 +321,7 @@ namespace Aurora {
 			DrawEntityNode(entity);
 		});
 
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+		if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft) && ImGui::IsWindowHovered())
 			m_SelectionContext = {};
 
 		// Right clicking on a blank space menu
@@ -1120,6 +1125,61 @@ namespace Aurora {
 		}
 	}
 
+	float EditorLayer::GetSnapValue()
+	{
+		switch (m_GizmoType)
+		{
+		    case ImGuizmo::OPERATION::TRANSLATE: return 0.5f;
+			case ImGuizmo::OPERATION::ROTATE:    return 45.0f;
+			case ImGuizmo::OPERATION::SCALE:     return 0.5f;
+		}
+
+		AR_ASSERT(false, "Unkown Gizmo operation type");
+		return 0.0f;
+	}
+
+	void EditorLayer::ManipulateGizmos()
+	{
+		// Camera
+
+		// Editor Camera
+		const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+		glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+		// Runtime Camera
+		// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+		// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+		// const glm::mat4& cameraProjection = camera.GetProjection();
+		// glm::mat4 cameraView2 = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+		// Entity transform
+		auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
+		glm::mat4 transform = tc.GetTransform();
+
+		// Snapping
+		bool snap = Input::IsKeyPressed(Key::LeftControl);
+
+		float snapValue = GetSnapValue();
+
+		float snapValues[3] = { snapValue, snapValue, snapValue };
+
+		glm::mat4 iden(1.0f);
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+			nullptr, snap ? snapValues : nullptr);
+
+		if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(Key::LeftAlt))
+		{
+			glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
+			Math::DecomposeTransform(transform, translation, rotation, scale);
+
+			glm::vec3 deltaRotation = rotation - tc.Rotation;
+			tc.Translation = translation;
+			tc.Rotation += deltaRotation;
+			tc.Scale = scale;
+		}
+	}
+
 	void EditorLayer::ShowViewport()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -1151,46 +1211,7 @@ namespace Aurora {
 			
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);;
 
-			// Camera
-
-			// Editor Camera
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
-
-			// Runtime Camera
-			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			// const glm::mat4& cameraProjection = camera.GetProjection();
-			// glm::mat4 cameraView2 = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
-
-			// Entity transform
-			auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
-
-			// Snapping
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-			// Snap to 45 degrees for rotation
-			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f;
-
-			float snapValues[3] = { snapValue, snapValue, snapValue };
-
-			glm::mat4 iden(1.0f);
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-				nullptr, snap ? snapValues : nullptr);
-
-			if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(Key::LeftAlt))
-			{
-				glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
-				Math::DecomposeTransform(transform, translation, rotation, scale);
-
-				glm::vec3 deltaRotation = rotation - tc.Rotation;
-				tc.Translation = translation;
-				tc.Rotation += deltaRotation;
-				tc.Scale = scale;
-			}
+			ManipulateGizmos();
 		}
 
 		ImGui::End();

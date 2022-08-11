@@ -14,8 +14,10 @@
 #ifdef AURORA_DEBUG
 	#define AR_DEBUG_BREAK __debugbreak()
     #define AR_CORE_ASSERT(check, tag, ...)  { if(!(check)) { AR_CORE_ERROR_TAG(tag, "Assertion '{0}' failed at: {1}:{2}\n\tMessage: {3}", AR_STRINGIFY_MACRO(check), std::filesystem::path(__FILE__).filename().string(), __LINE__, __VA_ARGS__); AR_DEBUG_BREAK; }}
+    #define AR_ASSERT(check, tag, ...)  { if(!(check)) { AR_CORE_ERROR_TAG(tag, "Assertion '{0}' failed at: {1}:{2}\n\tMessage: {3}", AR_STRINGIFY_MACRO(check), std::filesystem::path(__FILE__).filename().string(), __LINE__, __VA_ARGS__); AR_DEBUG_BREAK; }}
 #else
     #define AR_CORE_ASSERT(check, ...)
+    #define AR_ASSERT(check, ...)
 #endif
 
 // Apparently using std::function and std::bind is not good and lambdas are way more efficient
@@ -42,5 +44,7 @@ namespace Aurora {
 	{
 		return CreateReferencedObject<T>(std::forward<Args>(args)...);
 	}
+
+	using Byte = uint8_t;
 
 }

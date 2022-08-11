@@ -29,11 +29,6 @@ project "SandBox"
         "Aurora"
     }
 
-    postbuildcommands
-    {
-        ("{COPY} %{wks.location}/Aurora/dependencies/assimp/bin/" .. outputdir .. "/Assimp/Assimp.dll %{cfg.targetdir}")
-    }
-
     filter "system:windows"
         systemversion "latest"
 
@@ -54,6 +49,12 @@ project "SandBox"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Debug"
@@ -63,6 +64,12 @@ project "SandBox"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Release"
@@ -73,6 +80,12 @@ project "SandBox"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Dist"
@@ -83,4 +96,10 @@ project "SandBox"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }

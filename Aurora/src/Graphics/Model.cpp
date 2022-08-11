@@ -19,7 +19,7 @@ namespace Aurora {
         glGenTextures(1, &textureID);
 
         int width, height, nrComponents;
-        uint8_t* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+        Byte* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
         if (data)
         {
             GLenum format;

@@ -19,7 +19,6 @@ project "Luna"
         "%{wks.location}/Aurora/dependencies/spdlog/include",
         "%{wks.location}/Aurora/dependencies",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Optick}"
@@ -28,11 +27,6 @@ project "Luna"
     links
     {
         "Aurora"
-    }
-
-    postbuildcommands
-    {
-        ("{COPY} %{wks.location}/Aurora/dependencies/assimp/bin/" .. outputdir .. "/Assimp/Assimp.dll %{cfg.targetdir}")
     }
 
     filter "system:windows"
@@ -55,6 +49,12 @@ project "Luna"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Debug"
@@ -64,6 +64,12 @@ project "Luna"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Release"
@@ -74,6 +80,12 @@ project "Luna"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter "configurations:Dist"
@@ -84,6 +96,12 @@ project "Luna"
 
         links
         {
+            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+        }
+
+        postbuildcommands
+        {
+            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
         }
 
     filter { "system:windows", "configurations:Dist" }

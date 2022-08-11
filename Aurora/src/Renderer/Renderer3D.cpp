@@ -389,7 +389,7 @@ namespace Aurora {
 		if (s_Data.QuadIndexCount)
 		{
 			// Casting to one byte to actually do a correct calculation, otherwise it tells you the number of elements only since these are QuadVertex.
-			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
+			uint32_t dataSize = (uint32_t)((Byte*)s_Data.QuadVertexBufferPtr - (Byte*)s_Data.QuadVertexBufferBase);
 			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
 			// Bind Textures

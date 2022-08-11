@@ -16,6 +16,7 @@
 #include "Core/MouseCodes.h"
 
 #include "ImGui/ImGuiLayer.h"
+#include "ImGui/ImGuizmo.h"
 
 #include "Scene/Scene.h"
 #include "Scene/SceneSerializer.h"

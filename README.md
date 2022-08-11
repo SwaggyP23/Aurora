@@ -42,7 +42,7 @@ git clone --recursive https://github.com/SwaggyP23/Aurora.git
 
 ## <ins>Libraries Used:</ins>
 
-- [assimp/zlib](https://github.com/assimp/assimp).
+- [assimp](https://github.com/assimp/assimp).
 - [choc](https://github.com/Tracktion/choc).
 - [entt](https://github.com/skypjack/entt).
 - [Glad](https://github.com/Dav1dde/glad/tree/master).

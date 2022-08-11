@@ -11,8 +11,16 @@ namespace Aurora {
 
 	class Entity
 	{
+	private:
+		using nulltype = entt::internal::null;
+
 	public:
-		Entity() = default;
+		static constexpr entt::internal::null nullEntity = {};
+
+	public:
+		constexpr Entity() noexcept = default;
+		constexpr Entity(nulltype) noexcept
+		: m_EntityHandle(nullEntity) {}
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
 		~Entity();
@@ -61,6 +69,7 @@ namespace Aurora {
 
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
+		bool operator!=(nulltype other) const { return !(m_EntityHandle == other); }
 
 	private:
 		entt::entity m_EntityHandle{ entt::null };
