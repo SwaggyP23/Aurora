@@ -6,7 +6,7 @@
 
 namespace Aurora {
 
-	class CubeTexture
+	class CubeTexture : public RefCountedObject
 	{
 	public:
 		CubeTexture() = default;
@@ -17,8 +17,8 @@ namespace Aurora {
 		static Ref<CubeTexture> Create(const std::string& filepath);
 		static Ref<CubeTexture> Create(const std::vector<std::string>& filepaths);
 
-		void Bind(uint32_t slot = 0);
-		void UnBind(uint32_t slot = 0);
+		void Bind(uint32_t slot = 0) const;
+		void UnBind(uint32_t slot = 0) const;
 
 		inline uint32_t GetTextureID() const { return m_TextureID; }
 

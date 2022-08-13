@@ -35,6 +35,8 @@ namespace Aurora {
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
 
+		inline void SetActive(bool active) { m_IsActive = active; }
+
 	private:
 		void UpdateProjection();
 		void UpdateView();
@@ -59,6 +61,8 @@ namespace Aurora {
 		glm::vec3 m_FocalPoint = glm::vec3{ 0.0f };
 
 		glm::vec2 m_InitialMousePosition = glm::vec2{ 0.0f };
+
+		bool m_IsActive = false;
 
 		float m_Distance = 25.0f;
 		float m_Pitch = 0.25f, m_Yaw = 0.0f;

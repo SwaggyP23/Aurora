@@ -27,11 +27,11 @@ namespace Aurora {
 		// RenderCommand::ShutDown();
 	}
 
-	void Renderer::BeginScene(const Ref<EditorCamera>& camera)
+	void Renderer::BeginScene(const EditorCamera& camera)
 	{
 		AR_PROFILE_FUNCTION();
 
-		s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
+		s_SceneData->viewProjectionMatrix = camera.GetProjection() * camera.GetViewMatrix();;
 	}
 
 	void Renderer::EndScene()

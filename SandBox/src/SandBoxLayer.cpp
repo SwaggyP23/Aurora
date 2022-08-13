@@ -300,7 +300,7 @@ void SandBoxLayer::OnUpdate(Aurora::TimeStep ts)
 	Aurora::RenderCommand::SetClearColor(m_Color);
 	Aurora::RenderCommand::Clear();
 
-	Aurora::Renderer::BeginScene(Aurora::CreateRef<Aurora::EditorCamera>(m_Camera));
+	Aurora::Renderer::BeginScene(m_Camera);
 
 	m_Shaders.Get("Sphere")->Bind();
 	m_Shaders.Get("Sphere")->SetUniform4f("lightColor", m_LightColor);

@@ -13,13 +13,13 @@ namespace Aurora {
 
 	class Entity;
 
-	class Scene // TODO: Add scene names
+	class Scene : public RefCountedObject
 	{
 	public:
-		Scene();
+		Scene(const std::string& debugName);
 		~Scene();
 
-		static Ref<Scene> Create();
+		static Ref<Scene> Create(const std::string& debugName = "Scene");
 
 		Entity CreateEntity(const char* name = "");
 		Entity CopyEntity(Entity entity);
@@ -34,11 +34,16 @@ namespace Aurora {
 		// This a conveniance function just in case
 		Entity GetPrimaryCameraEntity();
 
+		inline const std::string& GetName() const { return m_Name; }
+		inline void SetName(const std::string& name) { m_Name = name; }
+
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component); // If we have custom components this will not work since it will need the proper overload which is not provided
 
 	private:
+		std::string m_Name = "Untitled Scene";
+
 		Ref<Shader> m_ModelShader; // TODO: These are both Temp...
 		Ref<CubeTexture> m_EnvironmentMap;
 

@@ -28,7 +28,6 @@ namespace Aurora {
 		specification.WindowHeight = 900;
 		specification.WindowDecorated = true;
 		specification.StartMaximized = true;
-		specification.SetWindowResizable = true;
 		specification.VSync = true;
 		specification.ApplicationWindowIconPath = "../Resources/Icons/AuroraIcon1.png";
 

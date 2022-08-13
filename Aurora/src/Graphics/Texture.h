@@ -32,7 +32,7 @@ namespace Aurora {
 		MipMap_LinearLinear
 	};
 
-	class Texture
+	class Texture : public RefCountedObject
 	{
 	public:
 		Texture(uint32_t width, uint32_t height); // This is to create just default 1x1 RGBA Textures for masking on colors

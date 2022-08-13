@@ -2,7 +2,7 @@
 
 #include "Initializers.h"
 
-#ifdef AR_PLATFORM_WINDOWS
+#ifdef AURORA_PLATFORM_WINDOWS
 
 extern Aurora::Application* Aurora::CreateApplication(int argc, char** argv);
 bool g_ApplicationRunning = true;
@@ -15,7 +15,7 @@ namespace Aurora {
 		{
 			Aurora::InitializeCore();
 			Aurora::Application* app = Aurora::CreateApplication(argc, argv);			
-			AR_CORE_ASSERT(app, "Main", "Application is null!");
+			AR_CORE_ASSERT(app, "Application is null!");
 			app->Run();
 			delete app;
 			Aurora::ShutdownCore();

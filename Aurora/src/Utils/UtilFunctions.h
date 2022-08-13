@@ -9,7 +9,7 @@ namespace Aurora {
 
 	namespace Utils {
 
-#ifdef AR_PLATFORM_WINDOWS
+#ifdef AURORA_PLATFORM_WINDOWS
 		// TODO: Add other platform support
 		class WindowsFileDialogs
 		{

@@ -23,6 +23,9 @@ namespace Aurora {
 		uint32_t WindowWidth = 1280;
 		uint32_t WindowHeight = 720;
 
+		// Creates a full screen window
+		bool Fullscreen = false;
+
 		// Decorated window
 		bool WindowDecorated = true;
 
@@ -32,8 +35,8 @@ namespace Aurora {
 		// Start the window in maximized mode
 		bool StartMaximized = false;
 
-		// This makes the window not resizable. Note: Better to set to true if StartMaximized is set to false!
-		bool SetWindowResizable = false;
+		// This makes the window not resizable. Note: Better to set to true if screen is not maximized
+		bool SetWindowResizable = true;
 
 		// TODO: Set working directory
 		std::string WorkingDirectory;
@@ -69,7 +72,7 @@ namespace Aurora {
 
 		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 
-		inline Window& GetWindow() const { return *m_Window; }
+		inline Window& GetWindow() { return *m_Window; }
 
 		inline static Application& GetApp() { return *s_Instance; }
 		inline const ApplicationSpecification& GetSpecification() const { return m_Specification; }
@@ -81,7 +84,6 @@ namespace Aurora {
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnWindowMinimize(WindowMinimizeEvent& e);
-		bool OnWindowMaximize(WindowMaximizeEvent& e);
 
 	private:
 		ApplicationSpecification m_Specification;

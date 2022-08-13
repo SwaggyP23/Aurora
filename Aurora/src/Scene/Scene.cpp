@@ -11,12 +11,13 @@
 
 namespace Aurora {
 
-	Ref<Scene> Scene::Create()
+	Ref<Scene> Scene::Create(const std::string& debugName)
 	{
-		return CreateRef<Scene>();
+		return CreateRef<Scene>(debugName);
 	}
 
-	Scene::Scene()
+	Scene::Scene(const std::string& debugName)
+		: m_Name(debugName)
 	{
 		m_ModelShader = Shader::Create("resources/shaders/model.glsl"); // TODO: Temp...
 		m_EnvironmentMap = CubeTexture::Create("resources/textures/skybox");
@@ -38,7 +39,7 @@ namespace Aurora {
 
 	Entity Scene::CopyEntity(Entity entity)
 	{
-		AR_CORE_ASSERT(false, "Scene", "Needs Rework");
+		AR_CORE_ASSERT(false);
 
 		static uint32_t nameIncremet = 1;
 		std::string name = entity.GetComponent<TagComponent>().Tag;

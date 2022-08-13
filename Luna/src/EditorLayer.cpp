@@ -1,5 +1,7 @@
 #include "EditorLayer.h"
 
+#include "ImGui/ImGuiUtils.h"
+
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 
@@ -8,23 +10,6 @@
 #include <glm/gtx/compatibility.hpp>
 
 namespace Aurora {
-
-	namespace Utils {
-
-		static void ShowHelpMarker(const char* description)
-		{
-			ImGui::TextDisabled("(?)");
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::BeginTooltip();
-				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				ImGui::TextUnformatted(description);
-				ImGui::PopTextWrapPos();
-				ImGui::EndTooltip();
-			}
-		}
-
-	}
 
 #pragma region EditorLayerMainMethods
 
@@ -43,7 +28,7 @@ namespace Aurora {
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
-		m_EditorScene = Scene::Create();
+		m_EditorScene = Scene::Create("Editor Scene");
 		m_ActiveScene = m_EditorScene;
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
 
@@ -96,10 +81,8 @@ namespace Aurora {
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		if (!m_ImGuiItemHovered)
-		{
-			m_EditorCamera.OnUpdate(ts);
-		}
+		m_EditorCamera.SetActive(m_AllowViewportCameraEvents || Input::GetCursorMode() == CursorMode::Locked);
+		m_EditorCamera.OnUpdate(ts);
 
 		Renderer3D::ResetStats();
 
@@ -141,103 +124,102 @@ namespace Aurora {
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if (e.IsRepeat())
-			return false;
-
-		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-
-		bool isSomethingSelected = m_SelectionContext ? true : false;
-
-		switch (e.GetKeyCode())
+		if (GImGui->ActiveId == 0)
 		{
-		    case Key::N:
-		    {
-		    	if (control)
-		    		NewScene();
-		    
-		    	break;
-		    }
+			bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+			bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
-		    case Key::O:
-		    {
-		    	if (control)
-		    		OpenScene();
+			bool isSomethingSelected = m_SelectionContext ? true : false;
 
-				break;
-		    }
-
-		    case Key::S:
-		    {
-		    	if (control)
-		    	{
-		    		if (shift)
-		    			SaveSceneAs();
-		    		else
-		    			SaveScene();
-		    	}
-
-				break;
-		    }
-
-			case Key::D:
+			switch (e.GetKeyCode())
 			{
-				// TODO: Needs rework...
-				if (control && isSomethingSelected)
-				{
-					m_SelectionContext = m_ActiveScene->CopyEntity(m_SelectionContext);
-				}
-
-				break;
-			}
-
-			case Key::Delete:
-			{
-				if (isSomethingSelected)
-				{
-					m_ActiveScene->DestroyEntity(m_SelectionContext);
-					m_SelectionContext = {};
-					m_NameCounter--;
-				}
-
-				break;
-			}
-
-			// Gizmos
-			case Key::Q:
-			{
-				if (!ImGuizmo::IsUsing())
-					m_GizmoType = -1;
-
-				break;
-			}
-
-			case Key::W:
-			{
-				if (!ImGuizmo::IsUsing())
-					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-				break;
-			}
-
-			case Key::E:
-			{
-				if (!ImGuizmo::IsUsing())
-					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-
-				break;
-			}
-
-			case Key::R:
-			{
-				if (!ImGuizmo::IsUsing())
-					m_GizmoType = ImGuizmo::OPERATION::SCALE;
-
-				break;
+			    case Key::N:
+			    {
+			    	if (control)
+			    		NewScene();
+			    
+			    	break;
+			    }
+			    
+			    case Key::O:
+			    {
+			    	if (control)
+			    		OpenScene();
+			    
+			    	break;
+			    }
+			    
+			    case Key::S:
+			    {
+			    	if (control)
+			    	{
+			    		if (shift)
+			    			SaveSceneAs();
+			    		else
+			    			SaveScene();
+			    	}
+			    
+			    	break;
+			    }
+			    
+			    case Key::D:
+			    {
+			    	// TODO: Needs rework...
+			    	if (control && isSomethingSelected)
+			    	{
+			    		m_SelectionContext = m_ActiveScene->CopyEntity(m_SelectionContext);
+			    	}
+			    
+			    	break;
+			    }
+			    
+			    case Key::Delete:
+			    {
+			    	if (isSomethingSelected)
+			    	{
+			    		m_ActiveScene->DestroyEntity(m_SelectionContext);
+			    		m_SelectionContext = {};
+			    	}
+			    
+			    	break;
+			    }
+			    
+			    // Gizmos
+			    case Key::Q:
+			    {
+			    	if (!ImGuizmo::IsUsing())
+			    		m_GizmoType = -1;
+			    
+			    	break;
+			    }
+			    
+			    case Key::W:
+			    {
+			    	if (!ImGuizmo::IsUsing())
+			    		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			    
+			    	break;
+			    }
+			    
+			    case Key::E:
+			    {
+			    	if (!ImGuizmo::IsUsing())
+			    		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+			    
+			    	break;
+			    }
+			    
+			    case Key::R:
+			    {
+			    	if (!ImGuizmo::IsUsing())
+			    		m_GizmoType = ImGuizmo::OPERATION::SCALE;
+			    
+			    	break;
+			    }
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
@@ -307,7 +289,6 @@ namespace Aurora {
 			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity)
 				m_SelectionContext = {};
-			m_NameCounter--;
 		}
 	}
 
@@ -329,8 +310,7 @@ namespace Aurora {
 		{
 			if (ImGui::MenuItem("Create Empty Entity")) {
 				// If the user forgot to change the tag of newly created entities, the editor will provide an incrementing number beside the default name for distinguishing them, however does not update on deletion
-				std::string name = "Empty Entity " + std::to_string(m_NameCounter++);;
-				m_SelectionContext = m_Context->CreateEntity(name.c_str());
+				m_SelectionContext = m_Context->CreateEntity("Empty Entity");
 			}
 
 			ImGui::EndPopup();
@@ -347,10 +327,9 @@ namespace Aurora {
 	void EditorLayer::NewScene()
 	{
 		m_ActiveScene->Clear();
-		m_ActiveScene = Scene::Create(); // Creating new scene
+		m_ActiveScene = Scene::Create("New Scene"); // Creating new scene
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
-		m_NameCounter = 0;
 
 		m_EditorScenePath = std::filesystem::path();
 	}
@@ -814,7 +793,8 @@ namespace Aurora {
 		ImGui::Text("Renderer: %s", RendererProperties::GetRendererProperties()->Renderer);
 		ImGui::Text("OpenGL Version: %s", RendererProperties::GetRendererProperties()->Version);
 		ImGui::Text("GLSL Version: %s", RendererProperties::GetRendererProperties()->GLSLVersion);
-		ImGui::Text("Texture Slots Available: %d", RendererProperties::GetRendererProperties()->TextureSlots);
+		ImGui::Text("Texture Slots Available: %d", RendererProperties::GetRendererProperties()->MaxTextureSlots);
+		ImGui::Text("Max Samples: %d", RendererProperties::GetRendererProperties()->MaxSamples);
 
 		ImGui::End();
 	}
@@ -1185,31 +1165,38 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
 
-		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		ImVec2 viewportOffset = ImGui::GetWindowPos();
-
-		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-
 		m_ViewPortFocused = ImGui::IsWindowFocused();
 		m_ViewPortHovered = ImGui::IsWindowHovered();
 
-		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused && !m_ViewPortHovered);
-
+		auto viewportOffset = ImGui::GetCursorPos();
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = *(glm::vec2*)&viewPortPanelSize;
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
 		ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
+		auto windowSize = ImGui::GetWindowSize();
+		ImVec2 minBound = ImGui::GetWindowPos();
+		minBound.x += viewportOffset.x;
+		minBound.y += viewportOffset.y;
+
+		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+		m_ViewportBounds[0] = { minBound.x, minBound.y };
+		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+
+		m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
+
+		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused && !m_ViewPortHovered);
+
 		// Gizmos...
 		if (m_SelectionContext && m_GizmoType != -1)
 		{
+			float rw = (float)ImGui::GetWindowWidth();
+			float rh = (float)ImGui::GetWindowHeight();
+
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-			
-			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);;
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
 			ManipulateGizmos();
 		}
@@ -1227,7 +1214,7 @@ namespace Aurora {
 	{
 		ImGui::Text((name + ":").c_str());
 		ImGui::SameLine();
-		Utils::ShowHelpMarker(description.c_str());
+		ImGuiUtils::ShowHelpMarker(description.c_str());
 
 		ImGui::Checkbox(("##" + name).c_str(), controller);
 		ImGui::SameLine();

@@ -32,7 +32,10 @@ namespace Aurora {
 	class WindowMinimizeEvent : public Event
 	{
 	public:
-		WindowMinimizeEvent() = default;
+		WindowMinimizeEvent(bool minimized)
+			: m_Minimized(minimized) {}
+
+		bool IsMinimized() const { return m_Minimized; }
 
 		std::string toString() const override
 		{
@@ -43,6 +46,9 @@ namespace Aurora {
 
 		EVENT_CLASS_TYPE(WindowMinimize)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
+	private:
+		bool m_Minimized = false;
 
 	};
 

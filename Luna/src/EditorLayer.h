@@ -25,7 +25,6 @@ namespace Aurora {
 		Entity m_SelectionContext;
 		Entity m_GroundEntity;
 		Entity m_HoveredEntity;
-		int m_NameCounter = 0;
 
 	// Components/Properties Panel
 	private:
@@ -115,6 +114,7 @@ namespace Aurora {
 		bool m_ViewPortFocused = false;
 		bool m_ViewPortHovered = false;
 		bool m_ImGuiItemHovered = false;
+		bool m_AllowViewportCameraEvents = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

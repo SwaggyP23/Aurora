@@ -3,7 +3,7 @@
 
 #include "Core/Application.h"
 
-#ifdef AR_PLATFORM_WINDOWS
+#ifdef AURORA_PLATFORM_WINDOWS
 	#include <commdlg.h>
 #endif
 
@@ -15,7 +15,7 @@ namespace Aurora {
 
 	namespace Utils {
 
-#ifdef AR_PLATFORM_WINDOWS
+#ifdef AURORA_PLATFORM_WINDOWS
 
 		// This is literally WinAPI boiler plate code
 		std::filesystem::path WindowsFileDialogs::OpenFileDialog(const char* filter)
@@ -77,7 +77,7 @@ namespace Aurora {
 		{
 			AR_PROFILE_FUNCTION();
 
-			AR_CORE_ASSERT(std::filesystem::exists(filePath), "FileReader", "Filepath provided does not exist!");
+			AR_CORE_ASSERT(std::filesystem::exists(filePath), "Filepath provided does not exist!");
 
 			std::string result;
 			std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
@@ -98,7 +98,7 @@ namespace Aurora {
 			}
 			else
 			{
-				AR_CORE_ASSERT(false, "FileReader", "Could not open file{0}", filePath);
+				AR_CORE_ASSERT(false, "Could not open file{0}", filePath);
 			}
 
 			return result;

@@ -26,6 +26,7 @@ namespace Aurora {
 		windowSpec.Title = specification.Name;
 		windowSpec.Width = specification.WindowWidth;
 		windowSpec.Height = specification.WindowHeight;
+		windowSpec.FullScreen = specification.Fullscreen;
 		windowSpec.Decorated = specification.WindowDecorated;
 		windowSpec.VSync = specification.VSync;
 		windowSpec.Resizable = specification.SetWindowResizable;
@@ -34,9 +35,9 @@ namespace Aurora {
 		m_Window->Init();
 		m_Window->SetEventCallback(AR_SET_EVENT_FN(Application::OnEvent));
 		if (specification.StartMaximized)
-			m_Window->CreateMaximized();
+			m_Window->Maximize();
 		else
-			m_Window->CreateCentred();
+			m_Window->Center();
 
 		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initiation
 
@@ -157,7 +158,8 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		{
 			m_Minimized = true;
 
 			return false;
@@ -167,20 +169,12 @@ namespace Aurora {
 
 		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
 
-		return true; // This return is what sets the Handled bool in the event to true or false
+		return false; // This return is what sets the Handled bool in the event to true or false
 	}
 
 	bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
 	{
-		m_Minimized = true;
-
-		return true; // This return is what sets the Handled bool in the event to true or false
-	}
-
-	bool Application::OnWindowMaximize(WindowMaximizeEvent& e)
-	{
-		m_Minimized = false;
-		m_Window->Maximize();
+		m_Minimized = e.IsMinimized();
 
 		return true; // This return is what sets the Handled bool in the event to true or false
 	}
@@ -221,7 +215,6 @@ namespace Aurora {
 		EventDispatcher dispatcher(e);
 		dispatcher.dispatch<WindowCloseEvent>(AR_SET_EVENT_FN(Application::OnWindowClose));
 		dispatcher.dispatch<WindowMinimizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMinimize));
-		dispatcher.dispatch<WindowMaximizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMaximize));
 		dispatcher.dispatch<WindowResizeEvent>(AR_SET_EVENT_FN(Application::OnWindowResize));
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)

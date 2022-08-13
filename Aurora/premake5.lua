@@ -60,7 +60,7 @@ project "Aurora"
 
         defines
         {
-            "AR_PLATFORM_WINDOWS"
+            "AURORA_PLATFORM_WINDOWS"
         }
 
     filter "configurations:Profile"

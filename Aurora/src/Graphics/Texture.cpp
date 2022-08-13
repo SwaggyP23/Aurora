@@ -30,7 +30,7 @@ namespace Aurora {
 				dataFormat = GL_RGB;
 			}
 
-			AR_CORE_ASSERT(internalFormat & dataFormat, "Texture", "Format is not supported.Format is null!");
+			AR_CORE_ASSERT(internalFormat & dataFormat, "Format is not supported.Format is null!");
 
 			return { internalFormat, dataFormat };
 		}
@@ -49,7 +49,7 @@ namespace Aurora {
 			case TextureFilter::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
 		}
 
-		AR_CORE_ASSERT(false, "Texture", "Unknown Texture Filter!");
+		AR_CORE_ASSERT(false, "Unknown Texture Filter!");
 		return 0;
 	}
 
@@ -64,7 +64,7 @@ namespace Aurora {
 		    case TextureWrap::ClampToBorder:      return GL_CLAMP_TO_BORDER;
 		}
 
-		AR_CORE_ASSERT(false, "Texture", "Unknown Texture Wrap Mode!");
+		AR_CORE_ASSERT(false, "Unknown Texture Wrap Mode!");
 		return 0;
 	}
 
@@ -108,7 +108,7 @@ namespace Aurora {
 
 #ifdef AURORA_DEBUG
 		uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
-		AR_CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Texture", "Data must be an entire texture!");
+		AR_CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
 #endif
 		glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
@@ -164,7 +164,7 @@ namespace Aurora {
 			m_InternalFormat = texFormat.InternalFormat;
 			m_DataFormat = texFormat.DataFormat;
 
-			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "Texture", "Formats are not set!");
+			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
 
 			glTextureStorage2D(m_TextureID, 4, m_InternalFormat, m_Width, m_Height); // level is number of mipmaps
 			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imageData.PixelData);

@@ -12,7 +12,7 @@ namespace Aurora {
 		static void Init();
 		static void ShutDown();
 
-		static void BeginScene(const Ref<EditorCamera>& camera);
+		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);

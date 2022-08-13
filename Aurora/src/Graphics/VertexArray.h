@@ -4,7 +4,7 @@
 
 namespace Aurora {
 
-	class VertexArray
+	class VertexArray : public RefCountedObject
 	{
 	public:
 		VertexArray();

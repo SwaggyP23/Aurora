@@ -2,11 +2,28 @@
 #include "EditorCamera.h"
 
 #include "Core/Input.h"
+#include "ImGui/ImGuiUtils.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
 namespace Aurora {
+
+	namespace Utils {
+
+		static void DisableMouse()
+		{
+			Input::SetCursorMode(CursorMode::Locked);
+			ImGuiUtils::SetMouseEnabled(false);
+		}
+
+		static void EnableMouse()
+		{
+			Input::SetCursorMode(CursorMode::Normal);
+			ImGuiUtils::SetMouseEnabled(true);
+		}
+
+	}
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
 		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), Camera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
@@ -63,29 +80,46 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		if (Input::IsKeyPressed(Key::LeftAlt))
-		{
-			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-			m_InitialMousePosition = mouse;
+		const glm::vec2& mouse = *(glm::vec2*)&Input::GetMousePosition();
+		glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.002f;
 
-			if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
-				MousePan(delta);
-			else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
-				MouseRotate(delta);
-			else if (Input::IsMouseButtonPressed(MouseButton::ButtonMiddle))
-				MouseZoom(delta.y);
-			else if (Input::IsKeyPressed(Key::F))
-				m_FocalPoint = glm::vec3{ 0.0f };
-			else if (Input::IsKeyPressed(Key::C))
+		if (m_IsActive)
+		{
+			if (Input::IsKeyPressed(Key::LeftAlt))
 			{
-				m_FocalPoint = glm::vec3{ 0.0f };
-				m_Position = glm::vec3{ 0.0f, 5.0f, 0.0f };
-				m_Distance = 10.0f;
-				m_Pitch = 0.5f;
-				m_Yaw = 0.0f;
+				if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
+				{
+					Utils::DisableMouse();
+					MousePan(delta);
+				}
+				else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+				{
+					Utils::DisableMouse();
+					MouseRotate(delta);
+				}
+				else if (Input::IsMouseButtonPressed(MouseButton::ButtonMiddle))
+				{
+					Utils::DisableMouse();
+					MouseZoom(delta.y);
+				}
+				else if (Input::IsKeyPressed(Key::F))
+					m_FocalPoint = glm::vec3{ 0.0f };
+				else if (Input::IsKeyPressed(Key::C))
+				{
+					m_FocalPoint = glm::vec3{ 0.0f };
+					m_Position = glm::vec3{ 0.0f, 5.0f, 0.0f };
+					m_Distance = 10.0f;
+					m_Pitch = 0.5f;
+					m_Yaw = 0.0f;
+				}
+				else
+					Utils::EnableMouse();
 			}
+			else
+				Utils::EnableMouse();
 		}
+
+		m_InitialMousePosition = mouse;
 
 		UpdateView();
 	}

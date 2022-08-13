@@ -7,6 +7,8 @@
 
 namespace Aurora {
 
+	std::vector<Ref<Shader>> Shader::s_Shaders;
+
 	namespace Utils {
 
 		static uint32_t/*GLenum*/ ShaderTypeFromString(const std::string& type)
@@ -18,7 +20,7 @@ namespace Aurora {
 			else if (type == "geometry")
 				return GL_GEOMETRY_SHADER;
 
-			AR_CORE_ASSERT(false, "Shader", "Unknown shader type!");
+			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return 0;
 		}
 
@@ -31,11 +33,36 @@ namespace Aurora {
 			    case GL_GEOMETRY_SHADER:	return ShaderErrorType::GeometryShader;
 			}
 
-			AR_CORE_ASSERT(false, "Shader", "Unknown shader type!");
+			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return ShaderErrorType::None;
 		}
 
 	}
+
+	///////////////////////////
+	/// Shader Uniform!!!!!!!!!
+	///////////////////////////
+
+	//ShaderUniform::ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset)
+	//	: m_Name(name), m_Type(type), m_Size(size), m_Offset(offset)
+	//{
+	//}
+
+	//const std::string& ShaderUniform::UniformTypeToString(ShaderUniformType type)
+	//{
+	//	switch (type)
+	//	{
+	//	    case Aurora::ShaderUniformType::Bool:      return "Bool";
+	//	    case Aurora::ShaderUniformType::Int:       return "Int";
+	//		case Aurora::ShaderUniformType::Float:     return "Float";
+	//	}
+
+	//	return "None";
+	//}
+
+	///////////////////////////
+	/// Shader!!!!!!!!!!!!!!!!!
+	///////////////////////////
 
 	Ref<Shader> Shader::Create(const std::string& filepath)
 	{
@@ -125,7 +152,7 @@ namespace Aurora {
 			glDeleteShader(id); // This flags the shader for deletion but is not deleted untill it is not linked to any other program, in our case that is directly here since it is already detached
 		}
 
-		AR_CORE_ASSERT(program, "Shader", "Program is null!");
+		AR_CORE_ASSERT(program, "Program is null!");
 
 		return program;
 	}
@@ -210,45 +237,6 @@ namespace Aurora {
 		//return glGetUniformLocation(m_ShaderID, name.c_str()); // This is Without Caching!
 	}
 
-	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
-	{
-		AR_PROFILE_FUNCTION();
-
-		AR_CORE_ASSERT(!Exists(name), "Shader", "Shader already exists!");
-		m_Shaders[name] = shader;
-	}
-
-	void ShaderLibrary::Add(const Ref<Shader>& shader)
-	{
-		const std::string& name = shader->GetName();
-		Add(name, shader);
-	}
-
-	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
-	{
-		auto shader = Shader::Create(filepath);
-		Add(shader);
-		return shader;
-	}
-
-	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
-	{
-		auto shader = Shader::Create(filepath);
-		Add(name, shader);
-		return shader;
-	}
-
-	Ref<Shader> ShaderLibrary::Get(const std::string& name)
-	{
-		AR_CORE_ASSERT(Exists(name), "Shader", "Shader not found!");
-		return m_Shaders[name];
-	}
-
-	bool ShaderLibrary::Exists(const std::string& name) const // This always crashes
-	{
-		return m_Shaders.find(name) != m_Shaders.end();
-	}
-
 	void Shader::CheckShaderCompilation(uint32_t shader, Utils::ShaderErrorType type) const
 	{
 		GLint result;
@@ -296,6 +284,49 @@ namespace Aurora {
 			for (auto id : shaderIDs)
 				glDeleteShader(id);
 		}
+	}
+
+	//////////////////////////
+	//// ShaderLibrary!!!!!!!!
+	//////////////////////////
+
+	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
+	{
+		AR_PROFILE_FUNCTION();
+
+		AR_CORE_ASSERT(!Exists(name), "Shader already exists!");
+		m_Shaders[name] = shader;
+	}
+
+	void ShaderLibrary::Add(const Ref<Shader>& shader)
+	{
+		const std::string& name = shader->GetName();
+		Add(name, shader);
+	}
+
+	Ref<Shader> ShaderLibrary::Load(const std::string& filepath/*bool forceCompile*/)
+	{
+		auto shader = Shader::Create(filepath);
+		Add(shader);
+		return shader;
+	}
+
+	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+	{
+		auto shader = Shader::Create(filepath);
+		Add(name, shader);
+		return shader;
+	}
+
+	Ref<Shader> ShaderLibrary::Get(const std::string& name)
+	{
+		AR_CORE_ASSERT(Exists(name), "Shader not found!");
+		return m_Shaders[name];
+	}
+
+	bool ShaderLibrary::Exists(const std::string& name) const // This always crashes
+	{
+		return m_Shaders.find(name) != m_Shaders.end();
 	}
 
 }

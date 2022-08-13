@@ -30,7 +30,7 @@ namespace Aurora {
 			case ShaderDataType::Bool:    return 1;
 		}
 
-		AR_CORE_ASSERT(false, "Buffer", "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
 		return 0;
 	}
 
@@ -97,7 +97,7 @@ namespace Aurora {
 		Dynamic
 	};
 
-	class VertexBuffer
+	class VertexBuffer : public RefCountedObject
 	{
 	public:
 		VertexBuffer() = default;
@@ -129,7 +129,7 @@ namespace Aurora {
 	//////////////////////////
 
 	// TODO: Only supports 32-bit index buffers, should add support for 16-bit index buffers
-	class IndexBuffer
+	class IndexBuffer : public RefCountedObject
 	{
 	public:
 		IndexBuffer() = default;

@@ -20,7 +20,58 @@ namespace Aurora {
 
 	}
 
-	class Shader
+	//enum class ShaderUniformType : uint8_t
+	//{
+	//	None = 0,
+	//	Bool,
+	//	Int, UInt,
+	//	Float,
+	//	Vec2, Vec3, Vec4,
+	//	Mat3, Mat4,
+	//	IVec2, IVec3, IVec4
+	//};
+
+	//// A class for uniform information
+	//class ShaderUniform
+	//{
+	//public:
+	//	ShaderUniform() = default;
+	//	ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset);
+
+	//	const std::string& GetName() const { return m_Name; }
+	//	ShaderUniformType GetUniformType() const { return m_Type; }
+	//	uint32_t GetSize() const { return m_Size; }
+	//	uint32_t GetOffset() const { return m_Offset; }
+
+	//	static const std::string& UniformTypeToString(ShaderUniformType type);
+
+	//private:
+	//	std::string m_Name;
+	//	ShaderUniformType m_Type = ShaderUniformType::None;
+	//	uint32_t m_Size = 0;
+	//	uint32_t m_Offset = 0;
+
+	//};
+
+	//// A uniform buffer has an amount of uniforms
+	//struct ShaderUniformBuffer
+	//{
+	//	std::string Name;
+	//	uint32_t Index;
+	//	uint32_t BindingPoint;
+	//	uint32_t Size;
+	//	uint32_t BufferID;
+	//	std::vector<ShaderUniform> Uniforms;
+	//};
+
+	//struct ShaderBuffer
+	//{
+	//	std::string Name;
+	//	uint32_t Size = 0;
+	//	std::unordered_map<std::string, ShaderUniform> Uniforms;
+	//};
+
+	class Shader : public RefCountedObject
 	{
 	public:
 		Shader(const std::string& filePath);
@@ -47,6 +98,9 @@ namespace Aurora {
 		inline const std::string& GetName() const { return m_Name; }
 		inline const std::string& GetFilePath() const { return m_FilePath; }
 
+		// This is temporary untill i have an asset manager
+		static std::vector<Ref<Shader>> s_Shaders;
+
 	private:
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
 		uint32_t CreateShaderProgram(const std::unordered_map<uint32_t/*GLenum*/, std::string>& shaderSources) const;
@@ -55,7 +109,7 @@ namespace Aurora {
 		void CheckShaderCompilation(uint32_t shader, Utils::ShaderErrorType type) const;
 
 	private:
-		uint32_t m_ShaderID;
+		uint32_t m_ShaderID = 0;
 		std::string m_FilePath;
 		std::string m_Name;
 
@@ -68,6 +122,9 @@ namespace Aurora {
 	class ShaderLibrary
 	{
 	public:
+		ShaderLibrary() = default;
+		~ShaderLibrary() = default;
+
 		void Add(const Ref<Shader>& shader);
 		void Add(const std::string& name, const Ref<Shader>& shader);
 
