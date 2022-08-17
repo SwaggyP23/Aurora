@@ -195,12 +195,12 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		// Loading default fonts
-		m_Fonts.LoadFont("OpenSans", "resources/fonts/OpenSans");
-		m_Fonts.LoadFont("Teko", "resources/fonts/Teko");
-		m_Fonts.LoadFont("BebasNeue", "resources/fonts/BebasNeue");
-		m_Fonts.LoadFont("Edu NSW ACT", "resources/fonts/Edu NSW ACT Foundation");
-		m_Fonts.LoadFont("MochiyPopOne", "resources/fonts/MochiyPopOne");
-		m_Fonts.LoadFont("Chewy", "resources/fonts/Chewy");
+		m_Fonts.LoadFont("OpenSans", "Resources/fonts/OpenSans");
+		m_Fonts.LoadFont("Teko", "Resources/fonts/Teko");
+		m_Fonts.LoadFont("BebasNeue", "Resources/fonts/BebasNeue");
+		m_Fonts.LoadFont("Edu NSW ACT", "Resources/fonts/Edu NSW ACT Foundation");
+		m_Fonts.LoadFont("MochiyPopOne", "Resources/fonts/MochiyPopOne");
+		m_Fonts.LoadFont("Chewy", "Resources/fonts/Chewy");
 
 		m_Fonts.AddFont("OpenSans", FontIdentifier::Bold);
 		m_Fonts.AddFont("OpenSans", FontIdentifier::Italic);

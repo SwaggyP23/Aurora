@@ -5,7 +5,7 @@
 
 namespace Aurora {
 
-	UnifromBuffer::UnifromBuffer(uint32_t size, uint32_t binding)
+	UniformBuffer::UniformBuffer(uint32_t size, uint32_t binding)
 	{
 		m_LocalStorage = new Byte[size];
 
@@ -14,14 +14,19 @@ namespace Aurora {
 		glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_BufferID);
 	}
 
-	UnifromBuffer::~UnifromBuffer()
+	UniformBuffer::~UniformBuffer()
 	{
 		delete[] m_LocalStorage;
 
 		glDeleteBuffers(1, &m_BufferID);
 	}
 
-	void UnifromBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
+	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
+	{
+		return CreateRef<UniformBuffer>(size, binding);
+	}
+
+	void UniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
 		glNamedBufferSubData(m_BufferID, offset, size, data);
 	}

@@ -799,6 +799,8 @@ namespace Aurora {
 		ImGui::End();
 	}
 
+	static bool s_VSyncState = true;
+
 	void EditorLayer::ShowRendererStatsUI()
 	{
 		ImGui::Begin("Renderer Stats");
@@ -832,6 +834,11 @@ namespace Aurora {
 		}
 		if (!wireFrame && !vertices)
 			RenderCommand::SetRenderFlag(RenderFlags::Fill);
+
+		if (ImGui::Checkbox("V-Sync", &s_VSyncState))
+		{
+			Application::GetApp().GetWindow().SetVSync(s_VSyncState);
+		}
 
 		ImGui::End();
 	}
@@ -1114,7 +1121,7 @@ namespace Aurora {
 			case ImGuizmo::OPERATION::SCALE:     return 0.5f;
 		}
 
-		AR_ASSERT(false, "Unkown Gizmo operation type");
+		AR_ASSERT(false, "Unknown Gizmo operation type");
 		return 0.0f;
 	}
 
@@ -1186,7 +1193,7 @@ namespace Aurora {
 
 		m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
 
-		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused && !m_ViewPortHovered);
+		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused || !m_ViewPortHovered);
 
 		// Gizmos...
 		if (m_SelectionContext && m_GizmoType != -1)
@@ -1203,8 +1210,6 @@ namespace Aurora {
 
 		ImGui::End();
 		ImGui::PopStyleVar();
-
-		m_ImGuiItemHovered = ImGui::IsAnyItemHovered() ? true : false;
 
 		ImGui::End();
 	}

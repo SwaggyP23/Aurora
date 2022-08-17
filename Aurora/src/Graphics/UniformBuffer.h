@@ -4,11 +4,13 @@
 
 namespace Aurora {
 
-	class UnifromBuffer : public RefCountedObject
+	class UniformBuffer : public RefCountedObject
 	{
 	public:
-		UnifromBuffer(uint32_t size, uint32_t binding);
-		~UnifromBuffer();
+		UniformBuffer(uint32_t size, uint32_t binding);
+		~UniformBuffer();
+
+		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
 
 		void SetData(const void* data, uint32_t size, uint32_t offset = 0);
 		uint32_t GetBinding() const { return m_BindingPoint; }

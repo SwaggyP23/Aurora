@@ -54,3 +54,4 @@ git clone --recursive https://github.com/SwaggyP23/Aurora.git
 - [spdlog](https://github.com/gabime/spdlog).
 - [stb](https://github.com/nothings/stb).
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp).
+- [VulkanSDK](https://www.vulkan.org/).

@@ -29,6 +29,11 @@ project "SandBox"
         "Aurora"
     }
 
+    defines
+    {
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
+    }
+
     filter "system:windows"
         systemversion "latest"
 
@@ -49,12 +54,12 @@ project "SandBox"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc143-mt.lib"
+            "%{Library.AssimpRelease}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc143-mt.dll %{cfg.targetdir}")
+            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Debug"
@@ -64,12 +69,12 @@ project "SandBox"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc143-mtd.lib"
+            "%{Library.AssimpDebug}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc143-mtd.dll %{cfg.targetdir}")
+            ("{COPY} %{Binaries.AssimpDebug} %{cfg.targetdir}")
         }
 
     filter "configurations:Release"
@@ -80,12 +85,12 @@ project "SandBox"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc143-mt.lib"
+            "%{Library.AssimpRelease}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc143-mt.dll %{cfg.targetdir}")
+            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Dist"
@@ -96,10 +101,10 @@ project "SandBox"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc143-mt.lib"
+            "%{Library.AssimpRelease}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc143-mt.dll %{cfg.targetdir}")
+            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }

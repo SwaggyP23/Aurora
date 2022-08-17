@@ -90,7 +90,7 @@ namespace Aurora {
 			    case Aurora::FrameBufferTextureFormat::DEPTH24STENCIL8:      return GL_DEPTH24_STENCIL8;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown texture format");
+			AR_CORE_ASSERT(false, "Unknown texture format");
 			return 0;
 		}
 
@@ -181,6 +181,7 @@ namespace Aurora {
 		{
 			AR_CORE_ASSERT(m_ColorAttachments.size() <= 4, "For now we only support a max of 4 color attachments");
 
+			// This is us telling openGl that we want to draw to 4 different attachments
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers((GLsizei)m_ColorAttachments.size(), buffers);
 		}

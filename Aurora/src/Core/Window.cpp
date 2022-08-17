@@ -28,7 +28,7 @@ namespace Aurora {
 			AR_CORE_WARN_TAG("OpenGL Debug MEDIUM", "Type: {0}, Message : {1}", ErrorType, message);
 	}
 
-	static void error_callback(int error, const char* description)
+	static void glfw_error_callback(int error, const char* description)
 	{
 		AR_CORE_ERROR_TAG("Window", "GLFW Error({0}) : {1}", error, description);
 	}
@@ -55,7 +55,7 @@ namespace Aurora {
 		AR_CORE_ASSERT(success, "Failed to initialize glfw!");
 
 #ifdef AURORA_DEBUG
-		glfwSetErrorCallback(error_callback);
+		glfwSetErrorCallback(glfw_error_callback);
 #endif
 
 		glfwWindowHint(GLFW_DECORATED, m_Specification.Decorated ? GLFW_TRUE : GLFW_FALSE);
@@ -77,7 +77,7 @@ namespace Aurora {
 #ifdef AURORA_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback(MessageCallback, nullptr); // This is for GLFW error callback and is the one that gets called
+		glDebugMessageCallback(MessageCallback, nullptr); // This is for OpenGL error callback and is the one that gets called
 #endif
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
@@ -91,7 +91,7 @@ namespace Aurora {
 		SetGLFWCallbacks();
 
 		SetIconImage();
-		//SetVSync(m_Specification.VSync); // A context needs to be current for this which is done in m_Context->Init();
+		SetVSync(m_Specification.VSync); // A context needs to be current for this which is done in m_Context->Init();
 	}
 
 	Window::~Window()
@@ -232,24 +232,24 @@ namespace Aurora {
 
 			switch (action)
 			{
-			case GLFW_PRESS:
-			{
-				KeyPressedEvent event(key, 0);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				KeyReleasedEvent event(key);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				KeyPressedEvent event(key, true);
-				data.EventCallback(event);
-				break;
-			}
+			    case GLFW_PRESS:
+			    {
+			    	KeyPressedEvent event(key, 0);
+			    	data.EventCallback(event);
+			    	break;
+			    }
+			    case GLFW_RELEASE:
+			    {
+			    	KeyReleasedEvent event(key);
+			    	data.EventCallback(event);
+			    	break;
+			    }
+			    case GLFW_REPEAT:
+			    {
+			    	KeyPressedEvent event(key, true);
+			    	data.EventCallback(event);
+			    	break;
+			    }
 			}
 		});
 

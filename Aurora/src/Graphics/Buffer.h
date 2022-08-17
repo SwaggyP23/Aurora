@@ -30,7 +30,7 @@ namespace Aurora {
 			case ShaderDataType::Bool:    return 1;
 		}
 
-		AR_CORE_ASSERT(false, "Unkown Shader Data Type!");
+		AR_CORE_ASSERT(false, "Unknown Shader Data Type!");
 		return 0;
 	}
 
@@ -145,8 +145,8 @@ namespace Aurora {
 		inline uint32_t GetCount() const { return m_Count; }
 
 	private:
-		uint32_t m_BufferId;
-		uint32_t m_Count;
+		uint32_t m_BufferId = 0;
+		uint32_t m_Count = 0;
 
 	};
 

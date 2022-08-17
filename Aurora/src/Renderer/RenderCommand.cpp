@@ -19,7 +19,7 @@ namespace Aurora {
 			    case Aurora::RenderFlags::Vertices:        return GL_POINT;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Render Flag!");
+			AR_CORE_ASSERT(false, "Unknown Render Flag!");
 			return 0;
 		}
 
@@ -49,7 +49,7 @@ namespace Aurora {
 				case OpenGLFunction::FrontAndBack:                 return GL_FRONT_AND_BACK;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Function!");
+			AR_CORE_ASSERT(false, "Unknown Function!");
 			return 0;
 		}
 
@@ -64,7 +64,7 @@ namespace Aurora {
 			    case Aurora::OpenGLEquation::Maximum:             return GL_MAX;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Function Equation!");
+			AR_CORE_ASSERT(false, "Unknown Function Equation!");
 			return 0;
 		}
 
@@ -79,7 +79,7 @@ namespace Aurora {
 			    case FeatureControl::StencilTesting:      return GL_STENCIL_TEST;
 			}
 
-			AR_CORE_ASSERT(false, "Unkown Feature to enable!");
+			AR_CORE_ASSERT(false, "Unknown Feature to enable!");
 			return 0;
 		}
 

@@ -19,8 +19,8 @@ namespace Aurora {
 	Scene::Scene(const std::string& debugName)
 		: m_Name(debugName)
 	{
-		m_ModelShader = Shader::Create("resources/shaders/model.glsl"); // TODO: Temp...
-		m_EnvironmentMap = CubeTexture::Create("resources/textures/skybox");
+		//m_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
+		m_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
 	}
 
 	Scene::~Scene()
@@ -101,23 +101,23 @@ namespace Aurora {
 			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 0, (int)entity);
 		}
 
-		auto ModelView = m_Registry.view<TransformComponent, ModelComponent>(); // TODO: Rework...!!!
-		for (auto entity : ModelView)
-		{
-			auto[transform, modelComp] = ModelView.get<TransformComponent, ModelComponent>(entity);
+		//auto ModelView = m_Registry.view<TransformComponent, ModelComponent>(); // TODO: Rework...!!!
+		//for (auto entity : ModelView)
+		//{
+		//	auto[transform, modelComp] = ModelView.get<TransformComponent, ModelComponent>(entity);
 
-			auto model = modelComp.model;
+		//	auto model = modelComp.model;
 
-			auto rotation = glm::toMat4(glm::quat(transform.Rotation));
-			auto trans = glm::translate(glm::mat4(1.0f), transform.Translation) * rotation * glm::scale(glm::mat4(1.0f), transform.Scale);
+		//	auto rotation = glm::toMat4(glm::quat(transform.Rotation));
+		//	auto trans = glm::translate(glm::mat4(1.0f), transform.Translation) * rotation * glm::scale(glm::mat4(1.0f), transform.Scale);
 
-			m_ModelShader->Bind();
-			m_ModelShader->SetUniform1i("u_EntityID", (uint32_t)entity);
-			m_ModelShader->SetUniformMat4("model", glm::value_ptr(trans));
-			m_ModelShader->SetUniformMat4("viewproj", glm::value_ptr(camera.GetViewProjection()));
-			m_ModelShader->SetUniform3f("lightPos", { 1.2f, 3.0f, 2.0f });
-			model.Draw(*(m_ModelShader.raw()));
-		}
+		//	m_ModelShader->Bind();
+		//	m_ModelShader->SetUniform1i("u_EntityID", (uint32_t)entity);
+		//	m_ModelShader->SetUniformMat4("model", glm::value_ptr(trans));
+		//	m_ModelShader->SetUniformMat4("viewproj", glm::value_ptr(camera.GetViewProjection()));
+		//	m_ModelShader->SetUniform3f("lightPos", { 1.2f, 3.0f, 2.0f });
+		//	model.Draw(*(m_ModelShader.raw()));
+		//}
 
 		Renderer3D::EndScene();
 	}

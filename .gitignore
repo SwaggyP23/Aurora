@@ -1,6 +1,7 @@
 .vs/
 bin/
 LogDump/
+Luna/Resources/cache/
 # SandBox/resources/textures/
 
 # specific models to ignore since they are not working

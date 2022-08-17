@@ -54,17 +54,17 @@ namespace Aurora {
 			IncrementRef();
 		}
 
+		Ref(Ref<T>&& other)
+		{
+			m_Ptr = other.m_Ptr;
+			other.m_Ptr = nullptr;
+		}
+
 		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
 		Ref(const Ref<T2>& other)
 		{
 			m_Ptr = (T*)other.m_Ptr;
 			IncrementRef();
-		}
-
-		Ref(Ref<T>&& other)
-		{
-			m_Ptr = other.m_Ptr;
-			other.m_Ptr = nullptr;
 		}
 
 		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
@@ -95,16 +95,6 @@ namespace Aurora {
 			return *this;
 		}
 
-		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
-		Ref& operator=(const Ref<T2>& other)
-		{
-			other.IncrementRef();
-			DecrementRef();
-
-			m_Ptr = (T*)other.m_Ptr;
-			return *this;
-		}
-
 		Ref& operator=(Ref<T>&& other) noexcept
 		{
 			DecrementRef();
@@ -112,6 +102,16 @@ namespace Aurora {
 			m_Ptr = other.m_Ptr;
 			other.m_Ptr = nullptr;
 
+			return *this;
+		}
+
+		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
+		Ref& operator=(const Ref<T2>& other)
+		{
+			other.IncrementRef();
+			DecrementRef();
+
+			m_Ptr = (T*)other.m_Ptr;
 			return *this;
 		}
 
