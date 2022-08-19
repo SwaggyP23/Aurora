@@ -49,13 +49,13 @@ namespace Aurora {
 				auto& translation = GetComponent<TransformComponent>().Translation;
 				const float speed = 5.0f;
 
-				if (Input::IsKeyPressed(Key::W))
+				if (Input::IsKeyPressed(AR_KEY_W))
 					translation.y += speed * ts;
-				if (Input::IsKeyPressed(Key::S))
+				if (Input::IsKeyPressed(AR_KEY_S))
 					translation.y -= speed * ts;
-				if (Input::IsKeyPressed(Key::A))
+				if (Input::IsKeyPressed(AR_KEY_A))
 					translation.x -= speed * ts;
-				if (Input::IsKeyPressed(Key::D))
+				if (Input::IsKeyPressed(AR_KEY_D))
 					translation.x += speed * ts;
 			}
 		};
@@ -126,14 +126,14 @@ namespace Aurora {
 	{
 		if (GImGui->ActiveId == 0)
 		{
-			bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-			bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+			bool control = Input::IsKeyPressed(AR_KEY_LEFT_CONTROL) || Input::IsKeyPressed(AR_KEY_RIGHT_CONTROL);
+			bool shift = Input::IsKeyPressed(AR_KEY_LEFT_SHIFT) || Input::IsKeyPressed(AR_KEY_RIGHT_SHIFT);
 
 			bool isSomethingSelected = m_SelectionContext ? true : false;
 
 			switch (e.GetKeyCode())
 			{
-			    case Key::N:
+			    case AR_KEY_N:
 			    {
 			    	if (control)
 			    		NewScene();
@@ -141,7 +141,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case Key::O:
+			    case AR_KEY_O:
 			    {
 			    	if (control)
 			    		OpenScene();
@@ -149,7 +149,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case Key::S:
+			    case AR_KEY_S:
 			    {
 			    	if (control)
 			    	{
@@ -162,7 +162,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case Key::D:
+			    case AR_KEY_D:
 			    {
 			    	// TODO: Needs rework...
 			    	if (control && isSomethingSelected)
@@ -173,7 +173,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case Key::Delete:
+			    case AR_KEY_DELETE:
 			    {
 			    	if (isSomethingSelected)
 			    	{
@@ -185,7 +185,7 @@ namespace Aurora {
 			    }
 			    
 			    // Gizmos
-			    case Key::Q:
+			    case AR_KEY_Q:
 			    {
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = -1;
@@ -193,7 +193,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case Key::W:
+			    case AR_KEY_W:
 			    {
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -201,7 +201,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case Key::E:
+			    case AR_KEY_E:
 			    {
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
@@ -209,7 +209,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case Key::R:
+			    case AR_KEY_R:
 			    {
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = ImGuizmo::OPERATION::SCALE;
@@ -224,7 +224,7 @@ namespace Aurora {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (!ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+		if (!ImGuizmo::IsOver() && !Input::IsKeyPressed(AR_KEY_LEFT_ALT))
 		{
 			m_SelectionContext = m_HoveredEntity;
 			if (m_HoveredEntity != Entity::nullEntity)
@@ -302,7 +302,7 @@ namespace Aurora {
 			DrawEntityNode(entity);
 		});
 
-		if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft) && ImGui::IsWindowHovered())
+		if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) && ImGui::IsWindowHovered())
 			m_SelectionContext = {};
 
 		// Right clicking on a blank space menu
@@ -1144,7 +1144,7 @@ namespace Aurora {
 		glm::mat4 transform = tc.GetTransform();
 
 		// Snapping
-		bool snap = Input::IsKeyPressed(Key::LeftControl);
+		bool snap = Input::IsKeyPressed(AR_KEY_LEFT_CONTROL);
 
 		float snapValue = GetSnapValue();
 
@@ -1155,7 +1155,7 @@ namespace Aurora {
 			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
 			nullptr, snap ? snapValues : nullptr);
 
-		if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(Key::LeftAlt))
+		if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(AR_KEY_LEFT_ALT))
 		{
 			glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
 			Math::DecomposeTransform(transform, translation, rotation, scale);

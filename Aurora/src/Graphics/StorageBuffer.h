@@ -4,13 +4,13 @@
 
 namespace Aurora {
 
-	class UniformBuffer : public RefCountedObject
+	class StorageBuffer : public RefCountedObject
 	{
 	public:
-		UniformBuffer(uint32_t size, uint32_t binding);
-		~UniformBuffer();
+		StorageBuffer(uint32_t size, uint32_t binding);
+		~StorageBuffer();
 
-		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
+		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding);
 
 		void SetData(const void* data, uint32_t size, uint32_t offset = 0);
 

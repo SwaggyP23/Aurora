@@ -38,7 +38,7 @@ namespace Aurora {
                 number = std::to_string(heightNr++); // transfer unsigned int to string
 
             // now set the sampler to the correct texture unit
-            shader.SetUniform1i((name + number).c_str(), i);
+            //shader.SetUniform1i((name + number).c_str(), i); // Not needed when we have bindings
             // and finally bind the texture
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }
@@ -98,6 +98,8 @@ namespace Aurora {
 
 }
 
+#if 0
+
 //#include "Renderer/RenderCommand.h"
 //
 //namespace Aurora {
@@ -128,3 +130,4 @@ namespace Aurora {
 //	}
 //
 //}
+#endif

@@ -11,18 +11,18 @@ namespace Aurora {
 	{
 		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 		
-		int state = glfwGetKey(window, keycode);
+		int state = glfwGetKey(window, (int)keycode);
 		
-		return state == Key::Press || state == Key::Repeat;
+		return state == GLFW_PRESS;
 	}
 
-	bool Input::IsMouseButtonPressed(MouseCode button)
+	bool Input::IsMouseButtonPressed(MouseCode mouseCode)
 	{
 		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 
-		int state = glfwGetMouseButton(window, button);
+		int state = glfwGetMouseButton(window, (int)mouseCode);
 
-		return state == Key::Press;
+		return state == GLFW_PRESS;
 	}
 
 	std::pair<float, float> Input::GetMousePosition()

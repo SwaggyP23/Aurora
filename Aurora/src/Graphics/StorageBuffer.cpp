@@ -1,16 +1,16 @@
 #include "Aurorapch.h"
-#include "UniformBuffer.h"
+#include "StorageBuffer.h"
 
 #include <glad/glad.h>
 
 namespace Aurora {
 
-	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
+	Ref<StorageBuffer> StorageBuffer::Create(uint32_t size, uint32_t binding)
 	{
-		return CreateRef<UniformBuffer>(size, binding);
+		return CreateRef<StorageBuffer>(size, binding);
 	}
 
-	UniformBuffer::UniformBuffer(uint32_t size, uint32_t binding)
+	StorageBuffer::StorageBuffer(uint32_t size, uint32_t binding)
 		: m_Size(size), m_BindingPoint(binding)
 	{
 		glCreateBuffers(1, &m_BufferID);
@@ -18,12 +18,12 @@ namespace Aurora {
 		glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_BufferID);
 	}
 
-	UniformBuffer::~UniformBuffer()
+	StorageBuffer::~StorageBuffer()
 	{
 		glDeleteBuffers(1, &m_BufferID);
 	}
 
-	void UniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
+	void StorageBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
 		glNamedBufferSubData(m_BufferID, offset, size, data);
 	}

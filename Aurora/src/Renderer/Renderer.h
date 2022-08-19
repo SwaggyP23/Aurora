@@ -4,6 +4,8 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
 
+// Currently totally useless...
+
 namespace Aurora {
 
 	class Renderer

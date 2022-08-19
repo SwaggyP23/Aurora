@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Base.h"
+#include "ShaderResource.h"
 
 #include <string>
 #include <unordered_map>
@@ -11,20 +12,21 @@
 
 /*
  * The std::vector<uint32_t>s used are basically the byte buffers for the binaries, however spriv and shaderc dont use single 
- * uint8_t bytes rather they use "Words" of 4 bytes each
+ * uint8_t bytes rather they use "Words" of 4 bytes each.
+ * Currently i will not be using push_constants, rather i will be heavily using uniform buffers which is what i was adviced to
+ * do by implodee(chat link is found in my public server [SwaggyP's Server]), so yea use UBOs for all the info.
+ * 
+ * TODO: There is a bug in finding the uniform location in the end of the CreateProgram function such that the thing is not
+ * finding the locations and setting the map values to -1 eventhough the uniforms do actually exist for sure since the
+ * compiler generated OpenGL source code could be printed for debugging and it is actually stored in the shader class for
+ * debugging purposes.
  */
-
-namespace spirv_cross {
-
-	class CompilerGLSL;
-
-}
 
 namespace Aurora {
 
 	enum class ShaderErrorType : uint8_t
 	{
-		None = 0, Vertex, Fragment, Compute, Geometry
+		None = 0, Vertex, Fragment, Geometry, Compute
 	};
 
 	enum class ShaderUniformType : uint8_t
@@ -60,16 +62,17 @@ namespace Aurora {
 
 	};
 
-	// Shader side buffer that contains uniforms
-	struct ShaderBuffer
-	{
-		std::string Name;
-		uint32_t Size = 0;
-		std::unordered_map<std::string, ShaderUniform> Uniforms;
-	};
-
 	class Shader : public RefCountedObject
 	{
+	public:
+		// Push Constant buffer that contains uniforms
+		struct ShaderPushBuffer
+		{
+			std::string Name;
+			uint32_t Size = 0;
+			std::unordered_map<std::string, ShaderUniform> Uniforms;
+		};
+
 	public:
 		Shader() = default;
 		Shader(const std::string& filePath, bool forceCompile);
@@ -86,22 +89,27 @@ namespace Aurora {
 
 		// Setting uniforms...
 
-		void SetUniform1i(const char* name, uint32_t val) const;
-		void SetUniformArrayi(const char* name, int* vals, uint32_t count) const;
-		void SetUniform1f(const char* name, float val) const;
-		void SetUniform2f(const char* name, const glm::vec2& vector) const;
-		void SetUniform3f(const char* name, const glm::vec3& vector) const;
-		void SetUniform4f(const char* name, const glm::vec4& vector) const;
-		void SetUniformMat3(const char* name, const glm::mat3& matrix) const;
-		void SetUniformMat3(const char* name, const float* matrix) const;
-		void SetUniformMat4(const char* name, const glm::mat4& matrix) const;
-		void SetUniformMat4(const char* name, const float* matrix) const;
+		void SetUniform(const std::string& fullname, float value);
+		void SetUniform(const std::string& fullname, int value);
+		void SetUniform(const std::string& fullname, uint32_t value);
+		void SetUniform(const std::string& fullname, const glm::ivec2& value);
+		void SetUniform(const std::string& fullname, const glm::ivec3& value);
+		void SetUniform(const std::string& fullname, const glm::ivec4& value);
+		void SetUniform(const std::string& fullname, const glm::vec2& value);
+		void SetUniform(const std::string& fullname, const glm::vec3& value);
+		void SetUniform(const std::string& fullname, const glm::vec4& value);
+		void SetUniform(const std::string& fullname, const glm::mat3& value);
+		void SetUniform(const std::string& fullname, const glm::mat4& value);
 
 		inline const std::string& GetName() const { return m_Name; }
 		inline const std::string& GetFilePath() const { return m_AssetPath; }
+		const ShaderResourceDeclaration* GetShaderResource(const std::string& name);
+		
+		const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
+		const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
 
-		// This is temporary untill i have an asset manager
-		static std::vector<Ref<Shader>> s_Shaders;
+		// This is temporary untill i have an asset manager. It kind of acts as an asset manager lol having all the shaders
+		static std::vector<Ref<Shader>> s_AllShaders;
 
 	private:
 		void Load(const std::string& source, bool forceCompile);
@@ -111,9 +119,27 @@ namespace Aurora {
 		void CompileOrGetOpenGLBinary(bool forceCompile = false);
 		void Reflect(uint32_t/*GLenum*/type, const std::vector<uint32_t>& shaderData);
 
-		void ParseConstantBuffer(const spirv_cross::CompilerGLSL& compiler);
-
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
+
+		// Currently not used...
+		void UploadUniformInt(uint32_t location, int32_t value);
+		void UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count);
+		void UploadUniformFloat(uint32_t location, float value);
+		void UploadUniformFloat2(uint32_t location, const glm::vec2& value);
+		void UploadUniformFloat3(uint32_t location, const glm::vec3& value);
+		void UploadUniformFloat4(uint32_t location, const glm::vec4& value);
+		void UploadUniformMat3(uint32_t location, const glm::mat3& value);
+		void UploadUniformMat4(uint32_t location, const glm::mat4& value);
+		void UploadUniformMat4Array(uint32_t location, const glm::mat4& values, uint32_t count);
+		void UploadUniformInt(const std::string& name, int32_t value);
+		void UploadUniformUInt(const std::string& name, uint32_t value);
+		void UploadUniformIntArray(const std::string& name, int32_t* values, uint32_t count);
+		void UploadUniformFloat(const std::string& name, float value);
+		void UploadUniformFloat2(const std::string& name, const glm::vec2& value);
+		void UploadUniformFloat3(const std::string& name, const glm::vec3& value);
+		void UploadUniformFloat4(const std::string& name, const glm::vec4& value);
+		void UploadUniformMat4(const std::string& name, const glm::mat4& value);
+
 		int GetUniformLocation(const std::string& name) const;
 
 	private:
@@ -122,17 +148,16 @@ namespace Aurora {
 		std::string m_Name;
 		std::string m_AssetPath;
 
-		uint32_t m_ConstantBufferOffset = 0;
-
 		bool IsLoaded = false;
 		bool m_IsCompute = false;
 
 		// String sources
-		std::unordered_map<uint32_t/*GLenum*/, std::string> m_ShaderSource; // OpenGL Source Code...
+		std::unordered_map<uint32_t/*GLenum*/, std::string> m_OpenGLShaderSource; // OpenGL Source Code...
 		std::unordered_map<uint32_t/*GLenum*/, std::vector<uint32_t>> m_VulkanSPIRV;
 		std::unordered_map<uint32_t/*GLenum*/, std::vector<uint32_t>> m_OpenGLSPIRV;
 
-		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
+		std::unordered_map<std::string, ShaderPushBuffer> m_Buffers;
+		std::unordered_map<std::string, ShaderResourceDeclaration> m_Resources;
 		mutable std::unordered_map<std::string, int> m_UniformLocations;
 
 	};

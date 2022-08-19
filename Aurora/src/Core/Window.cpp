@@ -234,19 +234,19 @@ namespace Aurora {
 			{
 			    case GLFW_PRESS:
 			    {
-			    	KeyPressedEvent event(key, 0);
+			    	KeyPressedEvent event((KeyCode)key, 0);
 			    	data.EventCallback(event);
 			    	break;
 			    }
 			    case GLFW_RELEASE:
 			    {
-			    	KeyReleasedEvent event(key);
+			    	KeyReleasedEvent event((KeyCode)key);
 			    	data.EventCallback(event);
 			    	break;
 			    }
 			    case GLFW_REPEAT:
 			    {
-			    	KeyPressedEvent event(key, true);
+			    	KeyPressedEvent event((KeyCode)key, true);
 			    	data.EventCallback(event);
 			    	break;
 			    }
@@ -257,7 +257,7 @@ namespace Aurora {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			KeyTypedEvent event(keycode);
+			KeyTypedEvent event((KeyCode)keycode);
 			data.EventCallback(event);
 		});
 

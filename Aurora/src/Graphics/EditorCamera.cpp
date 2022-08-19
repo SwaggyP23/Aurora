@@ -85,26 +85,26 @@ namespace Aurora {
 
 		if (m_IsActive)
 		{
-			if (Input::IsKeyPressed(Key::LeftAlt))
+			if (Input::IsKeyPressed(AR_KEY_LEFT_ALT))
 			{
-				if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
+				if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT))
 				{
 					Utils::DisableMouse();
 					MousePan(delta);
 				}
-				else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+				else if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT))
 				{
 					Utils::DisableMouse();
 					MouseRotate(delta);
 				}
-				else if (Input::IsMouseButtonPressed(MouseButton::ButtonMiddle))
+				else if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_MIDDLE))
 				{
 					Utils::DisableMouse();
 					MouseZoom(delta.y);
 				}
-				else if (Input::IsKeyPressed(Key::F))
+				else if (Input::IsKeyPressed(AR_KEY_F))
 					m_FocalPoint = glm::vec3{ 0.0f };
-				else if (Input::IsKeyPressed(Key::C))
+				else if (Input::IsKeyPressed(AR_KEY_C))
 				{
 					m_FocalPoint = glm::vec3{ 0.0f };
 					m_Position = glm::vec3{ 0.0f, 5.0f, 0.0f };
@@ -132,7 +132,7 @@ namespace Aurora {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		if (Input::IsKeyPressed(Key::LeftAlt)) {
+		if (Input::IsKeyPressed(AR_KEY_LEFT_ALT)) {
 			float delta = e.GetYOffset() * 0.1f;
 			MouseZoom(delta);
 			UpdateView();

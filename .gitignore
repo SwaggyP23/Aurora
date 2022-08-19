@@ -4,12 +4,13 @@ LogDump/
 Luna/Resources/cache/
 # SandBox/resources/textures/
 
-# specific models to ignore since they are not working
-Luna/resources/models/brz
-Luna/resources/models/gtr
-Luna/resources/models/mcl
-Luna/resources/models/rock
-Luna/resources/models/zeus
+# specific models to ignore since they are not working or too big
+Luna/Resources/models/brz/
+Luna/Resources/models/gtr/
+Luna/Resources/models/mcl/
+Luna/Resources/models/rock/
+Luna/Resources/models/zeus/
+Luna/Resources/models/fenisCastle/
 
 Aurora.sln
 Aurora.vcxproj

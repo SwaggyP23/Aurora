@@ -239,9 +239,6 @@ namespace Aurora {
 		// This is the sampler that will be submitted to OpenGL and in which OpenGL will be sampling the textures from according to the passed index
 
 		s_Data->SkyBoxShader = Shader::Create("Resources/shaders/Skybox.glsl");
-		s_Data->SkyBoxShader->Bind();
-		s_Data->SkyBoxShader->SetUniform1i("skybox", 0);
-
 		s_Data->QuadShader = Shader::Create("Resources/shaders/MainShader.glsl");
 
 		s_Data->TextureSlots[0] = s_Data->WhiteTex; // index 0 is for the white texture.
@@ -313,6 +310,7 @@ namespace Aurora {
 	{
 		delete[] s_Data->QuadVertexBufferBase;
 		delete s_Data;
+
 		RendererProperties::ShutDown();
 	}
 

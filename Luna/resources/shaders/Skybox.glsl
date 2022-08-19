@@ -26,6 +26,14 @@ layout(location = 0) in vec3 v_TexCoords;
 
 layout(binding = 0) uniform samplerCube skybox;
 
+layout(push_constant) uniform Mats
+{
+    float a;
+    float b;
+    vec2 c;
+    mat4 d;
+} u_MatsUniforms;
+
 void main()
 {    
     o_Color = texture(skybox, v_TexCoords);

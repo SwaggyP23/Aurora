@@ -18,7 +18,7 @@ namespace Aurora {
 	{
 	public:
 		static bool IsKeyPressed(KeyCode keycode);
-		static bool IsMouseButtonPressed(MouseCode button);
+		static bool IsMouseButtonPressed(MouseCode mouseCode);
 
 		static std::pair<float, float> GetMousePosition();
 		static float GetMouseX();

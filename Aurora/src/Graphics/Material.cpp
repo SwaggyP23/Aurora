@@ -3,6 +3,7 @@
 
 // NOT IMPLEMENTED!!
 
+#if 0
 namespace Aurora {
 
 	Material::Material(const Ref<Shader>& shader)
@@ -77,3 +78,4 @@ namespace Aurora {
 	}
 
 }
+#endif

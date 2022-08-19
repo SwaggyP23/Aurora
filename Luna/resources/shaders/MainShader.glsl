@@ -48,6 +48,8 @@ void main()
 #pragma fragment
 #version 450 core
 
+layout(early_fragment_tests) in;
+
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out int o_EntityID;
 
@@ -81,9 +83,7 @@ void main()
 //	}
 	
 	vec3 tempColor = vec3(Input.Color.rgb);
-//	FragColor = vec4(vec3(texture(u_Textures[int(TexIndex)], Input.TexCoords * Input.TilingFactor)) * tempColor, Input.Color.a);
+	FragColor = vec4(vec3(texture(u_Textures[int(TexIndex)], Input.TexCoords * Input.TilingFactor)) * tempColor, Input.Color.a);
 	o_Color = FragColor;
-	o_Color = vec4(tempColor, Input.Color.a);
-//	o_Color = vec4(1.0f, 0.0f, 1.0f, 1.0f);
 	o_EntityID = v_EntityID;
 }
