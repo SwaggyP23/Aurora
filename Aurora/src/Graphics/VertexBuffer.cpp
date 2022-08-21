@@ -1,5 +1,5 @@
 #include "Aurorapch.h"
-#include "Buffer.h"
+#include "VertexBuffer.h"
 
 #include <glad/glad.h>
 
@@ -11,9 +11,9 @@ namespace Aurora {
 		{
 			switch (hint)
 			{
-			    case Aurora::VertexBufferDrawHint::None:        return GL_NONE;
-			    case Aurora::VertexBufferDrawHint::Static:      return GL_STATIC_DRAW;
-			    case Aurora::VertexBufferDrawHint::Dynamic:     return GL_DYNAMIC_DRAW;
+			case Aurora::VertexBufferDrawHint::None:        return GL_NONE;
+			case Aurora::VertexBufferDrawHint::Static:      return GL_STATIC_DRAW;
+			case Aurora::VertexBufferDrawHint::Dynamic:     return GL_DYNAMIC_DRAW;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown draw hint type!");
@@ -35,17 +35,17 @@ namespace Aurora {
 	{
 		switch (type)
 		{
-		    case ShaderDataType::Float:   return 1;
-		    case ShaderDataType::Float2:  return 2;
-		    case ShaderDataType::Float3:  return 3;
-		    case ShaderDataType::Float4:  return 4;
-		    case ShaderDataType::Mat3:    return 3 * 3;
-		    case ShaderDataType::Mat4:    return 4 * 4;
-		    case ShaderDataType::Int:     return 1;
-		    case ShaderDataType::Int2:    return 2;
-		    case ShaderDataType::Int3:    return 3;
-		    case ShaderDataType::Int4:    return 4;
-		    case ShaderDataType::Bool:    return 1;
+		case ShaderDataType::Float:   return 1;
+		case ShaderDataType::Float2:  return 2;
+		case ShaderDataType::Float3:  return 3;
+		case ShaderDataType::Float4:  return 4;
+		case ShaderDataType::Mat3:    return 3 * 3;
+		case ShaderDataType::Mat4:    return 4 * 4;
+		case ShaderDataType::Int:     return 1;
+		case ShaderDataType::Int2:    return 2;
+		case ShaderDataType::Int3:    return 3;
+		case ShaderDataType::Int4:    return 4;
+		case ShaderDataType::Bool:    return 1;
 		}
 
 		AR_CORE_ASSERT(false, "Unknown Shader Data Type!");
@@ -127,51 +127,6 @@ namespace Aurora {
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
-	}
-
-	//////////////////////////
-	// INDEX BUFFER!!
-	//////////////////////////
-
-	Ref<IndexBuffer> IndexBuffer::Create()
-	{
-		return CreateRef<IndexBuffer>();
-	}
-
-	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
-	{
-		return CreateRef<IndexBuffer>(indices, count);
-	}
-
-	IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
-		: m_Count(count)
-	{
-		AR_PROFILE_FUNCTION();
-
-		glCreateBuffers(1, &m_BufferId);
-		// Since we specified here that it is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
-		// otherwise it will not work
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
-	}
-
-	IndexBuffer::~IndexBuffer()
-	{
-		AR_PROFILE_FUNCTION();
-
-		glDeleteBuffers(1, &m_BufferId);
-	}
-
-	void IndexBuffer::Bind() const
-	{
-		AR_PROFILE_FUNCTION();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
-	}
-
-	void IndexBuffer::UnBind() const
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 }

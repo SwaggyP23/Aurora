@@ -68,7 +68,8 @@ namespace Aurora {
 		void ProcessEvents();
 
 		inline float GetCPUTime() const { return m_CPUTime; }
-		inline long double GetLastFrameTime() const { return m_LastFrameTime; }
+		inline float GetFrameTime() const { return m_FrameTime; }
+		inline TimeStep GetTimeStep() const { return m_Timestep; }
 
 		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 
@@ -93,7 +94,7 @@ namespace Aurora {
 		LayerStack m_LayerStack;
 
 		float m_FrameTime = 0.0f;
-		long double m_LastFrameTime = 0.0f;
+		float m_LastFrameTime = 0.0f;
 		float m_CPUTime = 0.0f;
 		TimeStep m_Timestep;
 		PerformanceProfiler* m_Profiler = nullptr; // TODO: Should be null in Dist

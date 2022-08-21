@@ -9,7 +9,7 @@ namespace Aurora {
 		std::string Version;
 		std::string GLSLVersion;
 
-		//float MaxAnisotropy = 0.0f;
+		float MaxAnisotropy = 0.0f;
 		uint32_t MaxSamples = 0;
 		uint32_t MaxTextureSlots = 0;
 	};

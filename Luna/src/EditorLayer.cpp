@@ -11,12 +11,16 @@
 
 namespace Aurora {
 
+
+
 #pragma region EditorLayerMainMethods
 
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer"), m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
 	{
 	}
+
+	static glm::vec3 s_MaterialAlbedoColor(1.0f);
 
 	void EditorLayer::OnAttach()
 	{
@@ -91,7 +95,7 @@ namespace Aurora {
 		RenderCommand::Clear();
 		m_Framebuffer->ClearTextureAttachment(1, -1);
 
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera, s_MaterialAlbedoColor);
 		//m_ActiveScene->OnUpdateRuntime(ts);
 
 		auto [mx, my] = ImGui::GetMousePos();
@@ -111,6 +115,21 @@ namespace Aurora {
 		}
 		
 		m_Framebuffer->UnBind();
+	}
+
+	void EditorLayer::OnTick()
+	{
+		const std::unordered_map<const char*, float>& mp = Application::GetApp().GetPerformanceProfiler()->GetPerFrameData();
+
+		m_SortedTimerValues.clear();
+		m_SortedTimerValues.reserve(mp.size());
+		for (auto& [name, val] : mp)
+			m_SortedTimerValues.emplace_back(name, val);
+
+		std::sort(m_SortedTimerValues.begin(), m_SortedTimerValues.end(), [](const std::tuple<const char*, float>& a, const std::tuple<const char*, float>& b) -> bool
+		{
+			return std::get<1>(a) > std::get<1>(b);
+		});
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -477,10 +496,10 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });		
-		layer->m_Fonts.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
 		if (ImGui::Button("X", buttonSize))
 			values.x = resetValue;
-		layer->m_Fonts.PopTemporaryFont();
+		layer->m_FontsLibrary.PopTemporaryFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
@@ -491,10 +510,10 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });		
-		layer->m_Fonts.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
 		if (ImGui::Button("Y", buttonSize))
 			values.y = resetValue;
-		layer->m_Fonts.PopTemporaryFont();
+		layer->m_FontsLibrary.PopTemporaryFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
@@ -505,10 +524,10 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });		
-		layer->m_Fonts.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
 		if (ImGui::Button("Z", buttonSize))
 			values.z = resetValue;
-		layer->m_Fonts.PopTemporaryFont();
+		layer->m_FontsLibrary.PopTemporaryFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
@@ -553,16 +572,6 @@ namespace Aurora {
 		}
 	}
 
-	static void StartNextDoubleColumn(std::string_view text)
-	{
-		ImGui::Columns(1);
-		ImGui::Separator();
-
-		ImGui::Columns(2);
-		ImGui::Text(text.data());
-		ImGui::NextColumn();
-	}
-
 	void EditorLayer::DrawComponents(Entity entity)
 	{
 		if (entity.HasComponent<TagComponent>())
@@ -578,7 +587,7 @@ namespace Aurora {
 			}
 
 			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("ID: %#010x", 12387519348766); // TODO: Switch to UUID when implemented
+				ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "ID: %#010x", 12387519348766); // TODO: Switch to UUID when implemented
 		}
 
 		ImGui::SameLine();
@@ -628,10 +637,14 @@ namespace Aurora {
 
 			ImGui::Checkbox("##Primary", &component.Primary);
 
-			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-			const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
+			static const char* projectionTypeString[] = { "Perspective", "Orthographic" };
+			static const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
 
-			StartNextDoubleColumn("Projection");
+			ImGui::NextColumn();
+			ImGui::Separator();
+
+			ImGui::Text("Projection");
+			ImGui::NextColumn();
 
 			ImGui::PushItemWidth(-1);
 			if (ImGui::BeginCombo("##Projection", currentProjectionTypeString))
@@ -639,7 +652,7 @@ namespace Aurora {
 				for (int type = 0; type < 2; type++)
 				{
 					bool isSelected = currentProjectionTypeString == projectionTypeString[type];
-					if (ImGui::Selectable(projectionTypeString[type], isSelected))
+					if (ImGui::Selectable(projectionTypeString[type], &isSelected))
 					{
 						currentProjectionTypeString = projectionTypeString[type];
 						camera.SetProjectionType((SceneCamera::ProjectionType)type);
@@ -653,14 +666,15 @@ namespace Aurora {
 			}
 			ImGui::PopItemWidth();
 
-			ImGui::Columns(1);
+			ImGui::NextColumn();
 			ImGui::Separator();
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				ImGui::Columns(2);
+				ImGui::Text("FOV");
+				if (ImGui::IsItemHovered())
+					ImGuiUtils::ToolTip("Filed Of View");
 
-				ImGui::Text("Vertical FOV");
 				ImGui::NextColumn();
 
 				ImGui::PushItemWidth(-1);
@@ -669,7 +683,11 @@ namespace Aurora {
 					camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
 				ImGui::PopItemWidth();
 
-				StartNextDoubleColumn("Near");
+				ImGui::NextColumn();
+				ImGui::Separator();
+
+				ImGui::Text("Near");
+				ImGui::NextColumn();
 
 				ImGui::PushItemWidth(-1);
 				float persNear = camera.GetPerspectiveNearClip();
@@ -677,7 +695,11 @@ namespace Aurora {
 					camera.SetPerspectiveNearClip(persNear);
 				ImGui::PopItemWidth();
 
-				StartNextDoubleColumn("Far");
+				ImGui::NextColumn();
+				ImGui::Separator();
+
+				ImGui::Text("Far");
+				ImGui::NextColumn();
 
 				ImGui::PushItemWidth(-1);
 				float persFar = camera.GetPerspectiveFarClip();
@@ -690,9 +712,10 @@ namespace Aurora {
 
 			else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 			{
-				ImGui::Columns(2);
-
 				ImGui::Text("Size");
+				if (ImGui::IsItemHovered())
+					ImGuiUtils::ToolTip("Controls the top, bottom, left and right\nboundaries of the camera.");
+
 				ImGui::NextColumn();
 
 				ImGui::PushItemWidth(-1);
@@ -701,7 +724,11 @@ namespace Aurora {
 					camera.SetOrthographicSize(orthoSize);
 				ImGui::PopItemWidth();
 
-				StartNextDoubleColumn("Near");
+				ImGui::NextColumn();
+				ImGui::Separator();
+
+				ImGui::Text("Near");
+				ImGui::NextColumn();
 
 				ImGui::PushItemWidth(-1);
 				float orthoNear = camera.GetOrthographicNearClip();
@@ -709,7 +736,11 @@ namespace Aurora {
 					camera.SetOrthographicNearClip(orthoNear);
 				ImGui::PopItemWidth();
 
-				StartNextDoubleColumn("Far");
+				ImGui::NextColumn();
+				ImGui::Separator();
+
+				ImGui::Text("Far");
+				ImGui::NextColumn();
 
 				ImGui::PushItemWidth(-1);
 				float orthoFar = camera.GetOrthographicFarClip();
@@ -745,7 +776,7 @@ namespace Aurora {
 			strcpy_s(buffer, sizeof(buffer), path.c_str());
 			ImGui::InputTextWithHint("##Filepath", "Filepath...", buffer, sizeof(buffer));
 		},
-		[](ModelComponent& component)
+		[](ModelComponent& component) // Reset Function
 		{
 			AR_DEBUG("WASSUP NOTHING TO RESET");
 		});
@@ -762,7 +793,7 @@ namespace Aurora {
 			ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color));
 			ImGui::PopItemWidth();
 		},
-		[](SpriteRendererComponent& component)
+		[](SpriteRendererComponent& component) // Reset Function
 		{
 			glm::vec4& color = component.Color;
 			color = glm::vec4(1.0f);
@@ -789,12 +820,14 @@ namespace Aurora {
 	{
 		ImGui::Begin("Renderer Vendor", &m_ShowRendererVendorInfo, ImGuiWindowFlags_AlwaysAutoResize);
 
+		// TODO: Change this so that the renderprops are retreived from the Rendere class which then calls renderProps::Get...()...
 		ImGui::Text("Vendor: %s", RendererProperties::GetRendererProperties()->Vendor);
 		ImGui::Text("Renderer: %s", RendererProperties::GetRendererProperties()->Renderer);
 		ImGui::Text("OpenGL Version: %s", RendererProperties::GetRendererProperties()->Version);
 		ImGui::Text("GLSL Version: %s", RendererProperties::GetRendererProperties()->GLSLVersion);
 		ImGui::Text("Texture Slots Available: %d", RendererProperties::GetRendererProperties()->MaxTextureSlots);
 		ImGui::Text("Max Samples: %d", RendererProperties::GetRendererProperties()->MaxSamples);
+		ImGui::Text("Max Anisotropy: %d", RendererProperties::GetRendererProperties()->MaxAnisotropy);
 
 		ImGui::End();
 	}
@@ -847,24 +880,11 @@ namespace Aurora {
 
 #pragma region PerformancePanel
 
-	static void ShowTimers()
+	void EditorLayer::ShowTimers()
 	{
-
-		const std::unordered_map<const char*, float>& mp = Application::GetApp().GetPerformanceProfiler()->GetPerFrameData();
-
-		std::vector<std::pair<const char*, float>> timerValues;
-		timerValues.reserve(mp.size());
-		for (auto& [name, val] : mp)
-			timerValues.emplace_back(name, val);
-
-		std::sort(timerValues.begin(), timerValues.end(), [](const std::pair<std::string, float>& a, const std::pair<std::string, float>& b) -> bool
+		for (const auto& [name, value] : m_SortedTimerValues)
 		{
-			return a.second > b.second;
-		});
-
-		for (auto& it : timerValues)
-		{
-			ImGui::Text("%.4f, %s", it.second, it.first);
+			ImGui::Text("%s, %.4f", name, value);
 		}
 	}
 
@@ -873,10 +893,12 @@ namespace Aurora {
 		ImGui::Begin("Performance", &m_ShowPerformance);
 
 		ImGui::Text("Framerate: %.f", ImGui::GetIO().Framerate);
+		ImGui::Text("Frame Time: %.3f ms", Application::GetApp().GetTimeStep().GetMilliSeconds());
+		ImGui::Text("CPU Frame: %.3f ms", Application::GetApp().GetCPUTime());
 		ImGui::Text("V Sync: %s", Application::GetApp().GetWindow().IsVSync() ? "On" : "Off");
 		ImGui::Text("Peak FPS: %.f", m_Peak);
-		ImGui::Text("CPU Frame: %.3f ms", Application::GetApp().GetCPUTime());
-		ImGui::Text("Last Frame Time: %.3f ms", Application::GetApp().GetLastFrameTime());
+
+		ImGui::ColorEdit3("Material Tint", glm::value_ptr(s_MaterialAlbedoColor));
 
 		if (ImGui::TreeNodeEx("CPU Timers (Milliseconds)", ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed))
 		{
@@ -924,15 +946,15 @@ namespace Aurora {
 		ImGuiLayer* layer = Application::GetApp().GetImGuiLayer();
 
 		std::vector<std::tuple<std::string, std::string, FontIdentifier>> sortedFontNames;
-		sortedFontNames.reserve(layer->m_Fonts.GetFontNamesAndIdentifier().size());
+		sortedFontNames.reserve(layer->m_FontsLibrary.GetFontNamesAndIdentifier().size());
 
 		const char* idenType;
 		std::string displayName;
 		if (ImGui::BeginCombo("##FontPicker", m_SelectedFontName.c_str()))
 		{
-			for (const auto& it : layer->m_Fonts.GetFontNamesAndIdentifier())
+			for (const auto&[pair, second] : layer->m_FontsLibrary.GetFontNamesAndIdentifier())
 			{
-				switch (it.first.second)
+				switch (pair.second)
 				{
 				    case FontIdentifier::Bold:       idenType = ", Bold"; break;
 				    case FontIdentifier::Italic:     idenType = ", Italic"; break;
@@ -941,21 +963,21 @@ namespace Aurora {
 				    case FontIdentifier::Light:      idenType = ", Light"; break;
 				}
 
-				displayName = it.first.first;
+				displayName = pair.first;
 				displayName.append(idenType);
-				sortedFontNames.emplace_back(displayName, it.first.first, it.first.second);
+				sortedFontNames.emplace_back(displayName, pair.first, pair.second);
 			}
 
 			std::sort(sortedFontNames.begin(), sortedFontNames.end());
 			for (const auto& [displayName, fontName, type] : sortedFontNames)
 			{
-				layer->m_Fonts.SetTemporaryFont(fontName, type);
+				layer->m_FontsLibrary.SetTemporaryFont(fontName, type);
 				if (ImGui::Selectable(displayName.c_str()))
 				{
-					layer->m_Fonts.SetDefaultFont(fontName, type);
+					layer->m_FontsLibrary.SetDefaultFont(fontName, type);
 					m_SelectedFontName = displayName;
 				}
-				layer->m_Fonts.PopTemporaryFont();
+				layer->m_FontsLibrary.PopTemporaryFont();
 			}
 
 			ImGui::EndCombo();

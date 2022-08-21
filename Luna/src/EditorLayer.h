@@ -11,8 +11,9 @@ namespace Aurora {
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnImGuiRender() override;
 		virtual void OnUpdate(Aurora::TimeStep ts) override;
+		virtual void OnTick() override;
+		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Aurora::Event& e) override;
 
 
@@ -44,8 +45,10 @@ namespace Aurora {
 
 	// Performance Panel
 	private:
+		void ShowTimers();
 		void ShowPerformanceUI();
 
+		std::vector<std::tuple<const char*, float>> m_SortedTimerValues;
 		bool m_ShowPerformance = true;
 		float m_Peak = 0;
 

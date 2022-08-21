@@ -156,6 +156,8 @@ namespace Aurora {
 
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
+		AR_PROFILE_FUNCTION();
+
 		const std::string& name = shader->GetName();
 		AR_CORE_ASSERT(!Exist(name), "Shader already exists!");
 		Add(name, shader);
@@ -173,6 +175,8 @@ namespace Aurora {
 
 	const Ref<Shader>& ShaderLibrary::Get(const std::string& name)
 	{
+		AR_PROFILE_FUNCTION();
+
 		AR_CORE_ASSERT(Exist(name), "Shader not found!");
 		return m_Shaders[name];
 	}
@@ -258,6 +262,8 @@ namespace Aurora {
 
 	void Shader::Load(const std::string& source, bool forceCompile)
 	{
+		AR_PROFILE_FUNCTION();
+
 		m_OpenGLShaderSource = SplitSource(source);
 
 		Utils::CreateCacheDirIfNeeded();
@@ -273,6 +279,8 @@ namespace Aurora {
 
 	void Shader::CompileOrGetVulkanBinary(const std::unordered_map<uint32_t, std::string>& shaderSources, bool forceCompile)
 	{
+		AR_PROFILE_FUNCTION();
+
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
 
 		m_VulkanSPIRV.clear();
@@ -309,6 +317,10 @@ namespace Aurora {
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
+#ifdef AURORA_DEBUG
+				options.SetOptimizationLevel(shaderc_optimization_level_zero);
+#endif
+
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, Utils::GLShaderTypeToShaderC(type), m_AssetPath.c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
@@ -331,6 +343,8 @@ namespace Aurora {
 
 	void Shader::CompileOrGetOpenGLBinary(bool forceCompile)
 	{
+		AR_PROFILE_FUNCTION();
+
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
 
 		m_OpenGLSPIRV.clear();
@@ -342,6 +356,13 @@ namespace Aurora {
 
 			// I am doing this step here so that i can get the ogl source code everytime and not only when the shaders are compiled
 			spirv_cross::CompilerGLSL glslCompiler(spirv);
+			auto& pushConstResources = glslCompiler.get_shader_resources().push_constant_buffers;
+			static short int locationIndex = 3; // TODO: Figure out a way to set the location for the push_constants automatically without fucking with the other locations in the shaader
+			for (int i = 0; i < pushConstResources.size(); i++)
+			{
+				glslCompiler.set_decoration(pushConstResources[i].id, spv::DecorationLocation, locationIndex++);
+			}
+
 			m_OpenGLShaderSource[type] = glslCompiler.compile();
 
 			FILE* f;
@@ -361,7 +382,7 @@ namespace Aurora {
 				shaderc::CompileOptions options;
 
 				options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-				options.SetAutoMapLocations(true);
+				//options.SetAutoMapLocations(true);
 #if AURORA_DIST
 				const bool optimize = true;
 #else
@@ -369,6 +390,10 @@ namespace Aurora {
 #endif
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+#ifdef AURORA_DEBUG
+				options.SetOptimizationLevel(shaderc_optimization_level_zero);
+#endif
 
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(m_OpenGLShaderSource[type], Utils::GLShaderTypeToShaderC(type), m_AssetPath.c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -392,6 +417,8 @@ namespace Aurora {
 
 	void Shader::CreateProgram()
 	{
+		AR_PROFILE_FUNCTION();
+
 		GLuint program = glCreateProgram();
 
 		std::vector<GLuint> shaderIDs;
@@ -436,14 +463,10 @@ namespace Aurora {
 		for (const auto& [type, data] : m_VulkanSPIRV)
 			Reflect(type, data);
 
-		AR_CORE_DEBUG_TAG("Shader", "{0}", m_OpenGLShaderSource[GL_VERTEX_SHADER]);
-		AR_CORE_DEBUG_TAG("Shader", "{0}", m_OpenGLShaderSource[GL_FRAGMENT_SHADER]);
-
-		// TODO: Fix bug here such that the uniform location are not being found eventhough they actually exist!
-		// TODO: Maybe a compiler related problem because of the auto map setting in the options that i set...
-		glUseProgram(m_ShaderID);
+		// If no push_constant blocks are found, this loop will not enter and thus no uniforms are there to query their location
 		for (auto& [bufferName, buffer] : m_Buffers)
 		{
+			glUseProgram(m_ShaderID);
 			for (auto& [name, uniform] : buffer.Uniforms)
 			{
 				GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
@@ -452,11 +475,14 @@ namespace Aurora {
 
 				m_UniformLocations[name] = location;
 			}
+			glUseProgram(0);
 		}
 	}
 
 	void Shader::Reflect(uint32_t/*GLenum*/type, const std::vector<uint32_t>& shaderData)
 	{
+		AR_PROFILE_FUNCTION();
+
 		spirv_cross::CompilerGLSL compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
@@ -499,7 +525,7 @@ namespace Aurora {
 			AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 		}
 
-
+		// TODO: REWRITE!!!!!!!!!!!!!!!!!!!!!!!
 		AR_CORE_TRACE_TAG("REFLECT", "Push Constant Buffers:");
 		// Currently this attribute offset var is useless since vulkan glsl supports only one push_constant.
 		// However if they ever remove that restriction this will be usefull to know the offset of each attribute in every push_constant block.
@@ -511,6 +537,10 @@ namespace Aurora {
 			uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType); // Size
 			uint32_t memberCount = (uint32_t)bufferType.member_types.size(); // Member count of the push_constant block
 			uint32_t location = compiler.get_decoration(res.id, spv::DecorationLocation);
+
+			// Since this is just a renderer special push_constant and will give us no valuable info, soo....
+			if (bufferName == "u_Renderer")
+				continue;
 
 			ShaderPushBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
@@ -554,7 +584,7 @@ namespace Aurora {
 		}
 		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 
-		// TODO: Storage images.... however i wont get to that until ambient occlusion, and if then i might not use them!!!
+		// TODO: Storage images.... however i wont get to that until ambient occlusion, and even then i might not use them!!!
 	}
 
 	std::unordered_map<uint32_t/*GLenum*/, std::string> Shader::SplitSource(const std::string& source)
@@ -606,7 +636,7 @@ namespace Aurora {
 		glUseProgram(0);
 	}
 
-	const ShaderResourceDeclaration* Shader::GetShaderResource(const std::string& name)
+	const ShaderResourceDeclaration* Shader::GetShaderResource(const std::string& name) const
 	{
 		if (m_Resources.find(name) == m_Resources.end())
 			return nullptr;
@@ -625,77 +655,77 @@ namespace Aurora {
 		return location;
 	}
 
-	void Shader::SetUniform(const std::string& fullname, float value)
+	void Shader::SetUniform(const std::string& fullname, float value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform1f(m_ShaderID, location, value);
 	}
 
-	void Shader::SetUniform(const std::string& fullname, int value)
+	void Shader::SetUniform(const std::string& fullname, int value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform1i(m_ShaderID, location, value);
 	}
 
-	void Shader::SetUniform(const std::string& fullname, uint32_t value)
+	void Shader::SetUniform(const std::string& fullname, uint32_t value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform1ui(m_ShaderID, location, value);
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::ivec2& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::ivec2& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform2i(m_ShaderID, location, value.x, value.y);
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::ivec3& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::ivec3& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform3i(m_ShaderID, location, value.x, value.y, value.z);
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::ivec4& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::ivec4& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform4i(m_ShaderID, location, value.x, value.y, value.z, value.w);
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::vec2& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::vec2& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform2fv(m_ShaderID, location, 1, glm::value_ptr(value));
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::vec3& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::vec3& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform3fv(m_ShaderID, location, 1, glm::value_ptr(value));
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::vec4& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::vec4& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniform4fv(m_ShaderID, location, 1, glm::value_ptr(value));
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::mat3& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::mat3& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
 		glProgramUniformMatrix3fv(m_ShaderID, location, 1, GL_FALSE, glm::value_ptr(value));
 	}
 
-	void Shader::SetUniform(const std::string& fullname, const glm::mat4& value)
+	void Shader::SetUniform(const std::string& fullname, const glm::mat4& value) const
 	{
 		AR_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 		GLint location = m_UniformLocations.at(fullname);
@@ -704,94 +734,94 @@ namespace Aurora {
 
 #pragma region Currently not in use!
 
-	void Shader::UploadUniformInt(uint32_t location, int32_t value)
+	void Shader::UploadUniformInt(uint32_t location, int32_t value) const
 	{
 		glProgramUniform1i(m_ShaderID, location, value);
 	}
 
-	void Shader::UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count)
+	void Shader::UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count) const
 	{
 		glProgramUniform1iv(m_ShaderID, location, count, values);
 	}
 
-	void Shader::UploadUniformFloat(uint32_t location, float value)
+	void Shader::UploadUniformFloat(uint32_t location, float value) const
 	{
 		glProgramUniform1f(m_ShaderID, location, value);
 	}
 
-	void Shader::UploadUniformFloat2(uint32_t location, const glm::vec2& value)
+	void Shader::UploadUniformFloat2(uint32_t location, const glm::vec2& value) const
 	{
 		glProgramUniform2f(m_ShaderID, location, value.x, value.y);
 	}
 
-	void Shader::UploadUniformFloat3(uint32_t location, const glm::vec3& value)
+	void Shader::UploadUniformFloat3(uint32_t location, const glm::vec3& value) const
 	{
 		glProgramUniform3f(m_ShaderID, location, value.x, value.y, value.z);
 	}
 
-	void Shader::UploadUniformFloat4(uint32_t location, const glm::vec4& value)
+	void Shader::UploadUniformFloat4(uint32_t location, const glm::vec4& value) const
 	{
 		glProgramUniform4f(m_ShaderID, location, value.x, value.y, value.z, value.w);
 	}
 
-	void Shader::UploadUniformMat3(uint32_t location, const glm::mat3& value)
+	void Shader::UploadUniformMat3(uint32_t location, const glm::mat3& value) const
 	{
 		glProgramUniformMatrix3fv(m_ShaderID, location, 1, GL_FALSE, glm::value_ptr(value));
 	}
 
-	void Shader::UploadUniformMat4(uint32_t location, const glm::mat4& value)
+	void Shader::UploadUniformMat4(uint32_t location, const glm::mat4& value) const
 	{
 		glProgramUniformMatrix4fv(m_ShaderID, location, 1, GL_FALSE, glm::value_ptr(value));
 	}
 
-	void Shader::UploadUniformMat4Array(uint32_t location, const glm::mat4& values, uint32_t count)
+	void Shader::UploadUniformMat4Array(uint32_t location, const glm::mat4& values, uint32_t count) const
 	{
 		glProgramUniformMatrix4fv(m_ShaderID, location, count, GL_FALSE, glm::value_ptr(values));
 	}
 
-	void Shader::UploadUniformInt(const std::string& name, int32_t value)
+	void Shader::UploadUniformInt(const std::string& name, int32_t value) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniform1i(m_ShaderID, location, value);
 	}
 
-	void Shader::UploadUniformUInt(const std::string& name, uint32_t value)
+	void Shader::UploadUniformUInt(const std::string& name, uint32_t value) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniform1ui(m_ShaderID, location, value);
 	}
 
-	void Shader::UploadUniformIntArray(const std::string& name, int32_t* values, uint32_t count)
+	void Shader::UploadUniformIntArray(const std::string& name, int32_t* values, uint32_t count) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniform1iv(m_ShaderID, location, count, values);
 	}
 
-	void Shader::UploadUniformFloat(const std::string& name, float value)
+	void Shader::UploadUniformFloat(const std::string& name, float value) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniform1f(m_ShaderID, location, value);
 	}
 
-	void Shader::UploadUniformFloat2(const std::string& name, const glm::vec2& value)
+	void Shader::UploadUniformFloat2(const std::string& name, const glm::vec2& value) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniform2f(m_ShaderID, location, value.x, value.y);
 	}
 
-	void Shader::UploadUniformFloat3(const std::string& name, const glm::vec3& value)
+	void Shader::UploadUniformFloat3(const std::string& name, const glm::vec3& value) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniform3f(m_ShaderID, location, value.x, value.y, value.z);
 	}
 
-	void Shader::UploadUniformFloat4(const std::string& name, const glm::vec4& value)
+	void Shader::UploadUniformFloat4(const std::string& name, const glm::vec4& value) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniform4f(m_ShaderID, location, value.x, value.y, value.z, value.w);
 	}
 
-	void Shader::UploadUniformMat4(const std::string& name, const glm::mat4& value)
+	void Shader::UploadUniformMat4(const std::string& name, const glm::mat4& value) const
 	{
 		int32_t location = GetUniformLocation(name);
 		glProgramUniformMatrix4fv(m_ShaderID, location, 1, GL_FALSE, glm::value_ptr(value));

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Buffer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 namespace Aurora {
 

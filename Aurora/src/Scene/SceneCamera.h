@@ -40,7 +40,7 @@ namespace Aurora {
 		void RecalculateProjection();
 
 	private:
-		ProjectionType m_ProjectionType = ProjectionType::Orthographic;
+		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 
 		float m_PerpectiveFOV = glm::radians(45.0f);
 		float m_PerpectiveNear = 0.01f, m_PerspectiveFar = 1000.0f;

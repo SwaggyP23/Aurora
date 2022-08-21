@@ -48,13 +48,14 @@ namespace Aurora { namespace Logger {
 		{
 			switch (level)
 			{
-			case Level::Trace: return "Trace";
-			case Level::Info:  return "Info";
-			case Level::Debug: return "Debug";
-			case Level::Warn:  return "Warn";
-			case Level::Error: return "Error";
-			case Level::Fatal: return "Fatal";
+			    case Level::Trace: return "Trace";
+			    case Level::Info:  return "Info";
+			    case Level::Debug: return "Debug";
+			    case Level::Warn:  return "Warn";
+			    case Level::Error: return "Error";
+			    case Level::Fatal: return "Fatal";
 			}
+
 			return "";
 		}
 		static Level LevelFromString(std::string_view string)

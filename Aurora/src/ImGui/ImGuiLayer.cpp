@@ -195,37 +195,31 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		// Loading default fonts
-		m_Fonts.LoadFont("OpenSans", "Resources/fonts/OpenSans");
-		m_Fonts.LoadFont("Teko", "Resources/fonts/Teko");
-		m_Fonts.LoadFont("BebasNeue", "Resources/fonts/BebasNeue");
-		m_Fonts.LoadFont("Edu NSW ACT", "Resources/fonts/Edu NSW ACT Foundation");
-		m_Fonts.LoadFont("MochiyPopOne", "Resources/fonts/MochiyPopOne");
-		m_Fonts.LoadFont("Chewy", "Resources/fonts/Chewy");
+		m_FontsLibrary.LoadFont("BebasNeue", "Resources/EditorInternal/Fonts/BebasNeue");
+		m_FontsLibrary.LoadFont("Chewy", "Resources/EditorInternal/Fonts/Chewy");
+		m_FontsLibrary.LoadFont("Edu NSW ACT", "Resources/EditorInternal/Fonts/Edu NSW ACT Foundation");
+		m_FontsLibrary.LoadFont("FredokaOne", "Resources/EditorInternal/Fonts/Fredoka_One");
+		m_FontsLibrary.LoadFont("MochiyPopOne", "Resources/EditorInternal/Fonts/MochiyPopOne");
+		m_FontsLibrary.LoadFont("OpenSans", "Resources/EditorInternal/Fonts/OpenSans");
 
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Bold);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Italic);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Regular);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Medium);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Light);
+		m_FontsLibrary.AddFont("BebasNeue", FontIdentifier::Regular, 22.0f);
 
-		m_Fonts.AddFont("Teko", FontIdentifier::Bold, 22.0f);
-		m_Fonts.AddFont("Teko", FontIdentifier::Regular, 25.0f);
-		m_Fonts.AddFont("Teko", FontIdentifier::Medium, 25.0f);
-		m_Fonts.AddFont("Teko", FontIdentifier::Light, 25.0f);
+		m_FontsLibrary.AddFont("Chewy", FontIdentifier::Regular, 20.0f);
 
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.5f);
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Regular, 19.5f);
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.5f);
+		m_FontsLibrary.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.5f);
+		m_FontsLibrary.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.5f);
 
-		m_Fonts.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
+		m_FontsLibrary.AddFont("FredokaOne", FontIdentifier::Regular, 16.5f);
 
-		m_Fonts.AddFont("Chewy", FontIdentifier::Regular, 20.0f);
+		m_FontsLibrary.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
 
-		m_Fonts.AddFont("BebasNeue", FontIdentifier::Regular, 22.0f);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Bold);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Italic);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Medium);
 
 		// More fonts are to be added
 
-		m_Fonts.SetDefaultFont("OpenSans", FontIdentifier::Medium, 30.0f);
+		m_FontsLibrary.SetDefaultFont("OpenSans", FontIdentifier::Medium);
 	}
 
 }

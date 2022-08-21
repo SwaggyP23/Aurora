@@ -48,7 +48,7 @@ namespace Aurora {
 	public:
 		FontsLibrary() = default;
 
-		void SetDefaultFont(const std::string& fontName, FontIdentifier type = FontIdentifier::Regular, float fontSize = 22.0f);
+		void SetDefaultFont(const std::string& fontName, FontIdentifier type = FontIdentifier::Regular);
 		void SetTemporaryFont(const std::string& fontName, FontIdentifier type);
 		void PopTemporaryFont();
 		void AddFont(const std::string& fontName, FontIdentifier type, float fontSize = 18.0f);

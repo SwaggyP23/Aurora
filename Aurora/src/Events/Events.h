@@ -18,6 +18,7 @@ namespace Aurora {
 	enum class EventType
 	{
 		None = 0,
+		AppTick, AppUpdate, AppRender,
 		WindowResize, WindowMinimize, WindowMaximize, WindowClose,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
@@ -35,7 +36,7 @@ namespace Aurora {
 
 	#define EVENT_CLASS_TYPE(type) static EventType getStaticType() { return EventType::type; }\
 								virtual EventType GetEventType() const override { return getStaticType(); }\
-								virtual const char* GetName() const override { return AR_STRINGIFY_MACRO(type); };
+								virtual const char* GetName() const override { return AR_STRINGIFY_MACRO(type); }
 
 	#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 

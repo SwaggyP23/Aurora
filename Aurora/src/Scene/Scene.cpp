@@ -13,6 +13,9 @@
 namespace Aurora {
 
 	static Ref<UniformBuffer> s_ModelUniBuffer;
+	static Ref<Shader> s_MatShader;
+	static Ref<Material> s_Mat;
+	static Ref<Texture2D> s_Texture;
 
 	Ref<Scene> Scene::Create(const std::string& debugName)
 	{
@@ -22,6 +25,11 @@ namespace Aurora {
 	Scene::Scene(const std::string& debugName)
 		: m_Name(debugName)
 	{
+		s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
+		s_Mat = Material::Create("Test Mat", s_MatShader);
+		s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png");
+		s_Texture->LoadTextureData();
+
 		m_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
 		s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
 		m_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
@@ -82,11 +90,17 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera)
+	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera, glm::vec3 puh) // TODO: TEMPORARY!!!!!!!!!
 	{
 		Renderer3D::BeginScene(camera);
 
-		Renderer3D::DrawSkyBox(m_EnvironmentMap);
+		Renderer3D::DrawSkyBox(m_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
+
+		glm::mat4 transform(1.0f);
+		glm::scale(transform, { 10.0f, 10.0f, 10.0f });
+		s_Mat->Set("u_AlbedoTexture", s_Texture);
+		s_Mat->Set("u_Uniforms.AlbedoColor", puh);
+		Renderer3D::DrawMaterial(transform, s_Mat); // TODO: TEMPORARY!!!!!!!!!
 
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)

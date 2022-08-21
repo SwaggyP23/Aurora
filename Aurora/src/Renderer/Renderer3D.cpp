@@ -12,9 +12,11 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include <ImGui/imgui.h>
+
 namespace Aurora {
 
-	Ref<Texture> Renderer3D::m_ContainerTexture;
+	Ref<Texture2D> Renderer3D::m_ContainerTexture; // TODO: Fuck is this xD?????
 
 	struct QuadVertex
 	{
@@ -45,18 +47,19 @@ namespace Aurora {
 		Ref<VertexArray> SkyBoxVertexArray;
 		Ref<VertexBuffer> SkyBoxVertexBuffer;
 		Ref<Shader> SkyBoxShader;
+		Ref<Shader> MatShader;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<Shader> QuadShader;
-		Ref<Texture> WhiteTex;
+		Ref<Texture2D> WhiteTex;
 
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr; // This is to keep track of the base of memory allocations
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 
 		// Here the identifier will become an asset handle if i ever implement it
-		std::array<Ref<Texture>, MaxTextureSlots> TextureSlots;
+		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 is the white texture
 
 		glm::vec4 QuadVertexPositions[24];
@@ -170,41 +173,42 @@ namespace Aurora {
 		}
 
 		float skyboxQuad[] = {
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,			
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,			
-			-1.0f, -1.0f, -1.0f,
-
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,			 
-			 1.0f, -1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,			
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,			
-			-1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,      1.0f, 0.0f,
+			 1.0f,  1.0f, -1.0f,      0.0f, 0.0f,
+			 1.0f, -1.0f, -1.0f,      0.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f,      1.0f, 1.0f,
+								      
+			-1.0f,  1.0f,  1.0f,      0.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f,      1.0f, 0.0f,
+			 1.0f, -1.0f,  1.0f,      1.0f, 1.0f,
+			-1.0f, -1.0f,  1.0f,      0.0f, 1.0f,
+								      
+			-1.0f,  1.0f, -1.0f,      0.0f, 0.0f,
+			-1.0f,  1.0f,  1.0f,      1.0f, 0.0f,
+			-1.0f, -1.0f,  1.0f,      1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f,      0.0f, 1.0f,
+								      
+			 1.0f,  1.0f, -1.0f,      1.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f,      0.0f, 0.0f,
+			 1.0f, -1.0f,  1.0f,      0.0f, 1.0f,
+			 1.0f, -1.0f, -1.0f,      1.0f, 1.0f,
+								      
+			-1.0f, -1.0f,  1.0f,      0.0f, 1.0f,
+			 1.0f, -1.0f,  1.0f,      1.0f, 1.0f,
+			 1.0f, -1.0f, -1.0f,      1.0f, 0.0f,
+			-1.0f, -1.0f, -1.0f,      0.0f, 0.0f,
+								      
+			-1.0f,  1.0f,  1.0f,      0.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f,      1.0f, 0.0f,
+			 1.0f,  1.0f, -1.0f,      1.0f, 1.0f,
+			-1.0f,  1.0f, -1.0f,      0.0f, 1.0f
 		};
 
 		s_Data->SkyBoxVertexArray = VertexArray::Create();
 		s_Data->SkyBoxVertexBuffer = VertexBuffer::Create(skyboxQuad, sizeof(skyboxQuad), VertexBufferDrawHint::Static);
 		s_Data->SkyBoxVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" }
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float2, "a_TexCoords"}
 		});
 		s_Data->SkyBoxVertexArray->AddVertexBuffer(s_Data->SkyBoxVertexBuffer);
 
@@ -229,7 +233,7 @@ namespace Aurora {
 		s_Data->SkyBoxVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
-		s_Data->WhiteTex = Texture::Create(1, 1);
+		s_Data->WhiteTex = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data->WhiteTex->SetData(&whiteTextureData, sizeof(uint32_t));
 
@@ -243,18 +247,18 @@ namespace Aurora {
 
 		s_Data->TextureSlots[0] = s_Data->WhiteTex; // index 0 is for the white texture.
 
-		s_Data->textureCoords[0] = { 1.0f, 0.0f };
-		s_Data->textureCoords[1] = { 0.0f, 0.0f };
-		s_Data->textureCoords[2] = { 0.0f, 1.0f };
-		s_Data->textureCoords[3] = { 1.0f, 1.0f };
-
-		s_Data->textureCoords[4] = { 0.0f, 0.0f };
-		s_Data->textureCoords[5] = { 1.0f, 0.0f };
-		s_Data->textureCoords[6] = { 1.0f, 1.0f };
-		s_Data->textureCoords[7] = { 0.0f, 1.0f };
-
-		s_Data->textureCoords[8] = { 0.0f, 0.0f };
-		s_Data->textureCoords[9] = { 1.0f, 0.0f };
+		s_Data->textureCoords[0] =  { 1.0f, 0.0f };
+		s_Data->textureCoords[1] =  { 0.0f, 0.0f };
+		s_Data->textureCoords[2] =  { 0.0f, 1.0f };
+		s_Data->textureCoords[3] =  { 1.0f, 1.0f };
+								    
+		s_Data->textureCoords[4] =  { 0.0f, 0.0f };
+		s_Data->textureCoords[5] =  { 1.0f, 0.0f };
+		s_Data->textureCoords[6] =  { 1.0f, 1.0f };
+		s_Data->textureCoords[7] =  { 0.0f, 1.0f };
+								    
+		s_Data->textureCoords[8] =  { 0.0f, 0.0f };
+		s_Data->textureCoords[9] =  { 1.0f, 0.0f };
 		s_Data->textureCoords[10] = { 1.0f, 1.0f };
 		s_Data->textureCoords[11] = { 0.0f, 1.0f };
 
@@ -405,6 +409,15 @@ namespace Aurora {
 		RenderCommand::SetRenderFlag(flag);
 	}
 
+	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat) // TODO: TEMPORARY!!!!!!!!
+	{
+		//mat->Set("u_Renderer.transform", transform);
+		mat->SetUpForRendering();
+		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
+		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);
+		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
+	}
+
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
@@ -439,7 +452,7 @@ namespace Aurora {
 		s_Data->Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor, int entityID)
+	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintcolor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawQuad");
@@ -530,7 +543,7 @@ namespace Aurora {
 		s_Data->Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor, int entityID)
+	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintColor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");

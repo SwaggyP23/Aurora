@@ -5,7 +5,7 @@
 
 namespace Aurora {
 
-	void FontsLibrary::SetDefaultFont(const std::string& fontName, FontIdentifier type, float fontSize)
+	void FontsLibrary::SetDefaultFont(const std::string& fontName, FontIdentifier type)
 	{
 		AR_PROFILE_FUNCTION();
 

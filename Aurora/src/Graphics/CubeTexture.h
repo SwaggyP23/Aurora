@@ -1,26 +1,27 @@
 #pragma once
 
 #include "Core/Base.h"
+#include "Texture.h"
 
 #include <filesystem>
 
 namespace Aurora {
 
-	class CubeTexture : public RefCountedObject
+	class CubeTexture : public Texture
 	{
 	public:
 		CubeTexture() = default;
 		CubeTexture(const std::string& directory); // This constructor is uses the filesystem api to get all the entries
 		CubeTexture(const std::vector<std::string>& filepaths);
-		~CubeTexture();
+		virtual ~CubeTexture();
 
 		static Ref<CubeTexture> Create(const std::string& filepath);
 		static Ref<CubeTexture> Create(const std::vector<std::string>& filepaths);
 
-		void Bind(uint32_t slot = 0) const;
-		void UnBind(uint32_t slot = 0) const;
+		virtual void Bind(uint32_t slot = 0) const override;
+		virtual void UnBind(uint32_t slot = 0) const override;
 
-		inline uint32_t GetTextureID() const { return m_TextureID; }
+		inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
 
 	private:
 		void LoadFromDirectory();

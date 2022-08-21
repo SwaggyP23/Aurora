@@ -68,6 +68,7 @@ namespace Aurora {
 
 	};
 
+	// TODO: Rewoork...!
 	struct CameraComponent
 	{
 		SceneCamera Camera;
@@ -78,7 +79,7 @@ namespace Aurora {
 
 	};
 
-	// Forward declaring the class because so we dont include it
+	// Forward declaring the class so we dont include it
 	class ScriptableEntity;
 
 	// This is a NATIVE script component in the sense that this will be a C++ script, C# scripts are another type but too early for that
@@ -94,8 +95,7 @@ namespace Aurora {
 		void Bind()
 		{
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
-			DestroyScript = [](NativeScriptComponent* nativeScriptComp) { delete nativeScriptComp->Instance; };
-			// Could also set instance to nullptr after deleting however not so necessary other than in Debug...
+			DestroyScript = [](NativeScriptComponent* nativeScriptComp) { delete nativeScriptComp->Instance; nativeScriptComp->Instance = nullptr; };
 		}
 	};
 

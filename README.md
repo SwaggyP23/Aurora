@@ -4,9 +4,9 @@
     <img alt='Aurora' src=Resources/Icons/Auroraicon1.png>
 </p>
 
-- Aurora Engine is a very primitive 3D engine based on [Hazel 2D Engine](https://github.com/TheCherno/Hazel). 
+- Aurora Engine is a very primitive 3D engine that was first based on [Hazel 2D Engine](https://github.com/TheCherno/Hazel). 
 
-- First was based on the book called [LearnOpenGL - Graphics Programming](https://learnopengl.com/) made by Joey de Vries.
+- Alot of inspiration taken from the book called [LearnOpenGL - Graphics Programming](https://learnopengl.com/) by Joey de Vries.
 
 ***
 

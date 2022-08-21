@@ -1,5 +1,5 @@
 #include <Aurora.h>
-#include <Core/EntryPoint.h>
+#include <EntryPoint.h>
 
 #include "EditorLayer.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logging/Log.h"
+#include "Base.h"
 #include "Random.h"
 
 namespace Aurora {

@@ -1,6 +1,7 @@
 #pragma vertex
 #version 450 core
 layout (location = 0) in vec3 a_Position;
+layout (location = 1) in vec2 a_TexCoords;
 
 layout(location = 0) out vec3 v_TexCoords;
 
@@ -30,13 +31,12 @@ layout(push_constant) uniform Mats
 {
     float a;
     float b;
-    vec2 c;
+    vec3 c;
     mat4 d;
 } u_MatsUniforms;
 
 void main()
 {    
     o_Color = texture(skybox, v_TexCoords);
-//    o_Color = vec4(0.8f, 0.2f, 0.3f, 1.0f);
     o_EntityID = -1;
 }

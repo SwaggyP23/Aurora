@@ -68,17 +68,17 @@ namespace Aurora {
 		return 0;
 	}
 
-	Ref<Texture> Texture::Create(uint32_t width, uint32_t height)
+	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 	{
-		return CreateRef<Texture>(width, height);
+		return CreateRef<Texture2D>(width, height);
 	}
 
-	Ref<Texture> Texture::Create(const std::string& filePath)
+	Ref<Texture2D> Texture2D::Create(const std::string& filePath)
 	{
-		return CreateRef<Texture>(filePath);
+		return CreateRef<Texture2D>(filePath);
 	}
 
-	Texture::Texture(uint32_t width, uint32_t height)
+	Texture2D::Texture2D(uint32_t width, uint32_t height)
 		: m_Width(width), m_Height(height)
 	{
 		AR_PROFILE_FUNCTION();
@@ -94,7 +94,7 @@ namespace Aurora {
 		SetTextureFiltering(TextureFilter::MipMap_LinearLinear, TextureFilter::Linear);
 	}
 
-	Texture::Texture(const std::string& filePath)
+	Texture2D::Texture2D(const std::string& filePath)
 		: m_Path(filePath), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0)
 	{
 		AR_PROFILE_FUNCTION();
@@ -102,7 +102,7 @@ namespace Aurora {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 	}
 
-	void Texture::SetData(const void* data, uint32_t size)
+	void Texture2D::SetData(const void* data, uint32_t size)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -113,14 +113,14 @@ namespace Aurora {
 		glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 
-	Texture::~Texture()
+	Texture2D::~Texture2D()
 	{
 		AR_PROFILE_FUNCTION();
 
 		glDeleteTextures(1, &m_TextureID);
 	}
 
-	void Texture::SetTextureWrapping(TextureWrap wrapMode) const
+	void Texture2D::SetTextureWrapping(TextureWrap wrapMode) const
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -128,7 +128,7 @@ namespace Aurora {
 		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GLWrapTypeFromTextureWrap(wrapMode));
 	}
 
-	void Texture::SetTextureFiltering(TextureFilter minFilter, TextureFilter magFilter) const
+	void Texture2D::SetTextureFiltering(TextureFilter minFilter, TextureFilter magFilter) const
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -136,12 +136,12 @@ namespace Aurora {
 		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, GLFilterTypeFromTextureFilter(magFilter));
 	}
 
-	void Texture::FlipTextureVertically(bool state)
+	void Texture2D::FlipTextureVertically(bool state)
 	{
 		Utils::ImageLoader::SetFlipVertically(state);
 	}
 
-	void Texture::LoadTextureData()
+	void Texture2D::LoadTextureData()
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -178,14 +178,14 @@ namespace Aurora {
 		Utils::ImageLoader::FreeImage();
 	}
 
-	void Texture::Bind(uint32_t slot) const
+	void Texture2D::Bind(uint32_t slot) const
 	{
 		AR_PROFILE_FUNCTION();
 
 		glBindTextureUnit(slot, m_TextureID);
 	}
 
-	void Texture::UnBind(uint32_t slot) const
+	void Texture2D::UnBind(uint32_t slot) const
 	{
 		AR_PROFILE_FUNCTION();
 

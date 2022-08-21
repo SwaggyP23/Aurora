@@ -9,6 +9,7 @@
 #include "Graphics/Texture.h"
 #include "Graphics/CubeTexture.h"
 #include "Graphics/Shader.h"
+#include "Graphics/Material.h"
 
 /*
  * The way this batching works is that it batches all the elements in one VertexBuffer and submits it every frame. If the amount 
@@ -35,13 +36,14 @@ namespace Aurora {
 		static void Flush();
 
 		static void DrawSkyBox(const Ref<CubeTexture>& skybox);
+		static void DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat);
 
 		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light = 0, int entityID = -1);
-		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f), int entityID = -1);
+		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling = 1.0f, const glm::vec4& tintcolor = glm::vec4(1.0f), int entityID = -1);
 
 		// Rotated Quad function are given the rotation in radians directly since that is what is stored in the TransformComponent
 		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light = 0, int entityID = -1);
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f), int entityID = -1);
+		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f), int entityID = -1);
 
 		struct Statistics
 		{
@@ -60,7 +62,7 @@ namespace Aurora {
 		static void StartBatch();
 		static void NextBatch();
 
-		static Ref<Texture> m_ContainerTexture;
+		static Ref<Texture2D> m_ContainerTexture;
 
 	};
 

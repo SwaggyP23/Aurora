@@ -14,12 +14,26 @@
  * The std::vector<uint32_t>s used are basically the byte buffers for the binaries, however spriv and shaderc dont use single 
  * uint8_t bytes rather they use "Words" of 4 bytes each.
  * Currently i will not be using push_constants, rather i will be heavily using uniform buffers which is what i was adviced to
- * do by implodee(chat link is found in my public server [SwaggyP's Server]), so yea use UBOs for all the info.
+ * do by @implodee(chat link is found in my public server [SwaggyP's Server]), so yea use UBOs for all the info.
  * 
- * TODO: There is a bug in finding the uniform location in the end of the CreateProgram function such that the thing is not
- * finding the locations and setting the map values to -1 eventhough the uniforms do actually exist for sure since the
- * compiler generated OpenGL source code could be printed for debugging and it is actually stored in the shader class for
- * debugging purposes.
+ * NOTE: If you in your shader create a push_constant block and for some reason one of its members is not used throughout the
+ * shader, or if it is used but then overridin by something else, for exaple:
+ * layout(push_constant) uniform Mats
+ * {
+ *		float a;
+ *		float b;
+ * };
+ * 
+ * ... 
+ * 
+ * o_Color = vec4(a);
+ * o_Color = vec4(b);
+ * 
+ * then the member "a" of the push_constant block will not be converted into an opengl uniform and it wont be found when calling
+ * glGetUniformLocation(shaderID, name);
+ * Therefore be careful of what members you are putting in the push_constant blocks and if you are using them or not!
+ * 
+ * TODO: Add Dynamic Shader Reloading!
  */
 
 namespace Aurora {
@@ -35,9 +49,9 @@ namespace Aurora {
 		Bool,
 		Int, UInt,
 		Float,
+		IVec2, IVec3, IVec4,
 		Vec2, Vec3, Vec4,
-		Mat3, Mat4,
-		IVec2, IVec3, IVec4
+		Mat3, Mat4
 	};
 
 	// A representation of a uniform
@@ -89,21 +103,21 @@ namespace Aurora {
 
 		// Setting uniforms...
 
-		void SetUniform(const std::string& fullname, float value);
-		void SetUniform(const std::string& fullname, int value);
-		void SetUniform(const std::string& fullname, uint32_t value);
-		void SetUniform(const std::string& fullname, const glm::ivec2& value);
-		void SetUniform(const std::string& fullname, const glm::ivec3& value);
-		void SetUniform(const std::string& fullname, const glm::ivec4& value);
-		void SetUniform(const std::string& fullname, const glm::vec2& value);
-		void SetUniform(const std::string& fullname, const glm::vec3& value);
-		void SetUniform(const std::string& fullname, const glm::vec4& value);
-		void SetUniform(const std::string& fullname, const glm::mat3& value);
-		void SetUniform(const std::string& fullname, const glm::mat4& value);
+		void SetUniform(const std::string& fullname, float value) const;
+		void SetUniform(const std::string& fullname, int value) const;
+		void SetUniform(const std::string& fullname, uint32_t value) const;
+		void SetUniform(const std::string& fullname, const glm::ivec2& value) const;
+		void SetUniform(const std::string& fullname, const glm::ivec3& value) const;
+		void SetUniform(const std::string& fullname, const glm::ivec4& value) const;
+		void SetUniform(const std::string& fullname, const glm::vec2& value) const;
+		void SetUniform(const std::string& fullname, const glm::vec3& value) const;
+		void SetUniform(const std::string& fullname, const glm::vec4& value) const;
+		void SetUniform(const std::string& fullname, const glm::mat3& value) const;
+		void SetUniform(const std::string& fullname, const glm::mat4& value) const;
 
 		inline const std::string& GetName() const { return m_Name; }
 		inline const std::string& GetFilePath() const { return m_AssetPath; }
-		const ShaderResourceDeclaration* GetShaderResource(const std::string& name);
+		const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
 		
 		const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
 		const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
@@ -122,23 +136,23 @@ namespace Aurora {
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
 
 		// Currently not used...
-		void UploadUniformInt(uint32_t location, int32_t value);
-		void UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count);
-		void UploadUniformFloat(uint32_t location, float value);
-		void UploadUniformFloat2(uint32_t location, const glm::vec2& value);
-		void UploadUniformFloat3(uint32_t location, const glm::vec3& value);
-		void UploadUniformFloat4(uint32_t location, const glm::vec4& value);
-		void UploadUniformMat3(uint32_t location, const glm::mat3& value);
-		void UploadUniformMat4(uint32_t location, const glm::mat4& value);
-		void UploadUniformMat4Array(uint32_t location, const glm::mat4& values, uint32_t count);
-		void UploadUniformInt(const std::string& name, int32_t value);
-		void UploadUniformUInt(const std::string& name, uint32_t value);
-		void UploadUniformIntArray(const std::string& name, int32_t* values, uint32_t count);
-		void UploadUniformFloat(const std::string& name, float value);
-		void UploadUniformFloat2(const std::string& name, const glm::vec2& value);
-		void UploadUniformFloat3(const std::string& name, const glm::vec3& value);
-		void UploadUniformFloat4(const std::string& name, const glm::vec4& value);
-		void UploadUniformMat4(const std::string& name, const glm::mat4& value);
+		void UploadUniformInt(uint32_t location, int32_t value) const;
+		void UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count) const;
+		void UploadUniformFloat(uint32_t location, float value) const;
+		void UploadUniformFloat2(uint32_t location, const glm::vec2& value) const;
+		void UploadUniformFloat3(uint32_t location, const glm::vec3& value) const;
+		void UploadUniformFloat4(uint32_t location, const glm::vec4& value) const;
+		void UploadUniformMat3(uint32_t location, const glm::mat3& value) const;
+		void UploadUniformMat4(uint32_t location, const glm::mat4& value) const;
+		void UploadUniformMat4Array(uint32_t location, const glm::mat4& values, uint32_t count) const;
+		void UploadUniformInt(const std::string& name, int32_t value) const;
+		void UploadUniformUInt(const std::string& name, uint32_t value) const;
+		void UploadUniformIntArray(const std::string& name, int32_t* values, uint32_t count) const;
+		void UploadUniformFloat(const std::string& name, float value) const;
+		void UploadUniformFloat2(const std::string& name, const glm::vec2& value) const;
+		void UploadUniformFloat3(const std::string& name, const glm::vec3& value) const;
+		void UploadUniformFloat4(const std::string& name, const glm::vec4& value) const;
+		void UploadUniformMat4(const std::string& name, const glm::mat4& value) const;
 
 		int GetUniformLocation(const std::string& name) const;
 

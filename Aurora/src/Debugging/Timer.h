@@ -95,5 +95,5 @@ namespace Aurora {
 
 }
 
-#define AR_SCOPE_PERF(name)      Aurora::PerFrameTimer timer__LINE__(name, Aurora::Application::GetApp().GetPerformanceProfiler())
-#define AR_SCOPED_TIMER(name)    Aurora::ScopedTimer timer__LINE__(name)
+#define AR_SCOPE_PERF(name)      Aurora::PerFrameTimer AR_CONCAT_MACRO(timer, __LINE__)(name, Aurora::Application::GetApp().GetPerformanceProfiler())
+#define AR_SCOPED_TIMER(name)    Aurora::ScopedTimer AR_CONCAT_MACRO(timer, __LINE__)(name)

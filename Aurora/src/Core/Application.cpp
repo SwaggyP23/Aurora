@@ -105,9 +105,9 @@ namespace Aurora {
 		for (Layer* layer : m_LayerStack)
 			layer->OnImGuiRender();
 
-		m_Profiler->Clear();
-
 		m_ImGuiLayer->End();
+
+		m_Profiler->Clear();
 	}
 
 	void Application::Run()
@@ -115,6 +115,9 @@ namespace Aurora {
 		AR_PROFILE_BEGIN_SESSION("ApplicationRuntime", "Profiling");
 
 		OnInit();
+
+		long double timer = 0.0f;
+		Timer TickTimer;
 		while (m_Running) // Render Loop.
 		{
 			AR_PROFILE_FRAME("Game Loop");
@@ -126,6 +129,8 @@ namespace Aurora {
 			if (!m_Minimized)
 			{
 				Timer cpuTimer;
+
+				// Updating the layers
 				{
 					AR_PROFILE_SCOPE("Application Layer::OnUpdate");
 					AR_SCOPE_PERF("Application Layer::OnUpdate");
@@ -134,14 +139,28 @@ namespace Aurora {
 						layer->OnUpdate(m_Timestep);
 				}
 
-				RenderImGui(); // All the Perf timers dont work after this // TODO: Fix!
+				// Ticking the layers per second
+				{
+					AR_PROFILE_SCOPE("Application Layer::OnTick");
+					AR_SCOPE_PERF("Application Layer::OnTick");
+
+					if (TickTimer.Elapsed() - timer > 1.0f)
+					{
+						timer += 1.0f;
+
+						for (Layer* layer : m_LayerStack)
+							layer->OnTick();
+					}
+				}
+
+				RenderImGui();
 
 				m_CPUTime = cpuTimer.ElapsedMillis();
 				m_Window->Update();
 			}
 
 			float time = Utils::Time::GetTime();
-			m_FrameTime = time - (float)m_LastFrameTime;
+			m_FrameTime = time - m_LastFrameTime;
 			m_Timestep = glm::min<float>(m_FrameTime, 0.0333f);
 			m_LastFrameTime = time;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Initializers.h"
+#include "Core/Initializers.h"
 
 #ifdef AURORA_PLATFORM_WINDOWS
 
@@ -26,20 +26,20 @@ namespace Aurora {
 
 }
 
-#ifdef AURORA_DIST
+    #ifdef AURORA_DIST
 
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
-{
-	return Aurora::Main(__argc, __argv);
-}
+        int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+        {
+        	return Aurora::Main(__argc, __argv);
+        }
 
-#else
+    #else
 
-int main(int argc, char** argv)
-{
-	return Aurora::Main(argc, argv);
-}
+        int main(int argc, char** argv)
+        {
+        	return Aurora::Main(argc, argv);
+        }
 
-#endif
+    #endif
 
 #endif

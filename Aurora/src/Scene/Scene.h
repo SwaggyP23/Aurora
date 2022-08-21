@@ -27,7 +27,7 @@ namespace Aurora {
 		void Clear();
 		inline size_t Size() const { return m_Registry.size(); }
 
-		void OnUpdateEditor(TimeStep ts, EditorCamera& camera);
+		void OnUpdateEditor(TimeStep ts, EditorCamera& camera, glm::vec3 puh); // TODO: TEMPORARY!!!!!!!!!
 		void OnUpdateRuntime(TimeStep ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
