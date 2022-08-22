@@ -70,6 +70,7 @@ namespace Aurora {
 		inline float GetCPUTime() const { return m_CPUTime; }
 		inline float GetFrameTime() const { return m_FrameTime; }
 		inline TimeStep GetTimeStep() const { return m_Timestep; }
+		inline void SetTickDeltaTime(float delta) { m_TickDelta = delta; }
 
 		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 
@@ -96,6 +97,7 @@ namespace Aurora {
 		float m_FrameTime = 0.0f;
 		float m_LastFrameTime = 0.0f;
 		float m_CPUTime = 0.0f;
+		float m_TickDelta = 1.0f;
 		TimeStep m_Timestep;
 		PerformanceProfiler* m_Profiler = nullptr; // TODO: Should be null in Dist
 

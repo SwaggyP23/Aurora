@@ -272,11 +272,11 @@ namespace Aurora {
 
 	void EditorLayer::DrawEntityNode(Entity entity)
 	{
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		const std::string& tag = entity.GetComponent<TagComponent>().Tag;
 
 		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 1.0f, 1.0f, 0.529f, 0.235f });
-		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
+		flags |= ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 		ImGui::PopStyleColor();
 
@@ -297,8 +297,8 @@ namespace Aurora {
 		if (opened)
 		{ // This is temporary...
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)1038597, flags, tag.c_str());
-			if (opened)
+			bool opened2 = ImGui::TreeNodeEx((void*)1038597, flags, tag.c_str());
+			if (opened2)
 				ImGui::TreePop();
 			ImGui::TreePop();
 		}
@@ -594,9 +594,9 @@ namespace Aurora {
 		ImGui::PushItemWidth(-1);
 
 		if (ImGui::Button("Add Component"))
-			ImGui::OpenPopup("AddComponent"); // Add component here acts as an ID for imgui to be used in the next step
+			ImGui::OpenPopup("AddComponentsPanel"); // Add component here acts as an ID for imgui to be used in the next step
 
-		if (ImGui::BeginPopup("AddComponent"))
+		if (ImGui::BeginPopup("AddComponentsPanel"))
 		{
 			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
@@ -821,18 +821,16 @@ namespace Aurora {
 		ImGui::Begin("Renderer Vendor", &m_ShowRendererVendorInfo, ImGuiWindowFlags_AlwaysAutoResize);
 
 		// TODO: Change this so that the renderprops are retreived from the Rendere class which then calls renderProps::Get...()...
-		ImGui::Text("Vendor: %s", RendererProperties::GetRendererProperties()->Vendor);
-		ImGui::Text("Renderer: %s", RendererProperties::GetRendererProperties()->Renderer);
-		ImGui::Text("OpenGL Version: %s", RendererProperties::GetRendererProperties()->Version);
-		ImGui::Text("GLSL Version: %s", RendererProperties::GetRendererProperties()->GLSLVersion);
+		ImGui::Text("Vendor: %s", RendererProperties::GetRendererProperties()->Vendor.c_str());
+		ImGui::Text("Renderer: %s", RendererProperties::GetRendererProperties()->Renderer.c_str());
+		ImGui::Text("OpenGL Version: %s", RendererProperties::GetRendererProperties()->Version.c_str());
+		ImGui::Text("GLSL Version: %s", RendererProperties::GetRendererProperties()->GLSLVersion.c_str());
 		ImGui::Text("Texture Slots Available: %d", RendererProperties::GetRendererProperties()->MaxTextureSlots);
 		ImGui::Text("Max Samples: %d", RendererProperties::GetRendererProperties()->MaxSamples);
-		ImGui::Text("Max Anisotropy: %d", RendererProperties::GetRendererProperties()->MaxAnisotropy);
+		ImGui::Text("Max Anisotropy: %.f", RendererProperties::GetRendererProperties()->MaxAnisotropy);
 
 		ImGui::End();
 	}
-
-	static bool s_VSyncState = true;
 
 	void EditorLayer::ShowRendererStatsUI()
 	{
@@ -854,6 +852,7 @@ namespace Aurora {
 
 		static bool wireFrame = false;
 		static bool vertices = false;
+		static bool VSyncState = true;
 		if (ImGui::Checkbox("WireFrame", &wireFrame))
 		{
 			RenderCommand::SetRenderFlag(RenderFlags::WireFrame);
@@ -868,9 +867,33 @@ namespace Aurora {
 		if (!wireFrame && !vertices)
 			RenderCommand::SetRenderFlag(RenderFlags::Fill);
 
-		if (ImGui::Checkbox("V-Sync", &s_VSyncState))
+		if (ImGui::Checkbox("V-Sync", &VSyncState))
 		{
-			Application::GetApp().GetWindow().SetVSync(s_VSyncState);
+			Application::GetApp().GetWindow().SetVSync(VSyncState);
+		}
+
+		ImGui::End();
+	}
+
+	void EditorLayer::ShowShadersPanel()
+	{
+		ImGui::Begin("Shaders", &m_ShowShadersPanel);
+
+		for (Ref<Shader> shader : Shader::s_AllShaders)
+		{
+			const std::string& shaderName = shader->GetName();
+
+			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
+			if(ImGui::TreeNodeEx(shaderName.c_str(), flags))
+			{
+				ImGui::Text("Path: %s", shader->GetFilePath().c_str());
+				if (ImGui::Button("Reload"))
+					shader->Reload(true);
+
+				ImGui::TreePop();
+			}
+
+			ImGui::Separator();
 		}
 
 		ImGui::End();
@@ -900,7 +923,13 @@ namespace Aurora {
 
 		ImGui::ColorEdit3("Material Tint", glm::value_ptr(s_MaterialAlbedoColor));
 
-		if (ImGui::TreeNodeEx("CPU Timers (Milliseconds)", ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed))
+		// TODO: TEMPORARY!!!!!!!!!!
+		static float TickDelta = 1.0f;
+		if (ImGui::SliderFloat("aoiuh", &TickDelta, 0.0f, 3.0f))
+			Application::GetApp().SetTickDeltaTime(TickDelta);
+
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
+		if (ImGui::TreeNodeEx("CPU Timers (Milliseconds)", flags))
 		{
 			ShowTimers();
 
@@ -1083,49 +1112,59 @@ namespace Aurora {
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("View"))
+			{
+				if (ImGui::MenuItem("Shaders...", NULL, m_ShowShadersPanel))
+					m_ShowShadersPanel = !m_ShowShadersPanel;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) 
+					m_ShowPerformance = !m_ShowPerformance;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Renderer Info", NULL, m_ShowRendererVendorInfo)) 
+					m_ShowRendererVendorInfo = !m_ShowRendererVendorInfo;
+
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("Options"))
 			{
-				if (ImGui::MenuItem("Settings..."))
-					m_ShowSettingsUI = true;
+				if (ImGui::MenuItem("Settings...", NULL, m_ShowSettingsUI))
+					m_ShowSettingsUI = !m_ShowSettingsUI;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Restart..."))
-					m_ShowRestartModal = true;
+				if (ImGui::MenuItem("Restart...", NULL, m_ShowRestartModal))
+					m_ShowRestartModal = !m_ShowRestartModal;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Exit..."))
-					m_ShowCloseModal = true;
+				if (ImGui::MenuItem("Exit...", NULL, m_ShowCloseModal))
+					m_ShowCloseModal = !m_ShowCloseModal;
 
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem("Editor Style", NULL, m_ShowEditingPanel)) m_ShowEditingPanel = !m_ShowEditingPanel;
-
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Info"))
-			{
-				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) m_ShowPerformance = !m_ShowPerformance;
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Renderer Info", NULL, m_ShowRendererVendorInfo)) m_ShowRendererVendorInfo = !m_ShowRendererVendorInfo;
+				if (ImGui::MenuItem("Editor Style", NULL, m_ShowEditingPanel))
+					m_ShowEditingPanel = !m_ShowEditingPanel;
 
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Help"))
 			{
-				if (ImGui::MenuItem("Editor Camera", NULL, m_ShowEditorCameraHelpUI)) m_ShowEditorCameraHelpUI = !m_ShowEditorCameraHelpUI;
+				if (ImGui::MenuItem("Editor Camera", NULL, m_ShowEditorCameraHelpUI))
+					m_ShowEditorCameraHelpUI = !m_ShowEditorCameraHelpUI;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Dear ImGui Demo", NULL, m_ShowDearImGuiDemoWindow)) m_ShowDearImGuiDemoWindow = !m_ShowDearImGuiDemoWindow;
+				if (ImGui::MenuItem("Dear ImGui Demo", NULL, m_ShowDearImGuiDemoWindow))
+					m_ShowDearImGuiDemoWindow = !m_ShowDearImGuiDemoWindow;
 
 				ImGui::EndMenu();
 			}
@@ -1535,6 +1574,9 @@ namespace Aurora {
 			ShowRendererVendorInfoUI();
 
 		ShowRendererStatsUI();
+
+		if (m_ShowShadersPanel)
+			ShowShadersPanel();
 
 		if (m_ShowPerformance)
 			ShowPerformanceUI();

@@ -260,6 +260,24 @@ namespace Aurora {
 		glDeleteProgram(m_ShaderID);
 	}
 
+	void Shader::Reload(bool forceCompile)
+	{
+		// Clean the old program object
+		if (m_ShaderID)
+			glDeleteProgram(m_ShaderID);
+
+		Timer timer;
+		std::string shaderFullSource = Utils::FileReader::ReadTextFile(m_AssetPath);
+		m_OpenGLShaderSource = SplitSource(shaderFullSource);
+
+		Utils::CreateCacheDirIfNeeded();
+
+		CompileOrGetVulkanBinary(m_OpenGLShaderSource, forceCompile);
+		CompileOrGetOpenGLBinary(forceCompile);
+		CreateProgram();
+		AR_CORE_WARN_TAG("Shader", "Reloading {0} took {1}ms", m_Name, timer.ElapsedMillis());
+	}
+
 	void Shader::Load(const std::string& source, bool forceCompile)
 	{
 		AR_PROFILE_FUNCTION();
@@ -270,8 +288,8 @@ namespace Aurora {
 	
 		{
 			Timer timer;
-			CompileOrGetVulkanBinary(m_OpenGLShaderSource);
-			CompileOrGetOpenGLBinary();
+			CompileOrGetVulkanBinary(m_OpenGLShaderSource, forceCompile);
+			CompileOrGetOpenGLBinary(forceCompile);
 			CreateProgram();
 			AR_CORE_WARN_TAG("Shader", "Shader creation took {0}ms", timer.ElapsedMillis());
 		}
@@ -309,6 +327,8 @@ namespace Aurora {
 
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
 				options.AddMacroDefinition("OPENGL");
+				options.SetGenerateDebugInfo(); // TODO: Check what this does!
+				options.SetAutoSampledTextures(false); // TODO: Check what this does!
 #if AURORA_DIST
 				const bool optimize = true;
 #else
@@ -357,7 +377,7 @@ namespace Aurora {
 			// I am doing this step here so that i can get the ogl source code everytime and not only when the shaders are compiled
 			spirv_cross::CompilerGLSL glslCompiler(spirv);
 			auto& pushConstResources = glslCompiler.get_shader_resources().push_constant_buffers;
-			static short int locationIndex = 3; // TODO: Figure out a way to set the location for the push_constants automatically without fucking with the other locations in the shaader
+			short int locationIndex = 3; // TODO: Figure out a way to set the location for the push_constants automatically without fucking with the other locations in the shaader
 			for (int i = 0; i < pushConstResources.size(); i++)
 			{
 				glslCompiler.set_decoration(pushConstResources[i].id, spv::DecorationLocation, locationIndex++);
@@ -382,6 +402,8 @@ namespace Aurora {
 				shaderc::CompileOptions options;
 
 				options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+				options.SetGenerateDebugInfo(); // TODO: Check what this does!
+				options.SetAutoSampledTextures(false); // TODO: Check what this does!
 				//options.SetAutoMapLocations(true);
 #if AURORA_DIST
 				const bool optimize = true;
@@ -525,45 +547,85 @@ namespace Aurora {
 			AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 		}
 
-		// TODO: REWRITE!!!!!!!!!!!!!!!!!!!!!!!
 		AR_CORE_TRACE_TAG("REFLECT", "Push Constant Buffers:");
-		// Currently this attribute offset var is useless since vulkan glsl supports only one push_constant.
-		// However if they ever remove that restriction this will be usefull to know the offset of each attribute in every push_constant block.
 		uint32_t attributeOffset = 0;
 		for (const spirv_cross::Resource& res : resources.push_constant_buffers)
 		{
-			const std::string& bufferName = res.name; // Name
-			const spirv_cross::SPIRType& bufferType = compiler.get_type(res.base_type_id); // Type
-			uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType); // Size
-			uint32_t memberCount = (uint32_t)bufferType.member_types.size(); // Member count of the push_constant block
+			const std::string& bufferName = res.name;
+			const spirv_cross::SPIRType& bufferType = compiler.get_type(res.base_type_id);
+			uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+			uint32_t memberCount = (uint32_t)bufferType.member_types.size();
 			uint32_t location = compiler.get_decoration(res.id, spv::DecorationLocation);
-
-			// Since this is just a renderer special push_constant and will give us no valuable info, soo....
-			if (bufferName == "u_Renderer")
-				continue;
-
-			ShaderPushBuffer& buffer = m_Buffers[bufferName];
-			buffer.Name = bufferName;
-			buffer.Size = bufferSize - attributeOffset;
 
 			AR_CORE_TRACE_TAG("REFLECT", "\tName: {0}", bufferName);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Size: {0}", bufferSize);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Location: {0}", location);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Member Count: {0}", memberCount);
 
-			// Now we get the uniform/attributes that that push_constant block(buffer) contains...
+			// Vertex Shader push_constant buffer which will be specific for the renderer!
+			if (bufferName == "u_Renderer")
+			{
+			
+				continue;
+			}
+
+			// We create and insert a ShaderPushBuffer into the map to later on be used in the material to get the uniform location
+			ShaderPushBuffer& buffer = m_Buffers[bufferName];
+			buffer.Name = bufferName;
+			buffer.Size = bufferSize - attributeOffset;
+
 			for (uint32_t i = 0; i < memberCount; i++)
 			{
-				spirv_cross::SPIRType type = compiler.get_type(bufferType.member_types[i]); // member type
-				const std::string& memberName = compiler.get_member_name(bufferType.self, i); // member Name
-				uint32_t size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i); // member Size
-				uint32_t offset = compiler.type_struct_member_offset(bufferType, i) - attributeOffset; // member offset
+				spirv_cross::SPIRType type = compiler.get_type(bufferType.member_types[i]);
+				const std::string& memberName = compiler.get_member_name(bufferType.self, i);
+				uint32_t memberSize = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
+				uint32_t memberOffset = compiler.type_struct_member_offset(bufferType, i) - attributeOffset;
 
-				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
+				std::string UniformName = fmt::format("{}.{}", bufferName, memberName);
+				buffer.Uniforms[UniformName] = ShaderUniform{ UniformName, Utils::SPIRTypeToShaderUniformType(type), memberSize, memberOffset };
 			}
 		}
 		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
+
+		//// TODO: REWRITE!!!!!!!!!!!!!!!!!!!!!!!
+		//AR_CORE_TRACE_TAG("REFLECT", "Push Constant Buffers:");
+		//// Currently this attribute offset var is useless since vulkan glsl supports only one push_constant.
+		//// However if they ever remove that restriction this will be usefull to know the offset of each attribute in every push_constant block.
+		//uint32_t attributeOffset = 0;
+		//for (const spirv_cross::Resource& res : resources.push_constant_buffers)
+		//{
+		//	const std::string& bufferName = res.name; // Name
+		//	const spirv_cross::SPIRType& bufferType = compiler.get_type(res.base_type_id); // Type
+		//	uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType); // Size
+		//	uint32_t memberCount = (uint32_t)bufferType.member_types.size(); // Member count of the push_constant block
+		//	uint32_t location = compiler.get_decoration(res.id, spv::DecorationLocation);
+
+		//	// Since this is just a renderer special push_constant and will give us no valuable info, soo....
+		//	if (bufferName == "u_Renderer")
+		//		continue;
+
+		//	ShaderPushBuffer& buffer = m_Buffers[bufferName];
+		//	buffer.Name = bufferName;
+		//	buffer.Size = bufferSize - attributeOffset;
+
+		//	AR_CORE_TRACE_TAG("REFLECT", "\tName: {0}", bufferName);
+		//	AR_CORE_TRACE_TAG("REFLECT", "\t   Size: {0}", bufferSize);
+		//	AR_CORE_TRACE_TAG("REFLECT", "\t   Location: {0}", location);
+		//	AR_CORE_TRACE_TAG("REFLECT", "\t   Member Count: {0}", memberCount);
+
+		//	// Now we get the uniform/attributes that that push_constant block(buffer) contains...
+		//	for (uint32_t i = 0; i < memberCount; i++)
+		//	{
+		//		spirv_cross::SPIRType type = compiler.get_type(bufferType.member_types[i]); // member type
+		//		const std::string& memberName = compiler.get_member_name(bufferType.self, i); // member Name
+		//		uint32_t size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i); // member Size
+		//		uint32_t offset = compiler.type_struct_member_offset(bufferType, i) - attributeOffset; // member offset
+
+		//		std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
+		//		buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
+		//	}
+		//}
+		//AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 
 		AR_CORE_TRACE_TAG("REFLECT", "Sampled Images:");
 		int32_t sampler = 0;

@@ -33,7 +33,9 @@
  * glGetUniformLocation(shaderID, name);
  * Therefore be careful of what members you are putting in the push_constant blocks and if you are using them or not!
  * 
- * TODO: Add Dynamic Shader Reloading!
+ * TODO: Add better reloading workflow. Since now if i change something little in the vertex shader, the reload actually reloads
+ * the vertex and also the fragment shader, which is inefficient so need to find out a way to see what changed and then recompile
+ * that specific stage...!
  */
 
 namespace Aurora {
@@ -99,7 +101,7 @@ namespace Aurora {
 
 		size_t GetHash() const;
 
-		void Reload(bool forceCompile = false) {} // TODO: Implement with dynamic shader reloading...
+		void Reload(bool forceCompile);
 
 		// Setting uniforms...
 
@@ -126,11 +128,11 @@ namespace Aurora {
 		static std::vector<Ref<Shader>> s_AllShaders;
 
 	private:
-		void Load(const std::string& source, bool forceCompile);
+		void Load(const std::string& source, bool forceCompile = false);
 		void CreateProgram();
 
-		void CompileOrGetVulkanBinary(const std::unordered_map<uint32_t/*GLenum*/, std::string>& shaderSources, bool forceCompile = false);
-		void CompileOrGetOpenGLBinary(bool forceCompile = false);
+		void CompileOrGetVulkanBinary(const std::unordered_map<uint32_t/*GLenum*/, std::string>& shaderSources, bool forceCompile);
+		void CompileOrGetOpenGLBinary(bool forceCompile);
 		void Reflect(uint32_t/*GLenum*/type, const std::vector<uint32_t>& shaderData);
 
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
@@ -162,7 +164,6 @@ namespace Aurora {
 		std::string m_Name;
 		std::string m_AssetPath;
 
-		bool IsLoaded = false;
 		bool m_IsCompute = false;
 
 		// String sources

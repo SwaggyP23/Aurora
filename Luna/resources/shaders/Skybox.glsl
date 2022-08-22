@@ -29,14 +29,14 @@ layout(binding = 0) uniform samplerCube skybox;
 
 layout(push_constant) uniform Mats
 {
-    float a;
-    float b;
-    vec3 c;
-    mat4 d;
+    /*layout(offset = 0) */ vec4 a;
+    /*layout(offset = 16)*/ mat4 b;
+    /*layout(offset = 80)*/ float c;
+    /*layout(offset = 84)*/ float d;
 } u_MatsUniforms;
 
 void main()
 {    
-    o_Color = texture(skybox, v_TexCoords);
+    o_Color = texture(skybox, v_TexCoords);// * (u_MatsUniforms.c + u_MatsUniforms.d);
     o_EntityID = -1;
 }

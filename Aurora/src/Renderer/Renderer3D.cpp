@@ -400,6 +400,8 @@ namespace Aurora {
 	{
 		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::LessOrEqual);
 		s_Data->SkyBoxShader->Bind();
+		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.c", 0.3f);
+		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.d", 0.3f);
 		skybox->Bind();
 
 		auto flag = RenderCommand::GetRenderFlag();

@@ -99,7 +99,7 @@ namespace Aurora {
 		glm::mat4 transform(1.0f);
 		glm::scale(transform, { 10.0f, 10.0f, 10.0f });
 		s_Mat->Set("u_AlbedoTexture", s_Texture);
-		s_Mat->Set("u_Uniforms.AlbedoColor", puh);
+		//s_Mat->Set("u_Uniforms.AlbedoColor", glm::vec4(puh, 1.0f));
 		Renderer3D::DrawMaterial(transform, s_Mat); // TODO: TEMPORARY!!!!!!!!!
 
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();

@@ -97,6 +97,7 @@ namespace Aurora {
 		template<typename T>
 		void Set(const std::string& fullname, const T& value) const
 		{
+			//glUniform3f()
 			const ShaderUniform* declaration = FindUniformDeclaration(fullname);
 			if (!declaration)
 			{

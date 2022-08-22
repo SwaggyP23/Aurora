@@ -144,9 +144,9 @@ namespace Aurora {
 					AR_PROFILE_SCOPE("Application Layer::OnTick");
 					AR_SCOPE_PERF("Application Layer::OnTick");
 
-					if (TickTimer.Elapsed() - timer > 1.0f)
+					if (TickTimer.Elapsed() - timer > m_TickDelta)
 					{
-						timer += 1.0f;
+						timer += m_TickDelta;
 
 						for (Layer* layer : m_LayerStack)
 							layer->OnTick();

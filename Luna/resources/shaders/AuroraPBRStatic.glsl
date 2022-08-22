@@ -18,7 +18,7 @@ layout(push_constant) uniform Transform
 
 void main()
 {
-    mat4 model = mat4(1.0f); //u_Renderer.transform;
+    mat4 model = mat4(1.0f);
     v_TexCoords = a_TexCoords;
     gl_Position = u_ViewProjMatrix * model * vec4(a_Position, 1.0);
 }  
@@ -30,16 +30,15 @@ layout(location = 1) out int o_EntityID;
 
 layout(location = 0) in vec2 v_TexCoords;
 
-layout(push_constant) uniform Mats
-{
-    vec3 AlbedoColor;
-} u_Uniforms;
-
 layout(binding = 0) uniform sampler2D u_AlbedoTexture;
+
+//layout(push_constant) uniform Mats
+//{
+//    vec4 AlbedoColor;
+//} u_Uniforms;
 
 void main()
 {    
-    vec4 color = vec4(u_Uniforms.AlbedoColor, 1.0f);
-    o_Color = texture(u_AlbedoTexture, v_TexCoords) * color;
+    o_Color = texture(u_AlbedoTexture, v_TexCoords);// * u_Uniforms.AlbedoColor;
     o_EntityID = -1;
 }

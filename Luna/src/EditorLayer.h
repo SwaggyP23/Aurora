@@ -39,9 +39,11 @@ namespace Aurora {
 		void ShowRendererStatsUI(); // This will eventually be moved to become a panel that is optionally displayed and not mandatory
 		void ShowRendererVendorInfoUI();
 		//void ShowRendererOverlay(); // To be implemented later
+		void ShowShadersPanel();
 
 		bool m_ShowRendererVendorInfo = false;
 		//bool m_ShowRendererOverlay = false;
+		bool m_ShowShadersPanel = true;
 
 	// Performance Panel
 	private:
