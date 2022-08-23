@@ -243,9 +243,8 @@ namespace Aurora {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (!ImGuizmo::IsOver() && !Input::IsKeyPressed(AR_KEY_LEFT_ALT))
+		if (!ImGuizmo::IsOver() && !Input::IsKeyPressed(AR_KEY_LEFT_ALT) && ImGuiUtils::IsMouseInRectRegion(m_SceneHierarchyRect, false))
 		{
-			m_SelectionContext = m_HoveredEntity;
 			if (m_HoveredEntity != Entity::nullEntity)
 				m_SelectionContext = m_HoveredEntity;
 			else
@@ -275,9 +274,11 @@ namespace Aurora {
 		const std::string& tag = entity.GetComponent<TagComponent>().Tag;
 
 		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 1.0f, 1.0f, 0.529f, 0.235f });
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0);
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_SpanAvailWidth
+								 | ImGuiTreeNodeFlags_OpenOnArrow;
+
+		treeNodeFlags |= ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0);
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, treeNodeFlags, tag.c_str());
 		ImGui::PopStyleColor();
 
 		if (ImGui::IsItemClicked())
@@ -295,11 +296,15 @@ namespace Aurora {
 		}
 
 		if (opened)
-		{ // This is temporary...
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened2 = ImGui::TreeNodeEx((void*)1038597, flags, tag.c_str());
-			if (opened2)
+		{ // TODO: This is temporary... Should be reworked when childing entities becomes a thing!
+			ImGuiUtils::ShiftCursorY(-2.0f);
+			ImGuiTreeNodeFlags childNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
+									 | ImGuiTreeNodeFlags_SpanAvailWidth 
+									 | ImGuiTreeNodeFlags_Leaf;
+
+			if (ImGui::TreeNodeEx((void*)1038597, childNodeFlags, tag.c_str()))
 				ImGui::TreePop();
+
 			ImGui::TreePop();
 		}
 
@@ -309,12 +314,20 @@ namespace Aurora {
 			if (m_SelectionContext == entity)
 				m_SelectionContext = {};
 		}
+
+		ImGuiUtils::ShiftCursorY(-2.0f);
 	}
 
-	void EditorLayer::ShowSceneHierarchyUI()
+	void EditorLayer::ShowSceneHierarchyPanel()
 	{
 		ImGui::Begin("Scene Hierarchy");
 
+		m_SceneHierarchyRect = ImGuiUtils::GetWindowRect();
+
+		// TODO: Implement Search Box...
+		static std::string searchString;
+		ImGuiUtils::SearchBox(searchString);
+		
 		m_Context->m_Registry.each([&](auto entityID)
 		{
 			Entity entity{ entityID, m_Context.raw() };
@@ -586,6 +599,8 @@ namespace Aurora {
 				tag = std::string(buffer);
 			}
 
+			ImGuiUtils::DrawItemActivityOutline(3.0f, true, Theme::Accent);
+
 			if (ImGui::IsItemHovered())
 				ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "ID: %#010x", 12387519348766); // TODO: Switch to UUID when implemented
 		}
@@ -596,6 +611,8 @@ namespace Aurora {
 		if (ImGui::Button("Add Component"))
 			ImGui::OpenPopup("AddComponentsPanel"); // Add component here acts as an ID for imgui to be used in the next step
 
+		ImGui::PopItemWidth();
+
 		if (ImGui::BeginPopup("AddComponentsPanel"))
 		{
 			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
@@ -604,8 +621,6 @@ namespace Aurora {
 
 			ImGui::EndPopup();
 		}
-
-		ImGui::PopItemWidth();
 
 		DrawComponent<TransformComponent>("Transform", entity, [this](TransformComponent& component)
 		{
@@ -800,7 +815,7 @@ namespace Aurora {
 		});
 	}
 
-	void EditorLayer::ShowComponentsUI()
+	void EditorLayer::ShowPropertiesPanel()
 	{
 		ImGui::Begin("Properties");
 
@@ -879,12 +894,28 @@ namespace Aurora {
 	{
 		ImGui::Begin("Shaders", &m_ShowShadersPanel);
 
+		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
+			| ImGuiTreeNodeFlags_SpanAvailWidth
+			| ImGuiTreeNodeFlags_AllowItemOverlap
+			| ImGuiTreeNodeFlags_FramePadding;
+
+		static std::string searchString;
+
 		for (Ref<Shader> shader : Shader::s_AllShaders)
 		{
 			const std::string& shaderName = shader->GetName();
 
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
-			if(ImGui::TreeNodeEx(shaderName.c_str(), flags))
+			const float framePaddingX = 5.0f;
+			const float framePaddingY = 5.0f; // affects height of the header
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
+			const bool opened = ImGui::TreeNodeEx(shaderName.c_str(), treeNodeFlags);
+			ImGui::PopStyleVar(2);
+
+			ImGuiUtils::ShiftCursorY(-4.0f);
+
+			if(opened)
 			{
 				ImGui::Text("Path: %s", shader->GetFilePath().c_str());
 				if (ImGui::Button("Reload"))
@@ -892,8 +923,6 @@ namespace Aurora {
 
 				ImGui::TreePop();
 			}
-
-			ImGui::Separator();
 		}
 
 		ImGui::End();
@@ -979,6 +1008,15 @@ namespace Aurora {
 
 		const char* idenType;
 		std::string displayName;
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, 100.0f);
+
+		ImGui::Text("Editor Font:");
+
+		ImGui::NextColumn();
+
+		ImGui::PushItemWidth(-1);
 		if (ImGui::BeginCombo("##FontPicker", m_SelectedFontName.c_str()))
 		{
 			for (const auto&[pair, second] : layer->m_FontsLibrary.GetFontNamesAndIdentifier())
@@ -1011,6 +1049,9 @@ namespace Aurora {
 
 			ImGui::EndCombo();
 		}
+		ImGui::PopItemWidth();
+
+		ImGui::Columns(1);
 	}
 
 #pragma endregion
@@ -1114,13 +1155,28 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("View"))
 			{
-				if (ImGui::MenuItem("Shaders...", NULL, m_ShowShadersPanel))
+				if (ImGui::MenuItem("Scene Hierarchy", NULL, m_ShowSceneHierarchyPanel))
+					m_ShowSceneHierarchyPanel = !m_ShowSceneHierarchyPanel;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Properties", NULL, m_ShowPropertiesPanel))
+					m_ShowPropertiesPanel = !m_ShowPropertiesPanel;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Shaders", NULL, m_ShowShadersPanel))
 					m_ShowShadersPanel = !m_ShowShadersPanel;
 
 				ImGui::Separator();
 
 				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) 
 					m_ShowPerformance = !m_ShowPerformance;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Renderer Stats", NULL, m_ShowRenderStatsUI))
+					m_ShowRenderStatsUI = !m_ShowRenderStatsUI;
 
 				ImGui::Separator();
 
@@ -1137,21 +1193,33 @@ namespace Aurora {
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Restart...", NULL, m_ShowRestartModal))
-					m_ShowRestartModal = !m_ShowRestartModal;
-
-				ImGui::Separator();
-
 				if (ImGui::MenuItem("Exit...", NULL, m_ShowCloseModal))
 					m_ShowCloseModal = !m_ShowCloseModal;
 
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Edit"))
+			if (ImGui::BeginMenu("Tools"))
 			{
 				if (ImGui::MenuItem("Editor Style", NULL, m_ShowEditingPanel))
 					m_ShowEditingPanel = !m_ShowEditingPanel;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("ImGui StackTool", NULL, m_ShowDearImGuiStackToolWindow))
+					m_ShowDearImGuiStackToolWindow = !m_ShowDearImGuiStackToolWindow;
+
+				ImGui::Separator();
+
+#ifdef AURORA_DEBUG
+				if (ImGui::MenuItem("ImGui DebugLog", NULL, m_ShowDearImGuiDebugLogWindow))
+					m_ShowDearImGuiDebugLogWindow = !m_ShowDearImGuiDebugLogWindow;
+
+				ImGui::Separator();
+#endif
+
+				if (ImGui::MenuItem("ImGui Metrics", NULL, m_ShowDearImGuiMetricsWindow))
+					m_ShowDearImGuiMetricsWindow = !m_ShowDearImGuiMetricsWindow;
 
 				ImGui::EndMenu();
 			}
@@ -1160,11 +1228,6 @@ namespace Aurora {
 			{
 				if (ImGui::MenuItem("Editor Camera", NULL, m_ShowEditorCameraHelpUI))
 					m_ShowEditorCameraHelpUI = !m_ShowEditorCameraHelpUI;
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Dear ImGui Demo", NULL, m_ShowDearImGuiDemoWindow))
-					m_ShowDearImGuiDemoWindow = !m_ShowDearImGuiDemoWindow;
 
 				ImGui::EndMenu();
 			}
@@ -1254,7 +1317,7 @@ namespace Aurora {
 
 		m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
 
-		Application::GetApp().GetImGuiLayer()->SetBlockEvents(!m_ViewPortFocused || !m_ViewPortHovered);
+		ImGuiUtils::SetInputEnabled(!m_ViewPortFocused || !m_ViewPortHovered);
 
 		// Gizmos...
 		if (m_SelectionContext && m_GizmoType != -1)
@@ -1490,37 +1553,6 @@ namespace Aurora {
 
 		ImGui::End();
 	}
-	
-	void EditorLayer::ShowRestartModalUI()
-	{
-		ImGui::OpenPopup("Restart?");
-
-		// Always center this window when appearing
-		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-		if (ImGui::BeginPopupModal("Restart?", &m_ShowRestartModal, ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			ImGui::TextColored(ImVec4{ 0.7f, 0.4f, 0.3f, 1.0f }, "Are you sure...?");
-			ImGui::Text("Make sure you saved all your files and \nscenes before restarting!\n\n");
-
-			ImGui::Separator();
-
-			if (ImGui::Button("Restart", ImVec2(120, 0)))
-				Application::GetApp().Restart();
-
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-
-			if (ImGui::Button("Cancel", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-				m_ShowRestartModal = false;
-			}
-
-			ImGui::EndPopup();
-		}
-	}
 
 	void EditorLayer::ShowCloseModalUI()
 	{
@@ -1563,17 +1595,29 @@ namespace Aurora {
 
 		ShowMenuBarItems();
 
-		if (m_ShowDearImGuiDemoWindow)
-			ImGui::ShowDemoWindow(&m_ShowDearImGuiDemoWindow);
+		// TODO: THIS IS FOR REFERENCE ONLY!
+		//ImGui::ShowDemoWindow(&m_ShowDearImGuiDemoWindow);
 
-		ShowSceneHierarchyUI();
+		if (m_ShowDearImGuiMetricsWindow)
+			ImGui::ShowMetricsWindow();
 
-		ShowComponentsUI();
+		if (m_ShowDearImGuiStackToolWindow)
+			ImGui::ShowStackToolWindow();
+
+		if (m_ShowDearImGuiDebugLogWindow)
+			ImGui::ShowDebugLogWindow();
+
+		if (m_ShowSceneHierarchyPanel)
+			ShowSceneHierarchyPanel();
+
+		if(m_ShowPropertiesPanel)
+			ShowPropertiesPanel();
 
 		if(m_ShowRendererVendorInfo)
 			ShowRendererVendorInfoUI();
 
-		ShowRendererStatsUI();
+		if (m_ShowRenderStatsUI)
+			ShowRendererStatsUI();
 
 		if (m_ShowShadersPanel)
 			ShowShadersPanel();
@@ -1589,9 +1633,6 @@ namespace Aurora {
 
 		if (m_ShowSettingsUI)
 			ShowSettingsUI();
-
-		if (m_ShowRestartModal)
-			ShowRestartModalUI();
 
 		if (m_ShowCloseModal)
 			ShowCloseModalUI();

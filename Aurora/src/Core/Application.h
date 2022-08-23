@@ -51,8 +51,6 @@ namespace Aurora {
 		Application(const ApplicationSpecification& specification);
 		virtual ~Application();
 
-		// This acts as the restart also
-		void Restart();
 		void Close();
 
 		void RenderImGui();
@@ -101,7 +99,6 @@ namespace Aurora {
 		TimeStep m_Timestep;
 		PerformanceProfiler* m_Profiler = nullptr; // TODO: Should be null in Dist
 
-		bool m_Restart = false;
 		bool m_Running = true;
 		bool m_Minimized = false;
 

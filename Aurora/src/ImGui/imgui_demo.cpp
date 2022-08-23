@@ -76,7 +76,11 @@ Index of this file:
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "imgui.h"
+#include <imgui/imgui.h>
+
+#include "../../../src/ImGui/ImGuiLayer.h" // Included and modified by SwaggyP23 to include the extra themes
+#include "../../../src/Core/Application.h" // Included and modified by SwaggyP23 to include the extra themes
+
 #ifndef IMGUI_DISABLE
 
 // System includes
@@ -6348,16 +6352,20 @@ void ImGui::ShowFontSelector(const char* label)
 bool ImGui::ShowStyleSelector(const char* label)
 {
     static int style_idx = -1;
-    if (ImGui::Combo(label, &style_idx, "Dark\0Light\0Classic\0"))
+
+    if (ImGui::Combo(label, &style_idx, "Luna\0Dark\0Light\0Classic\0"))
     {
         switch (style_idx)
         {
-        case 0: ImGui::StyleColorsDark(); break;
-        case 1: ImGui::StyleColorsLight(); break;
-        case 2: ImGui::StyleColorsClassic(); break;
+            case 0: Aurora::Application::GetApp().GetImGuiLayer()->SetDarkThemeColor(); break;
+            case 1: ImGui::StyleColorsDark(); break;
+            case 2: ImGui::StyleColorsLight(); break;
+            case 3: ImGui::StyleColorsClassic(); break;
         }
+
         return true;
     }
+
     return false;
 }
 
@@ -6381,7 +6389,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
 
     if (ImGui::ShowStyleSelector("Colors##Selector"))
         ref_saved_style = style;
-    ImGui::ShowFontSelector("Fonts##Selector");
+    //ImGui::ShowFontSelector("Fonts##Selector"); // Removed by SwaggyP since this is implemented externally outside the library
 
     // Simplified Settings (expose floating-pointer border sizes as boolean representing 0.0f or 1.0f)
     if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
@@ -6513,31 +6521,31 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Fonts"))
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            ImFontAtlas* atlas = io.Fonts;
-            HelpMarker("Read FAQ and docs/FONTS.md for details on font loading.");
-            ImGui::ShowFontAtlas(atlas);
+        //if (ImGui::BeginTabItem("Fonts"))
+        //{
+        //    ImGuiIO& io = ImGui::GetIO();
+        //    ImFontAtlas* atlas = io.Fonts;
+        //    HelpMarker("Read FAQ and docs/FONTS.md for details on font loading.");
+        //    ImGui::ShowFontAtlas(atlas);
 
-            // Post-baking font scaling. Note that this is NOT the nice way of scaling fonts, read below.
-            // (we enforce hard clamping manually as by default DragFloat/SliderFloat allows CTRL+Click text to get out of bounds).
-            const float MIN_SCALE = 0.3f;
-            const float MAX_SCALE = 2.0f;
-            HelpMarker(
-                "Those are old settings provided for convenience.\n"
-                "However, the _correct_ way of scaling your UI is currently to reload your font at the designed size, "
-                "rebuild the font atlas, and call style.ScaleAllSizes() on a reference ImGuiStyle structure.\n"
-                "Using those settings here will give you poor quality results.");
-            static float window_scale = 1.0f;
-            ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
-            if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp)) // Scale only this window
-                ImGui::SetWindowFontScale(window_scale);
-            ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp); // Scale everything
-            ImGui::PopItemWidth();
+        //    // Post-baking font scaling. Note that this is NOT the nice way of scaling fonts, read below.
+        //    // (we enforce hard clamping manually as by default DragFloat/SliderFloat allows CTRL+Click text to get out of bounds).
+        //    const float MIN_SCALE = 0.3f;
+        //    const float MAX_SCALE = 2.0f;
+        //    HelpMarker(
+        //        "Those are old settings provided for convenience.\n"
+        //        "However, the _correct_ way of scaling your UI is currently to reload your font at the designed size, "
+        //        "rebuild the font atlas, and call style.ScaleAllSizes() on a reference ImGuiStyle structure.\n"
+        //        "Using those settings here will give you poor quality results.");
+        //    static float window_scale = 1.0f;
+        //    ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
+        //    if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp)) // Scale only this window
+        //        ImGui::SetWindowFontScale(window_scale);
+        //    ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp); // Scale everything
+        //    ImGui::PopItemWidth();
 
-            ImGui::EndTabItem();
-        }
+        //    ImGui::EndTabItem();
+        //}
 
         if (ImGui::BeginTabItem("Rendering"))
         {

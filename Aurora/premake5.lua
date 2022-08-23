@@ -135,3 +135,6 @@ project "Aurora"
 
     filter "files:dependencies/yaml-cpp/src/**.cpp"
         flags { "NoPCH" }
+
+    filter "files:src/ImGui/imgui_demo.cpp"
+        flags { "NoPCH" }

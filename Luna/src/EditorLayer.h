@@ -1,5 +1,6 @@
 #pragma once
 #include <Aurora.h>
+#include <imgui/imgui_internal.h>
 
 namespace Aurora {
 
@@ -20,19 +21,24 @@ namespace Aurora {
 	// Scene Hierarchy Panel
 	private:
 		void SetContextForSceneHeirarchyPanel(const Ref<Scene>& context); // The context for this panel is the scene since it displays the scene's contents
-		void ShowSceneHierarchyUI();
+		void ShowSceneHierarchyPanel();
 
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
 		Entity m_GroundEntity;
 		Entity m_HoveredEntity;
+		ImRect m_SceneHierarchyRect;
+
+		bool m_ShowSceneHierarchyPanel = true;
 
 	// Components/Properties Panel
 	private:
-		void ShowComponentsUI();
+		void ShowPropertiesPanel();
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 		void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float colomnWidth = 100.0f, float min = 0.0f, float max = 0.0f, float stepValue = 0.1f);
+
+		bool m_ShowPropertiesPanel = true;
 
 	// Renderer Info/Stats Panels
 	private:
@@ -42,6 +48,7 @@ namespace Aurora {
 		void ShowShadersPanel();
 
 		bool m_ShowRendererVendorInfo = false;
+		bool m_ShowRenderStatsUI = true;
 		//bool m_ShowRendererOverlay = false;
 		bool m_ShowShadersPanel = true;
 
@@ -70,7 +77,10 @@ namespace Aurora {
 		void ShowEditorCameraHelpUI();
 
 		bool m_ShowEditorCameraHelpUI = false;
-		bool m_ShowDearImGuiDemoWindow = false;
+
+		bool m_ShowDearImGuiMetricsWindow = false;
+		bool m_ShowDearImGuiStackToolWindow = false;
+		bool m_ShowDearImGuiDebugLogWindow = false;
 
 	// File Dialogs and Scene helper functions
 	private:
@@ -97,11 +107,9 @@ namespace Aurora {
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 
 		void ShowSettingsUI();
-		void ShowRestartModalUI();
 		void ShowCloseModalUI();
 
 		bool m_ShowSettingsUI = false;
-		bool m_ShowRestartModal = false;
 		bool m_ShowCloseModal = false;
 
 	private:

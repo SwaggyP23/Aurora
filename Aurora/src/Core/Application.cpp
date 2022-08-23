@@ -166,9 +166,7 @@ namespace Aurora {
 
 			// frameCounter++; // This is to be displayed some time later when needed...
 		}
-
-		if(!m_Restart)
-			OnShutdown();
+		OnShutdown();
 
 		AR_PROFILE_END_SESSION("ApplicationRuntime");
 	}
@@ -204,12 +202,6 @@ namespace Aurora {
 		g_ApplicationRunning = false;
 
 		return true; // This return is what sets the Handled bool in the event to true or false
-	}
-
-	void Application::Restart()
-	{
-		m_Restart = true;
-		Close();
 	}
 
 	void Application::Close()

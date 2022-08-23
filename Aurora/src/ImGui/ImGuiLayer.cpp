@@ -10,9 +10,10 @@
 
 #include <glfw/glfw3.h>
 
-#include <ImGui/imgui.h>
-#include <ImGui/imgui_impl_glfw.h>
-#include <ImGui/imgui_impl_opengl3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 namespace Aurora {
 
@@ -67,16 +68,6 @@ namespace Aurora {
 		ImGui::DestroyContext();
 	}
 
-	void ImGuiLayer::OnEvent(Event& e)
-	{
-		if (m_BlockEvents)
-		{
-			ImGuiIO& io = ImGui::GetIO();
-			e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
-			e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
-		}
-	}
-
 	void ImGuiLayer::Begin()
 	{
 		AR_PROFILE_FUNCTION();
@@ -112,7 +103,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		auto& style = ImGui::GetStyle();
+		ImGuiStyle& style = ImGui::GetStyle();
 		auto& colors = ImGui::GetStyle().Colors;
 
 		// Headers
