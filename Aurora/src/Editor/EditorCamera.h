@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Camera.h"
+#include "Graphics/Camera.h"
 #include "Core/TimeStep.h"
 #include "Events/Events.h"
 #include "Events/MouseEvents.h"

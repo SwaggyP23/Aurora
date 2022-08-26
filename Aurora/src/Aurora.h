@@ -42,6 +42,6 @@
 #include "Debugging/Instrumentation.h"
 #include "Debugging/Timer.h"
 
-#include "Graphics/EditorCamera.h"
+#include "Editor/EditorCamera.h"
 
 #include "Utils/Utils.h"

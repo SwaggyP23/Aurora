@@ -11,9 +11,9 @@ namespace Aurora {
 		{
 			switch (hint)
 			{
-			case Aurora::VertexBufferDrawHint::None:        return GL_NONE;
-			case Aurora::VertexBufferDrawHint::Static:      return GL_STATIC_DRAW;
-			case Aurora::VertexBufferDrawHint::Dynamic:     return GL_DYNAMIC_DRAW;
+			   case Aurora::VertexBufferDrawHint::None:        return GL_NONE;
+			   case Aurora::VertexBufferDrawHint::Static:      return GL_STATIC_DRAW;
+			   case Aurora::VertexBufferDrawHint::Dynamic:     return GL_DYNAMIC_DRAW;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown draw hint type!");
@@ -35,17 +35,17 @@ namespace Aurora {
 	{
 		switch (type)
 		{
-		case ShaderDataType::Float:   return 1;
-		case ShaderDataType::Float2:  return 2;
-		case ShaderDataType::Float3:  return 3;
-		case ShaderDataType::Float4:  return 4;
-		case ShaderDataType::Mat3:    return 3 * 3;
-		case ShaderDataType::Mat4:    return 4 * 4;
-		case ShaderDataType::Int:     return 1;
-		case ShaderDataType::Int2:    return 2;
-		case ShaderDataType::Int3:    return 3;
-		case ShaderDataType::Int4:    return 4;
-		case ShaderDataType::Bool:    return 1;
+		    case ShaderDataType::Float:   return 1;
+		    case ShaderDataType::Float2:  return 2;
+		    case ShaderDataType::Float3:  return 3;
+		    case ShaderDataType::Float4:  return 4;
+		    case ShaderDataType::Mat3:    return 3 * 3;
+		    case ShaderDataType::Mat4:    return 4 * 4;
+		    case ShaderDataType::Int:     return 1;
+		    case ShaderDataType::Int2:    return 2;
+		    case ShaderDataType::Int3:    return 3;
+		    case ShaderDataType::Int4:    return 4;
+		    case ShaderDataType::Bool:    return 1;
 		}
 
 		AR_CORE_ASSERT(false, "Unknown Shader Data Type!");

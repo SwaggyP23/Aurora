@@ -104,9 +104,23 @@ namespace Aurora {
 			return result;
 		}
 
+		// Time...
 		float Time::GetTime()
 		{
 			return (float)glfwGetTime();
+		}
+
+		// String stuff...
+		std::string& StringUtils::ToLower(std::string& string)
+		{
+			std::transform(string.begin(), string.end(), string.begin(), [](const unsigned char c) { return std::tolower(c); });
+			return string;
+		}
+
+		std::string& StringUtils::ToUpper(std::string& string)
+		{
+			std::transform(string.begin(), string.end(), string.begin(), [](const unsigned char c) { return std::toupper(c); });
+			return string;
 		}
 
 	}

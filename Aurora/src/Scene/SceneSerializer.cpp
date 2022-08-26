@@ -122,7 +122,7 @@ namespace Aurora {
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << "129861987"; // TODO: Change when UUIDS are added
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
 		if (entity.HasComponent<TagComponent>())
 		{
@@ -270,7 +270,7 @@ namespace Aurora {
 		{
 			for (auto entity : entities) // This loops and gets all the child nodes of the node "Entities"
 			{
-				uint64_t uuid = entity["Entity"].as<uint64_t>(); // TODO: Comeback to this when UUIDs are implemented
+				uint64_t uuid = entity["Entity"].as<uint64_t>();
 
 				std::string entityName;
 				YAML::Node tagComponent = entity["TagComponent"];
@@ -279,9 +279,9 @@ namespace Aurora {
 					entityName = tagComponent["Tag"].as<std::string>();
 				}
 
-				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID '{0}', name '{1}'", uuid, entityName);
+				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID: {0:#04x}, Name: {1}", uuid, entityName);
 
-				Entity deserializedEntity = m_Scene->CreateEntity(entityName.c_str());
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, entityName.c_str());
 
 				YAML::Node transform = entity["TransformComponent"];
 				if (transform)

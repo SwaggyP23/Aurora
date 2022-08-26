@@ -8,6 +8,12 @@
 	#error Aurora only supports Windows for now!
 #endif
 
+#ifdef AURORA_PLATFORM_WINDOWS
+    #define AR_FORCE_INLINE __forceinline
+#else
+    #define AR_FORCE_INLINE
+#endif
+
 #define AR_EXPAND_MACRO(x) x
 #define AR_STRINGIFY_MACRO(x) #x
 
@@ -15,7 +21,7 @@
 #define AR_CONCAT_MACRO(x, y) AR_PASTE_MACRO(x, y)
 
 #ifdef AURORA_DEBUG
-    #define AR_DEBUG_BREAK __debugbreak()
+    #define AR_DEBUG_BREAK() __debugbreak()
 #endif
 
 #include "Assert.h"

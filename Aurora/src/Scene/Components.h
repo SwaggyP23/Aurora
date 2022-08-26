@@ -14,6 +14,14 @@ namespace Aurora {
 
 	// TODO: Add the UUID component
 
+	struct IDComponent
+	{
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+	};
+
 	struct TagComponent
 	{
 		std::string Tag;

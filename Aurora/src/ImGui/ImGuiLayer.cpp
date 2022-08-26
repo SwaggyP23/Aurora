@@ -44,7 +44,7 @@ namespace Aurora {
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 6.0f;
-			style.PopupRounding = 6.0f;
+			style.PopupRounding = 3.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
@@ -159,6 +159,8 @@ namespace Aurora {
 		// Tables
 		colors[ImGuiCol_TableHeaderBg]    = ImGui::ColorConvertU32ToFloat4(Theme::GroupHeader);
 		colors[ImGuiCol_TableBorderLight] = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundDark);
+		colors[ImGuiCol_TableRowBg]       = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundMedium);
+		colors[ImGuiCol_TableRowBgAlt]    = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundDark);
 
 		// MenuBar
 		colors[ImGuiCol_MenuBarBg] = ImColor(0, 0, 0, 0);
@@ -166,9 +168,9 @@ namespace Aurora {
 		// Tabs
 		colors[ImGuiCol_Tab]                = ImGui::ColorConvertU32ToFloat4(Theme::Titlebar);
 		colors[ImGuiCol_TabHovered]         = ImColor(255, 255, 135, 30);
-		colors[ImGuiCol_TabActive]          = ImColor(255, 255, 135, 60);
+		colors[ImGuiCol_TabActive]          = ImGui::ColorConvertU32ToFloat4(Theme::Accent);
 		colors[ImGuiCol_TabUnfocused]       = ImGui::ColorConvertU32ToFloat4(Theme::Titlebar);
-		colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+		colors[ImGuiCol_TabUnfocusedActive] = ImGui::ColorConvertU32ToFloat4(Theme::AccentDimmed);
 
 		// Title
 		colors[ImGuiCol_TitleBg]          = ImGui::ColorConvertU32ToFloat4(Theme::Titlebar);

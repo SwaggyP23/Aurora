@@ -39,14 +39,20 @@ namespace Aurora {
 	{
 	}
 
-	Entity Scene::CreateEntity(const char* name)
+	Entity Scene::CreateEntityWithUUID(UUID id, const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name == "" ? "AuroraDefault" : name;
 
 		return entity;
+	}
+
+	Entity Scene::CreateEntity(const char* name)
+	{
+		return CreateEntityWithUUID(UUID(), name);
 	}
 
 	Entity Scene::CopyEntity(Entity entity)
@@ -221,6 +227,12 @@ namespace Aurora {
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
 		static_assert(sizeof(T) == 0);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
+
 	}
 
 	template<>

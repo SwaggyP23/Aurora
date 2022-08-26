@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/EditorCamera.h"
+#include "Editor/EditorCamera.h"
 
 #include "RenderCommand.h"
 #include "RendererPorperties.h"

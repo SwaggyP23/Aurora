@@ -38,6 +38,14 @@ namespace Aurora {
 			static float GetTime();
 		};
 
+		class StringUtils
+		{
+		public:
+			static std::string& ToLower(std::string& string);
+			static std::string& ToUpper(std::string& string);
+
+		};
+
 	}
 
 }

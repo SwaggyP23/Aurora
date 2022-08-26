@@ -11,27 +11,18 @@ namespace Aurora {
 	private:
 		using HighResClock = std::chrono::high_resolution_clock;
 		using NanoSeconds = std::chrono::nanoseconds;
+		using MicroSeconds = std::chrono::microseconds;
 
 	public:
-		Timer()
-		{
-			Reset();
-		}
+		AR_FORCE_INLINE Timer() { Reset(); }
 
-		void Timer::Reset()
-		{
-			m_Start = HighResClock::now();
-		}
+		AR_FORCE_INLINE void Timer::Reset() { m_Start = HighResClock::now(); }
 
-		float Timer::Elapsed() // Returns time in seconds
-		{
-			return std::chrono::duration_cast<NanoSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
-		}
+		// Returns time in seconds
+		AR_FORCE_INLINE float Timer::Elapsed() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f; }
 
-		float Timer::ElapsedMillis() // in milliseconds
-		{
-			return Elapsed() * 1000.0f;
-		}
+		// Returns time in milliseconds
+		AR_FORCE_INLINE float Timer::ElapsedMillis() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f; }
 
 	private:
 		std::chrono::time_point<HighResClock> m_Start;
@@ -95,5 +86,14 @@ namespace Aurora {
 
 }
 
-#define AR_SCOPE_PERF(name)      Aurora::PerFrameTimer AR_CONCAT_MACRO(timer, __LINE__)(name, Aurora::Application::GetApp().GetPerformanceProfiler())
-#define AR_SCOPED_TIMER(name)    Aurora::ScopedTimer AR_CONCAT_MACRO(timer, __LINE__)(name)
+#ifndef AURORA_DIST
+
+	#define AR_SCOPE_PERF(name)      Aurora::PerFrameTimer AR_CONCAT_MACRO(timer, __LINE__)(name, Aurora::Application::GetApp().GetPerformanceProfiler())
+	#define AR_SCOPED_TIMER(name)    Aurora::ScopedTimer AR_CONCAT_MACRO(timer, __LINE__)(name)
+
+#else
+
+    #define AR_SCOPE_PERF(name)
+    #define AR_SCOPED_TIMER(name)
+
+#endif

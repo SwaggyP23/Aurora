@@ -5952,7 +5952,7 @@ bool ImGui::TreeNodeBehaviorIsOpen(ImGuiID id, ImGuiTreeNodeFlags flags)
     return is_open;
 }
 
-bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end)
+bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end, ImU32 textColor)
 {
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems)
@@ -6113,7 +6113,12 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
 
         if (g.LogEnabled)
             LogSetNextTextDecoration("###", "###");
+
+        if (textColor)
+            PushStyleColor(ImGuiCol_Text, textColor);
         RenderTextClipped(text_pos, frame_bb.Max, label, label_end, &label_size);
+        if (textColor)
+            PopStyleColor();
     }
     else
     {
@@ -6130,7 +6135,12 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
             RenderArrow(window->DrawList, ImVec2(text_pos.x - text_offset_x + padding.x, text_pos.y + g.FontSize * 0.15f), text_col, is_open ? ImGuiDir_Down : ImGuiDir_Right, 0.70f);
         if (g.LogEnabled)
             LogSetNextTextDecoration(">", NULL);
-        RenderText(text_pos, label, label_end, false);
+
+        if(textColor)
+            PushStyleColor(ImGuiCol_Text, textColor);
+        RenderTextClipped(text_pos, frame_bb.Max, label, label_end, &label_size);
+        if(textColor)
+            PopStyleColor();
     }
 
     if (is_open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen))

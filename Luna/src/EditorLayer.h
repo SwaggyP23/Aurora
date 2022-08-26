@@ -2,6 +2,9 @@
 #include <Aurora.h>
 #include <imgui/imgui_internal.h>
 
+#include "Editor/EditorResources.h"
+#include "ImGui/TreeNode.h"
+
 namespace Aurora {
 
 	class EditorLayer : public Layer
@@ -22,22 +25,17 @@ namespace Aurora {
 	private:
 		void SetContextForSceneHeirarchyPanel(const Ref<Scene>& context); // The context for this panel is the scene since it displays the scene's contents
 		void ShowSceneHierarchyPanel();
+		void DrawEntityCreatePopupMenu(Entity entity);
+		void DrawEntityNode(Entity entity, const std::string& searchedString);
+		void DrawComponents(Entity entity);
+		void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float colomnWidth = 100.0f, float min = 0.0f, float max = 0.0f, float stepValue = 0.1f);
 
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
 		Entity m_GroundEntity;
 		Entity m_HoveredEntity;
 		ImRect m_SceneHierarchyRect;
-
 		bool m_ShowSceneHierarchyPanel = true;
-
-	// Components/Properties Panel
-	private:
-		void ShowPropertiesPanel();
-		void DrawEntityNode(Entity entity);
-		void DrawComponents(Entity entity);
-		void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float colomnWidth = 100.0f, float min = 0.0f, float max = 0.0f, float stepValue = 0.1f);
-
 		bool m_ShowPropertiesPanel = true;
 
 	// Renderer Info/Stats Panels
@@ -121,6 +119,7 @@ namespace Aurora {
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_ViewportBounds[2];
+		ImRect m_ViewportRect;
 
 		int m_GizmoType = -1;
 
