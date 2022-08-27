@@ -7,11 +7,11 @@ struct GLFWwindow;
 
 namespace Aurora {
 
-	class Context
+	class Context : public RefCountedObject
 	{
 	public:
 		Context(GLFWwindow* windowHandle);
-		static Scope<Context> Create(GLFWwindow* handle);
+		static Ref<Context> Create(GLFWwindow* handle);
 
 		void Init() const;
 		void SwapBuffers() const;

@@ -85,32 +85,32 @@ void GameLayer::OnUpdate(Aurora::TimeStep ts)
 
 void GameLayer::OnEvent(Aurora::Event& e)
 {
-	if (Aurora::Input::IsKeyPressed(Aurora::Key::W) && !down) {
+	if (Aurora::Input::IsKeyPressed(AR_KEY_W) && !down) {
 		m_Dir = Direction::Up;
 		up = true;
 		left = false;
 		right = false;
 	}
-	else if (Aurora::Input::IsKeyPressed(Aurora::Key::A) && !right) {
+	else if (Aurora::Input::IsKeyPressed(AR_KEY_A) && !right) {
 		m_Dir = Direction::Left;
 		left = true;
 		up = false;
 		down = false;
 	}
-	else if (Aurora::Input::IsKeyPressed(Aurora::Key::S) && !up) {
+	else if (Aurora::Input::IsKeyPressed(AR_KEY_S) && !up) {
 		m_Dir = Direction::Down;
 		down = true;
 		right = false;
 		left = false;
 	}
-	else if (Aurora::Input::IsKeyPressed(Aurora::Key::D) && !left) {
+	else if (Aurora::Input::IsKeyPressed(AR_KEY_D) && !left) {
 		m_Dir = Direction::Right;
 		right = true;
 		up = false;
 		down = false;
 	}
 
-	if (Aurora::Input::IsKeyPressed(Aurora::Key::LeftAlt)) // This is for debugging
+	if (Aurora::Input::IsKeyPressed(AR_KEY_LEFT_ALT)) // This is for debugging
 		m_Snake.IncParts();
 
 	m_Camera.OnEvent(e);

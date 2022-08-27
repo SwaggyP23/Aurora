@@ -29,12 +29,12 @@
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RendererPorperties.h"
 
-#include "Graphics/Buffer.h"
+#include "Graphics/VertexBuffer.h"
+#include "Graphics/IndexBuffer.h"
 #include "Graphics/CubeTexture.h"
 #include "Graphics/Framebuffers.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
-#include "Graphics/Model.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Texture.h"
 #include "Graphics/VertexArray.h"
@@ -42,6 +42,6 @@
 #include "Debugging/Instrumentation.h"
 #include "Debugging/Timer.h"
 
-#include "Graphics/EditorCamera.h"
+#include "Editor/EditorCamera.h"
 
 #include "Utils/Utils.h"

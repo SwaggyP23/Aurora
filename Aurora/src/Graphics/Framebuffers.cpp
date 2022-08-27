@@ -90,7 +90,7 @@ namespace Aurora {
 			    case Aurora::FrameBufferTextureFormat::DEPTH24STENCIL8:      return GL_DEPTH24_STENCIL8;
 			}
 
-			AR_CORE_ASSERT(false, "Framebuffer", "Unkown texture format");
+			AR_CORE_ASSERT(false, "Unknown texture format");
 			return 0;
 		}
 
@@ -179,8 +179,9 @@ namespace Aurora {
 
 		if (m_ColorAttachments.size() > 1)
 		{
-			AR_CORE_ASSERT(m_ColorAttachments.size() <= 4, "Framebuffer", "For now we only support a max of 4 color attachments");
+			AR_CORE_ASSERT(m_ColorAttachments.size() <= 4, "For now we only support a max of 4 color attachments");
 
+			// This is us telling openGl that we want to draw to 4 different attachments
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers((GLsizei)m_ColorAttachments.size(), buffers);
 		}
@@ -190,7 +191,7 @@ namespace Aurora {
 			glDrawBuffer(GL_NONE);
 		}
 
-		AR_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer", "Incomplete Frambuffer!");
+		AR_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete Frambuffer!");
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -211,7 +212,7 @@ namespace Aurora {
 
 	int Framebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	{
-		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Framebuffer", "Attachment index can not be more than the available attachments");
+		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Attachment index can not be more than the available attachments");
 
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		int pixelData;
@@ -222,7 +223,7 @@ namespace Aurora {
 	// TODO: This should be changed from taking just an integer back to const void* and figuring the type later
 	void Framebuffer::ClearTextureAttachment(uint32_t attachmentIndex, int data) const
 	{
-		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Framebuffer", "Attachment index can not be more than the available attachments");
+		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Attachment index can not be more than the available attachments");
 
 		// m_ColorAttachments and m_ColorAttachmentsSpecification are always equal in size the indexing matches perfectly
 		auto& spec = m_ColorAttachmentsSpecification[attachmentIndex];

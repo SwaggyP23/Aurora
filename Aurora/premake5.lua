@@ -26,7 +26,8 @@ project "Aurora"
     defines
     {
         "_CRT_SECURE_NO_WARNINGS",
-        "GLFW_INCLUDE_NONE"
+        "GLFW_INCLUDE_NONE",
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
     }
 
     includedirs
@@ -37,6 +38,7 @@ project "Aurora"
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.VulkanSDK}",
         "%{IncludeDir.stb}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Yaml}",
@@ -52,15 +54,19 @@ project "Aurora"
         "Glad",
         "ImGui",
         "Optick",
-        "opengl32.lib"
+        "opengl32.lib",
+        "%{Library.Vulkan}",
+        "%{Library.VulkanUtils}"
     }
+
+    postbuildmessage "Core: Done building Aurora!"
 
     filter "system:windows"
         systemversion "latest"
 
         defines
         {
-            "AR_PLATFORM_WINDOWS"
+            "AURORA_PLATFORM_WINDOWS"
         }
 
     filter "configurations:Profile"
@@ -75,6 +81,11 @@ project "Aurora"
 
         links
         {
+            "%{Library.dxc}",
+            "%{Library.ShadercRelease}",
+            "%{Library.ShadercUtilsRelease}",
+            "%{Library.SPIRV_CrossRelease}",
+            "%{Library.SPIRV_CrossGLSLRelease}"
         }
 
     filter "configurations:Debug"
@@ -84,6 +95,11 @@ project "Aurora"
 
         links
         {
+            "%{Library.dxc}",
+            "%{Library.ShadercDebug}",
+            "%{Library.ShadercUtilsDebug}",
+            "%{Library.SPIRV_CrossDebug}",
+            "%{Library.SPIRV_CrossGLSLDebug}"
         }
 
     filter "configurations:Release"
@@ -94,6 +110,11 @@ project "Aurora"
 
         links
         {
+            "%{Library.dxc}",
+            "%{Library.ShadercRelease}",
+            "%{Library.ShadercUtilsRelease}",
+            "%{Library.SPIRV_CrossRelease}",
+            "%{Library.SPIRV_CrossGLSLRelease}"
         }
 
     filter "configurations:Dist"
@@ -104,10 +125,18 @@ project "Aurora"
 
         links
         {
+            "%{Library.dxc}",
+            "%{Library.ShadercRelease}",
+            "%{Library.ShadercUtilsRelease}",
+            "%{Library.SPIRV_CrossRelease}",
+            "%{Library.SPIRV_CrossGLSLRelease}"
         }
 
     filter "files:dependencies/stb/**.cpp"
         flags { "NoPCH" }
 
     filter "files:dependencies/yaml-cpp/src/**.cpp"
+        flags { "NoPCH" }
+
+    filter "files:src/ImGui/imgui_demo.cpp"
         flags { "NoPCH" }

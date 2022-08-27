@@ -1,0 +1,11 @@
+Model Information:
+* title:	Optimus Prime "Transformers 2007"
+* source:	https://sketchfab.com/3d-models/optimus-prime-transformers-2007-cc1deddbe20041cd90c15ff52b72a346
+* author:	PLAN (https://sketchfab.com/plan111)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Optimus Prime "Transformers 2007"" (https://sketchfab.com/3d-models/optimus-prime-transformers-2007-cc1deddbe20041cd90c15ff52b72a346) by PLAN (https://sketchfab.com/plan111) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

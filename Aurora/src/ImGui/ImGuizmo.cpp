@@ -1349,7 +1349,8 @@ namespace ImGuizmo
    static bool CanActivate()
    {
       // TODO: Check for key modifiers
-      if (Aurora::Input::IsMouseButtonPressed(Aurora::MouseButton::Button0) && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemActive())
+      // The above comment is from the lib, i just added my own keycode interface for usage
+      if (Aurora::Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_0) && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemActive())
       {
          return true;
       }

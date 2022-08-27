@@ -5,15 +5,18 @@
 // Aurora Uses a clockwise orientation to determine the backfaces of each quad for back face culling
 
 #include "Core/Application.h"
+#include "Graphics/UniformBuffer.h"
 
 #include <glad/glad.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include <ImGui/imgui.h>
+
 namespace Aurora {
 
-	Ref<Texture> Renderer3D::m_ContainerTexture;
+	Ref<Texture2D> Renderer3D::m_ContainerTexture; // TODO: Fuck is this xD?????
 
 	struct QuadVertex
 	{
@@ -44,18 +47,19 @@ namespace Aurora {
 		Ref<VertexArray> SkyBoxVertexArray;
 		Ref<VertexBuffer> SkyBoxVertexBuffer;
 		Ref<Shader> SkyBoxShader;
+		Ref<Shader> MatShader;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<Shader> QuadShader;
-		Ref<Texture> WhiteTex;
+		Ref<Texture2D> WhiteTex;
 
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr; // This is to keep track of the base of memory allocations
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 
 		// Here the identifier will become an asset handle if i ever implement it
-		std::array<Ref<Texture>, MaxTextureSlots> TextureSlots;
+		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 is the white texture
 
 		glm::vec4 QuadVertexPositions[24];
@@ -66,52 +70,62 @@ namespace Aurora {
 		glm::vec2 textureCoords[24];
 
 		Renderer3D::Statistics Stats;
+
+		struct CameraData
+		{
+			glm::mat4 ViewProjection;
+			glm::mat4 SkyVP;
+		};
+		CameraData CameraBuffer;
+		Ref<UniformBuffer> CameraUniformBuffer;
 	};
 
-	static RendererData s_Data;
+	static RendererData* s_Data;
 
 	void Renderer3D::Init()
 	{
 		AR_PROFILE_FUNCTION();
 
+		s_Data = new RendererData();
+
 		RendererProperties::Init();
 		RenderCommand::Init();
 
-		s_Data.QuadVertexPositions[0] =  { -0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[1] =  {  0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[2] =  {  0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[3] =  { -0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[0] =  { -0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[1] =  {  0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[2] =  {  0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[3] =  { -0.5f,  0.5f, -0.5f, 1.0f };
 										 
-		s_Data.QuadVertexPositions[4] =  { -0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[5] =  {  0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[6] =  {  0.5f,  0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[7] =  { -0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[4] =  { -0.5f, -0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[5] =  {  0.5f, -0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[6] =  {  0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[7] =  { -0.5f,  0.5f,  0.5f, 1.0f };
 										 
-		s_Data.QuadVertexPositions[8] =  { -0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[9] =  { -0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[10] = { -0.5f,  0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[11] = { -0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[8] =  { -0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[9] =  { -0.5f, -0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[10] = { -0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[11] = { -0.5f,  0.5f, -0.5f, 1.0f };
+			  
+		s_Data->QuadVertexPositions[12] = {  0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[13] = {  0.5f, -0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[14] = {  0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[15] = {  0.5f,  0.5f, -0.5f, 1.0f };
+			  
+		s_Data->QuadVertexPositions[16] = { -0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[17] = {  0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[18] = {  0.5f, -0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[19] = { -0.5f, -0.5f,  0.5f, 1.0f };
+			  
+		s_Data->QuadVertexPositions[20] = { -0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[21] = {  0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data->QuadVertexPositions[22] = {  0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data->QuadVertexPositions[23] = { -0.5f,  0.5f,  0.5f, 1.0f };
 
-		s_Data.QuadVertexPositions[12] = {  0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[13] = {  0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[14] = {  0.5f,  0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[15] = {  0.5f,  0.5f, -0.5f, 1.0f };
-
-		s_Data.QuadVertexPositions[16] = { -0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[17] = {  0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[18] = {  0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[19] = { -0.5f, -0.5f,  0.5f, 1.0f };
-
-		s_Data.QuadVertexPositions[20] = { -0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[21] = {  0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.QuadVertexPositions[22] = {  0.5f,  0.5f,  0.5f, 1.0f };
-		s_Data.QuadVertexPositions[23] = { -0.5f,  0.5f,  0.5f, 1.0f };
-
-		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
+		uint32_t* quadIndices = new uint32_t[s_Data->MaxIndices];
 
 		uint32_t offset = 0;
 		uint32_t i;
-		for (i = 0; i < s_Data.MaxIndices; i += 36)
+		for (i = 0; i < s_Data->MaxIndices; i += 36)
 		{
 			quadIndices[i + 0] = offset + 0;
 			quadIndices[i + 1] = offset + 2;
@@ -159,47 +173,48 @@ namespace Aurora {
 		}
 
 		float skyboxQuad[] = {
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,			
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,			
-			-1.0f, -1.0f, -1.0f,
-
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,			 
-			 1.0f, -1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,			
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,			
-			-1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,      1.0f, 0.0f,
+			 1.0f,  1.0f, -1.0f,      0.0f, 0.0f,
+			 1.0f, -1.0f, -1.0f,      0.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f,      1.0f, 1.0f,
+								      
+			-1.0f,  1.0f,  1.0f,      0.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f,      1.0f, 0.0f,
+			 1.0f, -1.0f,  1.0f,      1.0f, 1.0f,
+			-1.0f, -1.0f,  1.0f,      0.0f, 1.0f,
+								      
+			-1.0f,  1.0f, -1.0f,      0.0f, 0.0f,
+			-1.0f,  1.0f,  1.0f,      1.0f, 0.0f,
+			-1.0f, -1.0f,  1.0f,      1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f,      0.0f, 1.0f,
+								      
+			 1.0f,  1.0f, -1.0f,      1.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f,      0.0f, 0.0f,
+			 1.0f, -1.0f,  1.0f,      0.0f, 1.0f,
+			 1.0f, -1.0f, -1.0f,      1.0f, 1.0f,
+								      
+			-1.0f, -1.0f,  1.0f,      0.0f, 1.0f,
+			 1.0f, -1.0f,  1.0f,      1.0f, 1.0f,
+			 1.0f, -1.0f, -1.0f,      1.0f, 0.0f,
+			-1.0f, -1.0f, -1.0f,      0.0f, 0.0f,
+								      
+			-1.0f,  1.0f,  1.0f,      0.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f,      1.0f, 0.0f,
+			 1.0f,  1.0f, -1.0f,      1.0f, 1.0f,
+			-1.0f,  1.0f, -1.0f,      0.0f, 1.0f
 		};
 
-		s_Data.SkyBoxVertexArray = VertexArray::Create();
-		s_Data.SkyBoxVertexBuffer = VertexBuffer::Create(skyboxQuad, sizeof(skyboxQuad), VertexBufferDrawHint::Static);
-		s_Data.SkyBoxVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" }
+		s_Data->SkyBoxVertexArray = VertexArray::Create();
+		s_Data->SkyBoxVertexBuffer = VertexBuffer::Create(skyboxQuad, sizeof(skyboxQuad), VertexBufferDrawHint::Static);
+		s_Data->SkyBoxVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float2, "a_TexCoords"}
 		});
-		s_Data.SkyBoxVertexArray->AddVertexBuffer(s_Data.SkyBoxVertexBuffer);
+		s_Data->SkyBoxVertexArray->AddVertexBuffer(s_Data->SkyBoxVertexBuffer);
 
-		s_Data.QuadVertexArray = VertexArray::Create();
-		s_Data.QuadVertexBuffer = VertexBuffer::Create((uint32_t)s_Data.MaxVertices * sizeof(QuadVertex), VertexBufferDrawHint::Dynamic);
-		s_Data.QuadVertexBuffer->SetLayout({
+		s_Data->QuadVertexArray = VertexArray::Create();
+		s_Data->QuadVertexBuffer = VertexBuffer::Create((uint32_t)s_Data->MaxVertices * sizeof(QuadVertex), VertexBufferDrawHint::Dynamic);
+		s_Data->QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
 			{ ShaderDataType::Float3, "a_Normals"      },
@@ -209,98 +224,97 @@ namespace Aurora {
 			{ ShaderDataType::Int,    "a_Light"        },
 			{ ShaderDataType::Int,    "a_EntityID"     }
 		});
-		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
+		s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
 
-		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
+		s_Data->QuadVertexBufferBase = new QuadVertex[s_Data->MaxVertices];
 
-		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
-		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
-		s_Data.SkyBoxVertexArray->SetIndexBuffer(quadIB);
+		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, s_Data->MaxIndices);
+		s_Data->QuadVertexArray->SetIndexBuffer(quadIB);
+		s_Data->SkyBoxVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
-		s_Data.WhiteTex = Texture::Create(1, 1);
+		s_Data->WhiteTex = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
-		s_Data.WhiteTex->SetData(&whiteTextureData, sizeof(uint32_t));
+		s_Data->WhiteTex->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		int samplers[s_Data.MaxTextureSlots];
-		for (int i = 0; i < s_Data.MaxTextureSlots; i++)
+		int samplers[s_Data->MaxTextureSlots];
+		for (int i = 0; i < s_Data->MaxTextureSlots; i++)
 			samplers[i] = i;
 		// This is the sampler that will be submitted to OpenGL and in which OpenGL will be sampling the textures from according to the passed index
 
-		s_Data.SkyBoxShader = Shader::Create("resources/shaders/Skybox.glsl");
-		s_Data.SkyBoxShader->Bind();
-		s_Data.SkyBoxShader->SetUniform1i("skybox", 0);
+		s_Data->SkyBoxShader = Shader::Create("Resources/shaders/Skybox.glsl");
+		s_Data->QuadShader = Shader::Create("Resources/shaders/MainShader.glsl");
 
-		s_Data.QuadShader = Shader::Create("resources/shaders/MainShader.glsl");
-		s_Data.QuadShader->Bind();
-		s_Data.QuadShader->SetUniformArrayi("u_Textures", samplers, s_Data.MaxTextureSlots);
+		s_Data->TextureSlots[0] = s_Data->WhiteTex; // index 0 is for the white texture.
 
-		s_Data.TextureSlots[0] = s_Data.WhiteTex; // index 0 is for the white texture.
+		s_Data->textureCoords[0] =  { 1.0f, 0.0f };
+		s_Data->textureCoords[1] =  { 0.0f, 0.0f };
+		s_Data->textureCoords[2] =  { 0.0f, 1.0f };
+		s_Data->textureCoords[3] =  { 1.0f, 1.0f };
+								    
+		s_Data->textureCoords[4] =  { 0.0f, 0.0f };
+		s_Data->textureCoords[5] =  { 1.0f, 0.0f };
+		s_Data->textureCoords[6] =  { 1.0f, 1.0f };
+		s_Data->textureCoords[7] =  { 0.0f, 1.0f };
+								    
+		s_Data->textureCoords[8] =  { 0.0f, 0.0f };
+		s_Data->textureCoords[9] =  { 1.0f, 0.0f };
+		s_Data->textureCoords[10] = { 1.0f, 1.0f };
+		s_Data->textureCoords[11] = { 0.0f, 1.0f };
 
-		s_Data.textureCoords[0] = { 1.0f, 0.0f };
-		s_Data.textureCoords[1] = { 0.0f, 0.0f };
-		s_Data.textureCoords[2] = { 0.0f, 1.0f };
-		s_Data.textureCoords[3] = { 1.0f, 1.0f };
+		s_Data->textureCoords[12] = { 1.0f, 0.0f };
+		s_Data->textureCoords[13] = { 0.0f, 0.0f };
+		s_Data->textureCoords[14] = { 0.0f, 1.0f };
+		s_Data->textureCoords[15] = { 1.0f, 1.0f };
 
-		s_Data.textureCoords[4] = { 0.0f, 0.0f };
-		s_Data.textureCoords[5] = { 1.0f, 0.0f };
-		s_Data.textureCoords[6] = { 1.0f, 1.0f };
-		s_Data.textureCoords[7] = { 0.0f, 1.0f };
+		s_Data->textureCoords[16] = { 0.0f, 1.0f };
+		s_Data->textureCoords[17] = { 1.0f, 1.0f };
+		s_Data->textureCoords[18] = { 1.0f, 0.0f };
+		s_Data->textureCoords[19] = { 0.0f, 0.0f };
 
-		s_Data.textureCoords[8] = { 0.0f, 0.0f };
-		s_Data.textureCoords[9] = { 1.0f, 0.0f };
-		s_Data.textureCoords[10] = { 1.0f, 1.0f };
-		s_Data.textureCoords[11] = { 0.0f, 1.0f };
+		s_Data->textureCoords[20] = { 0.0f, 0.0f };
+		s_Data->textureCoords[21] = { 1.0f, 0.0f };
+		s_Data->textureCoords[22] = { 1.0f, 1.0f };
+		s_Data->textureCoords[23] = { 0.0f, 1.0f };
 
-		s_Data.textureCoords[12] = { 1.0f, 0.0f };
-		s_Data.textureCoords[13] = { 0.0f, 0.0f };
-		s_Data.textureCoords[14] = { 0.0f, 1.0f };
-		s_Data.textureCoords[15] = { 1.0f, 1.0f };
+		s_Data->QuadNormalPositions[0] = { 0.0f,  0.0f, -1.0f };
+		s_Data->QuadNormalPositions[1] = { 0.0f,  0.0f, -1.0f };
+		s_Data->QuadNormalPositions[2] = { 0.0f,  0.0f, -1.0f };
+		s_Data->QuadNormalPositions[3] = { 0.0f,  0.0f, -1.0f };
 
-		s_Data.textureCoords[16] = { 0.0f, 1.0f };
-		s_Data.textureCoords[17] = { 1.0f, 1.0f };
-		s_Data.textureCoords[18] = { 1.0f, 0.0f };
-		s_Data.textureCoords[19] = { 0.0f, 0.0f };
+		s_Data->QuadNormalPositions[4] = { 0.0f,  0.0f,  1.0f };
+		s_Data->QuadNormalPositions[5] = { 0.0f,  0.0f,  1.0f };
+		s_Data->QuadNormalPositions[6] = { 0.0f,  0.0f,  1.0f };
+		s_Data->QuadNormalPositions[7] = { 0.0f,  0.0f,  1.0f };
 
-		s_Data.textureCoords[20] = { 0.0f, 0.0f };
-		s_Data.textureCoords[21] = { 1.0f, 0.0f };
-		s_Data.textureCoords[22] = { 1.0f, 1.0f };
-		s_Data.textureCoords[23] = { 0.0f, 1.0f };
+		s_Data->QuadNormalPositions[8] = { -1.0f,  0.0f,  0.0f };
+		s_Data->QuadNormalPositions[9] = { -1.0f,  0.0f,  0.0f };
+		s_Data->QuadNormalPositions[10] = { -1.0f,  0.0f,  0.0f };
+		s_Data->QuadNormalPositions[11] = { -1.0f,  0.0f,  0.0f };
 
-		s_Data.QuadNormalPositions[0] = { 0.0f,  0.0f, -1.0f };
-		s_Data.QuadNormalPositions[1] = { 0.0f,  0.0f, -1.0f };
-		s_Data.QuadNormalPositions[2] = { 0.0f,  0.0f, -1.0f };
-		s_Data.QuadNormalPositions[3] = { 0.0f,  0.0f, -1.0f };
+		s_Data->QuadNormalPositions[12] = { 1.0f,  0.0f,  0.0f };
+		s_Data->QuadNormalPositions[13] = { 1.0f,  0.0f,  0.0f };
+		s_Data->QuadNormalPositions[14] = { 1.0f,  0.0f,  0.0f };
+		s_Data->QuadNormalPositions[15] = { 1.0f,  0.0f,  0.0f };
 
-		s_Data.QuadNormalPositions[4] = { 0.0f,  0.0f,  1.0f };
-		s_Data.QuadNormalPositions[5] = { 0.0f,  0.0f,  1.0f };
-		s_Data.QuadNormalPositions[6] = { 0.0f,  0.0f,  1.0f };
-		s_Data.QuadNormalPositions[7] = { 0.0f,  0.0f,  1.0f };
+		s_Data->QuadNormalPositions[16] = { 0.0f, -1.0f,  0.0f };
+		s_Data->QuadNormalPositions[17] = { 0.0f, -1.0f,  0.0f };
+		s_Data->QuadNormalPositions[18] = { 0.0f, -1.0f,  0.0f };
+		s_Data->QuadNormalPositions[19] = { 0.0f, -1.0f,  0.0f };
 
-		s_Data.QuadNormalPositions[8] = { -1.0f,  0.0f,  0.0f };
-		s_Data.QuadNormalPositions[9] = { -1.0f,  0.0f,  0.0f };
-		s_Data.QuadNormalPositions[10] = { -1.0f,  0.0f,  0.0f };
-		s_Data.QuadNormalPositions[11] = { -1.0f,  0.0f,  0.0f };
+		s_Data->QuadNormalPositions[20] = { 0.0f,  1.0f,  0.0f };
+		s_Data->QuadNormalPositions[21] = { 0.0f,  1.0f,  0.0f };
+		s_Data->QuadNormalPositions[22] = { 0.0f,  1.0f,  0.0f };
+		s_Data->QuadNormalPositions[23] = { 0.0f,  1.0f,  0.0f };
 
-		s_Data.QuadNormalPositions[12] = { 1.0f,  0.0f,  0.0f };
-		s_Data.QuadNormalPositions[13] = { 1.0f,  0.0f,  0.0f };
-		s_Data.QuadNormalPositions[14] = { 1.0f,  0.0f,  0.0f };
-		s_Data.QuadNormalPositions[15] = { 1.0f,  0.0f,  0.0f };
-
-		s_Data.QuadNormalPositions[16] = { 0.0f, -1.0f,  0.0f };
-		s_Data.QuadNormalPositions[17] = { 0.0f, -1.0f,  0.0f };
-		s_Data.QuadNormalPositions[18] = { 0.0f, -1.0f,  0.0f };
-		s_Data.QuadNormalPositions[19] = { 0.0f, -1.0f,  0.0f };
-
-		s_Data.QuadNormalPositions[20] = { 0.0f,  1.0f,  0.0f };
-		s_Data.QuadNormalPositions[21] = { 0.0f,  1.0f,  0.0f };
-		s_Data.QuadNormalPositions[22] = { 0.0f,  1.0f,  0.0f };
-		s_Data.QuadNormalPositions[23] = { 0.0f,  1.0f,  0.0f };
+		s_Data->CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
 	}
 
 	void Renderer3D::ShutDown()
 	{
-		delete[] s_Data.QuadVertexBufferBase;
+		delete[] s_Data->QuadVertexBufferBase;
+		delete s_Data;
+
 		RendererProperties::ShutDown();
 	}
 
@@ -315,25 +329,11 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
+		s_Data->CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		s_Data->CameraBuffer.SkyVP = glm::mat4(1.0f);
+		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(RendererData::CameraData));
 
-		s_Data.QuadShader->Bind();
-		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
-		s_Data.QuadShader->SetUniform1i("material.specular", 2);
-		s_Data.QuadShader->SetUniform1f("material.shininess", 50.0f);
-
-		// For light one
-		s_Data.QuadShader->SetUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
-		s_Data.QuadShader->SetUniform3f("light[0].Direction", { 0.2f, 100.0f, 0.3f });
-		s_Data.QuadShader->SetUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->SetUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->SetUniform3f("light[0].Specular", glm::vec3(1.0f));
-		s_Data.QuadShader->SetUniform1f("light[0].Constant", 1.0f);
-		s_Data.QuadShader->SetUniform1f("light[0].Linear", 0.009f);
-		s_Data.QuadShader->SetUniform1f("light[0].Quadratic", 0.0032f);
-
-		s_Data.QuadShader->SetUniform3f("u_ViewPosition", { 0.0f, 0.0f, 0.0f });
-		s_Data.QuadShader->SetUniformMat4("u_ViewProjMatrix", viewProj);
+		s_Data->QuadShader->Bind();
 
 		StartBatch();
 	}
@@ -342,28 +342,15 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		s_Data.SkyBoxShader->Bind();
+		s_Data->SkyBoxShader->Bind();
 		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
 		glm::mat4 viewProj = camera.GetProjection() * view;
-		s_Data.SkyBoxShader->SetUniformMat4("u_ViewProjMatrix", viewProj);
 
-		s_Data.QuadShader->Bind();
-		//s_Data.QuadShader->setUniform3f("material.diffuse", color * glm::vec3(0.2f));
-		s_Data.QuadShader->SetUniform1i("material.specular", 2);
-		s_Data.QuadShader->SetUniform1f("material.shininess", 50.0f);
+		s_Data->CameraBuffer.ViewProjection = camera.GetViewProjection();
+		s_Data->CameraBuffer.SkyVP = viewProj;
+		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(RendererData::CameraData));
 
-		// For light one
-		s_Data.QuadShader->SetUniform3f("light[0].Position", { 1.2f, 3.0f, 2.0f });
-		s_Data.QuadShader->SetUniform3f("light[0].Direction", { 0.2f, 1.0f, 0.3f });
-		s_Data.QuadShader->SetUniform3f("light[0].Ambient", { 0.2f, 0.2f, 0.2f });
-		s_Data.QuadShader->SetUniform3f("light[0].Diffuse", { 0.5f, 0.5f, 0.5f });
-		s_Data.QuadShader->SetUniform3f("light[0].Specular", glm::vec3(1.0f));
-		s_Data.QuadShader->SetUniform1f("light[0].Constant", 1.0f);
-		s_Data.QuadShader->SetUniform1f("light[0].Linear", 0.009f);
-		s_Data.QuadShader->SetUniform1f("light[0].Quadratic", 0.0032f);
-
-		s_Data.QuadShader->SetUniform3f("u_ViewPosition", { 0.0f, 0.0f, 0.0f });
-		s_Data.QuadShader->SetUniformMat4("u_ViewProjMatrix", camera.GetViewProjection());
+		s_Data->QuadShader->Bind();
 		
 		StartBatch();
 	}
@@ -375,10 +362,10 @@ namespace Aurora {
 
 	void Renderer3D::StartBatch()
 	{
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+		s_Data->QuadIndexCount = 0;
+		s_Data->QuadVertexBufferPtr = s_Data->QuadVertexBufferBase;
 
-		s_Data.TextureSlotIndex = 1;
+		s_Data->TextureSlotIndex = 1;
 	}
 
 	void Renderer3D::Flush()
@@ -386,20 +373,20 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::Flush");
 
-		if (s_Data.QuadIndexCount)
+		if (s_Data->QuadIndexCount)
 		{
 			// Casting to one byte to actually do a correct calculation, otherwise it tells you the number of elements only since these are QuadVertex.
-			uint32_t dataSize = (uint32_t)((Byte*)s_Data.QuadVertexBufferPtr - (Byte*)s_Data.QuadVertexBufferBase);
-			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+			uint32_t dataSize = (uint32_t)((Byte*)s_Data->QuadVertexBufferPtr - (Byte*)s_Data->QuadVertexBufferBase);
+			s_Data->QuadVertexBuffer->SetData(s_Data->QuadVertexBufferBase, dataSize);
 
 			// Bind Textures
-			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-				s_Data.TextureSlots[i]->Bind(i);
+			for (uint32_t i = 0; i < s_Data->TextureSlotIndex; i++)
+				s_Data->TextureSlots[i]->Bind(i);
 
-			s_Data.QuadShader->Bind();
-			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+			s_Data->QuadShader->Bind();
+			RenderCommand::DrawIndexed(s_Data->QuadVertexArray, s_Data->QuadIndexCount);
 
-			s_Data.Stats.DrawCalls++;
+			s_Data->Stats.DrawCalls++;
 		}
 	}
 
@@ -412,14 +399,25 @@ namespace Aurora {
 	void Renderer3D::DrawSkyBox(const Ref<CubeTexture>& skybox) // TODO: Temp...
 	{
 		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::LessOrEqual);
-		s_Data.SkyBoxShader->Bind();
+		s_Data->SkyBoxShader->Bind();
+		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.c", 0.3f);
+		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.d", 0.3f);
 		skybox->Bind();
 
 		auto flag = RenderCommand::GetRenderFlag();
 		RenderCommand::SetRenderFlag(RenderFlags::Fill);
-		RenderCommand::DrawIndexed(s_Data.SkyBoxVertexArray, 36);
+		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);
 		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
 		RenderCommand::SetRenderFlag(flag);
+	}
+
+	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat) // TODO: TEMPORARY!!!!!!!!
+	{
+		//mat->Set("u_Renderer.transform", transform);
+		mat->SetUpForRendering();
+		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
+		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);
+		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
 	}
 
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
@@ -427,7 +425,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
-		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
 
 		const float whiteTexIndex = 0.0f; // White texture.
@@ -438,30 +436,30 @@ namespace Aurora {
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));
 
-		for (uint32_t i = 0; i < s_Data.quadVertexCount; i++)
+		for (uint32_t i = 0; i < s_Data->quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->Normals = normalMat * s_Data.QuadNormalPositions[i];
-			s_Data.QuadVertexBufferPtr->TexCoords = s_Data.textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = TilingFactor;
-			s_Data.QuadVertexBufferPtr->light = light;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[i];
+			s_Data->QuadVertexBufferPtr->Color = color;
+			s_Data->QuadVertexBufferPtr->Normals = normalMat * s_Data->QuadNormalPositions[i];
+			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
+			s_Data->QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
+			s_Data->QuadVertexBufferPtr->TilingFactor = TilingFactor;
+			s_Data->QuadVertexBufferPtr->light = light;
+			s_Data->QuadVertexBufferPtr->EntityID = entityID;
+			s_Data->QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 36;
+		s_Data->QuadIndexCount += 36;
 
-		s_Data.Stats.QuadCount++;
+		s_Data->Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintcolor, int entityID)
+	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintcolor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
-		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
 
 		// textureIndex is the index that will be submitted in the VBO with everything and then passed on to the fragment shader so 
@@ -470,9 +468,9 @@ namespace Aurora {
 		// So here we need to find the texture index of the passed index and check if it has already been used.
 		// If it the case where it has been used before, the index will be already found in the array and we just return the index
 		float textureIndex = 0.0f;
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_Data->TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i] == *texture)
+			if (*(s_Data->TextureSlots[i]) == *texture)
 			{
 				textureIndex = (float)i;
 				break;
@@ -483,9 +481,9 @@ namespace Aurora {
 		// If the case happens that it has never been used before, here we just add that index to the array so that it can be used later.
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
+			textureIndex = (float)s_Data->TextureSlotIndex;
+			s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
+			s_Data->TextureSlotIndex++;
 		}
 
 		const int light = 0;
@@ -495,22 +493,22 @@ namespace Aurora {
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));
 
-		for (uint32_t i = 0; i < s_Data.quadVertexCount; i++)
+		for (uint32_t i = 0; i < s_Data->quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = tintcolor;
-			s_Data.QuadVertexBufferPtr->Normals = normalMat * s_Data.QuadNormalPositions[i];
-			s_Data.QuadVertexBufferPtr->TexCoords = s_Data.textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
-			s_Data.QuadVertexBufferPtr->light = light;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[i];
+			s_Data->QuadVertexBufferPtr->Color = tintcolor;
+			s_Data->QuadVertexBufferPtr->Normals = normalMat * s_Data->QuadNormalPositions[i];
+			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
+			s_Data->QuadVertexBufferPtr->TextureIndex = textureIndex;
+			s_Data->QuadVertexBufferPtr->TilingFactor = tiling;
+			s_Data->QuadVertexBufferPtr->light = light;
+			s_Data->QuadVertexBufferPtr->EntityID = entityID;
+			s_Data->QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 36;
+		s_Data->QuadIndexCount += 36;
 
-		s_Data.Stats.QuadCount++;
+		s_Data->Stats.QuadCount++;
 	}
 
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
@@ -518,7 +516,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
-		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
 
 		const float whiteTexIndex = 0.0f; // White texture.
@@ -529,36 +527,36 @@ namespace Aurora {
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));
 
-		for (uint32_t i = 0; i < s_Data.quadVertexCount; i++)
+		for (uint32_t i = 0; i < s_Data->quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->Normals = normalMat * s_Data.QuadNormalPositions[i];
-			s_Data.QuadVertexBufferPtr->TexCoords = s_Data.textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = TilingFactor;
-			s_Data.QuadVertexBufferPtr->light = light;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[i];
+			s_Data->QuadVertexBufferPtr->Color = color;
+			s_Data->QuadVertexBufferPtr->Normals = normalMat * s_Data->QuadNormalPositions[i];
+			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
+			s_Data->QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
+			s_Data->QuadVertexBufferPtr->TilingFactor = TilingFactor;
+			s_Data->QuadVertexBufferPtr->light = light;
+			s_Data->QuadVertexBufferPtr->EntityID = entityID;
+			s_Data->QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 36;
+		s_Data->QuadIndexCount += 36;
 
-		s_Data.Stats.QuadCount++;
+		s_Data->Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture>& texture, float tiling, const glm::vec4& tintColor, int entityID)
+	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintColor, int entityID)
 	{
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
-		if (s_Data.QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
 
 		float textureIndex = 0.0f;
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_Data->TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i] == *texture)
+			if (*(s_Data->TextureSlots[i]) == *texture)
 			{
 				textureIndex = (float)i;
 				break;
@@ -567,9 +565,9 @@ namespace Aurora {
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
+			textureIndex = (float)s_Data->TextureSlotIndex;
+			s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
+			s_Data->TextureSlotIndex++;
 		}
 
 		const int light = 0;
@@ -579,33 +577,33 @@ namespace Aurora {
 
 		glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(transform)));
 
-		for (uint32_t i = 0; i < s_Data.quadVertexCount; i++)
+		for (uint32_t i = 0; i < s_Data->quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = tintColor;
-			s_Data.QuadVertexBufferPtr->Normals = normalMat * s_Data.QuadNormalPositions[i];
-			s_Data.QuadVertexBufferPtr->TexCoords = s_Data.textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
-			s_Data.QuadVertexBufferPtr->light = light;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[i];
+			s_Data->QuadVertexBufferPtr->Color = tintColor;
+			s_Data->QuadVertexBufferPtr->Normals = normalMat * s_Data->QuadNormalPositions[i];
+			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
+			s_Data->QuadVertexBufferPtr->TextureIndex = textureIndex;
+			s_Data->QuadVertexBufferPtr->TilingFactor = tiling;
+			s_Data->QuadVertexBufferPtr->light = light;
+			s_Data->QuadVertexBufferPtr->EntityID = entityID;
+			s_Data->QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 36;
+		s_Data->QuadIndexCount += 36;
 
-		s_Data.Stats.QuadCount++;
+		s_Data->Stats.QuadCount++;
 	}
 
 	void Renderer3D::ResetStats()
 	{
-		s_Data.Stats.DrawCalls = 0;
-		s_Data.Stats.QuadCount = 0;
+		s_Data->Stats.DrawCalls = 0;
+		s_Data->Stats.QuadCount = 0;
 	}
 
 	Renderer3D::Statistics& Renderer3D::GetStats()
 	{
-		return s_Data.Stats;
+		return s_Data->Stats;
 	}
 
 }

@@ -3,6 +3,7 @@
 #include "Entity.h"
 
 #include "Graphics/Model.h"
+#include "Graphics/UniformBuffer.h" // TODO: Temp...!
 #include "Components.h"
 #include "ScriptableEntity.h"
 #include "Renderer/Renderer3D.h"
@@ -11,24 +12,37 @@
 
 namespace Aurora {
 
-	Ref<Scene> Scene::Create()
+	static Ref<UniformBuffer> s_ModelUniBuffer;
+	static Ref<Shader> s_MatShader;
+	static Ref<Material> s_Mat;
+	static Ref<Texture2D> s_Texture;
+
+	Ref<Scene> Scene::Create(const std::string& debugName)
 	{
-		return CreateRef<Scene>();
+		return CreateRef<Scene>(debugName);
 	}
 
-	Scene::Scene()
+	Scene::Scene(const std::string& debugName)
+		: m_Name(debugName)
 	{
-		m_ModelShader = Shader::Create("resources/shaders/model.glsl"); // TODO: Temp...
-		m_EnvironmentMap = CubeTexture::Create("resources/textures/skybox");
+		s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
+		s_Mat = Material::Create("Test Mat", s_MatShader);
+		s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png");
+		s_Texture->LoadTextureData();
+
+		m_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
+		s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
+		m_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
 	}
 
 	Scene::~Scene()
 	{
 	}
 
-	Entity Scene::CreateEntity(const char* name)
+	Entity Scene::CreateEntityWithUUID(UUID id, const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name == "" ? "AuroraDefault" : name;
@@ -36,9 +50,14 @@ namespace Aurora {
 		return entity;
 	}
 
+	Entity Scene::CreateEntity(const char* name)
+	{
+		return CreateEntityWithUUID(UUID(), name);
+	}
+
 	Entity Scene::CopyEntity(Entity entity)
 	{
-		AR_CORE_ASSERT(false, "Scene", "Needs Rework");
+		AR_CORE_ASSERT(false);
 
 		static uint32_t nameIncremet = 1;
 		std::string name = entity.GetComponent<TagComponent>().Tag;
@@ -77,11 +96,17 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera)
+	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera, glm::vec3 puh) // TODO: TEMPORARY!!!!!!!!!
 	{
 		Renderer3D::BeginScene(camera);
 
-		Renderer3D::DrawSkyBox(m_EnvironmentMap);
+		Renderer3D::DrawSkyBox(m_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
+
+		glm::mat4 transform(1.0f);
+		glm::scale(transform, { 10.0f, 10.0f, 10.0f });
+		s_Mat->Set("u_AlbedoTexture", s_Texture);
+		//s_Mat->Set("u_Uniforms.AlbedoColor", glm::vec4(puh, 1.0f));
+		Renderer3D::DrawMaterial(transform, s_Mat); // TODO: TEMPORARY!!!!!!!!!
 
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)
@@ -111,10 +136,9 @@ namespace Aurora {
 			auto trans = glm::translate(glm::mat4(1.0f), transform.Translation) * rotation * glm::scale(glm::mat4(1.0f), transform.Scale);
 
 			m_ModelShader->Bind();
-			m_ModelShader->SetUniform1i("u_EntityID", (uint32_t)entity);
-			m_ModelShader->SetUniformMat4("model", glm::value_ptr(trans));
-			m_ModelShader->SetUniformMat4("viewproj", glm::value_ptr(camera.GetViewProjection()));
-			m_ModelShader->SetUniform3f("lightPos", { 1.2f, 3.0f, 2.0f });
+
+			s_ModelUniBuffer->SetData(glm::value_ptr(trans), sizeof(glm::mat4));
+			s_ModelUniBuffer->SetData(&entity, sizeof(int), sizeof(glm::mat4));
 			model.Draw(*(m_ModelShader.raw()));
 		}
 
@@ -203,6 +227,12 @@ namespace Aurora {
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
 		static_assert(sizeof(T) == 0);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
+
 	}
 
 	template<>

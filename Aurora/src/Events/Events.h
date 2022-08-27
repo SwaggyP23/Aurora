@@ -18,6 +18,7 @@ namespace Aurora {
 	enum class EventType
 	{
 		None = 0,
+		AppTick, AppUpdate, AppRender,
 		WindowResize, WindowMinimize, WindowMaximize, WindowClose,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
@@ -34,8 +35,8 @@ namespace Aurora {
 	};
 
 	#define EVENT_CLASS_TYPE(type) static EventType getStaticType() { return EventType::type; }\
-								virtual EventType getEventType() const override { return getStaticType(); }\
-								virtual const char* getName() const override { return AR_STRINGIFY_MACRO(type); };
+								virtual EventType GetEventType() const override { return getStaticType(); }\
+								virtual const char* GetName() const override { return AR_STRINGIFY_MACRO(type); }
 
 	#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
@@ -44,10 +45,10 @@ namespace Aurora {
 	public:
 		virtual ~Event() = default;
 
-		virtual EventType getEventType() const = 0;
-		virtual const char* getName() const = 0;
+		virtual EventType GetEventType() const = 0;
+		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
-		virtual std::string toString() const { return getName(); }
+		virtual std::string toString() const { return GetName(); }
 
 		bool IsInCategory(EventCategory category)
 		{
@@ -67,7 +68,7 @@ namespace Aurora {
 		template<typename T, typename F> // F is to be deduced by compiler, and it will be a function
 		bool dispatch(const F& func)
 		{
-			if (m_Event.getEventType() == T::getStaticType())
+			if (m_Event.GetEventType() == T::getStaticType())
 			{
 				m_Event.Handled |= func(static_cast<T&>(m_Event));
 				return true;

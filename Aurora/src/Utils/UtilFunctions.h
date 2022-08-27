@@ -9,7 +9,7 @@ namespace Aurora {
 
 	namespace Utils {
 
-#ifdef AR_PLATFORM_WINDOWS
+#ifdef AURORA_PLATFORM_WINDOWS
 		// TODO: Add other platform support
 		class WindowsFileDialogs
 		{
@@ -36,6 +36,14 @@ namespace Aurora {
 		{
 		public:
 			static float GetTime();
+		};
+
+		class StringUtils
+		{
+		public:
+			static std::string& ToLower(std::string& string);
+			static std::string& ToUpper(std::string& string);
+
 		};
 
 	}

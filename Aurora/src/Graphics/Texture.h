@@ -8,6 +8,9 @@
  * With the new OpenGL version 4.5, the texture workflow is no longer Gen -> Bind -> Allocate -> Upload. 
  * Rather now its just like Create -> Allocate -> Upload. And now it is no longer needed to do glActiveTexture(GL_TEXTURE0...);
  * We can just bind to a certain slot which will activate it using glBindTextureUnit(slot, texture);
+ * 
+ * TODO: Create a texture properties struct so that we can create textures by providing properties just like the framebuffers
+ * workflow.
  */
 
 namespace Aurora {
@@ -32,15 +35,27 @@ namespace Aurora {
 		MipMap_LinearLinear
 	};
 
-	class Texture
+	class Texture : public RefCountedObject
 	{
 	public:
-		Texture(uint32_t width, uint32_t height); // This is to create just default 1x1 RGBA Textures for masking on colors
-		Texture(const std::string& filePath);
-		~Texture();
+		virtual ~Texture() = default;
 
-		static Ref<Texture> Create(uint32_t width, uint32_t height);
-		static Ref<Texture> Create(const std::string& filePath);
+		virtual void Bind(uint32_t slot = 0) const = 0;
+		virtual void UnBind(uint32_t slot = 0) const = 0;
+
+		virtual uint32_t GetTextureID() const = 0;
+
+	};
+
+	class Texture2D : public Texture
+	{
+	public:
+		Texture2D(uint32_t width, uint32_t height); // This is to create just default 1x1 RGBA Textures for masking on colors
+		Texture2D(const std::string& filePath);
+		virtual ~Texture2D();
+
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+		static Ref<Texture2D> Create(const std::string& filePath);
 
 		void SetData(const void* data, uint32_t size);
 
@@ -51,14 +66,14 @@ namespace Aurora {
 		void FlipTextureVertically(bool state);
 		void LoadTextureData();
 
-		void Bind(uint32_t slot = 0) const;
-		void UnBind(uint32_t slot = 0) const;
+		virtual void Bind(uint32_t slot = 0) const override;
+		virtual void UnBind(uint32_t slot = 0) const override;
 
 		inline uint32_t GetWidth() const { return m_Width; }
 		inline uint32_t GetHeight() const { return m_Height; }
-		inline uint32_t GetTextureID() const { return m_TextureID; }
+		inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
 
-		bool operator==(const Texture& other) const { return m_TextureID == other.m_TextureID; }
+		bool operator==(const Texture2D& other) const { return m_TextureID == other.m_TextureID; }
 
 	private:
 		uint32_t m_TextureID = 0;

@@ -23,6 +23,9 @@ namespace Aurora {
 		uint32_t WindowWidth = 1280;
 		uint32_t WindowHeight = 720;
 
+		// Creates a full screen window
+		bool Fullscreen = false;
+
 		// Decorated window
 		bool WindowDecorated = true;
 
@@ -32,8 +35,8 @@ namespace Aurora {
 		// Start the window in maximized mode
 		bool StartMaximized = false;
 
-		// This makes the window not resizable. Note: Better to set to true if StartMaximized is set to false!
-		bool SetWindowResizable = false;
+		// This makes the window not resizable. Note: Better to set to true if screen is not maximized
+		bool SetWindowResizable = true;
 
 		// TODO: Set working directory
 		std::string WorkingDirectory;
@@ -48,8 +51,6 @@ namespace Aurora {
 		Application(const ApplicationSpecification& specification);
 		virtual ~Application();
 
-		// This acts as the restart also
-		void Restart();
 		void Close();
 
 		void RenderImGui();
@@ -65,11 +66,13 @@ namespace Aurora {
 		void ProcessEvents();
 
 		inline float GetCPUTime() const { return m_CPUTime; }
-		inline long double GetLastFrameTime() const { return m_LastFrameTime; }
+		inline float GetFrameTime() const { return m_FrameTime; }
+		inline TimeStep GetTimeStep() const { return m_Timestep; }
+		inline void SetTickDeltaTime(float delta) { m_TickDelta = delta; }
 
 		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 
-		inline Window& GetWindow() const { return *m_Window; }
+		inline Window& GetWindow() { return *m_Window; }
 
 		inline static Application& GetApp() { return *s_Instance; }
 		inline const ApplicationSpecification& GetSpecification() const { return m_Specification; }
@@ -81,7 +84,6 @@ namespace Aurora {
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnWindowMinimize(WindowMinimizeEvent& e);
-		bool OnWindowMaximize(WindowMaximizeEvent& e);
 
 	private:
 		ApplicationSpecification m_Specification;
@@ -91,12 +93,12 @@ namespace Aurora {
 		LayerStack m_LayerStack;
 
 		float m_FrameTime = 0.0f;
-		long double m_LastFrameTime = 0.0f;
+		float m_LastFrameTime = 0.0f;
 		float m_CPUTime = 0.0f;
+		float m_TickDelta = 1.0f;
 		TimeStep m_Timestep;
 		PerformanceProfiler* m_Profiler = nullptr; // TODO: Should be null in Dist
 
-		bool m_Restart = false;
 		bool m_Running = true;
 		bool m_Minimized = false;
 

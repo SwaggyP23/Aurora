@@ -10,9 +10,10 @@
 
 #include <glfw/glfw3.h>
 
-#include <ImGui/imgui.h>
-#include <ImGui/imgui_impl_glfw.h>
-#include <ImGui/imgui_impl_opengl3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 namespace Aurora {
 
@@ -43,7 +44,7 @@ namespace Aurora {
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 6.0f;
-			style.PopupRounding = 6.0f;
+			style.PopupRounding = 3.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
@@ -65,16 +66,6 @@ namespace Aurora {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
-	}
-
-	void ImGuiLayer::OnEvent(Event& e)
-	{
-		if (m_BlockEvents)
-		{
-			ImGuiIO& io = ImGui::GetIO();
-			e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
-			e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
-		}
 	}
 
 	void ImGuiLayer::Begin()
@@ -112,7 +103,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		auto& style = ImGui::GetStyle();
+		ImGuiStyle& style = ImGui::GetStyle();
 		auto& colors = ImGui::GetStyle().Colors;
 
 		// Headers
@@ -165,9 +156,14 @@ namespace Aurora {
 		colors[ImGuiCol_PopupBg]  = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundPopup);
 		colors[ImGuiCol_Border]   = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundDark);
 
+		// Popup
+		colors[ImGuiCol_PopupBg] = ImGui::ColorConvertU32ToFloat4(Theme::Background);
+
 		// Tables
 		colors[ImGuiCol_TableHeaderBg]    = ImGui::ColorConvertU32ToFloat4(Theme::GroupHeader);
 		colors[ImGuiCol_TableBorderLight] = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundDark);
+		colors[ImGuiCol_TableRowBg]       = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundMedium);
+		colors[ImGuiCol_TableRowBgAlt]    = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundDark);
 
 		// MenuBar
 		colors[ImGuiCol_MenuBarBg] = ImColor(0, 0, 0, 0);
@@ -175,9 +171,9 @@ namespace Aurora {
 		// Tabs
 		colors[ImGuiCol_Tab]                = ImGui::ColorConvertU32ToFloat4(Theme::Titlebar);
 		colors[ImGuiCol_TabHovered]         = ImColor(255, 255, 135, 30);
-		colors[ImGuiCol_TabActive]          = ImColor(255, 255, 135, 60);
+		colors[ImGuiCol_TabActive]          = ImGui::ColorConvertU32ToFloat4(Theme::Accent);
 		colors[ImGuiCol_TabUnfocused]       = ImGui::ColorConvertU32ToFloat4(Theme::Titlebar);
-		colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+		colors[ImGuiCol_TabUnfocusedActive] = ImGui::ColorConvertU32ToFloat4(Theme::AccentDimmed);
 
 		// Title
 		colors[ImGuiCol_TitleBg]          = ImGui::ColorConvertU32ToFloat4(Theme::Titlebar);
@@ -195,37 +191,31 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		// Loading default fonts
-		m_Fonts.LoadFont("OpenSans", "resources/fonts/OpenSans");
-		m_Fonts.LoadFont("Teko", "resources/fonts/Teko");
-		m_Fonts.LoadFont("BebasNeue", "resources/fonts/BebasNeue");
-		m_Fonts.LoadFont("Edu NSW ACT", "resources/fonts/Edu NSW ACT Foundation");
-		m_Fonts.LoadFont("MochiyPopOne", "resources/fonts/MochiyPopOne");
-		m_Fonts.LoadFont("Chewy", "resources/fonts/Chewy");
+		m_FontsLibrary.LoadFont("BebasNeue", "Resources/EditorInternal/Fonts/BebasNeue");
+		m_FontsLibrary.LoadFont("Chewy", "Resources/EditorInternal/Fonts/Chewy");
+		m_FontsLibrary.LoadFont("Edu NSW ACT", "Resources/EditorInternal/Fonts/Edu NSW ACT Foundation");
+		m_FontsLibrary.LoadFont("FredokaOne", "Resources/EditorInternal/Fonts/Fredoka_One");
+		m_FontsLibrary.LoadFont("MochiyPopOne", "Resources/EditorInternal/Fonts/MochiyPopOne");
+		m_FontsLibrary.LoadFont("OpenSans", "Resources/EditorInternal/Fonts/OpenSans");
 
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Bold);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Italic);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Regular);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Medium);
-		m_Fonts.AddFont("OpenSans", FontIdentifier::Light);
+		m_FontsLibrary.AddFont("BebasNeue", FontIdentifier::Regular, 22.0f);
 
-		m_Fonts.AddFont("Teko", FontIdentifier::Bold, 22.0f);
-		m_Fonts.AddFont("Teko", FontIdentifier::Regular, 25.0f);
-		m_Fonts.AddFont("Teko", FontIdentifier::Medium, 25.0f);
-		m_Fonts.AddFont("Teko", FontIdentifier::Light, 25.0f);
+		m_FontsLibrary.AddFont("Chewy", FontIdentifier::Regular, 20.0f);
 
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.5f);
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Regular, 19.5f);
-		m_Fonts.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.5f);
+		m_FontsLibrary.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.5f);
+		m_FontsLibrary.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.5f);
 
-		m_Fonts.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
+		m_FontsLibrary.AddFont("FredokaOne", FontIdentifier::Regular, 16.5f);
 
-		m_Fonts.AddFont("Chewy", FontIdentifier::Regular, 20.0f);
+		m_FontsLibrary.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
 
-		m_Fonts.AddFont("BebasNeue", FontIdentifier::Regular, 22.0f);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Bold);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Italic);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Medium);
 
 		// More fonts are to be added
 
-		m_Fonts.SetDefaultFont("OpenSans", FontIdentifier::Medium, 30.0f);
+		m_FontsLibrary.SetDefaultFont("OpenSans", FontIdentifier::Medium);
 	}
 
 }

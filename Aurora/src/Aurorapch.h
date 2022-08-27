@@ -1,19 +1,16 @@
 #pragma once
 
-#ifdef AR_PLATFORM_WINDOWS
+#ifdef AURORA_PLATFORM_WINDOWS
     #ifndef NOMINMAX
         #define NOMINMAX // These are for the random number generator
     #endif // !NOMINMAX
 #endif
 
-#include <iostream>
-#include <stdint.h>
 #include <memory>
 #include <utility>
 #include <algorithm>
 #include <functional>
 #include <thread>
-#include <variant>
 
 #include <string>
 #include <string_view>
@@ -26,8 +23,6 @@
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
-#include <queue>
-#include <deque>
 
 #include "Logging/Log.h"
 #include "Core/Base.h"
@@ -35,6 +30,6 @@
 #include "Debugging/Instrumentation.h"
 #include "Debugging/Timer.h"
 
-#ifdef AR_PLATFORM_WINDOWS
+#ifdef AURORA_PLATFORM_WINDOWS
     #include <Windows.h>
 #endif

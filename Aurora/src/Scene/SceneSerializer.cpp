@@ -122,7 +122,7 @@ namespace Aurora {
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << "129861987"; // TODO: Change when UUIDS are added
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
 		if (entity.HasComponent<TagComponent>())
 		{
@@ -209,7 +209,7 @@ namespace Aurora {
 
 		outPut << YAML::BeginMap;
 
-		outPut << YAML::Key << "Scene" << YAML::Value << "UnNamed"; // TODO: Add scene names
+		outPut << YAML::Key << "Scene" << YAML::Value << m_Scene->GetName();
 		outPut << YAML::Key << "Entities" << YAML::Value;
 
 		outPut << YAML::BeginSeq;
@@ -238,14 +238,14 @@ namespace Aurora {
 
 	void SceneSerializer::SerializeToBinary(const std::string& filepath)
 	{
-		AR_CORE_ASSERT(false, "SceneSerializer", "Not Implemented!");
+		AR_CORE_ASSERT(false);
 	}
 
 	bool SceneSerializer::DeSerializeFromText(const std::string& filepath)
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_ASSERT(std::filesystem::exists(filepath), "SceneSerializer", "Path does not exist");
+		AR_CORE_ASSERT(std::filesystem::exists(filepath), "Path does not exist");
 
 		YAML::Node data;
 
@@ -262,6 +262,7 @@ namespace Aurora {
 			return false; // If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
 
 		std::string sceneName = data["Scene"].as<std::string>();
+		m_Scene->SetName(sceneName);
 		AR_CORE_TRACE_TAG("SceneSerializer", "Deserializing scene '{0}'", sceneName);
 
 		YAML::Node entities = data["Entities"]; // This is the entities node that exists under the scene
@@ -269,7 +270,7 @@ namespace Aurora {
 		{
 			for (auto entity : entities) // This loops and gets all the child nodes of the node "Entities"
 			{
-				uint64_t uuid = entity["Entity"].as<uint64_t>(); // TODO: Comeback to this when UUIDs are implemented
+				uint64_t uuid = entity["Entity"].as<uint64_t>();
 
 				std::string entityName;
 				YAML::Node tagComponent = entity["TagComponent"];
@@ -278,9 +279,9 @@ namespace Aurora {
 					entityName = tagComponent["Tag"].as<std::string>();
 				}
 
-				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID '{0}', name '{1}'", uuid, entityName);
+				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID: {0:#04x}, Name: {1}", uuid, entityName);
 
-				Entity deserializedEntity = m_Scene->CreateEntity(entityName.c_str());
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, entityName.c_str());
 
 				YAML::Node transform = entity["TransformComponent"];
 				if (transform)
@@ -326,7 +327,7 @@ namespace Aurora {
 
 	bool SceneSerializer::DeSerializeFromBinary(const std::string& filepath)
 	{
-		AR_CORE_ASSERT(false, "SceneSerializer", "Not Implemented!");
+		AR_CORE_ASSERT(false);
 
 		return false;
 	}

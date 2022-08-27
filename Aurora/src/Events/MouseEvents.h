@@ -10,7 +10,7 @@ namespace Aurora {
 		MouseMovedEvent(float mx, float my)
 			: m_Mx(mx), m_My(my) {}
 
-		std::pair<float, float> GetMousePos() const { return { m_Mx, m_My }; }
+		inline std::pair<float, float> GetMousePos() const { return { m_Mx, m_My }; }
 		inline float GetMouseX() const { return m_Mx; }
 		inline float GetMouseY() const { return m_My; }
 

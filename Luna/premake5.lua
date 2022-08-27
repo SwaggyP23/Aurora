@@ -29,12 +29,19 @@ project "Luna"
         "Aurora"
     }
 
+    defines
+    {
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
+    }
+
+    postbuildmessage "Done building Luna!"
+
     filter "system:windows"
         systemversion "latest"
 
         defines
         {
-            "AR_PLATFORM_WINDOWS"
+            "AURORA_PLATFORM_WINDOWS"
         }
 
     filter "configurations:Profile"
@@ -49,12 +56,12 @@ project "Luna"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+            "%{Library.AssimpRelease}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Debug"
@@ -64,12 +71,12 @@ project "Luna"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.lib"
+            "%{Library.AssimpDebug}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Debug/assimp-vc141-mt.dll %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpDebug} %{cfg.targetdir}")
         }
 
     filter "configurations:Release"
@@ -80,12 +87,12 @@ project "Luna"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+            "%{Library.AssimpRelease}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Dist"
@@ -96,12 +103,12 @@ project "Luna"
 
         links
         {
-            "%{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.lib"
+            "%{Library.AssimpRelease}"
         }
 
         postbuildcommands
         {
-            ("{COPY} %{wks.location}/Aurora/dependencies/assimp/AssimpBin/Release/assimp-vc141-mt.dll %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter { "system:windows", "configurations:Dist" }

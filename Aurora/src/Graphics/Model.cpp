@@ -10,9 +10,9 @@
 
 namespace Aurora {
 
-    static uint32_t TextureFromFile(const char* path, const std::string& directory)
+    static uint32_t TextureFromFile(const std::string& path, const std::string& directory)
     {
-        std::string filename = std::string(path);
+        std::string filename = path;
         filename = directory + '/' + filename;
 
         uint32_t textureID;

@@ -4,21 +4,27 @@
 #include "Refs.h"
 #include <filesystem>
 
+#ifndef AURORA_PLATFORM_WINDOWS
+	#error Aurora only supports Windows for now!
+#endif
+
+#ifdef AURORA_PLATFORM_WINDOWS
+    #define AR_FORCE_INLINE __forceinline
+#else
+    #define AR_FORCE_INLINE
+#endif
+
 #define AR_EXPAND_MACRO(x) x
 #define AR_STRINGIFY_MACRO(x) #x
 
 #define AR_PASTE_MACRO(x, y) x ## y
 #define AR_CONCAT_MACRO(x, y) AR_PASTE_MACRO(x, y)
 
-
 #ifdef AURORA_DEBUG
-	#define AR_DEBUG_BREAK __debugbreak()
-    #define AR_CORE_ASSERT(check, tag, ...)  { if(!(check)) { AR_CORE_ERROR_TAG(tag, "Assertion '{0}' failed at: {1}:{2}\n\tMessage: {3}", AR_STRINGIFY_MACRO(check), std::filesystem::path(__FILE__).filename().string(), __LINE__, __VA_ARGS__); AR_DEBUG_BREAK; }}
-    #define AR_ASSERT(check, tag, ...)  { if(!(check)) { AR_CORE_ERROR_TAG(tag, "Assertion '{0}' failed at: {1}:{2}\n\tMessage: {3}", AR_STRINGIFY_MACRO(check), std::filesystem::path(__FILE__).filename().string(), __LINE__, __VA_ARGS__); AR_DEBUG_BREAK; }}
-#else
-    #define AR_CORE_ASSERT(check, ...)
-    #define AR_ASSERT(check, ...)
+    #define AR_DEBUG_BREAK() __debugbreak()
 #endif
+
+#include "Assert.h"
 
 // Apparently using std::function and std::bind is not good and lambdas are way more efficient
 #define AR_SET_EVENT_FN(function) [this](auto&&... args) -> decltype(auto) { return this->function(std::forward<decltype(args)>(args)...); }
@@ -35,9 +41,6 @@ namespace Aurora {
 	{
 		return CreateScopedPointer<T>(std::forward<Args>(args)...);
 	}
-
-	template<typename T>
-	using Ref = RefCountedObject<T>;
 
 	template<typename T, typename... Args>
 	constexpr Ref<T> CreateRef(Args&&... args)

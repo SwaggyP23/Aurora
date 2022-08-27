@@ -1,29 +1,28 @@
 #include "Aurorapch.h"
 #include "Input.h"
 
-#include "KeyCodes.h"
 #include "Core/Application.h"
 
 #include <glfw/glfw3.h>
 
 namespace Aurora {
 
-	bool Input::IsKeyPressed(int keycode)
+	bool Input::IsKeyPressed(KeyCode keycode)
 	{
 		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
-
-		int state = glfwGetKey(window, keycode);
-
-		return state == Key::Press || state == Key::Repeat;
+		
+		int state = glfwGetKey(window, (int)keycode);
+		
+		return state == GLFW_PRESS;
 	}
 
-	bool Input::IsMouseButtonPressed(int button)
+	bool Input::IsMouseButtonPressed(MouseCode mouseCode)
 	{
 		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
 
-		int state = glfwGetMouseButton(window, button);
+		int state = glfwGetMouseButton(window, (int)mouseCode);
 
-		return state == Key::Press;
+		return state == GLFW_PRESS;
 	}
 
 	std::pair<float, float> Input::GetMousePosition()
@@ -47,6 +46,18 @@ namespace Aurora {
 		auto [x, y] = GetMousePosition();
 
 		return y;
+	}
+
+	void Input::SetCursorMode(CursorMode mode)
+	{
+		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)mode);
+	}
+
+	CursorMode Input::GetCursorMode()
+	{
+		GLFWwindow* window = (GLFWwindow*)Application::GetApp().GetWindow().GetWindowPointer();
+		return (CursorMode)(glfwGetInputMode(window, GLFW_CURSOR) - GLFW_CURSOR_NORMAL);
 	}
 
 }

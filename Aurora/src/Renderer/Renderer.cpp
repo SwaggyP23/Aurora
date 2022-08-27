@@ -5,6 +5,8 @@
 #include "RenderCommand.h"
 #include "Core/Application.h"
 
+// Currently this is totally useless
+
 namespace Aurora {
 
 	Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
@@ -27,11 +29,11 @@ namespace Aurora {
 		// RenderCommand::ShutDown();
 	}
 
-	void Renderer::BeginScene(const Ref<EditorCamera>& camera)
+	void Renderer::BeginScene(const EditorCamera& camera)
 	{
 		AR_PROFILE_FUNCTION();
 
-		s_SceneData->viewProjectionMatrix = camera->GetProjection() * camera->GetViewMatrix();;
+		s_SceneData->viewProjectionMatrix = camera.GetProjection() * camera.GetViewMatrix();;
 	}
 
 	void Renderer::EndScene()
@@ -49,9 +51,9 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-		shader->SetUniformMat4("ml_matrix", model);
-		shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+		//shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
+		//shader->SetUniformMat4("ml_matrix", model);
+		//shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 		VAO->Bind();
 		RenderCommand::DrawIndexed(VAO, true);
@@ -61,9 +63,9 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-		shader->SetUniformMat4("ml_matrix", model);
-		shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+		//shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
+		//shader->SetUniformMat4("ml_matrix", model);
+		//shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
 
 		VAO->Bind();
 		RenderCommand::DrawIndexed(VAO, false);

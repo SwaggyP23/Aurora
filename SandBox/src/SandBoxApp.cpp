@@ -1,5 +1,5 @@
 #include <Aurora.h>
-#include <Core/EntryPoint.h>
+#include <EntryPoint.h>
 #include "SandBoxLayer.h"
 #include "TestLayer.h"
 #include "Snake/GameLayer.h"
