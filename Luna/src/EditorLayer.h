@@ -34,9 +34,10 @@ namespace Aurora {
 		Entity m_SelectionContext;
 		Entity m_GroundEntity;
 		Entity m_HoveredEntity;
-		ImRect m_SceneHierarchyRect;
+		ImRect m_SceneHierarchyTableRect;
 		bool m_ShowSceneHierarchyPanel = true;
 		bool m_ShowPropertiesPanel = true;
+		std::vector<Entity> m_SortedEntities;
 
 	// Renderer Info/Stats Panels
 	private:
@@ -117,9 +118,8 @@ namespace Aurora {
 		Ref<Scene> m_EditorScene;
 		Ref<Scene> m_ActiveScene;
 
-		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-		glm::vec2 m_ViewportBounds[2];
 		ImRect m_ViewportRect;
+		ImVec2 m_ViewportSize = { 0.0f, 0.0f };
 
 		int m_GizmoType = -1;
 

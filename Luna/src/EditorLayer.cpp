@@ -40,15 +40,8 @@ namespace Aurora {
 		m_ActiveScene = m_EditorScene;
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
 
-		auto plane = m_ActiveScene->CreateEntity();
-		m_GroundEntity = plane;
-		auto& name = m_GroundEntity.GetComponent<TagComponent>();
-		name.Tag = "Plane";
-		auto& tc = m_GroundEntity.GetComponent<TransformComponent>();
-		tc.Scale = glm::vec3{ 200.0f, 0.5f, 200.0f };
-		auto& sp = m_GroundEntity.AddComponent<SpriteRendererComponent>();
-		sp.Color = { 0.6f, 0.6f, 0.6f, 1.0f };
-
+		// TODO: Default open scene for now...!
+		OpenScene("Resources/scenes/TestingSearchBox.aurora");
 
 		class CameraScript : public ScriptableEntity
 		{
@@ -105,15 +98,15 @@ namespace Aurora {
 		//m_ActiveScene->OnUpdateRuntime(ts);
 
 		auto [mx, my] = ImGui::GetMousePos();
-		mx -= m_ViewportBounds[0].x;
-		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		mx -= m_ViewportRect.Min.x;
+		my -= m_ViewportRect.Min.y;
+		ImVec2 viewportSize = { m_ViewportRect.Max.x - m_ViewportRect.Min.x, m_ViewportRect.Max.y - m_ViewportRect.Min.y };
 		my = viewportSize.y - my;
 
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
 
-		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		if(ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
 		{
 			// This is a very slow operation, and itself adds about 1-2 milliseconds to our CPU Frame, however this is just for the editor so...
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY); // Index 1 since the second buffer is the RED_INTEGER buffer
@@ -251,13 +244,13 @@ namespace Aurora {
 	{
 		bool isImGuizmoOver = ImGuizmo::IsOver();
 		bool isAltPressed = Input::IsKeyPressed(AR_KEY_LEFT_ALT);
-		bool inSceneHierarchyRect = ImGuiUtils::IsMouseInRectRegion(m_SceneHierarchyRect, false);
+		bool inSceneHierarchyTableRect = ImGuiUtils::IsMouseInRectRegion(m_SceneHierarchyTableRect, false);
 		bool inViewportRect = ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false);
 		bool isAnyImGuiItemHovered = ImGui::IsAnyItemHovered();
 		bool leftCLick = e.GetButtonCode() == AR_MOUSE_BUTTON_LEFT;
 
 		// I want to control the selection ONLY IN THE SCENE HIERARCHY AND IN THE VIEWPORT!
-		if (leftCLick && !isImGuizmoOver && !isAltPressed && !isAnyImGuiItemHovered && (inSceneHierarchyRect || inViewportRect))
+		if (leftCLick && !isImGuizmoOver && !isAltPressed && !isAnyImGuiItemHovered && (inSceneHierarchyTableRect || inViewportRect))
 		{
 			if (m_HoveredEntity != Entity::nullEntity && inViewportRect)
 				m_SelectionContext = m_HoveredEntity;
@@ -390,16 +383,21 @@ namespace Aurora {
 		const bool opened = ImGui::TreeNodeEx(strID.c_str(), treeFlags, tag.c_str());
 		ImGui::PopStyleColor(3);
 
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsMouseHoveringRect(rowAreaMin, rowAreaMax, false))
+		bool inSceneHierarchyTable = ImGuiUtils::IsMouseInRectRegion(m_SceneHierarchyTableRect, false);
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+			&& ImGuiUtils::IsMouseInRectRegion({ rowAreaMin, rowAreaMax }, false)
+			&& inSceneHierarchyTable)
+		{
 			m_SelectionContext = entity;
+		}
 
 		bool mouseClicked = (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::TableGetRowIndex())
-			|| (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && Input::IsKeyPressed(AR_KEY_LEFT_SHIFT));
+			|| (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && Input::IsKeyPressed(AR_KEY_LEFT_SHIFT) 
+			&& inSceneHierarchyTable);
 		if (mouseClicked)
 			m_SelectionContext = {};
 		
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, Theme::AccentDimmed);
-		ImGui::PushStyleColor(ImGuiCol_PopupBg, Theme::Background);
 		ImGui::PushStyleColor(ImGuiCol_Text, Theme::Text);
 		ImGui::PushStyleColor(ImGuiCol_Header, Theme::GroupHeader);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, Theme::GroupHeader);
@@ -421,12 +419,20 @@ namespace Aurora {
 		}
 
 		ImGui::PopStyleVar(2);
-		ImGui::PopStyleColor(6);
+		ImGui::PopStyleColor(5);
 
 		// TODO: Add other identifiers when there actually are other identifiers such as prefabs when these are a thing
 		ImGui::TableNextColumn();
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		ImGui::Text("Entity");
+
+		// Mouse Click events also for this column
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+			&& ImGuiUtils::IsMouseInRectRegion({ rowAreaMin, rowAreaMax }, false)
+			&& inSceneHierarchyTable)
+		{
+			m_SelectionContext = entity;
+		}
 
 		if (isRowClicked && wasRowRightClicked)
 		{
@@ -457,16 +463,15 @@ namespace Aurora {
 	{
 		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin("Scene Hierarchy");
+		ImGui::Begin("Scene Hierarchy", (bool*)0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
 		
-		m_SceneHierarchyRect = ImGuiUtils::GetWindowRect();
-
 		const float edgeOffset = 4.0f;
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 20.0f);
 
+		static bool enableSorting = false;
 		static std::string searchString;
 		ImGuiUtils::SearchBox(searchString);
 
@@ -481,12 +486,18 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 5.0f, 2.5f });
 		if (ImGui::BeginPopup("SceneHierarchySettings"))
 		{
-			// TODO: Add a setting for sorting the scene hierarchy by alphabetical order for example...
 			ImGui::Text("Show Properties: ");
 
 			ImGui::SameLine();
 
 			if (ImGui::Checkbox("##ShowProperties", &m_ShowPropertiesPanel))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::Text("Enable Sorting: ");
+
+			ImGui::SameLine(0.0f, 20.0f);
+
+			if (ImGui::Checkbox("##EnableSorting", &enableSorting))
 				ImGui::CloseCurrentPopup();
 
 			ImGui::Separator();
@@ -501,7 +512,6 @@ namespace Aurora {
 		ImGui::Spacing();
 		ImGui::Spacing();
 
-		// TODO: Add sorting...!
 		// Table
 		{
 			const ImU32 colRowAlt = ImGuiUtils::ColorWithMultiplierValue(Theme::BackgroundDark, 1.3f);
@@ -515,12 +525,13 @@ namespace Aurora {
 				//| ImGuiTableFlags_Reorderable
 				| ImGuiTableFlags_ScrollY
 				| ImGuiTableFlags_RowBg;
-				//| ImGuiTableFlags_Sortable;
 
 			if (ImGui::BeginTable("SceneHierarchy-EntityListTable", 2, tableFlags, ImGui::GetContentRegionAvail()))
 			{
 				ImGui::TableSetupColumn("Label");
 				ImGui::TableSetupColumn("Type");
+
+				m_SceneHierarchyTableRect = ImGui::GetCurrentTable()->InnerRect;
 
 				// Setup the header for the table...
 				ImU32 headerColor = ImGuiUtils::ColorWithMultiplierValue(Theme::AccentDimmed, 1.2f);
@@ -546,14 +557,36 @@ namespace Aurora {
 				}
 				ImGui::SetCursorPosX(ImGui::GetCurrentTable()->OuterRect.Min.x);
 
-				for (auto entity : m_Context->GetAllEntitiesWith<IDComponent>())
+				if(enableSorting)
 				{
-					DrawEntityNode({ entity, m_Context.raw() }, searchString);
+					for (auto entity : m_Context->GetAllEntitiesWith<IDComponent>())
+					{
+						m_SortedEntities.emplace_back(Entity{ entity, m_Context.raw() });
+					}
+
+					std::sort(m_SortedEntities.begin(), m_SortedEntities.end(), [](Entity a, Entity b)
+					{
+						return a.GetComponent<TagComponent>().Tag < b.GetComponent<TagComponent>().Tag;
+					});
+
+					for (Entity ent : m_SortedEntities)
+					{
+						DrawEntityNode(ent, searchString);
+					}
+
+					m_SortedEntities.clear();
 				}
+				else
+				{
+					for (auto entity : m_Context->GetAllEntitiesWith<IDComponent>())
+					{
+						DrawEntityNode({ entity, m_Context.raw() }, searchString);
+					}
+				}
+
 
 				ImGui::PopStyleColor(2);
 
-				ImGui::PushStyleColor(ImGuiCol_PopupBg, Theme::Background);
 				ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 0.0f);
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 8, 8 });
 				if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
@@ -562,25 +595,26 @@ namespace Aurora {
 					ImGui::EndPopup();
 				}
 				ImGui::PopStyleVar(2);
-				ImGui::PopStyleColor();
 
 				ImGui::EndTable();
 			}
 
-
 			ImGui::PopStyleColor(2);
 		}
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 8, 8 });
-		ImGui::Begin("Properties");
-
-		if (m_SelectionContext)
+		if (m_ShowPropertiesPanel)
 		{
-			DrawComponents(m_SelectionContext);
-		}
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 8, 8 });
+			ImGui::Begin("Properties");
 
-		ImGui::End();
-		ImGui::PopStyleVar();
+			if (m_SelectionContext)
+			{
+				DrawComponents(m_SelectionContext);
+			}
+
+			ImGui::End();
+			ImGui::PopStyleVar();
+		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -606,6 +640,8 @@ namespace Aurora {
 			if (typeid(T) != typeid(TransformComponent))
 			{
 				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
+				//void* textureID = (void*)(uint64_t)EditorResources::CloseIcon->GetTextureID();
+				//ImGui::ImageButton(textureID, ImVec2{ lineHeight, lineHeight }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 })
 				if (ImGui::Button("X", ImVec2{ lineHeight, lineHeight }))
 				{
 					ImGui::OpenPopup("ComponentSettings"); // This is also just an id and not a tag that will be rendered
@@ -984,6 +1020,15 @@ namespace Aurora {
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
 
+		Entity plane = m_ActiveScene->CreateEntity();
+		m_GroundEntity = plane;
+		TagComponent& name = m_GroundEntity.GetComponent<TagComponent>();
+		name.Tag = "Plane";
+		TransformComponent& tc = m_GroundEntity.GetComponent<TransformComponent>();
+		tc.Scale = glm::vec3{ 200.0f, 0.5f, 200.0f };
+		SpriteRendererComponent& sp = m_GroundEntity.AddComponent<SpriteRendererComponent>();
+		sp.Color = { 0.6f, 0.6f, 0.6f, 1.0f };
+
 		m_EditorScenePath = std::filesystem::path();
 	}
 
@@ -1070,11 +1115,11 @@ namespace Aurora {
 		float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 		m_Peak = peak;
 
-		std::string name = "None";
-		if (m_HoveredEntity)
-			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+		//std::string name = "None";
+		//if (m_HoveredEntity && ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
+		//	name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 
-		ImGui::Text("Hovered Entity: %s", name.c_str());
+		//ImGui::Text("Hovered Entity: %s", name.c_str());
 		ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
 		ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
 		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
@@ -1516,28 +1561,19 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
 
-		m_ViewportRect = ImGuiUtils::GetWindowRect();
+		m_ViewportRect = ImGuiUtils::GetWindowRect(true);
 
 		m_ViewPortFocused = ImGui::IsWindowFocused();
 		m_ViewPortHovered = ImGui::IsWindowHovered();
 
-		auto viewportOffset = ImGui::GetCursorPos();
+		ImVec2 viewportOffset = ImGui::GetCursorPos();
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
-		m_ViewportSize = *(glm::vec2*)&viewPortPanelSize;
+		m_ViewportSize = viewPortPanelSize;
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
 		ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-		auto windowSize = ImGui::GetWindowSize();
-		ImVec2 minBound = ImGui::GetWindowPos();
-		minBound.x += viewportOffset.x;
-		minBound.y += viewportOffset.y;
-
-		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-		m_ViewportBounds[0] = { minBound.x, minBound.y };
-		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
-
-		m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound);
+		m_AllowViewportCameraEvents = ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true);
 
 		ImGuiUtils::SetInputEnabled(!m_ViewPortFocused || !m_ViewPortHovered);
 

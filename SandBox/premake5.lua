@@ -59,7 +59,7 @@ project "SandBox"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Debug"
@@ -74,7 +74,7 @@ project "SandBox"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpDebug} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpDebug} %{cfg.targetdir}")
         }
 
     filter "configurations:Release"
@@ -90,7 +90,7 @@ project "SandBox"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Dist"
@@ -106,5 +106,5 @@ project "SandBox"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }

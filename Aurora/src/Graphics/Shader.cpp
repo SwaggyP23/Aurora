@@ -375,9 +375,9 @@ namespace Aurora {
 			std::string p = cachedPath.string();
 
 			// I am doing this step here so that i can get the ogl source code everytime and not only when the shaders are compiled
-			spirv_cross::CompilerGLSL glslCompiler(spirv);
+			spirv_cross::CompilerGLSL glslCompiler = spirv_cross::CompilerGLSL(spirv);
 			auto& pushConstResources = glslCompiler.get_shader_resources().push_constant_buffers;
-			short int locationIndex = 3; // TODO: Figure out a way to set the location for the push_constants automatically without fucking with the other locations in the shaader
+		    short int locationIndex = 3; // TODO: Figure out a way to set the location for the push_constants automatically without fucking with the other locations in the shaader
 			for (int i = 0; i < pushConstResources.size(); i++)
 			{
 				glslCompiler.set_decoration(pushConstResources[i].id, spv::DecorationLocation, locationIndex++);
@@ -564,10 +564,7 @@ namespace Aurora {
 
 			// Vertex Shader push_constant buffer which will be specific for the renderer!
 			if (bufferName == "u_Renderer")
-			{
-			
 				continue;
-			}
 
 			// We create and insert a ShaderPushBuffer into the map to later on be used in the material to get the uniform location
 			ShaderPushBuffer& buffer = m_Buffers[bufferName];

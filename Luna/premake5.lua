@@ -34,6 +34,8 @@ project "Luna"
         "GLM_FORCE_DEPTH_ZERO_TO_ONE"
     }
 
+    postbuildmessage "Done building Luna!"
+
     filter "system:windows"
         systemversion "latest"
 
@@ -59,7 +61,7 @@ project "Luna"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Debug"
@@ -74,7 +76,7 @@ project "Luna"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpDebug} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpDebug} %{cfg.targetdir}")
         }
 
     filter "configurations:Release"
@@ -90,7 +92,7 @@ project "Luna"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter "configurations:Dist"
@@ -106,7 +108,7 @@ project "Luna"
 
         postbuildcommands
         {
-            ("{COPY} %{Binaries.AssimpRelease} %{cfg.targetdir}")
+            ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
 
     filter { "system:windows", "configurations:Dist" }

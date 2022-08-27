@@ -156,6 +156,9 @@ namespace Aurora {
 		colors[ImGuiCol_PopupBg]  = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundPopup);
 		colors[ImGuiCol_Border]   = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundDark);
 
+		// Popup
+		colors[ImGuiCol_PopupBg] = ImGui::ColorConvertU32ToFloat4(Theme::Background);
+
 		// Tables
 		colors[ImGuiCol_TableHeaderBg]    = ImGui::ColorConvertU32ToFloat4(Theme::GroupHeader);
 		colors[ImGuiCol_TableBorderLight] = ImGui::ColorConvertU32ToFloat4(Theme::BackgroundDark);

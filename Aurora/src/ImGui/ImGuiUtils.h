@@ -52,7 +52,7 @@ namespace Aurora {
 		ImRect GetItemRect();
 		
 		// To be used inside a Begin()/End() range
-		ImRect GetWindowRect();
+		ImRect GetWindowRect(bool clip = false);
 
 		bool IsMouseInRectRegion(ImVec2 min, ImVec2 max, bool clip = true);
 

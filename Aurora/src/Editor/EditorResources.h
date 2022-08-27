@@ -11,6 +11,7 @@ namespace Aurora {
 		inline static Ref<Texture2D> SearchIcon = nullptr;
 		inline static Ref<Texture2D> ClearIcon = nullptr;
 		inline static Ref<Texture2D> GearIcon = nullptr;
+		inline static Ref<Texture2D> CloseIcon = nullptr;
 
 		static void Init();
 		static void Shutdown();

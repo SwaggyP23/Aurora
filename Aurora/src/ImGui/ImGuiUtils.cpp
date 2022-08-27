@@ -126,9 +126,13 @@ namespace Aurora {
 		}
 
 		// To be used inside a Begin()/End() range
-		ImRect GetWindowRect()
+		// This returns the inner rect of the window because so far that is the most useful rect to use for UI imgui stuff
+		ImRect GetWindowRect(bool clip)
 		{
-			return GImGui->CurrentWindow->Rect();
+			if (clip)
+				return GImGui->CurrentWindow->InnerClipRect;
+			else
+				return GImGui->CurrentWindow->InnerRect;
 		}
 
 		bool IsMouseInRectRegion(ImVec2 min, ImVec2 max, bool clip)

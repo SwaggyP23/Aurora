@@ -86,14 +86,15 @@ namespace Aurora {
 
 }
 
-#ifndef AURORA_DIST
+// To disable timers just do #if 0
+#if 1
 
 	#define AR_SCOPE_PERF(name)      Aurora::PerFrameTimer AR_CONCAT_MACRO(timer, __LINE__)(name, Aurora::Application::GetApp().GetPerformanceProfiler())
 	#define AR_SCOPED_TIMER(name)    Aurora::ScopedTimer AR_CONCAT_MACRO(timer, __LINE__)(name)
 
 #else
 
-    #define AR_SCOPE_PERF(name)
+    #define AR_SCOPE_PERF(name) 
     #define AR_SCOPED_TIMER(name)
 
 #endif

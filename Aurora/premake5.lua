@@ -59,6 +59,8 @@ project "Aurora"
         "%{Library.VulkanUtils}"
     }
 
+    postbuildmessage "Core: Done building Aurora!"
+
     filter "system:windows"
         systemversion "latest"
 

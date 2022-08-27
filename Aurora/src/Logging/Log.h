@@ -88,24 +88,24 @@ namespace Aurora { namespace Logger {
 			std::string logString = tag.empty() ? "{0}{1}" : "[{0}]: {1}";
 			switch (level)
 			{
-			case Level::Trace:
-				logger->trace(logString, tag, fmt::format(std::forward<Args>(args)...));
-				break;
-			case Level::Info:
-				logger->info(logString, tag, fmt::format(std::forward<Args>(args)...));
-				break;
-			case Level::Debug:
-				logger->debug(logString, tag, fmt::format(std::forward<Args>(args)...));
-				break;
-			case Level::Warn:
-				logger->warn(logString, tag, fmt::format(std::forward<Args>(args)...));
-				break;
-			case Level::Error:
-				logger->error(logString, tag, fmt::format(std::forward<Args>(args)...));
-				break;
-			case Level::Fatal:
-				logger->critical(logString, tag, fmt::format(std::forward<Args>(args)...));
-				break;
+			    case Level::Trace:
+			    	logger->trace(logString, tag, fmt::format(std::forward<Args>(args)...));
+			    	break;
+			    case Level::Info:
+			    	logger->info(logString, tag, fmt::format(std::forward<Args>(args)...));
+			    	break;
+			    case Level::Debug:
+			    	logger->debug(logString, tag, fmt::format(std::forward<Args>(args)...));
+			    	break;
+			    case Level::Warn:
+			    	logger->warn(logString, tag, fmt::format(std::forward<Args>(args)...));
+			    	break;
+			    case Level::Error:
+			    	logger->error(logString, tag, fmt::format(std::forward<Args>(args)...));
+			    	break;
+			    case Level::Fatal:
+			    	logger->critical(logString, tag, fmt::format(std::forward<Args>(args)...));
+			    	break;
 			}
 		}
 	}
