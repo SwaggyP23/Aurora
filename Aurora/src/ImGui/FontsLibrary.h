@@ -49,7 +49,7 @@ namespace Aurora {
 		FontsLibrary() = default;
 
 		void SetDefaultFont(const std::string& fontName, FontIdentifier type = FontIdentifier::Regular);
-		void SetTemporaryFont(const std::string& fontName, FontIdentifier type);
+		void PushTemporaryFont(const std::string& fontName, FontIdentifier type);
 		void PopTemporaryFont();
 		void AddFont(const std::string& fontName, FontIdentifier type, float fontSize = 18.0f);
 		void LoadFont(const std::string& fontName, const std::string& filepath);

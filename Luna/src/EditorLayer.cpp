@@ -251,6 +251,8 @@ namespace Aurora {
 					{
 						m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
 					}
+
+					break;
 				}
 
 				// Reset focal point
@@ -260,6 +262,8 @@ namespace Aurora {
 					{
 						m_EditorCamera.Focus({ 0.0f, 0.0f, 0.0f });
 					}
+
+					break;
 				}
 			}
 		}
@@ -767,7 +771,7 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		layer->m_FontsLibrary.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
 		if (ImGui::Button("X", buttonSize))
 			values.x = resetValue;
 		layer->m_FontsLibrary.PopTemporaryFont();
@@ -781,7 +785,7 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		layer->m_FontsLibrary.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
 		if (ImGui::Button("Y", buttonSize))
 			values.y = resetValue;
 		layer->m_FontsLibrary.PopTemporaryFont();
@@ -795,7 +799,7 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		layer->m_FontsLibrary.SetTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
 		if (ImGui::Button("Z", buttonSize))
 			values.z = resetValue;
 		layer->m_FontsLibrary.PopTemporaryFont();
@@ -845,16 +849,24 @@ namespace Aurora {
 
 	void EditorLayer::DrawComponents(Entity entity)
 	{
+		FontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
 		std::string& tag = entity.GetComponent<TagComponent>().Tag;
 
 		// Size of buffer is 128 because there should not be an entity called more than 128 letters like BRUH
 		char buffer[128];
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), tag.c_str());
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
+		fontLib.PushTemporaryFont("OpenSans", FontIdentifier::Bold);
 		if (ImGui::InputTextWithHint("##Tag", "Change entity name...", buffer, sizeof(buffer)))
 		{
 			tag = std::string(buffer);
 		}
+		fontLib.PopTemporaryFont();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar();
 
 		ImGuiUtils::DrawItemActivityOutline(3.0f, true, Theme::Accent);
 
@@ -1338,10 +1350,10 @@ namespace Aurora {
 
 	void EditorLayer::ShowFontPickerUI()
 	{
-		ImGuiLayer* layer = Application::GetApp().GetImGuiLayer();
+		FontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
 
 		std::vector<std::tuple<std::string, std::string, FontIdentifier>> sortedFontNames;
-		sortedFontNames.reserve(layer->m_FontsLibrary.GetFontNamesAndIdentifier().size());
+		sortedFontNames.reserve(fontsLib.GetFontNamesAndIdentifier().size());
 
 		const char* idenType;
 		std::string displayName;
@@ -1356,7 +1368,7 @@ namespace Aurora {
 		ImGui::PushItemWidth(-1);
 		if (ImGui::BeginCombo("##FontPicker", m_SelectedFontName.c_str()))
 		{
-			for (const auto&[pair, second] : layer->m_FontsLibrary.GetFontNamesAndIdentifier())
+			for (const auto&[pair, second] : fontsLib.GetFontNamesAndIdentifier())
 			{
 				switch (pair.second)
 				{
@@ -1375,13 +1387,13 @@ namespace Aurora {
 			std::sort(sortedFontNames.begin(), sortedFontNames.end());
 			for (const auto& [displayName, fontName, type] : sortedFontNames)
 			{
-				layer->m_FontsLibrary.SetTemporaryFont(fontName, type);
+				fontsLib.PushTemporaryFont(fontName, type);
 				if (ImGui::Selectable(displayName.c_str()))
 				{
-					layer->m_FontsLibrary.SetDefaultFont(fontName, type);
+					fontsLib.SetDefaultFont(fontName, type);
 					m_SelectedFontName = displayName;
 				}
-				layer->m_FontsLibrary.PopTemporaryFont();
+				fontsLib.PopTemporaryFont();
 			}
 
 			ImGui::EndCombo();
@@ -1589,7 +1601,7 @@ namespace Aurora {
 
 		// Editor Camera
 		const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-		glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+		const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
 		// Runtime Camera
 		// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
@@ -1675,6 +1687,9 @@ namespace Aurora {
 			ManipulateGizmos();
 		}
 
+		if(m_ShowImGuizmoGrid)
+			ImGuizmo::DrawGrid(glm::value_ptr(m_EditorCamera.GetViewMatrix()), glm::value_ptr(m_EditorCamera.GetProjection()), glm::value_ptr(glm::mat4(1.0f)), 100.0f);
+
 		ImGui::End();
 		ImGui::PopStyleVar();
 
@@ -1715,6 +1730,7 @@ namespace Aurora {
 		static bool enableCulling = true;
 		static bool enableBlending = true;
 		static bool enableDepthTesting = true;
+		static bool allowGizmoAxisFlip = true;
 
 		static std::string cullOption = "Back";
 		static std::string blendOption = "One Minus Source Alpha";
@@ -1734,6 +1750,23 @@ namespace Aurora {
 		ImGui::SetNextItemWidth(-1);
 		if (ImGui::SliderFloat("##AppTickingDelta", &TickDelta, 0.0f, 5.0f))
 			Application::GetApp().SetTickDeltaTime(TickDelta);
+
+		ImGui::NextColumn();
+
+		ImGui::Text("Allow gizmo flip:");
+
+		ImGui::NextColumn();
+
+		if (ImGui::Checkbox("##ImGuizmoGizmoFlip", &allowGizmoAxisFlip))
+			ImGuizmo::AllowAxisFlip(allowGizmoAxisFlip);
+
+		ImGui::NextColumn();
+
+		ImGui::Text("Show Grid:");
+
+		ImGui::NextColumn();
+
+		ImGui::Checkbox("##ImGUizmoGrid", &m_ShowImGuizmoGrid);
 
 		ImGui::Columns(1);
 

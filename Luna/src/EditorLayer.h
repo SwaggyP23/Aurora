@@ -127,6 +127,8 @@ namespace Aurora {
 		bool m_ViewportHovered = false;
 		bool m_AllowViewportCameraEvents = false;
 		bool m_StartedRightClickInViewport = false;
+		// TODO: This is temp until I have a real grid and a grid shader!
+		bool m_ShowImGuizmoGrid = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

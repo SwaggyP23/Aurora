@@ -209,9 +209,9 @@ namespace Aurora {
 
 		m_FontsLibrary.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
 
-		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Bold);
-		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Italic);
-		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Medium);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Bold, 19.0f);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Italic, 19.0f);
+		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Medium, 18.5f);
 
 		// More fonts are to be added
 

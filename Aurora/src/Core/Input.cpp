@@ -26,6 +26,7 @@ namespace Aurora {
 			if (!viewport->PlatformUserData)
 				continue;
 
+			// GLFWwindow* is the first member of the struct ImGui_ImplGLFW_Data. Therefore here the pointer points to the first member
 			GLFWwindow* windowHandle = *(GLFWwindow**)viewport->PlatformUserData;
 			if (!windowHandle)
 				continue;
@@ -59,6 +60,7 @@ namespace Aurora {
 			if (!viewport->PlatformUserData)
 				continue;
 
+			// GLFWwindow* is the first member of the struct ImGui_ImplGLFW_Data. Therefore here the pointer points to the first member
 			GLFWwindow* windowHandle = *(GLFWwindow**)viewport->PlatformUserData;
 			if (!windowHandle)
 				continue;

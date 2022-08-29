@@ -16,7 +16,7 @@ namespace Aurora {
 		using nulltype = entt::internal::null;
 
 	public:
-		static constexpr entt::internal::null nullEntity = {};
+		inline static constexpr entt::internal::null nullEntity = {};
 
 	public:
 		constexpr Entity() noexcept = default;
