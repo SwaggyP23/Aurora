@@ -29,7 +29,7 @@ namespace Aurora {
 		void Clear();
 		inline size_t Size() const { return m_Registry.size(); }
 
-		void OnUpdateEditor(TimeStep ts, EditorCamera& camera, glm::vec3 puh); // TODO: TEMPORARY!!!!!!!!!
+		void OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec3 puh); // TODO: TEMPORARY!!!!!!!!!
 		void OnUpdateRuntime(TimeStep ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
@@ -42,12 +42,7 @@ namespace Aurora {
 			return m_Registry.view<Args...>();
 		}
 
-		inline const std::string& GetName() const { return m_Name; }
-		inline void SetName(const std::string& name) { m_Name = name; }
-
-	private:
-		template<typename T>
-		void OnComponentAdded(Entity entity, T& component); // If we have custom components this will not work since it will need the proper overload which is not provided
+		inline std::string& GetName() { return m_Name; }
 
 	private:
 		std::string m_Name = "Untitled Scene";

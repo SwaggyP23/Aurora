@@ -58,22 +58,22 @@ namespace Aurora {
 	public:
 		virtual ~MouseButtonEvent() = default;
 
-		inline MouseCode GetButtonCode() const { return m_ButtonCode; }
+		inline MouseButton GetButtonCode() const { return m_ButtonCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 
 	protected:
-		MouseButtonEvent(MouseCode buttoncode)
+		MouseButtonEvent(MouseButton buttoncode)
 			: m_ButtonCode(buttoncode) {}
 
-		MouseCode m_ButtonCode;
+		MouseButton m_ButtonCode;
 
 	};
 
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(MouseCode mouseButton)
+		MouseButtonPressedEvent(MouseButton mouseButton)
 			: MouseButtonEvent(mouseButton) {}
 
 		std::string toString() const override
@@ -90,7 +90,7 @@ namespace Aurora {
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(MouseCode mouseButton)
+		MouseButtonReleasedEvent(MouseButton mouseButton)
 			: MouseButtonEvent(mouseButton) {}
 
 		std::string toString() const override

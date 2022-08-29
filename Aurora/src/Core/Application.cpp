@@ -11,6 +11,7 @@ namespace Aurora {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const ApplicationSpecification& specification)
+		: m_Specification(specification)
 	{
 		AR_PROFILE_BEGIN_SESSION("ApplicationStartup", "Profiling");
 		AR_PROFILE_FUNCTION();
@@ -41,8 +42,11 @@ namespace Aurora {
 
 		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initiation
 
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
+		if (m_Specification.EnableImGui)
+		{
+			m_ImGuiLayer = new ImGuiLayer();
+			PushOverlay(m_ImGuiLayer);
+		}
 
 		AR_PROFILE_END_SESSION("ApplicationStartup");
 	}
@@ -153,7 +157,8 @@ namespace Aurora {
 					}
 				}
 
-				RenderImGui();
+				if(m_Specification.EnableImGui)
+					RenderImGui();
 
 				m_CPUTime = cpuTimer.ElapsedMillis();
 				m_Window->Update();

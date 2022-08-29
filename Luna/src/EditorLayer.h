@@ -123,9 +123,10 @@ namespace Aurora {
 
 		int m_GizmoType = -1;
 
-		bool m_ViewPortFocused = false;
-		bool m_ViewPortHovered = false;
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
 		bool m_AllowViewportCameraEvents = false;
+		bool m_StartedRightClickInViewport = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

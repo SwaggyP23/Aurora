@@ -5,26 +5,27 @@
 
 namespace Aurora {
 
-	SceneCamera::SceneCamera()
-	{
-		RecalculateProjection();
-	}
-
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		m_AspectRatio = (float)width / (float)height;
-
-		RecalculateProjection();
+		if (m_ProjectionType == ProjectionType::Perspective)
+		{
+			SetPerspectiveProjectionMatrix(glm::radians(m_DegPerspectiveFOV), (float)width, (float)height, m_PerspectiveNear, m_PerspectiveFar);
+		}
+		else if (m_ProjectionType == ProjectionType::Orthographic)
+		{
+			float aspectRatio = (float)width / (float)height;
+			float orthoWidth = m_OrthoSize * aspectRatio;
+			float orthoHeight = m_OrthoSize;
+			SetOrthographicProjectionMatrix(orthoWidth, orthoHeight, m_OrthoNear, m_OrthoFar);
+		}
 	}
 
-	void SceneCamera::SetPerspective(float verticalFov, float nearClip, float farClip)
+	void SceneCamera::SetPerspective(float degVerticalFov, float nearClip, float farClip)
 	{
 		m_ProjectionType = ProjectionType::Perspective;
-		m_PerpectiveFOV = verticalFov;
-		m_PerpectiveNear = nearClip;
+		m_DegPerspectiveFOV = degVerticalFov;
+		m_PerspectiveNear = nearClip;
 		m_PerspectiveFar = farClip;
-
-		RecalculateProjection();
 	}
 
 	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
@@ -33,25 +34,6 @@ namespace Aurora {
 		m_OrthoSize = size;
 		m_OrthoNear = nearClip;
 		m_OrthoFar = farClip;
-
-		RecalculateProjection();
-	}
-
-	void SceneCamera::RecalculateProjection()
-	{
-		if (m_ProjectionType == ProjectionType::Perspective)
-		{
-			m_Projection = glm::perspective(m_PerpectiveFOV, m_AspectRatio, m_PerpectiveNear, m_PerspectiveFar);
-		}
-		else
-		{
-			float orthoLeft = -m_OrthoSize * m_AspectRatio * 0.5f;
-			float orthoRight = m_OrthoSize * m_AspectRatio * 0.5f;
-			float orthoBottom = -m_OrthoSize * 0.5f;
-			float orthoTop = m_OrthoSize * 0.5f;
-
-			m_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthoNear, m_OrthoFar);
-		}
 	}
 
 }

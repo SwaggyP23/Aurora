@@ -269,13 +269,13 @@ namespace Aurora {
 			{
 			case GLFW_PRESS:
 			{
-				MouseButtonPressedEvent event((MouseCode)button);
+				MouseButtonPressedEvent event((MouseButton)button);
 				data.EventCallback(event);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				MouseButtonReleasedEvent event((MouseCode)button);
+				MouseButtonReleasedEvent event((MouseButton)button);
 				data.EventCallback(event);
 				break;
 			}

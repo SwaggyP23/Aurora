@@ -4,6 +4,7 @@
 #include "Theme.h"
 #include "ImGuiUtils.h"
 
+// WIP!!!!!!!!!!!!!!!!
 namespace ImGui {
 
     bool TreeNodeWithIcon(Aurora::Ref<Aurora::Texture2D> icon, ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end, ImColor iconTint)
@@ -182,7 +183,7 @@ namespace ImGui {
                 const float pad = 2.0f;
                 const float arrowWidth = 20.0f + 1.0f;
                 auto cursorPos = ImGui::GetCursorPos();
-                Aurora::ImGuiUtils::ShiftCursorY(-frame_height + pad);
+                Aurora::ImGuiUtils::ShiftCursorY(-frame_height - 1.0f);
                 Aurora::ImGuiUtils::ShiftCursorX(arrowWidth + 2.5f);
                 void* textureID = (void*)(uint64_t)icon->GetTextureID();
                 const float iconSize = frame_height - pad * 2.0f;
@@ -241,7 +242,7 @@ namespace ImGui {
                 const float pad = 3.0f;
                 const float arrowWidth = 20.0f + 1.0f;
                 auto cursorPos = ImGui::GetCursorPos();
-                Aurora::ImGuiUtils::ShiftCursorY(-frame_height + pad);
+                Aurora::ImGuiUtils::ShiftCursorY(-frame_height - 1.0f);
                 Aurora::ImGuiUtils::ShiftCursorX(arrowWidth + 2.5f);
                 void* textureID = (void*)(uint64_t)icon->GetTextureID();
                 const float iconSize = frame_height - pad * 2.0f;

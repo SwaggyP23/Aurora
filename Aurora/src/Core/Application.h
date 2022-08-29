@@ -38,6 +38,9 @@ namespace Aurora {
 		// This makes the window not resizable. Note: Better to set to true if screen is not maximized
 		bool SetWindowResizable = true;
 
+		// Controls whether imgui is enabled or not, this is useful for runtime applications
+		bool EnableImGui = true;
+
 		// TODO: Set working directory
 		std::string WorkingDirectory;
 

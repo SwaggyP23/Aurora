@@ -261,8 +261,8 @@ namespace Aurora {
 		if (!data["Scene"])
 			return false; // If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
 
-		std::string sceneName = data["Scene"].as<std::string>();
-		m_Scene->SetName(sceneName);
+		std::string& sceneName = m_Scene->GetName();
+		sceneName = data["Scene"].as<std::string>();
 		AR_CORE_TRACE_TAG("SceneSerializer", "Deserializing scene '{0}'", sceneName);
 
 		YAML::Node entities = data["Entities"]; // This is the entities node that exists under the scene

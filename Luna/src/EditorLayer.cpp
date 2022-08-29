@@ -13,12 +13,10 @@
 
 namespace Aurora {
 
-
-
 #pragma region EditorLayerMainMethods
 
 	EditorLayer::EditorLayer()
-		: Layer("EditorLayer"), m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f))
+		: Layer("EditorLayer"), m_EditorCamera(EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f))
 	{
 	}
 
@@ -75,16 +73,14 @@ namespace Aurora {
 		AR_SCOPE_PERF("EditorLayer::OnUpdate");
 
 		// Framebuffer resizing... This stops the blacked out frames we would get when resizing...
+		// TODO: This should not be handled here...
 		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		m_EditorCamera.SetActive(m_AllowViewportCameraEvents || Input::GetCursorMode() == CursorMode::Locked);
+		m_EditorCamera.SetActive(m_AllowViewportCameraEvents);
 		m_EditorCamera.OnUpdate(ts);
 
 		Renderer3D::ResetStats();
@@ -114,6 +110,12 @@ namespace Aurora {
 		}
 		
 		m_Framebuffer->UnBind();
+
+		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) && !m_StartedRightClickInViewport && m_ViewportFocused && m_ViewportHovered)
+			m_StartedRightClickInViewport = true;
+
+		if (!Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+			m_StartedRightClickInViewport = false;
 	}
 
 	void EditorLayer::OnTick()
@@ -133,7 +135,8 @@ namespace Aurora {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_EditorCamera.OnEvent(e);
+		if(m_AllowViewportCameraEvents)
+			m_EditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.dispatch<KeyPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnKeyPressed));
@@ -146,11 +149,13 @@ namespace Aurora {
 		{
 			bool control = Input::IsKeyPressed(AR_KEY_LEFT_CONTROL) || Input::IsKeyPressed(AR_KEY_RIGHT_CONTROL);
 			bool shift = Input::IsKeyPressed(AR_KEY_LEFT_SHIFT) || Input::IsKeyPressed(AR_KEY_RIGHT_SHIFT);
+			bool alt = Input::IsKeyPressed(AR_KEY_LEFT_ALT) || Input::IsKeyPressed(AR_KEY_RIGHT_ALT);
 
 			bool isSomethingSelected = m_SelectionContext ? true : false;
 
 			switch (e.GetKeyCode())
 			{
+				// New Scene
 			    case AR_KEY_N:
 			    {
 			    	if (control)
@@ -159,6 +164,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
+				// Open Scene
 			    case AR_KEY_O:
 			    {
 			    	if (control)
@@ -167,6 +173,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
+				// Save Scene
 			    case AR_KEY_S:
 			    {
 			    	if (control)
@@ -180,6 +187,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
+				// Duplicate entity
 			    case AR_KEY_D:
 			    {
 			    	// TODO: Needs rework...
@@ -191,6 +199,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
+				// Delete entity
 			    case AR_KEY_DELETE:
 			    {
 			    	if (isSomethingSelected)
@@ -234,6 +243,24 @@ namespace Aurora {
 			    
 			    	break;
 			    }
+
+				// Reset Editor Camera
+				case AR_KEY_C:
+				{
+					if (alt)
+					{
+						m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
+					}
+				}
+
+				// Reset focal point
+				case AR_KEY_F:
+				{
+					if (alt)
+					{
+						m_EditorCamera.Focus({ 0.0f, 0.0f, 0.0f });
+					}
+				}
 			}
 		}
 
@@ -464,22 +491,34 @@ namespace Aurora {
 		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Scene Hierarchy", (bool*)0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
-		
+
+		static bool enableSorting = false;
 		const float edgeOffset = 4.0f;
+
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
 
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 20.0f);
+		ImGui::TextColored(ImVec4{ 0.925f, 0.619f, 0.141f, 0.888f }, "Scene:");
 
-		static bool enableSorting = false;
-		static std::string searchString;
-		ImGuiUtils::SearchBox(searchString);
+		ImGui::SameLine();
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 30.0f);
+
+		std::string& sceneName = m_EditorScene->GetName();
+		// There should not be a scene name that is more than 128 characters long LOL
+		char buffer[128];
+		memset(buffer, 0, sizeof(buffer));
+		strcpy_s(buffer, sizeof(buffer), sceneName.c_str());
+		if(ImGui::InputTextWithHint(ImGuiUtils::GenerateID(), "Enter scene name...", buffer, sizeof(buffer)))
+		{
+			sceneName = std::string(buffer);
+		}
 
 		ImGui::SameLine();
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
-		ImGuiUtils::ShiftCursorX(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 15.0f);
+		ImGuiUtils::ShiftCursorX(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 26.0f);
 		void* textureID = (void*)(uint64_t)EditorResources::GearIcon->GetTextureID();
-		if(ImGui::ImageButton(textureID, ImVec2{ lineHeight * 0.75f, lineHeight * 0.75f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
+		if (ImGui::ImageButton(textureID, ImVec2{ lineHeight * 0.75f, lineHeight * 0.75f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
 			ImGui::OpenPopup("SceneHierarchySettings");
 
 		ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 0.0f);
@@ -508,6 +547,17 @@ namespace Aurora {
 			ImGui::EndPopup();
 		}
 		ImGui::PopStyleVar(2);
+
+		ImGuiUtils::ShiftCursorY(-edgeOffset * 2.0f);
+		// X shifting resets by itself via imgui internally when going to a new line!
+
+		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
+		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f);
+
+		static std::string searchString;
+		ImGuiUtils::SearchBox(searchString);
 
 		ImGui::Spacing();
 		ImGui::Spacing();
@@ -634,32 +684,44 @@ namespace Aurora {
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
 			ImGui::Separator();
 
+			// TODO: Add component frame icons
+			//bool open = ImGui::TreeNodeWithIcon(EditorResources::TransformCompIcon, (void*)typeid(T).hash_code(), treeNodeFlags, ImColor(255, 255, 255, 255), name.c_str());
 			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
 
 			if (typeid(T) != typeid(TransformComponent))
 			{
 				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
-				//void* textureID = (void*)(uint64_t)EditorResources::CloseIcon->GetTextureID();
-				//ImGui::ImageButton(textureID, ImVec2{ lineHeight, lineHeight }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 })
-				if (ImGui::Button("X", ImVec2{ lineHeight, lineHeight }))
+				void* textureID = (void*)(uint64_t)EditorResources::CloseIcon->GetTextureID();
+				if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 9.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
+				//if (ImGui::Button("X", ImVec2{ lineHeight, lineHeight }))
 				{
 					ImGui::OpenPopup("ComponentSettings"); // This is also just an id and not a tag that will be rendered
 				}
 
-				ImGui::SameLine((float)(contentRegionAvail.x - 1.5 * lineHeight));
-				if (ImGui::Button("R", ImVec2{ lineHeight, lineHeight }))
+				ImGui::SameLine(contentRegionAvail.x - 1.5f * lineHeight);
+				
+				textureID = (void*)(uint64_t)EditorResources::ResetIcon->GetTextureID();
+				if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 8.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
 				{
 					resetFunction(component);
 				}
+
+				if (ImGui::IsItemHovered())
+					ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "Reset");
 			}
 			else
 			{
 				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
-				if (ImGui::Button("R", ImVec2{ lineHeight, lineHeight }))
+
+				void* textureID = (void*)(uint64_t)EditorResources::ResetIcon->GetTextureID();
+				if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 8.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
 				{
 					resetFunction(component);
 				}
+
+				if (ImGui::IsItemHovered())
+					ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "Reset");
 			}
 
 			bool removeComponent = false;
@@ -783,9 +845,10 @@ namespace Aurora {
 
 	void EditorLayer::DrawComponents(Entity entity)
 	{
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		std::string& tag = entity.GetComponent<TagComponent>().Tag;
 
-		char buffer[256];
+		// Size of buffer is 128 because there should not be an entity called more than 128 letters like BRUH
+		char buffer[128];
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), tag.c_str());
 		if (ImGui::InputTextWithHint("##Tag", "Change entity name...", buffer, sizeof(buffer)))
@@ -1000,6 +1063,8 @@ namespace Aurora {
 			ImGui::PushItemWidth(-1);
 			ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color));
 			ImGui::PopItemWidth();
+
+			ImGui::Separator();
 		},
 		[](SpriteRendererComponent& component) // Reset Function
 		{
@@ -1030,6 +1095,7 @@ namespace Aurora {
 		sp.Color = { 0.6f, 0.6f, 0.6f, 1.0f };
 
 		m_EditorScenePath = std::filesystem::path();
+		m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
 	}
 
 	void EditorLayer::OpenScene()
@@ -1060,6 +1126,7 @@ namespace Aurora {
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;
+			m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
 		}
 	}
 
@@ -1333,6 +1400,8 @@ namespace Aurora {
 		ImGui::Begin("Editor Camera Controls:", &m_ShowEditorCameraHelpUI, ImGuiWindowFlags_AlwaysAutoResize);
 
 		ImGui::Text("These are the editor camera's controls:");
+		ImGui::Text("RightClick + Use W/A/S/D/Q/E to control the camera");
+		ImGui::Text("RightClick + MouseScroll to increase the movement speed of fps Camera");
 		ImGui::Text("Press LeftAlt + MouseRightClick and move to Rotate.");
 		ImGui::Text("Press LeftAlt + MouseLeftClick and move to Pan.");
 		ImGui::Text("Press LeftAlt + ScrollWheel to zoom.");
@@ -1387,7 +1456,7 @@ namespace Aurora {
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
 		float minWindowSizeX = style.WindowMinSize.x;
-		style.WindowMinSize.x = 370.0f; // try resetting it to 340 however to do that i will need to add a column between the tag and add component button
+		style.WindowMinSize.x = 370.0f; // Minimum Window Size!
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
@@ -1539,20 +1608,31 @@ namespace Aurora {
 
 		float snapValues[3] = { snapValue, snapValue, snapValue };
 
-		glm::mat4 iden(1.0f);
-		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+		if(ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-			nullptr, snap ? snapValues : nullptr);
-
-		if (ImGuizmo::IsUsing() && !Input::IsKeyPressed(AR_KEY_LEFT_ALT))
+			nullptr, snap ? snapValues : nullptr) && !Input::IsKeyPressed(AR_KEY_LEFT_ALT))
 		{
 			glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
 			Math::DecomposeTransform(transform, translation, rotation, scale);
 
-			glm::vec3 deltaRotation = rotation - tc.Rotation;
-			tc.Translation = translation;
-			tc.Rotation += deltaRotation;
-			tc.Scale = scale;
+			switch (m_GizmoType)
+			{
+			    case ImGuizmo::TRANSLATE:
+			    {
+					tc.Translation = translation;
+					break;
+			    }
+				case ImGuizmo::ROTATE:
+				{
+					tc.Rotation += rotation - tc.Rotation;
+					break;
+				}
+				case ImGuizmo::SCALE:
+				{
+					tc.Scale = scale;
+					break;
+				}
+			}
 		}
 	}
 
@@ -1561,31 +1641,36 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
 
-		m_ViewportRect = ImGuiUtils::GetWindowRect(true);
+		m_ViewportRect = ImGuiUtils::GetWindowRect();
 
-		m_ViewPortFocused = ImGui::IsWindowFocused();
-		m_ViewPortHovered = ImGui::IsWindowHovered();
+		m_ViewportFocused = ImGui::IsWindowFocused();
+		m_ViewportHovered = ImGui::IsWindowHovered();
 
 		ImVec2 viewportOffset = ImGui::GetCursorPos();
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = viewPortPanelSize;
 
-		uint32_t textureID = m_Framebuffer->GetColorAttachmentID();
-		ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		m_AllowViewportCameraEvents = ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true);
+		void* textureID = (void*)(uint64_t)m_Framebuffer->GetColorAttachmentID();
+		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
+		//ImGui::Image((ImTextureID)EditorResources::ResetIcon->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-		ImGuiUtils::SetInputEnabled(!m_ViewPortFocused || !m_ViewPortHovered);
+		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
+
+		ImGuiUtils::SetInputEnabled(!m_ViewportFocused || !m_ViewportHovered);
 
 		// Gizmos...
-		if (m_SelectionContext && m_GizmoType != -1)
+		if (m_SelectionContext != Entity::nullEntity && m_GizmoType != -1)
 		{
-			float rw = (float)ImGui::GetWindowWidth();
-			float rh = (float)ImGui::GetWindowHeight();
+			float windowWidth = m_ViewportRect.Max.x - m_ViewportRect.Min.x;
+			float windowHeight = m_ViewportRect.Max.y - m_ViewportRect.Min.y;
 
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+			ImGuizmo::SetRect(m_ViewportRect.Min.x, m_ViewportRect.Min.y, windowWidth, windowHeight);
 
 			ManipulateGizmos();
 		}
@@ -1900,6 +1985,12 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		EnableDocking();
+
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !m_StartedRightClickInViewport))
+		{
+			ImGui::FocusWindow(GImGui->HoveredWindow);
+			Input::SetCursorMode(CursorMode::Normal);
+		}
 
 		ShowMenuBarItems();
 

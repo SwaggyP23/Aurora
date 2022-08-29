@@ -31,6 +31,8 @@ namespace Aurora {
 			ImGui::EndTooltip();
 		}
 
+		void SetGuizmoEnabled(bool state);
+
 		bool IsInputEnabled();
 
 		void SetInputEnabled(bool state);

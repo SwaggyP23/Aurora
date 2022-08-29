@@ -4,7 +4,7 @@
 
 namespace Aurora {
 
-	enum class MouseCode : uint16_t
+	enum class MouseButton : uint16_t
 	{
 		Button0          = 0,
 		Button1          = 1,
@@ -20,7 +20,7 @@ namespace Aurora {
 		ButtonMiddle     = Button2
 	};
 
-	inline std::ostream& operator<<(std::ostream& stream, MouseCode code)
+	inline std::ostream& operator<<(std::ostream& stream, MouseButton code)
 	{
 		stream << (int)code;
 		return stream;
@@ -28,15 +28,15 @@ namespace Aurora {
 
 }
 
-#define AR_MOUSE_BUTTON_0        ::Aurora::MouseCode::Button0
-#define AR_MOUSE_BUTTON_1        ::Aurora::MouseCode::Button1
-#define AR_MOUSE_BUTTON_2        ::Aurora::MouseCode::Button2
-#define AR_MOUSE_BUTTON_3        ::Aurora::MouseCode::Button3
-#define AR_MOUSE_BUTTON_4        ::Aurora::MouseCode::Button4
-#define AR_MOUSE_BUTTON_5        ::Aurora::MouseCode::Button5
-#define AR_MOUSE_BUTTON_6        ::Aurora::MouseCode::Button6
-#define AR_MOUSE_BUTTON_7        ::Aurora::MouseCode::Button7
+#define AR_MOUSE_BUTTON_0        ::Aurora::MouseButton::Button0
+#define AR_MOUSE_BUTTON_1        ::Aurora::MouseButton::Button1
+#define AR_MOUSE_BUTTON_2        ::Aurora::MouseButton::Button2
+#define AR_MOUSE_BUTTON_3        ::Aurora::MouseButton::Button3
+#define AR_MOUSE_BUTTON_4        ::Aurora::MouseButton::Button4
+#define AR_MOUSE_BUTTON_5        ::Aurora::MouseButton::Button5
+#define AR_MOUSE_BUTTON_6        ::Aurora::MouseButton::Button6
+#define AR_MOUSE_BUTTON_7        ::Aurora::MouseButton::Button7
 
-#define AR_MOUSE_BUTTON_LEFT     ::Aurora::MouseCode::ButtonLeft
-#define AR_MOUSE_BUTTON_RIGHT    ::Aurora::MouseCode::ButtonRight
-#define AR_MOUSE_BUTTON_MIDDLE   ::Aurora::MouseCode::ButtonMiddle
+#define AR_MOUSE_BUTTON_LEFT     ::Aurora::MouseButton::ButtonLeft
+#define AR_MOUSE_BUTTON_RIGHT    ::Aurora::MouseButton::ButtonRight
+#define AR_MOUSE_BUTTON_MIDDLE   ::Aurora::MouseButton::ButtonMiddle

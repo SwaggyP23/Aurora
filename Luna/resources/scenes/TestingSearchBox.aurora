@@ -1,4 +1,4 @@
-Scene: Editor Scene
+Scene: TestingSearchBox
 Entities:
   - Entity: 7824501532982642528
     TagComponent:

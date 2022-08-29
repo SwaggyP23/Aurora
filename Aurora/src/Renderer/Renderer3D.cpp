@@ -325,12 +325,16 @@ namespace Aurora {
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform)
+	void Renderer3D::BeginScene(const SceneCamera& camera, const glm::mat4& transform)
 	{
 		AR_PROFILE_FUNCTION();
 
+		glm::mat4 skyview(1.0f);
+		skyview = glm::mat4(glm::mat3(glm::inverse(skyview * transform)));
+		glm::mat4 skyVP = camera.GetProjection() * skyview;
+
 		s_Data->CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_Data->CameraBuffer.SkyVP = glm::mat4(1.0f);
+		s_Data->CameraBuffer.SkyVP = skyview;
 		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(RendererData::CameraData));
 
 		s_Data->QuadShader->Bind();
@@ -342,12 +346,11 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		s_Data->SkyBoxShader->Bind();
 		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-		glm::mat4 viewProj = camera.GetProjection() * view;
+		glm::mat4 skyViewProj = camera.GetProjection() * view;
 
 		s_Data->CameraBuffer.ViewProjection = camera.GetViewProjection();
-		s_Data->CameraBuffer.SkyVP = viewProj;
+		s_Data->CameraBuffer.SkyVP = skyViewProj;
 		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(RendererData::CameraData));
 
 		s_Data->QuadShader->Bind();

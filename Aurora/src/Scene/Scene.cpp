@@ -96,7 +96,7 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera, glm::vec3 puh) // TODO: TEMPORARY!!!!!!!!!
+	void Scene::OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec3 puh) // TODO: TEMPORARY!!!!!!!!!
 	{
 		Renderer3D::BeginScene(camera);
 
@@ -163,7 +163,7 @@ namespace Aurora {
 			});
 		}
 
-		Camera* mainCamera = nullptr;
+		SceneCamera* mainCamera = nullptr;
 		glm::mat4 mainTransform;
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
@@ -181,7 +181,7 @@ namespace Aurora {
 
 		if (mainCamera)
 		{
-			Renderer3D::BeginScene(mainCamera->GetProjection(), mainTransform);
+			Renderer3D::BeginScene(*mainCamera, mainTransform);
 
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto entity : view)
@@ -220,51 +220,6 @@ namespace Aurora {
 		}
 
 		return {};
-	}
-
-	// TODO: ReWrite this system.
-	template<typename T>
-	void Scene::OnComponentAdded(Entity entity, T& component)
-	{
-		static_assert(sizeof(T) == 0);
-	}
-
-	template<>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
-	{
-
-	}
-
-	template<>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
-	{
-		if(m_ViewportWidth > 0 &&  m_ViewportHeight > 0)
-			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-	}
-
-	template<>
-	void Scene::OnComponentAdded<ModelComponent>(Entity entity, ModelComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-	{
 	}
 
 }

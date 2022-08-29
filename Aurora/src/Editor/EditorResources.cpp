@@ -9,6 +9,9 @@ namespace Aurora {
 		ClearIcon = LoadTexture("Icons/Clear.png");
 		GearIcon = LoadTexture("Icons/Gear.png");
 		CloseIcon = LoadTexture("Icons/Close.png");
+		ResetIcon = LoadTexture("Icons/Reset.png");
+
+		//TransformCompIcon = LoadTexture("Icons/transformComponentIcon.png");
 	}
 
 	void EditorResources::Shutdown()
@@ -17,6 +20,9 @@ namespace Aurora {
 		ClearIcon.Reset();
 		GearIcon.Reset();
 		CloseIcon.Reset();
+		ResetIcon.Reset();
+
+		//TransformCompIcon.Reset();
 	}
 
 	Ref<Texture2D> EditorResources::LoadTexture(const std::filesystem::path& texturePath/*, TextureProperties = TextureProps()*/)
