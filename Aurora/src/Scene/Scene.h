@@ -47,9 +47,6 @@ namespace Aurora {
 	private:
 		std::string m_Name = "Untitled Scene";
 
-		Ref<Shader> m_ModelShader; // TODO: These are both Temp...
-		Ref<CubeTexture> m_EnvironmentMap;
-
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 

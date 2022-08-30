@@ -14,11 +14,11 @@ namespace Aurora {
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
-		void SetPerspective(float verticalFov, float nearClip, float farClip);
+		void SetPerspective(float degVerticalFov, float nearClip, float farClip);
 		void SetOrthographic(float size, float nearClip, float farClip);
 
-		float GetPerspectiveVerticalFOV() const { return m_DegPerspectiveFOV; }
-		void SetPerspectiveVerticalFOV(float degVerticalFov) { m_DegPerspectiveFOV = degVerticalFov; }
+		float GetDegPerspectiveVerticalFOV() const { return m_DegPerspectiveFOV; }
+		void SetDegPerspectiveVerticalFOV(float degVerticalFov) { m_DegPerspectiveFOV = degVerticalFov; }
 		float GetPerspectiveNearClip() const { return m_PerspectiveNear; }
 		void SetPerspectiveNearClip(float nearClip) { m_PerspectiveNear = nearClip; }
 		float GetPerspectiveFarClip() const { return m_PerspectiveFar; }

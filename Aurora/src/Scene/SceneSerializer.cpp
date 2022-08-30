@@ -166,7 +166,8 @@ namespace Aurora {
 			    case 1: out << YAML::Key << "ProjectionType" << YAML::Value << 1; out << YAML::Comment("Orthographic"); break;
 			}
 
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << cameraComp.Camera.GetPerspectiveVerticalFOV();
+			// Degrees
+			out << YAML::Key << "PerspectiveFOV" << YAML::Value << cameraComp.Camera.GetDegPerspectiveVerticalFOV();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << cameraComp.Camera.GetPerspectiveNearClip();
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << cameraComp.Camera.GetPerspectiveFarClip();
 
@@ -301,7 +302,7 @@ namespace Aurora {
 					auto& cameraProps = cameraComp["Camera"];
 					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)(cameraProps["ProjectionType"].as<int>()));
 
-					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
+					cc.Camera.SetDegPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 

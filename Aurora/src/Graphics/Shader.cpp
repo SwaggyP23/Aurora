@@ -227,7 +227,9 @@ namespace Aurora {
 
 		result = CreateRef<Shader>(filepath, forceCompile);
 
-		s_AllShaders.push_back(result);
+		if(std::find(s_AllShaders.begin(), s_AllShaders.end(), result) == s_AllShaders.end())
+			s_AllShaders.push_back(result);
+
 		return result;
 	}
 
@@ -282,6 +284,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
+		// At this stage it contains split Vulkan source code
 		m_OpenGLShaderSource = SplitSource(source);
 
 		Utils::CreateCacheDirIfNeeded();
@@ -383,6 +386,7 @@ namespace Aurora {
 				glslCompiler.set_decoration(pushConstResources[i].id, spv::DecorationLocation, locationIndex++);
 			}
 
+			// At this stage it contains split OpenGL source code
 			m_OpenGLShaderSource[type] = glslCompiler.compile();
 
 			FILE* f;

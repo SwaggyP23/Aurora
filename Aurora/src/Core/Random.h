@@ -16,26 +16,47 @@ namespace Aurora {
 	public:
 		static void Init()
 		{
-			s_RandomEngine.seed(std::random_device()());
+			std::random_device randomDevice;
+			s_RandomEngine32.seed(randomDevice());
+			s_RandomEngine64.seed(randomDevice());
 		}
 
 		// Returns a 32-bit random number
-		static uint32_t UInt()
+		static uint32_t UInt32()
 		{
-			return s_Distribution(s_RandomEngine);
+			return s_Distribution32(s_RandomEngine32);
 		}
 
 		// Returns a random unsiged integer in the specified range
-		static uint32_t UInt(uint32_t min, uint32_t max)
+		static uint32_t UInt32(uint32_t min, uint32_t max)
 		{
 			// This should be a modulus and not multiplication since the random number generated is not in the 0 -> 1 range
-			return min + (s_Distribution(s_RandomEngine) % (max - min + 1));
+			return min + (s_Distribution32(s_RandomEngine32) % (max - min + 1));
+		}
+
+		// Returns a 64-bit random number
+		static uint64_t UInt64()
+		{
+			return s_Distribution64(s_RandomEngine64);
+		}
+
+		// Returns a random unsiged long long in the specified range
+		static uint64_t UInt64(uint64_t min, uint64_t max)
+		{
+			// This should be a modulus and not multiplication since the random number generated is not in the 0 -> 1 range
+			return min + (s_Distribution64(s_RandomEngine64) % (max - min + 1));
 		}
 		
 		// Returns a random float between 0 and 1
 		static float Float()
 		{
-			return ((float)s_Distribution(s_RandomEngine) / (float)std::numeric_limits<uint32_t>::max());
+			return ((float)s_Distribution32(s_RandomEngine32) / (float)std::numeric_limits<uint32_t>::max());
+		}
+
+		// Returns a random double between 0 and 1
+		static double Double()
+		{
+			return ((double)s_Distribution64(s_RandomEngine64) / (double)std::numeric_limits<uint64_t>::max());
 		}
 
 		// Returns a random float in the specified range
@@ -43,6 +64,13 @@ namespace Aurora {
 		{
 			// Unlike in the UInt() function, here we have to multiply since the generated float is in the 0 -> 1 range
 			return min + Float() * (max - min) + 1;
+		}
+
+		// Returns a random float in the specified range
+		static double Double(double min, double max)
+		{
+			// Unlike in the UInt() function, here we have to multiply since the generated double is in the 0 -> 1 range
+			return min + Double() * (max - min) + 1;
 		}
 
 		// Returns a vec2 with 2 random floats
@@ -82,8 +110,10 @@ namespace Aurora {
 		}
 
 	private:
-		static std::mt19937 s_RandomEngine;
-		static std::uniform_int_distribution<std::mt19937::result_type> s_Distribution;
+		static std::mt19937 s_RandomEngine32;
+		static std::mt19937_64 s_RandomEngine64;
+		static std::uniform_int_distribution<std::mt19937::result_type> s_Distribution32;
+		static std::uniform_int_distribution<std::mt19937_64::result_type> s_Distribution64;
 
 	};
 

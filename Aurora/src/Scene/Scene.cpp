@@ -16,6 +16,9 @@ namespace Aurora {
 	static Ref<Shader> s_MatShader;
 	static Ref<Material> s_Mat;
 	static Ref<Texture2D> s_Texture;
+	static Ref<Shader> s_ModelShader;
+	static Ref<CubeTexture> s_EnvironmentMap;
+	static bool s_Created = false;
 
 	Ref<Scene> Scene::Create(const std::string& debugName)
 	{
@@ -25,14 +28,17 @@ namespace Aurora {
 	Scene::Scene(const std::string& debugName)
 		: m_Name(debugName)
 	{
-		s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
-		s_Mat = Material::Create("Test Mat", s_MatShader);
-		s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png");
-		s_Texture->LoadTextureData();
-
-		m_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
-		s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
-		m_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
+		if (!s_Created)
+		{
+			s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
+			s_Mat = Material::Create("Test Mat", s_MatShader);
+			s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png");
+			s_Texture->LoadTextureData();
+			s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
+			s_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
+			s_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
+			s_Created = true;
+		}
 	}
 
 	Scene::~Scene()
@@ -100,7 +106,7 @@ namespace Aurora {
 	{
 		Renderer3D::BeginScene(camera);
 
-		Renderer3D::DrawSkyBox(m_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
+		Renderer3D::DrawSkyBox(s_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
 
 		glm::mat4 transform(1.0f);
 		glm::scale(transform, { 10.0f, 10.0f, 10.0f });
@@ -135,11 +141,11 @@ namespace Aurora {
 			auto rotation = glm::toMat4(glm::quat(transform.Rotation));
 			auto trans = glm::translate(glm::mat4(1.0f), transform.Translation) * rotation * glm::scale(glm::mat4(1.0f), transform.Scale);
 
-			m_ModelShader->Bind();
+			s_ModelShader->Bind();
 
 			s_ModelUniBuffer->SetData(glm::value_ptr(trans), sizeof(glm::mat4));
 			s_ModelUniBuffer->SetData(&entity, sizeof(int), sizeof(glm::mat4));
-			model.Draw(*(m_ModelShader.raw()));
+			model.Draw(*(s_ModelShader.raw()));
 		}
 
 		Renderer3D::EndScene();

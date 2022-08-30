@@ -13,6 +13,7 @@ namespace Aurora {
 	namespace ImGuiUtils {
 
 		// Taken from Hazel-dev
+		// https://hazelengine.com/
 		const char* GenerateID();
 
 		void PushID();

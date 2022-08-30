@@ -80,7 +80,7 @@ namespace Aurora {
 		// Texture Getters..
 		Ref<Texture2D> GetTexture2D(const std::string& name);
 		Ref<CubeTexture> GetCubeTexture(const std::string& name);
-		//Ref<Image2D> GetImage2D(const std::string& name) const; // Currently not in use untill image2d is actually made
+		//Ref<Image2D> GetImage2D(const std::string& name) const; // TODO: Currently not in use untill image2d is actually made
 
 		Ref<Texture2D> TryGetTexture2D(const std::string& name);
 
@@ -97,7 +97,6 @@ namespace Aurora {
 		template<typename T>
 		void Set(const std::string& fullname, const T& value) const
 		{
-			//glUniform3f()
 			const ShaderUniform* declaration = FindUniformDeclaration(fullname);
 			if (!declaration)
 			{
@@ -154,7 +153,7 @@ namespace Aurora {
 		// These are automatically sorted according to their slot index which is perfect!
 		mutable std::map<uint32_t, Ref<Texture2D>> m_Texture2Ds;
 		mutable std::map<uint32_t, Ref<CubeTexture>> m_CubeTextures;
-		//std::map<uint32_t, Ref<Image2D>> m_Images; // Currently not in use untill image2d is actually made
+		//std::map<uint32_t, Ref<Image2D>> m_Images; // TODO: Currently not in use untill image2d is actually made
 
 	};
 

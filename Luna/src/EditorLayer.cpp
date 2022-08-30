@@ -20,6 +20,7 @@ namespace Aurora {
 	{
 	}
 
+	// TODO: TEMPORARY!
 	static glm::vec3 s_MaterialAlbedoColor(1.0f);
 
 	void EditorLayer::OnAttach()
@@ -111,10 +112,10 @@ namespace Aurora {
 		
 		m_Framebuffer->UnBind();
 
-		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) && !m_StartedRightClickInViewport && m_ViewportFocused && m_ViewportHovered)
+		if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) && !m_StartedRightClickInViewport && m_ViewportFocused && m_ViewportHovered)
 			m_StartedRightClickInViewport = true;
 
-		if (!Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+		if (!Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT))
 			m_StartedRightClickInViewport = false;
 	}
 
@@ -384,9 +385,15 @@ namespace Aurora {
 		treeFlags |= ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 
 		if (isSelected)
+		{
 			fillRowWithColour(ImColor(236, 158, 36, 150));
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{ 0.32f, 0.7f, 0.87f, 1.0f });
+		}
 		else if (isHovered)
+		{
 			fillRowWithColour(IM_COL32(236, 158, 36, 200));
+			ImGui::PushStyleColor(ImGuiCol_Text, Theme::Background);
+		}
 
 		// Taken from ImGui TreeNodeBehavior arrow hit calculations and slightly modified!
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -412,7 +419,7 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, 0);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, 0);
 		const bool opened = ImGui::TreeNodeEx(strID.c_str(), treeFlags, tag.c_str());
-		ImGui::PopStyleColor(3);
+		ImGui::PopStyleColor(isSelected || isHovered ? 4 : 3);
 
 		bool inSceneHierarchyTable = ImGuiUtils::IsMouseInRectRegion(m_SceneHierarchyTableRect, false);
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
@@ -455,7 +462,13 @@ namespace Aurora {
 		// TODO: Add other identifiers when there actually are other identifiers such as prefabs when these are a thing
 		ImGui::TableNextColumn();
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
+		if (isSelected)
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{ 0.32f, 0.7f, 0.87f, 1.0f });
+		else if(isHovered)
+			ImGui::PushStyleColor(ImGuiCol_Text, Theme::Background);
 		ImGui::Text("Entity");
+		if (isHovered || isSelected)
+			ImGui::PopStyleColor();
 
 		// Mouse Click events also for this column
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
@@ -492,7 +505,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowSceneHierarchyPanel()
 	{
-		
+		FontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Scene Hierarchy", (bool*)0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
 
@@ -502,6 +515,7 @@ namespace Aurora {
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
 
+		fontsLib.PushTemporaryFont("OpenSans", FontIdentifier::Bold);
 		ImGui::TextColored(ImVec4{ 0.925f, 0.619f, 0.141f, 0.888f }, "Scene:");
 
 		ImGui::SameLine();
@@ -513,12 +527,21 @@ namespace Aurora {
 		char buffer[128];
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), sceneName.c_str());
+		ImGuiUtils::ShiftCursorY(-2.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 		if(ImGui::InputTextWithHint(ImGuiUtils::GenerateID(), "Enter scene name...", buffer, sizeof(buffer)))
 		{
 			sceneName = std::string(buffer);
 		}
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar();
+		fontsLib.PopTemporaryFont();
+
+		ImGuiUtils::DrawItemActivityOutline(3.0f, false, Theme::Accent);
 
 		ImGui::SameLine();
+
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
 		ImGuiUtils::ShiftCursorX(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 26.0f);
 		void* textureID = (void*)(uint64_t)EditorResources::GearIcon->GetTextureID();
@@ -637,7 +660,6 @@ namespace Aurora {
 						DrawEntityNode({ entity, m_Context.raw() }, searchString);
 					}
 				}
-
 
 				ImGui::PopStyleColor(2);
 
@@ -868,7 +890,7 @@ namespace Aurora {
 		ImGui::PopStyleColor();
 		ImGui::PopStyleVar();
 
-		ImGuiUtils::DrawItemActivityOutline(3.0f, true, Theme::Accent);
+		ImGuiUtils::DrawItemActivityOutline(3.0f, false, Theme::Accent);
 
 		if (ImGui::IsItemHovered())
 			ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "ID: %#010x", entity.GetUUID());
@@ -961,9 +983,9 @@ namespace Aurora {
 				ImGui::NextColumn();
 
 				ImGui::PushItemWidth(-1);
-				float verticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
+				float verticalFOV = camera.GetDegPerspectiveVerticalFOV();
 				if (ImGui::DragFloat("##Vertical FOV", &verticalFOV, 0.1f))
-					camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
+					camera.SetDegPerspectiveVerticalFOV(verticalFOV);
 				ImGui::PopItemWidth();
 
 				ImGui::NextColumn();
@@ -1039,7 +1061,7 @@ namespace Aurora {
 			auto& camera = component.Camera;
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				camera.SetPerspectiveVerticalFOV(glm::radians(45.0f));
+				camera.SetDegPerspectiveVerticalFOV(45.0f);
 				camera.SetPerspectiveNearClip(0.01f);
 				camera.SetPerspectiveFarClip(1000.0f);
 			}
@@ -1133,7 +1155,8 @@ namespace Aurora {
 		if (serializer.DeSerializeFromText(path.string()))
 		{
 			m_EditorScene = newScene;
-			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			// TODO: Test when scene runtime is a thing...!
+			//m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			SetContextForSceneHeirarchyPanel(m_EditorScene);
 
 			m_ActiveScene = m_EditorScene;

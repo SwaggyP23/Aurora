@@ -9,7 +9,7 @@ namespace Aurora {
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
 		{
-			SetPerspectiveProjectionMatrix(glm::radians(m_DegPerspectiveFOV), (float)width, (float)height, m_PerspectiveNear, m_PerspectiveFar);
+			SetPerspectiveProjectionMatrix(m_DegPerspectiveFOV, (float)width, (float)height, m_PerspectiveNear, m_PerspectiveFar);
 		}
 		else if (m_ProjectionType == ProjectionType::Orthographic)
 		{
