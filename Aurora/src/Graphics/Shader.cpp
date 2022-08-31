@@ -250,7 +250,7 @@ namespace Aurora {
 
 		// Creating program...
 		{
-			std::string shaderFullSource = Utils::FileReader::ReadTextFile(filePath);
+			std::string shaderFullSource = Utils::FileIO::ReadTextFile(filePath);
 			Load(shaderFullSource, forceCompile);
 		}
 	}
@@ -269,7 +269,7 @@ namespace Aurora {
 			glDeleteProgram(m_ShaderID);
 
 		Timer timer;
-		std::string shaderFullSource = Utils::FileReader::ReadTextFile(m_AssetPath);
+		std::string shaderFullSource = Utils::FileIO::ReadTextFile(m_AssetPath);
 		m_OpenGLShaderSource = SplitSource(shaderFullSource);
 
 		Utils::CreateCacheDirIfNeeded();
@@ -304,7 +304,7 @@ namespace Aurora {
 
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
 
-		m_VulkanSPIRV.clear();
+		//m_VulkanSPIRV.clear();
 
 		for (const auto& [type, source] : shaderSources)
 		{
@@ -312,16 +312,16 @@ namespace Aurora {
 			std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderTypeCachedVulkanFileExtension(type));
 			std::string p = cachedPath.string();
 
-			FILE* f;
-			fopen_s(&f, p.c_str(), "rb"); // read binary
-			if (f && !forceCompile)
+			FILE* f1;
+			fopen_s(&f1, p.c_str(), "rb"); // read binary
+			if (f1 && !forceCompile)
 			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
+				fseek(f1, 0, SEEK_END);
+				uint64_t size = ftell(f1);
+				fseek(f1, 0, SEEK_SET);
 				m_VulkanSPIRV[type].resize(size / sizeof(uint32_t));
-				fread(m_VulkanSPIRV[type].data(), sizeof(uint32_t), size, f);
-				fclose(f);
+				fread(m_VulkanSPIRV[type].data(), sizeof(uint32_t), size, f1);
+				fclose(f1);
 			}
 			else
 			{
@@ -353,12 +353,19 @@ namespace Aurora {
 
 				m_VulkanSPIRV[type] = std::vector<uint32_t>(result.cbegin(), result.cend());
 
-				FILE* f;
-				fopen_s(&f, p.c_str(), "wb"); // write binary
-				if (f)
+				if (f1)
+					fclose(f1);
+
+				FILE* f2;
+				fopen_s(&f2, p.c_str(), "wb"); // write binary
+				if (f2)
 				{
-					fwrite(m_VulkanSPIRV[type].data(), sizeof(uint32_t), m_VulkanSPIRV[type].size(), f);
-					fclose(f);
+					fwrite(m_VulkanSPIRV[type].data(), sizeof(uint32_t), m_VulkanSPIRV[type].size(), f2);
+					fclose(f2);
+				}
+				else
+				{
+					AR_CORE_ERROR_TAG("Shader", "Could not open file for writing '{0}'", p);
 				}
 			}
 		}
@@ -370,7 +377,7 @@ namespace Aurora {
 
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
 
-		m_OpenGLSPIRV.clear();
+		//m_OpenGLSPIRV.clear();
 		for (const auto& [type, spirv] : m_VulkanSPIRV)
 		{
 			std::filesystem::path shaderFilePath = m_AssetPath;
@@ -389,16 +396,16 @@ namespace Aurora {
 			// At this stage it contains split OpenGL source code
 			m_OpenGLShaderSource[type] = glslCompiler.compile();
 
-			FILE* f;
-			fopen_s(&f, p.c_str(), "rb"); // read binary
-			if (f && !forceCompile)
+			FILE* f1;
+			fopen_s(&f1, p.c_str(), "rb"); // read binary
+			if (f1 && !forceCompile)
 			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
+				fseek(f1, 0, SEEK_END);
+				uint64_t size = ftell(f1);
+				fseek(f1, 0, SEEK_SET);
 				m_OpenGLSPIRV[type].resize(size / sizeof(uint32_t));
-				fread(m_OpenGLSPIRV[type].data(), sizeof(uint32_t), size, f);
-				fclose(f);
+				fread(m_OpenGLSPIRV[type].data(), sizeof(uint32_t), size, f1);
+				fclose(f1);
 			}
 			else
 			{
@@ -430,12 +437,19 @@ namespace Aurora {
 
 				m_OpenGLSPIRV[type] = std::vector<uint32_t>(result.cbegin(), result.cend());
 
-				FILE* f;
-				fopen_s(&f, p.c_str(), "wb"); // write binary
-				if (f)
+				if (f1)
+					fclose(f1);
+
+				FILE* f2;
+				fopen_s(&f2, p.c_str(), "wb"); // write binary
+				if (f2)
 				{
-					fwrite(m_OpenGLSPIRV[type].data(), sizeof(uint32_t), m_OpenGLSPIRV[type].size(), f);
-					fclose(f);
+					fwrite(m_OpenGLSPIRV[type].data(), sizeof(uint32_t), m_OpenGLSPIRV[type].size(), f2);
+					fclose(f2);
+				}
+				else
+				{
+					AR_CORE_ERROR_TAG("Shader", "Could not open file for writing '{0}'", p);
 				}
 			}
 		}

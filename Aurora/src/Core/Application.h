@@ -10,8 +10,6 @@
 
 #include "ImGui/ImGuiLayer.h"
 
-int main(int argc, char** argv);
-
 namespace Aurora {
 
 	struct ApplicationSpecification
