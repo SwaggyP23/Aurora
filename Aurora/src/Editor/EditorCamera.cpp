@@ -62,12 +62,12 @@ namespace Aurora {
 			{
 				m_CameraType = CameraType::BlenderCam;
 
-				if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
+				if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
 				{
 					Utils::DisableMouse();
 					MouseRotate(delta);
 				}
-				else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+				else if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
 				{
 					Utils::DisableMouse();
 					MousePan(delta);

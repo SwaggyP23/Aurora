@@ -12,6 +12,7 @@ namespace Aurora {
 		ResetIcon = LoadTexture("Icons/Reset.png");
 
 		//TransformCompIcon = LoadTexture("Icons/transformComponentIcon.png");
+		CameraIcon = LoadTexture("Icons/Camera.png");
 	}
 
 	void EditorResources::Shutdown()
@@ -23,6 +24,7 @@ namespace Aurora {
 		ResetIcon.Reset();
 
 		//TransformCompIcon.Reset();
+		CameraIcon.Reset();
 	}
 
 	Ref<Texture2D> EditorResources::LoadTexture(const std::filesystem::path& texturePath/*, TextureProperties = TextureProps()*/)

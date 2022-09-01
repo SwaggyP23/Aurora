@@ -104,6 +104,7 @@ namespace Aurora {
 
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool OnPathDrop(WindowPathDropEvent& e);
 
 		void ShowSettingsUI();
 		void ShowCloseModalUI();
@@ -121,7 +122,7 @@ namespace Aurora {
 		ImRect m_ViewportRect;
 		ImVec2 m_ViewportSize = { 0.0f, 0.0f };
 
-		int m_GizmoType = -1;
+		int16_t m_GizmoType = -1;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;

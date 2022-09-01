@@ -70,11 +70,9 @@ namespace Aurora {
 		template<uint32_t BuffSize = 256, typename StringType>
 		static bool SearchBox(StringType& searchString, const char* searchHint = "Search...")
 		{
-			// TODO: Continue WORK!
 			PushID();
 
 			ShiftCursorY(1.0f);
-			//ShiftCursorX(ImGui::GetWindowContentRegionMax().x / 7.35f);
 
 			bool modified = false;
 			bool searching = false;

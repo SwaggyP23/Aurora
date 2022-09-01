@@ -414,9 +414,11 @@ namespace Aurora {
 		RenderCommand::SetRenderFlag(flag);
 	}
 
-	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat) // TODO: TEMPORARY!!!!!!!!
+	// TODO: TEMPORARY!!!!!!!!
+	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat, const glm::vec3& tint)
 	{
-		//mat->Set("u_Renderer.transform", transform);
+		mat->Set("u_Renderer.transform", transform);
+		//mat->Set("u_Uniforms.AlbedoColor", glm::vec4(tint, 1.0f));
 		mat->SetUpForRendering();
 		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
 		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);

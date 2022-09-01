@@ -40,7 +40,7 @@ namespace Aurora {
 		else
 			m_Window->Center();
 
-		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initiation
+		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initialization
 
 		if (m_Specification.EnableImGui)
 		{
@@ -184,21 +184,21 @@ namespace Aurora {
 		{
 			m_Minimized = true;
 
-			return false;
+			return true;
 		}
 
 		m_Minimized = false;
 
 		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
 
-		return false; // This return is what sets the Handled bool in the event to true or false
+		return true;
 	}
 
 	bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
 	{
 		m_Minimized = e.IsMinimized();
 
-		return true; // This return is what sets the Handled bool in the event to true or false
+		return true;
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
@@ -206,7 +206,7 @@ namespace Aurora {
 		m_Running = false;
 		g_ApplicationRunning = false;
 
-		return true; // This return is what sets the Handled bool in the event to true or false
+		return true;
 	}
 
 	void Application::Close()

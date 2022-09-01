@@ -7,6 +7,7 @@
 #include "Components.h"
 #include "ScriptableEntity.h"
 #include "Renderer/Renderer3D.h"
+#include "Editor/EditorResources.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -109,10 +110,12 @@ namespace Aurora {
 		Renderer3D::DrawSkyBox(s_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
 
 		glm::mat4 transform(1.0f);
-		glm::scale(transform, { 10.0f, 10.0f, 10.0f });
+		transform = glm::translate(glm::mat4(1.0f), {55.0f, 5.0f, 20.0f});
+		transform *= glm::toMat4(glm::quat({ 2.0f, 90.0f, 55.0f }));
+		transform *= glm::scale(glm::mat4(1.0f), {100.0f, 200.0f, 1.0f});
 		s_Mat->Set("u_AlbedoTexture", s_Texture);
 		//s_Mat->Set("u_Uniforms.AlbedoColor", glm::vec4(puh, 1.0f));
-		Renderer3D::DrawMaterial(transform, s_Mat); // TODO: TEMPORARY!!!!!!!!!
+		Renderer3D::DrawMaterial(transform, s_Mat, puh); // TODO: TEMPORARY!!!!!!!!!
 
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)
@@ -128,7 +131,9 @@ namespace Aurora {
 		{
 			auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
-			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 0, (int)entity);
+			// TODO: Fix the way the camera icon is displayed
+			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f },
+				EditorResources::CameraIcon, 1.0f, glm::vec4(1.0f), (int)entity);
 		}
 
 		auto ModelView = m_Registry.view<TransformComponent, ModelComponent>(); // TODO: Rework...!!!

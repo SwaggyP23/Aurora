@@ -16,6 +16,7 @@ namespace Aurora {
 
 		// Components...
 		inline static Ref<Texture2D> TransformCompIcon = nullptr;
+		inline static Ref<Texture2D> CameraIcon = nullptr;
 
 		static void Init();
 		static void Shutdown();

@@ -56,6 +56,7 @@ namespace Aurora {
 
 		void RenderImGui();
 
+		// These are functions that could be ovverriden by the user
 		virtual void OnInit() {}
 		virtual void OnShutdown();
 		virtual void OnEvent(Event& e);

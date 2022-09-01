@@ -142,6 +142,7 @@ namespace Aurora {
 		EventDispatcher dispatcher(e);
 		dispatcher.dispatch<KeyPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnKeyPressed));
 		dispatcher.dispatch<MouseButtonPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+		dispatcher.dispatch<WindowPathDropEvent>(AR_SET_EVENT_FN(EditorLayer::OnPathDrop));
 	}
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
@@ -269,7 +270,7 @@ namespace Aurora {
 			}
 		}
 
-		return false;
+		return true;
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
@@ -292,7 +293,27 @@ namespace Aurora {
 			return true;
 		}
 
-		return false;
+		return true;
+	}
+
+	bool EditorLayer::OnPathDrop(WindowPathDropEvent& e)
+	{
+		// TODO: We can retrieve more than one path at a time however that needs special handling. For opening
+		// scenes, only one scene at a time can be open at the moment, When support for multiple scenes to be open
+		// at the same time, we can then go through the vector and open all the scene if more than one was dropped
+		// For Example...
+		//for (const auto& path : e.GetDroppedPaths())
+		//{
+		//	AR_WARN_TAG("Editor", "{0}", path.string());
+		//}
+		if (e.GetDroppedPathCount() == 1)
+		{
+			std::filesystem::path path = e.GetDroppedPaths().front();
+			if (path.extension().string() == ".aurora")
+				OpenScene(path);
+		}
+
+		return true;
 	}
 
 #pragma endregion
@@ -1437,8 +1458,8 @@ namespace Aurora {
 		ImGui::Text("These are the editor camera's controls:");
 		ImGui::Text("RightClick + Use W/A/S/D/Q/E to control the camera");
 		ImGui::Text("RightClick + MouseScroll to increase the movement speed of fps Camera");
-		ImGui::Text("Press LeftAlt + MouseRightClick and move to Rotate.");
-		ImGui::Text("Press LeftAlt + MouseLeftClick and move to Pan.");
+		ImGui::Text("Press LeftAlt + RightClick and move to Rotate.");
+		ImGui::Text("Press LeftAlt + LeftClick and move to Pan.");
 		ImGui::Text("Press LeftAlt + ScrollWheel to zoom.");
 		ImGui::Text("Press LeftAlt + MouseMiddleButton and move to Zoom.");
 		ImGui::Text("Press LeftAlt + F key to reset the focal point.");
@@ -1621,7 +1642,6 @@ namespace Aurora {
 	void EditorLayer::ManipulateGizmos()
 	{
 		// Camera
-
 		// Editor Camera
 		const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 		const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
@@ -1691,7 +1711,7 @@ namespace Aurora {
 		void* textureID = (void*)(uint64_t)m_Framebuffer->GetColorAttachmentID();
 		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
-		//ImGui::Image((ImTextureID)EditorResources::ResetIcon->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		//ImGui::Image((ImTextureID)EditorResources::CameraIcon->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
 

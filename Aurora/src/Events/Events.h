@@ -19,7 +19,7 @@ namespace Aurora {
 	{
 		None = 0,
 		AppTick, AppUpdate, AppRender,
-		WindowResize, WindowMinimize, WindowMaximize, WindowClose,
+		WindowResize, WindowMinimize, WindowMaximize, WindowClose, WindowPathDrop,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
@@ -70,9 +70,11 @@ namespace Aurora {
 		{
 			if (m_Event.GetEventType() == T::getStaticType())
 			{
-				m_Event.Handled |= func(static_cast<T&>(m_Event));
+				m_Event.Handled = func(*(T*)&m_Event);
+
 				return true;
 			}
+
 			return false;
 		}
 

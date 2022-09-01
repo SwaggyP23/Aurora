@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec2 a_TexCoords;
 
-layout(location = 0) out vec3 v_TexCoords;
+layout(location = 1) out vec3 v_TexCoords; // was 0
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -23,7 +23,7 @@ void main()
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out int o_EntityID;
 
-layout(location = 0) in vec3 v_TexCoords;
+layout(location = 1) in vec3 v_TexCoords; // was 0
 
 layout(binding = 0) uniform samplerCube skybox;
 

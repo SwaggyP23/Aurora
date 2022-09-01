@@ -85,7 +85,8 @@ project "Aurora"
             "%{Library.ShadercRelease}",
             "%{Library.ShadercUtilsRelease}",
             "%{Library.SPIRV_CrossRelease}",
-            "%{Library.SPIRV_CrossGLSLRelease}"
+            "%{Library.SPIRV_CrossGLSLRelease}",
+            "%{Library.SPIRV_ToolsRelease}"
         }
 
     filter "configurations:Debug"
@@ -99,7 +100,8 @@ project "Aurora"
             "%{Library.ShadercDebug}",
             "%{Library.ShadercUtilsDebug}",
             "%{Library.SPIRV_CrossDebug}",
-            "%{Library.SPIRV_CrossGLSLDebug}"
+            "%{Library.SPIRV_CrossGLSLDebug}",
+            "%{Library.SPIRV_ToolsDebug}"
         }
 
     filter "configurations:Release"
@@ -114,7 +116,8 @@ project "Aurora"
             "%{Library.ShadercRelease}",
             "%{Library.ShadercUtilsRelease}",
             "%{Library.SPIRV_CrossRelease}",
-            "%{Library.SPIRV_CrossGLSLRelease}"
+            "%{Library.SPIRV_CrossGLSLRelease}",
+            "%{Library.SPIRV_ToolsRelease}"
         }
 
     filter "configurations:Dist"
@@ -129,7 +132,8 @@ project "Aurora"
             "%{Library.ShadercRelease}",
             "%{Library.ShadercUtilsRelease}",
             "%{Library.SPIRV_CrossRelease}",
-            "%{Library.SPIRV_CrossGLSLRelease}"
+            "%{Library.SPIRV_CrossGLSLRelease}",
+            "%{Library.SPIRV_ToolsRelease}"
         }
 
     filter "files:dependencies/stb/**.cpp"

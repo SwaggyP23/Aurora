@@ -166,7 +166,7 @@ namespace Aurora {
 
 			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
 
-			glTextureStorage2D(m_TextureID, 4, m_InternalFormat, m_Width, m_Height); // level is number of mipmaps
+			glTextureStorage2D(m_TextureID, 1, m_InternalFormat, m_Width, m_Height); // level has to > 0
 			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imageData.PixelData);
 			// the first 0 is the index of the first level/mipmap
 
