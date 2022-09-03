@@ -333,17 +333,11 @@ namespace Aurora {
 				options.AddMacroDefinition("OPENGL");
 				options.SetGenerateDebugInfo(); // This provides the source when using SPIRV_TOOLS and dissassembling
 				options.SetAutoSampledTextures(false); // TODO: Check what this does!
-#if AURORA_DIST
-				const bool optimize = true;
-#else
-				const bool optimize = false;
-#endif
+
+				// Not optimizing shaders when in Vulkan format!
+				constexpr bool optimize = false;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-#ifdef AURORA_DEBUG
-				options.SetOptimizationLevel(shaderc_optimization_level_zero);
-#endif
 
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, Utils::GLShaderTypeToShaderC(type), m_AssetPath.c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -417,17 +411,11 @@ namespace Aurora {
 				options.SetGenerateDebugInfo(); // This provides the source when using SPIRV_TOOLS and dissassembling
 				options.SetAutoSampledTextures(false); // TODO: Check what this does!
 				//options.SetAutoMapLocations(true);
-#if AURORA_DIST
-				const bool optimize = true;
-#else
-				const bool optimize = false;
-#endif
+
+				// Optimize shaders once in OpenGL format!
+				constexpr bool optimize = true;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-#ifdef AURORA_DEBUG
-				options.SetOptimizationLevel(shaderc_optimization_level_zero);
-#endif
 
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(m_OpenGLShaderSource[type], Utils::GLShaderTypeToShaderC(type), m_AssetPath.c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -441,7 +429,7 @@ namespace Aurora {
 				spvtools::SpirvTools tools(SPV_ENV_OPENGL_4_5);
 				std::string wassup;
 				tools.Disassemble(m_OpenGLSPIRV[type], &wassup);
-				AR_DEBUG("Shader: {0} - {1}\n{2}", m_Name, Utils::GLShaderTypeToString(type), wassup);
+				AR_WARN("Shader: {0} - {1}\n{2}", m_Name, Utils::GLShaderTypeToString(type), wassup);
 
 				if (f1)
 					fclose(f1);

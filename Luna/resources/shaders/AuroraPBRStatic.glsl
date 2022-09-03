@@ -33,14 +33,13 @@ layout(location = 1) in vec2 v_TexCoords; // was 0
 
 layout(binding = 0) uniform sampler2D u_AlbedoTexture;
 
-layout(push_constant) uniform Mats
+layout(push_constant) uniform Materials
 {
     vec4 AlbedoColor;
-} u_Uniforms;
+} u_Materials;
 
 void main()
 {    
-    vec4 color = u_Uniforms.AlbedoColor;
-    o_Color = texture(u_AlbedoTexture, v_TexCoords);// * color;
+    o_Color = texture(u_AlbedoTexture, v_TexCoords);// * u_Materials.AlbedoColor;
     o_EntityID = -1;
 }

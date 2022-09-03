@@ -95,6 +95,9 @@ namespace Aurora {
 
 		//Enable(FeatureControl::StencilTesting); // Not implemented currently
 		//SetFeatureControlFunction(FeatureControl::StencilTesting, OpenGLFunction::Always);
+		
+		//glEnable(GL_FRAMEBUFFER_SRGB);
+		// This is the shit that was giving me a very dull look on the screen when i was reworking the texture API
 
 		Enable(FeatureControl::Culling);
 		SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);

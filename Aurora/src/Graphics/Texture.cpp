@@ -4,113 +4,204 @@
 #include "Utils/ImageLoader.h"
 
 #include <glad/glad.h>
+#include <stb_image/stb_image.h>
 
 namespace Aurora {
 
 	namespace Utils {
 
-		struct Formats
+		static GLenum GLFormatFromAFormat(ImageFormat format)
 		{
-			GLint InternalFormat = 0;
-			GLenum DataFormat = 0;
-		};
-
-		static Formats GetFormatsFromChannels(int channels)
-		{
-			GLint internalFormat = 0;
-			GLenum dataFormat = 0;
-			if (channels == 4)
+			switch (format)
 			{
-				internalFormat = GL_RGBA8;
-				dataFormat = GL_RGBA;
+			    case Aurora::ImageFormat::RGB:		return GL_RGB;
+			    case Aurora::ImageFormat::RGBA:		return GL_RGBA;
+			    case Aurora::ImageFormat::RGBA16F:  return GL_RGBA;
+			    case Aurora::ImageFormat::RGBA32F:  return GL_RGBA;
+			    case Aurora::ImageFormat::SRGB:		return GL_RGB;
 			}
-			else if (channels == 3)
+			
+			AR_CORE_ASSERT(false, "Unknown Image Format!");
+			return 0;
+		}
+
+		static GLenum GLInternalFormatFromAFormat(ImageFormat format)
+		{
+			switch (format)
 			{
-				internalFormat = GL_RGB8;
-				dataFormat = GL_RGB;
+			    case ImageFormat::None:						return GL_NONE;
+			    case ImageFormat::R8I:						return GL_R8I;
+			    case ImageFormat::R8UI:						return GL_R8UI;
+			    case ImageFormat::R16I:						return GL_R16I;
+			    case ImageFormat::R16UI:					return GL_R16UI;
+			    case ImageFormat::R32UI:					return GL_R32UI;
+			    case ImageFormat::R32F:						return GL_R32F;
+			    case ImageFormat::RG8:						return GL_RG8;
+			    case ImageFormat::RG16F:					return GL_RG16F;
+			    case ImageFormat::RG32F:					return GL_RG32F;
+			    case ImageFormat::RGB:						return GL_RGB8;
+			    case ImageFormat::RGBA:						return GL_RGBA8;
+			    case ImageFormat::RGBA16F:					return GL_RGBA16F;
+			    case ImageFormat::RGBA32F:					return GL_RGBA32F;
+				case ImageFormat::SRGB:						return GL_SRGB8;
+			    case ImageFormat::DEPTH24STENCIL8:			return GL_DEPTH24_STENCIL8;
+			    case ImageFormat::DEPTH32FSTENCIL8UINT:		return GL_DEPTH32F_STENCIL8;
+			    case ImageFormat::DEPTH32F:					return GL_DEPTH_COMPONENT32F;
 			}
 
-			AR_CORE_ASSERT(internalFormat & dataFormat, "Format is not supported.Format is null!");
-
-			return { internalFormat, dataFormat };
+			AR_CORE_ASSERT(false, "Unknown Image Format!");
+			return 0;
 		}
-	}
 
-	static GLenum GLFilterTypeFromTextureFilter(TextureFilter type)
-	{
-		switch (type)
+		static GLenum GLDataTypeFromAFormat(ImageFormat format)
 		{
-		    case TextureFilter::None:                        return GL_NONE;
-		    case TextureFilter::Nearest:                     return GL_NEAREST;
-		    case TextureFilter::Linear:                      return GL_LINEAR;
-			case TextureFilter::MipMap_NearestNearest:       return GL_NEAREST_MIPMAP_NEAREST;
-			case TextureFilter::MipMap_LinearNearest:        return GL_LINEAR_MIPMAP_NEAREST;
-			case TextureFilter::MipMap_NearestLinear:        return GL_NEAREST_MIPMAP_LINEAR;
-			case TextureFilter::MipMap_LinearLinear:         return GL_LINEAR_MIPMAP_LINEAR;
+			switch (format)
+			{
+			    case Aurora::ImageFormat::RGB:		return GL_UNSIGNED_BYTE;
+			    case Aurora::ImageFormat::RGBA:		return GL_UNSIGNED_BYTE;
+			    case Aurora::ImageFormat::RGBA16F:  return GL_FLOAT;
+			    case Aurora::ImageFormat::RGBA32F:  return GL_FLOAT;
+			    case Aurora::ImageFormat::SRGB:		return GL_UNSIGNED_BYTE;
+			}
+
+			AR_CORE_ASSERT(false, "Unknown Image Format!");
+			return 0;
 		}
 
-		AR_CORE_ASSERT(false, "Unknown Texture Filter!");
-		return 0;
-	}
-
-	static GLenum GLWrapTypeFromTextureWrap(TextureWrap type)
-	{
-		switch (type)
+		static GLenum GLFilterTypeFromTextureFilter(TextureFilter type, bool hasMipmap)
 		{
-		    case TextureWrap::None:               return GL_NONE;
-		    case TextureWrap::Repeat:             return GL_REPEAT;
-		    case TextureWrap::MirrorredRepeat:    return GL_MIRRORED_REPEAT;
-		    case TextureWrap::ClampToEdge:        return GL_CLAMP_TO_EDGE;
-		    case TextureWrap::ClampToBorder:      return GL_CLAMP_TO_BORDER;
+			if (type == TextureFilter::None)                        return GL_NONE;
+			else if (type == TextureFilter::Nearest && hasMipmap)   return GL_NEAREST_MIPMAP_NEAREST;
+			else if (type == TextureFilter::Linear && hasMipmap)    return GL_LINEAR_MIPMAP_LINEAR;
+			else if (type == TextureFilter::Nearest && !hasMipmap)  return GL_NEAREST;
+			else if (type == TextureFilter::Linear && !hasMipmap)   return GL_LINEAR;
+
+			AR_CORE_ASSERT(false, "Unknown Texture Filter!");
+			return 0;
 		}
 
-		AR_CORE_ASSERT(false, "Unknown Texture Wrap Mode!");
-		return 0;
+		static GLenum GLWrapTypeFromTextureWrap(TextureWrap type)
+		{
+			switch (type)
+			{
+			    case TextureWrap::None:               return GL_NONE;
+			    case TextureWrap::Repeat:             return GL_REPEAT;
+			    case TextureWrap::Clamp:              return GL_CLAMP_TO_EDGE;
+			}
+
+			AR_CORE_ASSERT(false, "Unknown Texture Wrap Mode!");
+			return 0;
+		}
+
+		// TODO: Move into a header file since these will be used commonly
+		static uint32_t GetImageFormatBPP(ImageFormat format)
+		{
+			switch (format)
+			{
+			    case ImageFormat::R8UI:      return 1;
+			    case ImageFormat::R16UI:     return 2;
+			    case ImageFormat::R32UI:     return 4;
+			    case ImageFormat::R32F:      return 4;
+			    case ImageFormat::RGB:	       
+			    //case ImageFormat::SRGB:        return 3;
+			    case ImageFormat::RGBA:        return 4;
+			    case ImageFormat::RGBA16F:     return 2 * 4;
+			    case ImageFormat::RGBA32F:     return 4 * 4;
+			}
+
+			AR_CORE_ASSERT(false, "Unknown Image Format!");
+			return 0;
+		}
+
+		static uint32_t GetImageMemorySize(ImageFormat format, int width, int height)
+		{
+			return width * height * GetImageFormatBPP(format);
+		}
+
+		static uint32_t CalcMipCount(uint32_t width, uint32_t height)
+		{
+			return (uint32_t)std::floor(std::log2(std::min(width, height))) + 1;
+		}
+
 	}
 
-	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
 	{
-		return CreateRef<Texture2D>(width, height);
+		return CreateRef<Texture2D>(format, width, height, data, props);
 	}
 
-	Ref<Texture2D> Texture2D::Create(const std::string& filePath)
+	Ref<Texture2D> Texture2D::Create(const std::string& filePath, const TextureProperties& props)
 	{
-		return CreateRef<Texture2D>(filePath);
+		return CreateRef<Texture2D>(filePath, props);
 	}
 
-	Texture2D::Texture2D(uint32_t width, uint32_t height)
-		: m_Width(width), m_Height(height)
+	Texture2D::Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
+		: m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
 	{
 		AR_PROFILE_FUNCTION();
-
-		m_InternalFormat = GL_RGBA8;
-		m_DataFormat = GL_RGBA;
+		m_ImageData = Buffer((void*)data, Utils::GetImageMemorySize(format, width, height));
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 
-		glTextureStorage2D(m_TextureID, 1, GL_RGBA8, m_Width, m_Height);
-
-		SetTextureWrapping(TextureWrap::Repeat);
-		SetTextureFiltering(TextureFilter::MipMap_LinearLinear, TextureFilter::Linear);
+		Invalidate();
+		m_ImageData = Buffer(); // Release local memory buffer after it is created on the gpu
 	}
 
-	Texture2D::Texture2D(const std::string& filePath)
-		: m_Path(filePath), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0)
+	Texture2D::Texture2D(const std::string& filePath, const TextureProperties& props)
+		: m_AssetPath(filePath), m_Properties(props), m_Width(0), m_Height(0)
 	{
 		AR_PROFILE_FUNCTION();
+
+		int32_t width, height, numChannels;
+
+		if (stbi_is_hdr(filePath.c_str()))
+		{
+			// TODO: Log if the texture is SRGB or not!
+			AR_CORE_INFO_TAG("Texture", "Loading an HDR texture from: {0}, SRGB: {1}", filePath.c_str(), props.SRGB);
+
+			stbi_set_flip_vertically_on_load(props.FlipOnLoad);
+
+			float* imageData = stbi_loadf(filePath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
+			AR_CORE_ASSERT(imageData, "Image was not loaded!");
+
+			stbi_set_flip_vertically_on_load(false); // Reset since it is kind of a global state inside stb!
+
+			m_ImageData = Buffer(imageData, Utils::GetImageMemorySize(ImageFormat::RGBA32F, width, height));
+			m_Format = ImageFormat::RGBA32F;
+		}
+		else
+		{
+			AR_CORE_INFO_TAG("Texture", "Loading a texture from: {0}, SRGB: {1}", filePath.c_str(), props.SRGB);
+
+			stbi_set_flip_vertically_on_load(props.FlipOnLoad);
+
+			uint8_t* imageData = stbi_load(filePath.c_str(), &width, &height, &numChannels, props.SRGB ? STBI_rgb : STBI_rgb_alpha);
+			AR_CORE_ASSERT(imageData);
+
+			stbi_set_flip_vertically_on_load(false); // Reset since it is kind of a global state inside stb!
+
+			ImageFormat format = props.SRGB ? ImageFormat::RGB : ImageFormat::RGBA;
+			m_ImageData = Buffer(imageData, Utils::GetImageMemorySize(format, width, height));
+			m_Format = format;
+		}
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
-	}
 
-	void Texture2D::SetData(const void* data, uint32_t size)
-	{
-		AR_PROFILE_FUNCTION();
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, Utils::GLFilterTypeFromTextureFilter(props.SamplerFilter, props.GenerateMips));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, Utils::GLFilterTypeFromTextureFilter(props.SamplerFilter, false));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_R, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_S, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
 
-#ifdef AURORA_DEBUG
-		uint32_t bitsPerChan = m_DataFormat == GL_RGBA ? 4 : 3;
-		AR_CORE_ASSERT(size == m_Width * m_Height * bitsPerChan, "Data must be an entire texture!");
-#endif
-		glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+		m_Width = width;
+		m_Height = height;
+
+		Invalidate();
+
+		stbi_image_free(m_ImageData.GetData());
+		m_ImageData = Buffer(); // Reset the buffer, TODO: Check if this whole constructor actually behaves as it should
+		// check if the data being freed here above is the actual data that should be freed! And also check the data
+		// loading process if its legit, whole constructor looks sus!
 	}
 
 	Texture2D::~Texture2D()
@@ -118,64 +209,27 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glDeleteTextures(1, &m_TextureID);
+		m_TextureID = 0; // Reset textureID just for safety
 	}
 
-	void Texture2D::SetTextureWrapping(TextureWrap wrapMode) const
+	void Texture2D::Invalidate()
 	{
 		AR_PROFILE_FUNCTION();
 
-		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GLWrapTypeFromTextureWrap(wrapMode));
-		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GLWrapTypeFromTextureWrap(wrapMode));
-	}
+		GLenum format, internalFormat;
+		internalFormat = Utils::GLInternalFormatFromAFormat(m_Format);
 
-	void Texture2D::SetTextureFiltering(TextureFilter minFilter, TextureFilter magFilter) const
-	{
-		AR_PROFILE_FUNCTION();
-
-		glTextureParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, GLFilterTypeFromTextureFilter(minFilter));
-		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, GLFilterTypeFromTextureFilter(magFilter));
-	}
-
-	void Texture2D::FlipTextureVertically(bool state)
-	{
-		Utils::ImageLoader::SetFlipVertically(state);
-	}
-
-	void Texture2D::LoadTextureData()
-	{
-		AR_PROFILE_FUNCTION();
-
-		// load image
-		const char* path = m_Path.c_str();
-
-		auto& imageData = Utils::ImageLoader::LoadImageFile(path);
-
-		m_Width = imageData.Width;
-		m_Height = imageData.Height;
-
-		if (imageData.PixelData)
+		uint32_t mipCount = Utils::CalcMipCount(m_Width, m_Height);
+		glTextureStorage2D(m_TextureID, mipCount, internalFormat, m_Width, m_Height);
+		if (m_ImageData)
 		{
-			AR_PROFILE_SCOPE("Texture Storage! Texture::loadTextureData()");
-
-			int channels = imageData.Channels;
-			AR_CORE_WARN_TAG("Texture", "Number of channels for texture{0} is: {1}", m_Path, channels);
-
-			Utils::Formats texFormat = Utils::GetFormatsFromChannels(channels);
-			m_InternalFormat = texFormat.InternalFormat;
-			m_DataFormat = texFormat.DataFormat;
-
-			AR_CORE_ASSERT(m_InternalFormat && m_DataFormat, "Formats are not set!");
-
-			glTextureStorage2D(m_TextureID, 1, m_InternalFormat, m_Width, m_Height); // level has to > 0
-			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imageData.PixelData);
-			// the first 0 is the index of the first level/mipmap
-
-			glGenerateTextureMipmap(m_TextureID);
+			format = Utils::GLFormatFromAFormat(m_Format);
+			GLenum dataType = Utils::GLDataTypeFromAFormat(m_Format);
+			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, format, dataType, m_ImageData.GetData());
+			
+			if (m_Properties.GenerateMips)
+				glGenerateTextureMipmap(m_TextureID);
 		}
-		else
-			AR_CORE_ERROR_TAG("Texture", "Failed to load Texture!{0}", m_Path);
-
-		Utils::ImageLoader::FreeImage();
 	}
 
 	void Texture2D::Bind(uint32_t slot) const

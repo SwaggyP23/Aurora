@@ -86,7 +86,7 @@ namespace Aurora {
 			{
 			    case Aurora::FrameBufferTextureFormat::None:                 return GL_NONE;
 			    case Aurora::FrameBufferTextureFormat::RGBA8:                return GL_RGBA8;
-			    case Aurora::FrameBufferTextureFormat::RED_INTEGER:          return GL_RED_INTEGER;
+			    case Aurora::FrameBufferTextureFormat::RED_INTEGER:          return GL_R8I;
 			    case Aurora::FrameBufferTextureFormat::DEPTH24STENCIL8:      return GL_DEPTH24_STENCIL8;
 			}
 

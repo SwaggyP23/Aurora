@@ -205,7 +205,7 @@ namespace Aurora {
 		};
 
 		s_Data->SkyBoxVertexArray = VertexArray::Create();
-		s_Data->SkyBoxVertexBuffer = VertexBuffer::Create(skyboxQuad, sizeof(skyboxQuad), VertexBufferDrawHint::Static);
+		s_Data->SkyBoxVertexBuffer = VertexBuffer::Create(skyboxQuad, sizeof(skyboxQuad), VertexBufferUsage::Static);
 		s_Data->SkyBoxVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoords"}
@@ -213,7 +213,7 @@ namespace Aurora {
 		s_Data->SkyBoxVertexArray->AddVertexBuffer(s_Data->SkyBoxVertexBuffer);
 
 		s_Data->QuadVertexArray = VertexArray::Create();
-		s_Data->QuadVertexBuffer = VertexBuffer::Create((uint32_t)s_Data->MaxVertices * sizeof(QuadVertex), VertexBufferDrawHint::Dynamic);
+		s_Data->QuadVertexBuffer = VertexBuffer::Create((uint32_t)s_Data->MaxVertices * sizeof(QuadVertex), VertexBufferUsage::Dynamic);
 		s_Data->QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
@@ -233,9 +233,8 @@ namespace Aurora {
 		s_Data->SkyBoxVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
-		s_Data->WhiteTex = Texture2D::Create(1, 1);
-		uint32_t whiteTextureData = 0xffffffff;
-		s_Data->WhiteTex->SetData(&whiteTextureData, sizeof(uint32_t));
+		constexpr uint32_t whiteTextureData = 0xffffffff;
+		s_Data->WhiteTex = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
 
 		int samplers[s_Data->MaxTextureSlots];
 		for (int i = 0; i < s_Data->MaxTextureSlots; i++)
@@ -415,10 +414,10 @@ namespace Aurora {
 	}
 
 	// TODO: TEMPORARY!!!!!!!!
-	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat, const glm::vec3& tint)
+	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat, const glm::vec4& tint)
 	{
 		mat->Set("u_Renderer.transform", transform);
-		//mat->Set("u_Uniforms.AlbedoColor", glm::vec4(tint, 1.0f));
+		//mat->Set("u_Materials.AlbedoColor", tint);
 		mat->SetUpForRendering();
 		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
 		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);

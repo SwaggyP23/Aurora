@@ -12,7 +12,9 @@ namespace Aurora {
 		ResetIcon = LoadTexture("Icons/Reset.png");
 
 		//TransformCompIcon = LoadTexture("Icons/transformComponentIcon.png");
-		CameraIcon = LoadTexture("Icons/Camera.png");
+		TextureProperties cameraProps;
+		cameraProps.FlipOnLoad = true;
+		CameraIcon = LoadTexture("Icons/Camera.png", cameraProps);
 	}
 
 	void EditorResources::Shutdown()
@@ -27,21 +29,18 @@ namespace Aurora {
 		CameraIcon.Reset();
 	}
 
-	Ref<Texture2D> EditorResources::LoadTexture(const std::filesystem::path& texturePath/*, TextureProperties = TextureProps()*/)
+	Ref<Texture2D> EditorResources::LoadTexture(const std::filesystem::path& texturePath, const TextureProperties& props)
 	{
 		std::filesystem::path path = std::filesystem::path("Resources") / "EditorInternal" / texturePath;
 
 		if (!std::filesystem::exists(path))
 		{
-			AR_CORE_CRITICAL_TAG("EditorResources", "Texture Path {} does not exist!", path.string());
+			AR_CORE_CRITICAL_TAG("EditorResources", "Texture Path {0} does not exist!", path.string());
 			AR_CORE_ASSERT(false);
 			return nullptr;
 		}
 
-		Ref<Texture2D> texture = Texture2D::Create(path.string());
-		texture->SetTextureWrapping(TextureWrap::ClampToEdge);
-		texture->SetTextureFiltering(TextureFilter::Linear, TextureFilter::Linear);
-		texture->LoadTextureData();
+		Ref<Texture2D> texture = Texture2D::Create(path.string(), props);
 
 		return texture;
 	}

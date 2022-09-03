@@ -47,8 +47,8 @@ namespace Aurora {
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		glm::mat4 GetViewProjection() const { return GetProjection() * m_ViewMatrix; }
 
-		float GetPitch() const { return m_Pitch; }
-		float GetYaw() const { return m_Yaw; }
+		[[nodiscard]] float GetPitch() const { return m_Pitch; }
+		[[nodiscard]] float GetYaw() const { return m_Yaw; }
 
 		inline void SetActive(bool active) { m_IsActive = active; }
 		inline bool IsActive() const { return m_IsActive; }

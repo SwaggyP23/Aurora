@@ -7,13 +7,13 @@ namespace Aurora {
 
 	namespace Utils {
 
-		static GLenum GLDrawHintTypeFromEnum(VertexBufferDrawHint hint)
+		static GLenum GLDrawHintTypeFromEnum(VertexBufferUsage hint)
 		{
 			switch (hint)
 			{
-			   case Aurora::VertexBufferDrawHint::None:        return GL_NONE;
-			   case Aurora::VertexBufferDrawHint::Static:      return GL_STATIC_DRAW;
-			   case Aurora::VertexBufferDrawHint::Dynamic:     return GL_DYNAMIC_DRAW;
+			   case Aurora::VertexBufferUsage::None:        return GL_NONE;
+			   case Aurora::VertexBufferUsage::Static:      return GL_STATIC_DRAW;
+			   case Aurora::VertexBufferUsage::Dynamic:     return GL_DYNAMIC_DRAW;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown draw hint type!");
@@ -74,17 +74,17 @@ namespace Aurora {
 	// VERTEX BUFFER!!
 	//////////////////////////
 
-	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, VertexBufferDrawHint drawHint)
+	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, VertexBufferUsage drawHint)
 	{
 		return CreateRef<VertexBuffer>(size, drawHint);
 	}
 
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, VertexBufferDrawHint drawHint)
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, VertexBufferUsage drawHint)
 	{
 		return CreateRef<VertexBuffer>(vertices, size, drawHint);
 	}
 
-	VertexBuffer::VertexBuffer(uint32_t size, VertexBufferDrawHint drawHint)
+	VertexBuffer::VertexBuffer(uint32_t size, VertexBufferUsage drawHint)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -93,7 +93,7 @@ namespace Aurora {
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, Utils::GLDrawHintTypeFromEnum(drawHint));
 	}
 
-	VertexBuffer::VertexBuffer(float* vertices, uint32_t size, VertexBufferDrawHint drawHint)
+	VertexBuffer::VertexBuffer(float* vertices, uint32_t size, VertexBufferUsage drawHint)
 	{
 		AR_PROFILE_FUNCTION();
 

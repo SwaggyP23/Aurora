@@ -17,6 +17,7 @@ namespace Aurora {
 	static Ref<Shader> s_MatShader;
 	static Ref<Material> s_Mat;
 	static Ref<Texture2D> s_Texture;
+	static TextureProperties s_Props;
 	static Ref<Shader> s_ModelShader;
 	static Ref<CubeTexture> s_EnvironmentMap;
 	static bool s_Created = false;
@@ -33,11 +34,11 @@ namespace Aurora {
 		{
 			s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
 			s_Mat = Material::Create("Test Mat", s_MatShader);
-			s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png");
-			s_Texture->LoadTextureData();
+			s_Props.FlipOnLoad = true;
+			s_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
+			s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png", s_Props);
 			s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
 			s_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
-			s_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
 			s_Created = true;
 		}
 	}
@@ -103,7 +104,7 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec3 puh) // TODO: TEMPORARY!!!!!!!!!
+	void Scene::OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec4 puh) // TODO: TEMPORARY!!!!!!!!!
 	{
 		Renderer3D::BeginScene(camera);
 

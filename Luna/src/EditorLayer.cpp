@@ -21,7 +21,7 @@ namespace Aurora {
 	}
 
 	// TODO: TEMPORARY!
-	static glm::vec3 s_MaterialAlbedoColor(1.0f);
+	static glm::vec4 s_MaterialAlbedoColor(1.0f);
 
 	void EditorLayer::OnAttach()
 	{
@@ -29,11 +29,11 @@ namespace Aurora {
 
 		EditorResources::Init();
 
-		FramebufferSpecification fbSpec;
-		fbSpec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
-		fbSpec.Width = 1280;
-		fbSpec.Height = 720;
-		m_Framebuffer = Framebuffer::Create(fbSpec);
+		FramebufferSpecification specification;
+		specification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
+		specification.Width = 1280;
+		specification.Height = 720;
+		m_Framebuffer = Framebuffer::Create(specification);
 
 		m_EditorScene = Scene::Create("Editor Scene");
 		m_ActiveScene = m_EditorScene;
@@ -1238,11 +1238,11 @@ namespace Aurora {
 		float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 		m_Peak = peak;
 
-		//std::string name = "None";
-		//if (m_HoveredEntity && ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
-		//	name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+		std::string name = "None";
+		if (m_HoveredEntity && ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
+			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 
-		//ImGui::Text("Hovered Entity: %s", name.c_str());
+		ImGui::Text("Hovered Entity: %s", name.c_str());
 		ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
 		ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
 		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
@@ -1348,7 +1348,7 @@ namespace Aurora {
 		ImGui::Text("Peak FPS: %.f", m_Peak);
 
 		// TODO: This is super temporary since im just working on materials for now...
-		ImGui::ColorEdit3("Material Tint", glm::value_ptr(s_MaterialAlbedoColor));
+		ImGui::ColorEdit4("Material Tint", glm::value_ptr(s_MaterialAlbedoColor));
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
 		if (ImGui::TreeNodeEx("CPU Timers (Milliseconds)", flags))
