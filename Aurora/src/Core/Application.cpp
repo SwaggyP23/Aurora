@@ -11,6 +11,7 @@ namespace Aurora {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const ApplicationSpecification& specification)
+		: m_Specification(specification)
 	{
 		AR_PROFILE_BEGIN_SESSION("ApplicationStartup", "Profiling");
 		AR_PROFILE_FUNCTION();
@@ -39,10 +40,13 @@ namespace Aurora {
 		else
 			m_Window->Center();
 
-		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initiation
+		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initialization
 
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
+		if (m_Specification.EnableImGui)
+		{
+			m_ImGuiLayer = new ImGuiLayer();
+			PushOverlay(m_ImGuiLayer);
+		}
 
 		AR_PROFILE_END_SESSION("ApplicationStartup");
 	}
@@ -153,7 +157,8 @@ namespace Aurora {
 					}
 				}
 
-				RenderImGui();
+				if(m_Specification.EnableImGui)
+					RenderImGui();
 
 				m_CPUTime = cpuTimer.ElapsedMillis();
 				m_Window->Update();
@@ -179,21 +184,21 @@ namespace Aurora {
 		{
 			m_Minimized = true;
 
-			return false;
+			return true;
 		}
 
 		m_Minimized = false;
 
 		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
 
-		return false; // This return is what sets the Handled bool in the event to true or false
+		return true;
 	}
 
 	bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
 	{
 		m_Minimized = e.IsMinimized();
 
-		return true; // This return is what sets the Handled bool in the event to true or false
+		return true;
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
@@ -201,7 +206,7 @@ namespace Aurora {
 		m_Running = false;
 		g_ApplicationRunning = false;
 
-		return true; // This return is what sets the Handled bool in the event to true or false
+		return true;
 	}
 
 	void Application::Close()

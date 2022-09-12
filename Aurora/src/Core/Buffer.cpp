@@ -8,59 +8,19 @@ namespace Aurora {
 	{
 	}
 
-	Buffer::Buffer(size_t size)
-		: m_Size((uint32_t)size)
+	Buffer Buffer::Copy(const void* data, uint32_t size)
 	{
-		ZeroInit();
-	}
+		Buffer newBuffer;
+		newBuffer.Allocate(size);
+		memcpy(newBuffer.GetData(), data, size);
 
-	Buffer::Buffer(const Buffer& other)
-	{
-		Allocate(other.m_Size);
-		memcpy(m_Data, other.m_Data, other.m_Size);
-	}
-
-	Buffer::Buffer(Buffer&& other) noexcept
-	{
-		m_Data = other.m_Data;
-		m_Size = other.m_Size;
-
-		other.m_Data = nullptr;
-		other.m_Size = 0;
-	}
-
-	Buffer::~Buffer()
-	{
-		Release();
-	}
-
-	Buffer& Buffer::operator=(const Buffer& other)
-	{
-		Allocate(other.m_Size);
-		memcpy(m_Data, other.m_Data, other.m_Size);
-
-		return *this;
-	}
-
-	Buffer& Buffer::operator=(Buffer&& other) noexcept
-	{
-		m_Data = other.m_Data;
-		m_Size = other.m_Size;
-
-		other.m_Data = nullptr;
-		other.m_Size = 0;
-
-		return *this;
+		return newBuffer;
 	}
 
 	void Buffer::Allocate(size_t size)
 	{
-		if (m_Data)
-		{
-			delete[] m_Data;
-			m_Data = nullptr;
-			m_Size = 0;
-		}
+		delete[] m_Data;
+		m_Data = nullptr;
 
 		if (size == 0)
 			return;
@@ -71,8 +31,11 @@ namespace Aurora {
 
 	void Buffer::Release()
 	{
-		delete[] m_Data;
-		m_Data = nullptr;
+		if (m_Data)
+		{
+			delete[] m_Data;
+			m_Data = nullptr;
+		}
 
 		m_Size = 0;
 	}
@@ -83,13 +46,6 @@ namespace Aurora {
 			memset(m_Data, 0, m_Size);
 	}
 
-	void Buffer::Write(void* data, uint32_t size, uint32_t offset)
-	{
-		AR_CORE_ASSERT(offset + size <= m_Size, "Buffer Overflow!");
-
-		memcpy((Byte*)m_Data + offset, data, size);
-	}
-
 	Byte* Buffer::ReadBytes(uint32_t size, uint32_t offset)
 	{
 		AR_CORE_ASSERT(offset + size <= m_Size, "Buffer Overflow!");
@@ -98,6 +54,13 @@ namespace Aurora {
 		memcpy(buffer, (Byte*)m_Data + offset, size);
 
 		return buffer;
+	}
+
+	void Buffer::Write(void* data, uint32_t size, uint32_t offset)
+	{
+		AR_CORE_ASSERT(offset + size <= m_Size, "Buffer Overflow!");
+
+		memcpy((Byte*)m_Data + offset, data, size);
 	}
 
 }

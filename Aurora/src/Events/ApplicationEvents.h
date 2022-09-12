@@ -86,6 +86,40 @@ namespace Aurora {
 
 	};
 
+	class WindowPathDropEvent : public Event
+	{
+	public:
+		using paths = std::vector<std::filesystem::path>;
+
+	public:
+		WindowPathDropEvent(uint32_t pathCount, const char** paths)
+			: m_PathCount(pathCount)
+		{
+			// Performing deep copy
+			m_Paths.reserve(pathCount);
+			for (uint32_t i = 0; i < pathCount; i++)
+				m_Paths.emplace_back(std::string(paths[i]));
+		}
+
+		inline const paths& GetDroppedPaths() const { return m_Paths; }
+		inline uint32_t GetDroppedPathCount() const { return m_PathCount; }
+
+		std::string toString() const override
+		{
+			std::stringstream ss;
+			ss << "Window Path Drop Event!";
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowPathDrop)
+		EVENT_CLASS_CATEGORY(EventCategoryInput)
+
+	private:
+		paths m_Paths;
+		uint32_t m_PathCount = 0;
+
+	};
+
 	class AppTickEvent : public Event
 	{
 	public:

@@ -82,8 +82,7 @@ namespace Aurora {
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
-		bool isRawMouseSupported = glfwRawMouseMotionSupported();
-		if (isRawMouseSupported)
+		if (glfwRawMouseMotionSupported())
 			glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		else
 			AR_CORE_WARN_TAG("Window", "Raw mouse motion is not supported!");
@@ -269,13 +268,13 @@ namespace Aurora {
 			{
 			case GLFW_PRESS:
 			{
-				MouseButtonPressedEvent event((MouseCode)button);
+				MouseButtonPressedEvent event((MouseButton)button);
 				data.EventCallback(event);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				MouseButtonReleasedEvent event((MouseCode)button);
+				MouseButtonReleasedEvent event((MouseButton)button);
 				data.EventCallback(event);
 				break;
 			}
@@ -295,6 +294,14 @@ namespace Aurora {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			MouseMovedEvent event((float)xPos, (float)yPos);
+			data.EventCallback(event);
+		});
+
+		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int path_count, const char* paths[])
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			WindowPathDropEvent event(path_count, paths);
 			data.EventCallback(event);
 		});
 

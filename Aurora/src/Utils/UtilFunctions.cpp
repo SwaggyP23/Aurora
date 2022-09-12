@@ -71,37 +71,45 @@ namespace Aurora {
 
 #endif
 
-		std::ifstream FileReader::m_Stream;
-
-		std::string FileReader::ReadTextFile(const std::string& filePath)
+		std::string FileIO::ReadTextFile(const std::filesystem::path& filePath)
 		{
 			AR_PROFILE_FUNCTION();
 
-			AR_CORE_ASSERT(std::filesystem::exists(filePath), "Filepath provided does not exist!");
-
 			std::string result;
-			std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
-			if (in.is_open())
+			FILE* f;
+			fopen_s(&f, filePath.string().c_str(), "rb");
+			if (f)
 			{
-				in.seekg(0, std::ios::end);
-				size_t size = in.tellg();
-				if (size != -1)
-				{
-					result.resize(size);
-					in.seekg(0, std::ios::beg);
-					in.read(&result[0], size);
-				}
-				else
-				{
-					AR_CORE_ERROR_TAG("FileReader", "Could not read from file{0}", filePath);
-				}
+				fseek(f, 0, SEEK_END);
+				uint64_t size = ftell(f);
+				result.resize(size);
+				fseek(f, 0, SEEK_SET);
+				fread(&result[0], sizeof(char), size, f);
+				fclose(f);
 			}
 			else
 			{
-				AR_CORE_ASSERT(false, "Could not open file{0}", filePath);
+				AR_CORE_CRITICAL_TAG("FileIO", "Could not open file: {0}", filePath.string());
 			}
 
 			return result;
+		}
+
+		void FileIO::WriteToFile(const std::filesystem::path& filePath, const void* buffer, size_t typeSize, size_t size)
+		{
+			AR_PROFILE_FUNCTION();
+
+			FILE* f;
+			fopen_s(&f, filePath.string().c_str(), "wb");
+			if (f)
+			{
+				fwrite(buffer, typeSize, size, f);
+				fclose(f);
+			}
+			else
+			{
+				AR_CORE_CRITICAL_TAG("FileIO", "Could not open file: {0}", filePath.string());
+			}
 		}
 
 		// Time...

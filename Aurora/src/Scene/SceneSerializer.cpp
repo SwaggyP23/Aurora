@@ -129,7 +129,7 @@ namespace Aurora {
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap; // Tag Component
 
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			const std::string& tag = entity.GetComponent<TagComponent>().Tag;
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 
 			out << YAML::EndMap; // Tag Component
@@ -166,7 +166,8 @@ namespace Aurora {
 			    case 1: out << YAML::Key << "ProjectionType" << YAML::Value << 1; out << YAML::Comment("Orthographic"); break;
 			}
 
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << cameraComp.Camera.GetPerspectiveVerticalFOV();
+			// Degrees
+			out << YAML::Key << "PerspectiveFOV" << YAML::Value << cameraComp.Camera.GetDegPerspectiveVerticalFOV();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << cameraComp.Camera.GetPerspectiveNearClip();
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << cameraComp.Camera.GetPerspectiveFarClip();
 
@@ -261,8 +262,8 @@ namespace Aurora {
 		if (!data["Scene"])
 			return false; // If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
 
-		std::string sceneName = data["Scene"].as<std::string>();
-		m_Scene->SetName(sceneName);
+		std::string& sceneName = m_Scene->GetName();
+		sceneName = data["Scene"].as<std::string>();
 		AR_CORE_TRACE_TAG("SceneSerializer", "Deserializing scene '{0}'", sceneName);
 
 		YAML::Node entities = data["Entities"]; // This is the entities node that exists under the scene
@@ -281,7 +282,7 @@ namespace Aurora {
 
 				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID: {0:#04x}, Name: {1}", uuid, entityName);
 
-				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, entityName.c_str());
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, entityName);
 
 				YAML::Node transform = entity["TransformComponent"];
 				if (transform)
@@ -301,7 +302,7 @@ namespace Aurora {
 					auto& cameraProps = cameraComp["Camera"];
 					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)(cameraProps["ProjectionType"].as<int>()));
 
-					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
+					cc.Camera.SetDegPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 

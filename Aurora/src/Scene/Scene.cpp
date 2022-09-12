@@ -7,6 +7,7 @@
 #include "Components.h"
 #include "ScriptableEntity.h"
 #include "Renderer/Renderer3D.h"
+#include "Editor/EditorResources.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -16,6 +17,10 @@ namespace Aurora {
 	static Ref<Shader> s_MatShader;
 	static Ref<Material> s_Mat;
 	static Ref<Texture2D> s_Texture;
+	static TextureProperties s_Props;
+	static Ref<Shader> s_ModelShader;
+	static Ref<CubeTexture> s_EnvironmentMap;
+	static bool s_Created = false;
 
 	Ref<Scene> Scene::Create(const std::string& debugName)
 	{
@@ -25,14 +30,17 @@ namespace Aurora {
 	Scene::Scene(const std::string& debugName)
 		: m_Name(debugName)
 	{
-		s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
-		s_Mat = Material::Create("Test Mat", s_MatShader);
-		s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png");
-		s_Texture->LoadTextureData();
-
-		m_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
-		s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
-		m_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
+		if (!s_Created)
+		{
+			s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
+			s_Mat = Material::Create("Test Mat", s_MatShader);
+			s_Props.FlipOnLoad = true;
+			s_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
+			s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png", s_Props);
+			s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
+			s_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
+			s_Created = true;
+		}
 	}
 
 	Scene::~Scene()
@@ -45,7 +53,7 @@ namespace Aurora {
 		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name == "" ? "AuroraDefault" : name;
+		tag.Tag = name == "" ? "AuroraDefault" : std::move(name);
 
 		return entity;
 	}
@@ -96,17 +104,19 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnUpdateEditor(TimeStep ts, EditorCamera& camera, glm::vec3 puh) // TODO: TEMPORARY!!!!!!!!!
+	void Scene::OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec4 puh) // TODO: TEMPORARY!!!!!!!!!
 	{
 		Renderer3D::BeginScene(camera);
 
-		Renderer3D::DrawSkyBox(m_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
+		Renderer3D::DrawSkyBox(s_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
 
 		glm::mat4 transform(1.0f);
-		glm::scale(transform, { 10.0f, 10.0f, 10.0f });
+		transform = glm::translate(glm::mat4(1.0f), {55.0f, 5.0f, 20.0f});
+		transform *= glm::toMat4(glm::quat({ 2.0f, 90.0f, 55.0f }));
+		transform *= glm::scale(glm::mat4(1.0f), {100.0f, 200.0f, 1.0f});
 		s_Mat->Set("u_AlbedoTexture", s_Texture);
 		//s_Mat->Set("u_Uniforms.AlbedoColor", glm::vec4(puh, 1.0f));
-		Renderer3D::DrawMaterial(transform, s_Mat); // TODO: TEMPORARY!!!!!!!!!
+		Renderer3D::DrawMaterial(transform, s_Mat, puh); // TODO: TEMPORARY!!!!!!!!!
 
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)
@@ -122,7 +132,9 @@ namespace Aurora {
 		{
 			auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
-			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 0, (int)entity);
+			// TODO: Fix the way the camera icon is displayed
+			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f },
+				EditorResources::CameraIcon, 1.0f, glm::vec4(1.0f), (int)entity);
 		}
 
 		auto ModelView = m_Registry.view<TransformComponent, ModelComponent>(); // TODO: Rework...!!!
@@ -135,11 +147,11 @@ namespace Aurora {
 			auto rotation = glm::toMat4(glm::quat(transform.Rotation));
 			auto trans = glm::translate(glm::mat4(1.0f), transform.Translation) * rotation * glm::scale(glm::mat4(1.0f), transform.Scale);
 
-			m_ModelShader->Bind();
+			s_ModelShader->Bind();
 
 			s_ModelUniBuffer->SetData(glm::value_ptr(trans), sizeof(glm::mat4));
 			s_ModelUniBuffer->SetData(&entity, sizeof(int), sizeof(glm::mat4));
-			model.Draw(*(m_ModelShader.raw()));
+			model.Draw(*(s_ModelShader.raw()));
 		}
 
 		Renderer3D::EndScene();
@@ -163,7 +175,7 @@ namespace Aurora {
 			});
 		}
 
-		Camera* mainCamera = nullptr;
+		SceneCamera* mainCamera = nullptr;
 		glm::mat4 mainTransform;
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
@@ -181,7 +193,7 @@ namespace Aurora {
 
 		if (mainCamera)
 		{
-			Renderer3D::BeginScene(mainCamera->GetProjection(), mainTransform);
+			Renderer3D::BeginScene(*mainCamera, mainTransform);
 
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto entity : view)
@@ -220,51 +232,6 @@ namespace Aurora {
 		}
 
 		return {};
-	}
-
-	// TODO: ReWrite this system.
-	template<typename T>
-	void Scene::OnComponentAdded(Entity entity, T& component)
-	{
-		static_assert(sizeof(T) == 0);
-	}
-
-	template<>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
-	{
-
-	}
-
-	template<>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
-	{
-		if(m_ViewportWidth > 0 &&  m_ViewportHeight > 0)
-			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-	}
-
-	template<>
-	void Scene::OnComponentAdded<ModelComponent>(Entity entity, ModelComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-	{
 	}
 
 }

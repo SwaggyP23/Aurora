@@ -32,7 +32,6 @@ namespace Aurora {
 
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
-		Entity m_GroundEntity;
 		Entity m_HoveredEntity;
 		ImRect m_SceneHierarchyTableRect;
 		bool m_ShowSceneHierarchyPanel = true;
@@ -104,6 +103,7 @@ namespace Aurora {
 
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool OnPathDrop(WindowPathDropEvent& e);
 
 		void ShowSettingsUI();
 		void ShowCloseModalUI();
@@ -113,7 +113,8 @@ namespace Aurora {
 
 	private:
 		EditorCamera m_EditorCamera;
-		Ref<Framebuffer> m_Framebuffer;
+		Ref<Framebuffer> m_MSAAFramebuffer;
+		Ref<Framebuffer> m_IntermediateFramebuffer;
 
 		Ref<Scene> m_EditorScene;
 		Ref<Scene> m_ActiveScene;
@@ -121,11 +122,14 @@ namespace Aurora {
 		ImRect m_ViewportRect;
 		ImVec2 m_ViewportSize = { 0.0f, 0.0f };
 
-		int m_GizmoType = -1;
+		int16_t m_GizmoType = -1;
 
-		bool m_ViewPortFocused = false;
-		bool m_ViewPortHovered = false;
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
 		bool m_AllowViewportCameraEvents = false;
+		bool m_StartedRightClickInViewport = false;
+		// TODO: This is temp until I have a real grid and a grid shader!
+		bool m_ShowImGuizmoGrid = false;
 
 		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

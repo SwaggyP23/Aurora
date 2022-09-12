@@ -37,6 +37,7 @@ Library["ShadercRelease"]         = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
 Library["ShadercUtilsRelease"]    = "%{LibraryDir.VulkanSDK}/shaderc_util.lib"
 Library["SPIRV_CrossRelease"]     = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_CrossGLSLRelease"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+Library["SPIRV_ToolsRelease"]     = "%{LibraryDir.VulkanSDK}/SPIRV-Tools.lib"
 
 Binaries = {}
 

@@ -21,7 +21,7 @@ namespace Theme {
 	constexpr uint32_t SelectionMuted         = IM_COL32(237, 201, 142, 23);
 	constexpr uint32_t Titlebar               = IM_COL32(21, 21, 21, 255);
 	constexpr uint32_t Text                   = IM_COL32(192, 192, 192, 255);
-	constexpr uint32_t TextBrighter           = IM_COL32(210, 210, 210, 255);
+	constexpr uint32_t TextBrighter           = IM_COL32(240, 240, 240, 255);
 	constexpr uint32_t TextDarker             = IM_COL32(128, 128, 128, 255);
 	constexpr uint32_t TextError              = IM_COL32(230, 51, 51, 255);
 

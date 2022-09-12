@@ -2,6 +2,7 @@
 #include "ImageLoader.h"
 
 #include <stb_image/stb_image.h>
+#include <stb_image_writer/stb_image_write.h>
 
 namespace Aurora {
 
@@ -21,6 +22,16 @@ namespace Aurora {
 			m_ImageData.PixelData = (Byte*)stbi_load(filePath.c_str(), (int*)&m_ImageData.Width, (int*)&m_ImageData.Height, (int*)&m_ImageData.Channels, 0);
 
 			return m_ImageData;
+		}
+
+		bool ImageLoader::WriteDataToPNGImage(const std::string& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels)
+		{
+			// Should Return a bool if it works
+			// Should have an enum to select in what format to write the image (tga/png/jpg/hdr...)
+			if (stbi_write_png(filePath.c_str(), width, height, channels, data, width * channels))
+				return true;
+
+			return false;
 		}
 
 		void ImageLoader::FreeImage()

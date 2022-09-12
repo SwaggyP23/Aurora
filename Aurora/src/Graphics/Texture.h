@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Base.h"
+#include "Core/Buffer.h"
 
 #include <string>
 
@@ -15,24 +16,67 @@
 
 namespace Aurora {
 
-	enum class TextureWrap // Wrapping settings
+	enum class ImageFormat : uint8_t
+	{
+		None = 0,
+
+		// Color
+		R8I,
+		R8UI,
+		R16I,
+		R16UI,
+		R32I,
+		R32UI,
+		R32F,
+		RG8,
+		RG16F,
+		RG32F,
+		RGB,
+		RGBA,
+		RGBA16F,
+		RGBA32F,
+
+		SRGB, // Currently not supported
+
+		// Depth / Stencil
+		DEPTH24STENCIL8,
+		DEPTH32FSTENCIL8UINT,
+		DEPTH32F,
+
+		// Defaults
+		Depth = DEPTH24STENCIL8
+	};
+
+	enum class ImageUsage : uint8_t
+	{
+		None = 0,
+		Texture,
+		Attachment,
+		Storage // Currently not used for anything
+	};
+
+	enum class TextureWrap : uint8_t // Wrapping settings
 	{
 		None = 0,
 		Repeat,
-		MirrorredRepeat, 
-		ClampToEdge, 
-		ClampToBorder
+		Clamp
 	};
 
-	enum class TextureFilter // Filtering settings
+	enum class TextureFilter : uint8_t // Filtering settings
 	{
 		None = 0, 
 		Nearest,
 		Linear,
-		MipMap_NearestNearest,
-		MipMap_LinearNearest,
-		MipMap_NearestLinear,
-		MipMap_LinearLinear
+	};
+
+	struct TextureProperties
+	{
+		std::string DebugName;
+		TextureWrap SamplerWrap = TextureWrap::Repeat;
+		TextureFilter SamplerFilter = TextureFilter::Linear;
+		bool FlipOnLoad = false;
+		bool GenerateMips = true;
+		bool SRGB = false; // Currently not supported! However it is used to determine the number of channels to be loaded with stb
 	};
 
 	class Texture : public RefCountedObject
@@ -50,41 +94,36 @@ namespace Aurora {
 	class Texture2D : public Texture
 	{
 	public:
-		Texture2D(uint32_t width, uint32_t height); // This is to create just default 1x1 RGBA Textures for masking on colors
-		Texture2D(const std::string& filePath);
+		Texture2D(const std::string& filePath, const TextureProperties& props = TextureProperties());
+		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props = TextureProperties());
 		virtual ~Texture2D();
 
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
-		static Ref<Texture2D> Create(const std::string& filePath);
+		static Ref<Texture2D> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
+		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props = TextureProperties());
 
-		void SetData(const void* data, uint32_t size);
-
-		void SetTextureWrapping(TextureWrap wrapMode) const;
-		void SetTextureFiltering(TextureFilter minFilter = TextureFilter::Nearest, TextureFilter magFilter = TextureFilter::Nearest) const;
-
-		// Set to true before calling LoadTextureData() if you want to flip the texture!
-		void FlipTextureVertically(bool state);
-		void LoadTextureData();
+		void Invalidate();
 
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void UnBind(uint32_t slot = 0) const override;
 
-		inline uint32_t GetWidth() const { return m_Width; }
-		inline uint32_t GetHeight() const { return m_Height; }
-		inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
+		[[nodiscard]] inline uint32_t GetWidth() const { return m_Width; }
+		[[nodiscard]] inline uint32_t GetHeight() const { return m_Height; }
+		[[nodiscard]] inline const std::string& GetAssetPath() const { return m_AssetPath; }
+		[[nodiscard]] inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
+		[[nodiscard]] inline TextureProperties& GetTextureProperties() { return m_Properties; }
 
 		bool operator==(const Texture2D& other) const { return m_TextureID == other.m_TextureID; }
 
 	private:
 		uint32_t m_TextureID = 0;
-		std::string m_Path;
+		std::string m_AssetPath;
+		TextureProperties m_Properties;
 
-		uint32_t m_Width, m_Height;
+		uint32_t m_Width;
+		uint32_t m_Height;
+		Buffer m_ImageData;
 
-		// Internal format specifies in what format the texture is to be stored on the GPU
-        // format Specifies the format of the pixel data.
-		int m_InternalFormat;
-		uint32_t/*GLenum*/ m_DataFormat;
+		ImageFormat m_Format = ImageFormat::None;
 
 	};
 

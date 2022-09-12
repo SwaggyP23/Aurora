@@ -90,7 +90,7 @@ namespace Aurora {
 	// VERTEX BUFFER!!
 	//////////////////////////
 
-	enum class VertexBufferDrawHint
+	enum class VertexBufferUsage
 	{
 		None = 0,
 		Static,
@@ -101,12 +101,12 @@ namespace Aurora {
 	{
 	public:
 		VertexBuffer() = default;
-		VertexBuffer(uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
-		VertexBuffer(float* vertices, uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
+		VertexBuffer(uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
+		VertexBuffer(float* vertices, uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
 		~VertexBuffer();
 
-		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, VertexBufferDrawHint drawHint = VertexBufferDrawHint::Static);
+		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
 
 		void Bind() const;
 		void UnBind() const;
@@ -120,7 +120,6 @@ namespace Aurora {
 	private:
 		uint32_t m_BufferID;
 		BufferLayout m_Layout;
-		VertexBufferDrawHint m_DrawHint;
 
 	};
 

@@ -13,6 +13,7 @@ namespace Aurora {
 	namespace ImGuiUtils {
 
 		// Taken from Hazel-dev
+		// https://hazelengine.com/
 		const char* GenerateID();
 
 		void PushID();
@@ -30,6 +31,8 @@ namespace Aurora {
 			ImGui::TextColored(color, tip.c_str(), std::forward<Args>(args)...);
 			ImGui::EndTooltip();
 		}
+
+		void SetGuizmoEnabled(bool state);
 
 		bool IsInputEnabled();
 
@@ -67,11 +70,9 @@ namespace Aurora {
 		template<uint32_t BuffSize = 256, typename StringType>
 		static bool SearchBox(StringType& searchString, const char* searchHint = "Search...")
 		{
-			// TODO: Continue WORK!
 			PushID();
 
 			ShiftCursorY(1.0f);
-			//ShiftCursorX(ImGui::GetWindowContentRegionMax().x / 7.35f);
 
 			bool modified = false;
 			bool searching = false;

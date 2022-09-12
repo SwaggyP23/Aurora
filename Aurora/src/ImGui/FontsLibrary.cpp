@@ -29,7 +29,7 @@ namespace Aurora {
 		io.FontDefault = io.Fonts->Fonts[m_FontIndices[{ fontName, type }]];
 	}
 
-	void FontsLibrary::SetTemporaryFont(const std::string& fontName, FontIdentifier type)
+	void FontsLibrary::PushTemporaryFont(const std::string& fontName, FontIdentifier type)
 	{
 		AR_PROFILE_FUNCTION();
 

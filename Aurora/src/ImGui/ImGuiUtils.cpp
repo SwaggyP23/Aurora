@@ -1,6 +1,7 @@
 #include "Aurorapch.h"
 #include "ImGuiUtils.h"
 
+#include "ImGuizmo.h"
 #include "Utils/UtilFunctions.h"
 
 #include <choc/text/choc_StringUtilities.h>
@@ -50,6 +51,11 @@ namespace Aurora {
 			ImGui::BeginTooltip();
 			ImGui::TextColored(color, tip.c_str());
 			ImGui::EndTooltip();
+		}
+
+		void SetGuizmoEnabled(bool state)
+		{
+			ImGuizmo::Enable(state);
 		}
 
 		bool IsInputEnabled()

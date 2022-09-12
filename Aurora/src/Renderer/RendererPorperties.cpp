@@ -21,6 +21,7 @@ namespace Aurora {
 		glGetIntegerv(GL_MAX_SAMPLES, (int*)&(s_Props->MaxSamples));
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &(s_Props->MaxAnisotropy));
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, (int*)&s_Props->MaxTextureSlots);
+		glGetIntegerv(GL_MAX_DRAW_BUFFERS, (int*)&s_Props->MaxDrawBuffers);
 
 		AR_CORE_INFO_TAG("Renderer", "Renderer Info:");
 		AR_CORE_INFO_TAG("Renderer", "   --> Vendor: {0}", s_Props->Vendor);
@@ -30,6 +31,7 @@ namespace Aurora {
 		AR_CORE_INFO_TAG("Renderer", "   --> Texture Slots: {0}", s_Props->MaxTextureSlots);
 		AR_CORE_INFO_TAG("Renderer", "   --> Max Samples: {0}", s_Props->MaxSamples);
 		AR_CORE_INFO_TAG("Renderer", "   --> Max Anisotropy: {0}", s_Props->MaxAnisotropy);
+		AR_CORE_INFO_TAG("Renderer", "   --> Max Draw Buffers: {0}", s_Props->MaxDrawBuffers);
 	}
 
 	void RendererProperties::ShutDown()

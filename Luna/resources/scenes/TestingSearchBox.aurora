@@ -1,10 +1,10 @@
-Scene: Editor Scene
+Scene: TestingSearchBox
 Entities:
   - Entity: 7824501532982642528
     TagComponent:
       Tag: Empty Entity
     TransformComponent:
-      Translation: [-7.9692874, 1.45796013, 6.64536095]
+      Translation: [-7.9692874, 3.1443491, 6.64536095]
       Rotation: [0, 0, 0]
       Scale: [3, 3, 3]
     SpriteRendererComponent:
@@ -144,3 +144,20 @@ Entities:
       Scale: [10.5, 10.5, 10.5]
     SpriteRendererComponent:
       Color: [0.517374516, 0, 1, 1]
+  - Entity: 3320733530621167797
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0  # Perspective
+        PerspectiveFOV: 45
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true

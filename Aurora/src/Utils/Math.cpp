@@ -30,6 +30,7 @@ namespace Aurora::Math {
 		const glm::mat3 rotMatrix(glm::vec3(transform[0]) / scale[0], glm::vec3(transform[1]) / scale[1], glm::vec3(transform[2]) / scale[2]);
 		glm::quat rot = glm::quat_cast(rotMatrix);
 	
+		// TODO: When I start using quaternion rotation this extra step will probably not be needed
 		rotation = glm::eulerAngles(rot);
 	
 		return true;

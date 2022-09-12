@@ -6,62 +6,54 @@
  * As for the depth attachment for framebuffers, via this implementation, it is defaulted to use render buffers for the Depth/Stencil 
  * attachment and that is because these attachments are rarely to ever be directly read from therefore it is more optimized to attach them
  * as render buffers.
- * TODO: Add the choice to specify whether to use  render buffers are texture2Ds for the depth and stencil attachments
+ * TODO: Currently I dont think i support Stencil Attachments, like just pure stencil attachments, however I do
+ * support Depth/Stencil attachments
  */
 
 #include "Core/Base.h"
 #include "Texture.h"
 
-#include <initializer_list>
 #include <glm/glm.hpp>
+#include <initializer_list>
 
 namespace Aurora {
 
-	// TODO: Add more formats when the need arises
-	enum class FrameBufferTextureFormat
+	struct FramebufferTextureSpecification
 	{
-		None = 0,
-
-		// Color
-		RGBA8,
-		RED_INTEGER,
-
-		// Depth / Stencil
-		DEPTH24STENCIL8,
-
-		// Defaults
-		Depth = DEPTH24STENCIL8
-	};
-
-	struct FrameBufferTextureSpecification
-	{
-		FrameBufferTextureSpecification() = default;
-		FrameBufferTextureSpecification(FrameBufferTextureFormat format)
+		FramebufferTextureSpecification() = default;
+		FramebufferTextureSpecification(ImageFormat format)
 			: TextureFormat(format) {}
+		FramebufferTextureSpecification(ImageFormat format, TextureWrap wrapMode)
+			: TextureFormat(format), WrapMode(wrapMode) {}
+		FramebufferTextureSpecification(ImageFormat format, TextureWrap wrapMode, TextureFilter filteringMode)
+			: TextureFormat(format), WrapMode(wrapMode), FilterMode(filteringMode) {}
+		FramebufferTextureSpecification(ImageFormat format, TextureFilter filteringMode, TextureWrap wrapMode)
+			: TextureFormat(format), FilterMode(filteringMode), WrapMode(wrapMode) {}
 
-		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
-		//TextureWrap Wrap; // TODO: add it when mousepicking is done
-		//TextureFilter Filter;
+		ImageFormat TextureFormat = ImageFormat::None;
+		TextureWrap WrapMode = TextureWrap::Clamp;
+		TextureFilter FilterMode = TextureFilter::Linear;
 	};
 
-	struct FrameBufferAttachmentSpecification
+	struct FramebufferAttachmentSpecification
 	{
-		FrameBufferAttachmentSpecification() = default;
-		FrameBufferAttachmentSpecification(const std::initializer_list<FrameBufferTextureSpecification>& attachments)
+		FramebufferAttachmentSpecification() = default;
+		FramebufferAttachmentSpecification(const std::initializer_list<FramebufferTextureSpecification>& attachments)
 			: Attachments(attachments) {}
 
-		std::vector<FrameBufferTextureSpecification> Attachments;
+		std::vector<FramebufferTextureSpecification> Attachments;
 	};
 
 	struct FramebufferSpecification
 	{
 		uint32_t Width = 1280;
 		uint32_t Height = 720;
-		// glm::vec4 ClearColor; // TODO: Work out how this is going to work, each FB should have its own clear value
-		FrameBufferAttachmentSpecification Attachments;
-		uint32_t Samples = 1; // This is for multisampling and anit-aliasing
+		glm::vec4 ClearColor = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
+		uint32_t Samples = 1; // MSAA
+		FramebufferAttachmentSpecification AttachmentsSpecification;
 
-		bool SwapChainTarget = false; // This is the equivalent of glBindFramebuffer(0);, however that is for vulkan most probably
+		// This is to specify if you want the depth attachment to be a texture or a renderbuffer
+		bool DepthAttachmentAsTexture = false;
 	};
 
 	class Framebuffer : public RefCountedObject
@@ -71,27 +63,31 @@ namespace Aurora {
 		~Framebuffer();
 
 		static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
+		static void Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment);
 
 		void Invalidate();
 		void Resize(uint32_t width, uint32_t height);
-		int ReadPixel(uint32_t attachmentIndex, int x, int y);
 
 		void Bind() const;
 		void UnBind() const;
 
-		void ClearTextureAttachment(uint32_t attachmentIndex, int data) const;
+		void ReadPixel(uint32_t attachmentIndex, int x, int y, void* data);
+		void ClearTextureAttachment(uint32_t attachmentIndex, const void* data);
 
+		uint32_t GetFramebufferID() const { return m_FrameBufferID; }
 		const FramebufferSpecification& GetSpecification() const { return m_Specification; }
 		uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
 
+		bool HasDepthAttachment() const { return m_DepthAttachment ? true : false; }
+
 	private:
-		uint32_t m_BufferID = 0;
+		uint32_t m_FrameBufferID = 0;
 		FramebufferSpecification m_Specification;
 
-		std::vector<FrameBufferTextureSpecification> m_ColorAttachmentsSpecification;
-		FrameBufferTextureSpecification m_DepthAttachmentSpecification = FrameBufferTextureFormat::None; // It does not make sense to have 2 depth buffers, i dont know if thats even possible
+		std::vector<FramebufferTextureSpecification> m_ColorAttachmentsSpecification;
+		std::vector<uint32_t> m_ColorAttachments;
 
-		std::vector<uint32_t> m_ColorAttachments; // This is our color attachments IDs
+		FramebufferTextureSpecification m_DepthAttachmentSpecification = ImageFormat::None;
 		uint32_t m_DepthAttachment = 0;
 
 	};

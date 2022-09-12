@@ -10,8 +10,6 @@
 
 #include "ImGui/ImGuiLayer.h"
 
-int main(int argc, char** argv);
-
 namespace Aurora {
 
 	struct ApplicationSpecification
@@ -38,6 +36,9 @@ namespace Aurora {
 		// This makes the window not resizable. Note: Better to set to true if screen is not maximized
 		bool SetWindowResizable = true;
 
+		// Controls whether imgui is enabled or not, this is useful for runtime applications
+		bool EnableImGui = true;
+
 		// TODO: Set working directory
 		std::string WorkingDirectory;
 
@@ -55,6 +56,7 @@ namespace Aurora {
 
 		void RenderImGui();
 
+		// These are functions that could be ovverriden by the user
 		virtual void OnInit() {}
 		virtual void OnShutdown();
 		virtual void OnEvent(Event& e);

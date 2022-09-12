@@ -21,7 +21,7 @@ namespace Aurora {
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void UnBind(uint32_t slot = 0) const override;
 
-		inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
+		[[nodiscard]] inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
 
 	private:
 		void LoadFromDirectory();

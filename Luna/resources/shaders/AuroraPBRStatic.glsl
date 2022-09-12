@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec2 a_TexCoords;
 
-layout(location = 0) out vec2 v_TexCoords;
+layout(location = 1) out vec2 v_TexCoords; // was 0
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -18,7 +18,8 @@ layout(push_constant) uniform Transform
 
 void main()
 {
-    mat4 model = mat4(1.0f);
+    mat4 model = u_Renderer.transform;
+//    mat4 model = mat4(1.0f);
     v_TexCoords = a_TexCoords;
     gl_Position = u_ViewProjMatrix * model * vec4(a_Position, 1.0);
 }  
@@ -28,17 +29,17 @@ void main()
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out int o_EntityID;
 
-layout(location = 0) in vec2 v_TexCoords;
+layout(location = 1) in vec2 v_TexCoords; // was 0
 
 layout(binding = 0) uniform sampler2D u_AlbedoTexture;
 
-//layout(push_constant) uniform Mats
-//{
-//    vec4 AlbedoColor;
-//} u_Uniforms;
+layout(push_constant) uniform Materials
+{
+    vec4 AlbedoColor;
+} u_Materials;
 
 void main()
 {    
-    o_Color = texture(u_AlbedoTexture, v_TexCoords);// * u_Uniforms.AlbedoColor;
+    o_Color = texture(u_AlbedoTexture, v_TexCoords);// * u_Materials.AlbedoColor;
     o_EntityID = -1;
 }

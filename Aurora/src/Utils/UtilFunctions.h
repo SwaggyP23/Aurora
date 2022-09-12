@@ -22,13 +22,11 @@ namespace Aurora {
 
 #endif
 
-		class FileReader
+		class FileIO
 		{
 		public:
-			static std::string ReadTextFile(const std::string& filePath);
-
-		private:
-			static std::ifstream m_Stream;
+			static std::string ReadTextFile(const std::filesystem::path& filePath);
+			static void WriteToFile(const std::filesystem::path& filePath, const void* buffer, size_t typeSize, size_t size);
 
 		};
 
