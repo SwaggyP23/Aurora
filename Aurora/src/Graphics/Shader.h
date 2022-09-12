@@ -80,6 +80,9 @@ namespace Aurora {
 
 	class Shader : public RefCountedObject
 	{
+	private:
+		using ShaderStage = uint32_t; /*GLenum*/
+
 	public:
 		// Push Constant buffer that contains uniforms
 		struct ShaderPushBuffer
@@ -131,9 +134,9 @@ namespace Aurora {
 		void Load(const std::string& source, bool forceCompile = false);
 		void CreateProgram();
 
-		void CompileOrGetVulkanBinary(const std::unordered_map<uint32_t/*GLenum*/, std::string>& shaderSources, bool forceCompile);
+		void CompileOrGetVulkanBinary(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile);
 		void CompileOrGetOpenGLBinary(bool forceCompile);
-		void Reflect(uint32_t/*GLenum*/type, const std::vector<uint32_t>& shaderData);
+		void Reflect(ShaderStage type, const std::vector<uint32_t>& shaderData);
 
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
 
@@ -166,10 +169,9 @@ namespace Aurora {
 
 		bool m_IsCompute = false;
 
-		// String sources
-		std::unordered_map<uint32_t/*GLenum*/, std::string> m_OpenGLShaderSource; // OpenGL Source Code...
-		std::unordered_map<uint32_t/*GLenum*/, std::vector<uint32_t>> m_VulkanSPIRV;
-		std::unordered_map<uint32_t/*GLenum*/, std::vector<uint32_t>> m_OpenGLSPIRV;
+		std::unordered_map<ShaderStage, std::string> m_OpenGLShaderSource; // OpenGL Source Code...
+		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;
+		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_OpenGLSPIRV;
 
 		std::unordered_map<std::string, ShaderPushBuffer> m_Buffers;
 		std::unordered_map<std::string, ShaderResourceDeclaration> m_Resources;

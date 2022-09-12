@@ -299,7 +299,7 @@ namespace Aurora {
 		}
 	}
 
-	void Shader::CompileOrGetVulkanBinary(const std::unordered_map<uint32_t, std::string>& shaderSources, bool forceCompile)
+	void Shader::CompileOrGetVulkanBinary(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -515,7 +515,7 @@ namespace Aurora {
 		}
 	}
 
-	void Shader::Reflect(uint32_t/*GLenum*/type, const std::vector<uint32_t>& shaderData)
+	void Shader::Reflect(ShaderStage type, const std::vector<uint32_t>& shaderData)
 	{
 		AR_PROFILE_FUNCTION();
 

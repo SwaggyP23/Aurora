@@ -12,6 +12,7 @@ namespace Aurora {
 		float MaxAnisotropy = 0.0f;
 		uint32_t MaxSamples = 0;
 		uint32_t MaxTextureSlots = 0;
+		uint32_t MaxDrawBuffers = 0;
 	};
 
 	class RendererProperties

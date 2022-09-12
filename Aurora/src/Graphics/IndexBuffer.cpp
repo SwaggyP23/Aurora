@@ -27,8 +27,7 @@ namespace Aurora {
 		glCreateBuffers(1, &m_BufferId);
 		// Since we specified here that it is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
 		// otherwise it will not work
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+		glNamedBufferData(m_BufferId, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 	}
 
 	IndexBuffer::~IndexBuffer()

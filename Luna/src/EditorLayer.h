@@ -32,7 +32,6 @@ namespace Aurora {
 
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
-		Entity m_GroundEntity;
 		Entity m_HoveredEntity;
 		ImRect m_SceneHierarchyTableRect;
 		bool m_ShowSceneHierarchyPanel = true;
@@ -114,7 +113,8 @@ namespace Aurora {
 
 	private:
 		EditorCamera m_EditorCamera;
-		Ref<Framebuffer> m_Framebuffer;
+		Ref<Framebuffer> m_MSAAFramebuffer;
+		Ref<Framebuffer> m_IntermediateFramebuffer;
 
 		Ref<Scene> m_EditorScene;
 		Ref<Scene> m_ActiveScene;

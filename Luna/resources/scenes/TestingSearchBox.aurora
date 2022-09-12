@@ -1,5 +1,149 @@
 Scene: TestingSearchBox
 Entities:
+  - Entity: 7824501532982642528
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Translation: [-7.9692874, 3.1443491, 6.64536095]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 3]
+    SpriteRendererComponent:
+      Color: [0.783783793, 0.127100095, 0.248802304, 1]
+  - Entity: 6999884359358616769
+    TagComponent:
+      Tag: Aioyboi
+    TransformComponent:
+      Translation: [0, 0, 8.098382]
+      Rotation: [0, 0, 0]
+      Scale: [3.5, 3.5, 3.5]
+    SpriteRendererComponent:
+      Color: [0.702702761, 1, 0, 1]
+  - Entity: 10616426777603464786
+    TagComponent:
+      Tag: Another empty
+    TransformComponent:
+      Translation: [-26.8622417, 7.37944698, -16.7813129]
+      Rotation: [0, 0, 0]
+      Scale: [10.5, 10.5, 10.5]
+    SpriteRendererComponent:
+      Color: [0.586872101, 0, 1, 1]
+  - Entity: 11163957119498069740
+    TagComponent:
+      Tag: Sprite Blue
+    TransformComponent:
+      Translation: [-19.3304138, 0, -27.5551968]
+      Rotation: [0, 0, 0]
+      Scale: [7, 7, 7]
+    SpriteRendererComponent:
+      Color: [0, 0.131273985, 1, 1]
+  - Entity: 15803929990730866155
+    TagComponent:
+      Tag: Greens Sprite
+    TransformComponent:
+      Translation: [-27.0405598, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10.5, 10.5, 10.5]
+    SpriteRendererComponent:
+      Color: [0, 1, 0.084941864, 1]
+  - Entity: 6883800287487856184
+    TagComponent:
+      Tag: Greeens
+    TransformComponent:
+      Translation: [0, 0, -20.3700085]
+      Rotation: [0, 0, 0]
+      Scale: [9.5, 9.5, 9.5]
+    SpriteRendererComponent:
+      Color: [0.339441419, 0.586872578, 0.228857636, 1]
+  - Entity: 12483526948165903634
+    TagComponent:
+      Tag: Bluesss
+    TransformComponent:
+      Translation: [0, 8.23365688, 0]
+      Rotation: [0, 0, 0]
+      Scale: [9, 9, 9]
+    SpriteRendererComponent:
+      Color: [0.0614630058, 0.837837815, 0.720931888, 1]
+  - Entity: 2053672906000853931
+    TagComponent:
+      Tag: Red
+    TransformComponent:
+      Translation: [0, 0, 14.5807257]
+      Rotation: [0, 0, 0]
+      Scale: [3.5, 3.5, 3.5]
+    SpriteRendererComponent:
+      Color: [1, 0, 0, 1]
+  - Entity: 912140027862531166
+    TagComponent:
+      Tag: Blue Cube
+    TransformComponent:
+      Translation: [20.3583908, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10.5, 10.5, 10.5]
+    SpriteRendererComponent:
+      Color: [0.0233449098, 0.438966423, 0.67181468, 1]
+  - Entity: 735966618364739082
+    TagComponent:
+      Tag: SwaggyPPP
+    TransformComponent:
+      Translation: [7.36455059, 0, 11.3790636]
+      Rotation: [0, 0, 0]
+      Scale: [3.5, 3.5, 3.5]
+    SpriteRendererComponent:
+      Color: [0.718146682, 0.0332732163, 0.588576198, 1]
+  - Entity: 1863360261817783949
+    TagComponent:
+      Tag: Wassup
+    TransformComponent:
+      Translation: [24.5418968, 1.0669221e-06, 19.3843002]
+      Rotation: [0, 0, 0]
+      Scale: [5.5, 5.5, 5.5]
+    SpriteRendererComponent:
+      Color: [0.0212876759, 0.918918908, 0.388657808, 1]
+  - Entity: 9514977202622487335
+    TagComponent:
+      Tag: Cube blue
+    TransformComponent:
+      Translation: [-11.5155773, 0, 20.5777283]
+      Rotation: [0, 0, 0]
+      Scale: [5.5, 5.5, 5.5]
+    SpriteRendererComponent:
+      Color: [0.0797841176, 0.381413281, 0.861003876, 1]
+  - Entity: 3069317999880110862
+    TagComponent:
+      Tag: PSwaggy
+    TransformComponent:
+      Translation: [11.178669, 0, 5.4502449]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 5]
+    SpriteRendererComponent:
+      Color: [0.895752907, 0.0587945804, 0.310851634, 1]
+  - Entity: 862575065449540416
+    TagComponent:
+      Tag: Swag Jack
+    TransformComponent:
+      Translation: [14.1271763, -1.28897909e-06, 20.663929]
+      Rotation: [0, 0, 0]
+      Scale: [5.5, 5.5, 5.5]
+    SpriteRendererComponent:
+      Color: [0.899613917, 0.339804351, 0.0416809656, 1]
+  - Entity: 3495422947713230440
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [0, -6.16683769, 0]
+      Rotation: [0, 0, 0]
+      Scale: [200, 0.5, 200]
+    SpriteRendererComponent:
+      Color: [0.595339954, 0.601427734, 0.602316618, 1]
+  - Entity: 16875681752537877884
+    TagComponent:
+      Tag: Purplyyy
+    TransformComponent:
+      Translation: [17.7129745, 17.566782, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10.5, 10.5, 10.5]
+    SpriteRendererComponent:
+      Color: [0.517374516, 0, 1, 1]
   - Entity: 3320733530621167797
     TagComponent:
       Tag: Camera
@@ -17,147 +161,3 @@ Entities:
         OrthographicNear: -1
         OrthographicFar: 1
       Primary: true
-  - Entity: 16875681752537877884
-    TagComponent:
-      Tag: Purplyyy
-    TransformComponent:
-      Translation: [17.7129745, 17.566782, 0]
-      Rotation: [0, 0, 0]
-      Scale: [10.5, 10.5, 10.5]
-    SpriteRendererComponent:
-      Color: [0.517374516, 0, 1, 1]
-  - Entity: 3495422947713230440
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [0, -6.16683769, 0]
-      Rotation: [0, 0, 0]
-      Scale: [200, 0.5, 200]
-    SpriteRendererComponent:
-      Color: [0.595339954, 0.601427734, 0.602316618, 1]
-  - Entity: 862575065449540416
-    TagComponent:
-      Tag: Swag Jack
-    TransformComponent:
-      Translation: [14.1271763, -1.28897909e-06, 20.663929]
-      Rotation: [0, 0, 0]
-      Scale: [5.5, 5.5, 5.5]
-    SpriteRendererComponent:
-      Color: [0.899613917, 0.339804351, 0.0416809656, 1]
-  - Entity: 3069317999880110862
-    TagComponent:
-      Tag: PSwaggy
-    TransformComponent:
-      Translation: [11.178669, 0, 5.4502449]
-      Rotation: [0, 0, 0]
-      Scale: [5, 5, 5]
-    SpriteRendererComponent:
-      Color: [0.895752907, 0.0587945804, 0.310851634, 1]
-  - Entity: 9514977202622487335
-    TagComponent:
-      Tag: Cube blue
-    TransformComponent:
-      Translation: [-11.5155773, 0, 20.5777283]
-      Rotation: [0, 0, 0]
-      Scale: [5.5, 5.5, 5.5]
-    SpriteRendererComponent:
-      Color: [0.0797841176, 0.381413281, 0.861003876, 1]
-  - Entity: 1863360261817783949
-    TagComponent:
-      Tag: Wassup
-    TransformComponent:
-      Translation: [24.5418968, 1.0669221e-06, 19.3843002]
-      Rotation: [0, 0, 0]
-      Scale: [5.5, 5.5, 5.5]
-    SpriteRendererComponent:
-      Color: [0.0212876759, 0.918918908, 0.388657808, 1]
-  - Entity: 735966618364739082
-    TagComponent:
-      Tag: SwaggyPPP
-    TransformComponent:
-      Translation: [7.36455059, 0, 11.3790636]
-      Rotation: [0, 0, 0]
-      Scale: [3.5, 3.5, 3.5]
-    SpriteRendererComponent:
-      Color: [0.718146682, 0.0332732163, 0.588576198, 1]
-  - Entity: 912140027862531166
-    TagComponent:
-      Tag: Blue Cube
-    TransformComponent:
-      Translation: [20.3583908, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [10.5, 10.5, 10.5]
-    SpriteRendererComponent:
-      Color: [0.0233449098, 0.438966423, 0.67181468, 1]
-  - Entity: 2053672906000853931
-    TagComponent:
-      Tag: Red
-    TransformComponent:
-      Translation: [0, 0, 14.5807257]
-      Rotation: [0, 0, 0]
-      Scale: [3.5, 3.5, 3.5]
-    SpriteRendererComponent:
-      Color: [1, 0, 0, 1]
-  - Entity: 12483526948165903634
-    TagComponent:
-      Tag: Bluesss
-    TransformComponent:
-      Translation: [0, 8.23365688, 0]
-      Rotation: [0, 0, 0]
-      Scale: [9, 9, 9]
-    SpriteRendererComponent:
-      Color: [0.0614630058, 0.837837815, 0.720931888, 1]
-  - Entity: 6883800287487856184
-    TagComponent:
-      Tag: Greeens
-    TransformComponent:
-      Translation: [0, 0, -20.3700085]
-      Rotation: [0, 0, 0]
-      Scale: [9.5, 9.5, 9.5]
-    SpriteRendererComponent:
-      Color: [0.339441419, 0.586872578, 0.228857636, 1]
-  - Entity: 15803929990730866155
-    TagComponent:
-      Tag: Greens Sprite
-    TransformComponent:
-      Translation: [-27.0405598, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [10.5, 10.5, 10.5]
-    SpriteRendererComponent:
-      Color: [0, 1, 0.084941864, 1]
-  - Entity: 11163957119498069740
-    TagComponent:
-      Tag: Sprite Blue
-    TransformComponent:
-      Translation: [-19.3304138, 0, -27.5551968]
-      Rotation: [0, 0, 0]
-      Scale: [7, 7, 7]
-    SpriteRendererComponent:
-      Color: [0, 0.131273985, 1, 1]
-  - Entity: 10616426777603464786
-    TagComponent:
-      Tag: Another empty
-    TransformComponent:
-      Translation: [-26.8622417, 7.37944698, -16.7813129]
-      Rotation: [0, 0, 0]
-      Scale: [10.5, 10.5, 10.5]
-    SpriteRendererComponent:
-      Color: [0.586872101, 0, 1, 1]
-  - Entity: 6999884359358616769
-    TagComponent:
-      Tag: Aioyboi
-    TransformComponent:
-      Translation: [0, 0, 8.098382]
-      Rotation: [0, 0, 0]
-      Scale: [3.5, 3.5, 3.5]
-    SpriteRendererComponent:
-      Color: [0.702702761, 1, 0, 1]
-  - Entity: 7824501532982642528
-    TagComponent:
-      Tag: Empty Entity
-    TransformComponent:
-      Translation: [-7.9692874, 3.1443491, 6.64536095]
-      Rotation: [0, 0, 0]
-      Scale: [3, 3, 3]
-    SpriteRendererComponent:
-      Color: [0.783783793, 0.127100095, 0.248802304, 1]

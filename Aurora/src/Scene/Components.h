@@ -27,7 +27,7 @@ namespace Aurora {
 		std::string Tag;
 
 		TagComponent() = default;
-		TagComponent(std::string tag)
+		TagComponent(const std::string& tag)
 			: Tag(tag) {}
 		TagComponent(const TagComponent&) = default;
 
@@ -36,7 +36,9 @@ namespace Aurora {
 	// TODO: Use quaternions for rotation...
 	struct TransformComponent
 	{
-		glm::vec3 Translation{ 0.0f }, Rotation{ 0.0f }, Scale{ 1.0f }; // The rotation is stored in radians
+		glm::vec3 Translation{ 0.0f };
+		glm::vec3 Rotation{ 0.0f }; // Stored in radians
+		glm::vec3 Scale{ 1.0f };
 
 		TransformComponent() = default;
 		TransformComponent(const glm::vec3& translation, const glm::vec3& rotation = glm::vec3(0.0f), const glm::vec3& scale = glm::vec3(1.0f))
@@ -76,7 +78,7 @@ namespace Aurora {
 
 	};
 
-	// TODO: Rewoork...!
+	// TODO: Rework...!
 	struct CameraComponent
 	{
 		SceneCamera Camera;

@@ -25,6 +25,7 @@ namespace Aurora {
 		R8UI,
 		R16I,
 		R16UI,
+		R32I,
 		R32UI,
 		R32F,
 		RG8,

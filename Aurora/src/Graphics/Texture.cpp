@@ -14,13 +14,26 @@ namespace Aurora {
 		{
 			switch (format)
 			{
-			    case Aurora::ImageFormat::RGB:		return GL_RGB;
-			    case Aurora::ImageFormat::RGBA:		return GL_RGBA;
-			    case Aurora::ImageFormat::RGBA16F:  return GL_RGBA;
-			    case Aurora::ImageFormat::RGBA32F:  return GL_RGBA;
-			    case Aurora::ImageFormat::SRGB:		return GL_RGB;
+				case ImageFormat::R8I:						return GL_RED_INTEGER;
+				case ImageFormat::R8UI:						return GL_RED_INTEGER;
+				case ImageFormat::R16I:						return GL_RED_INTEGER;
+				case ImageFormat::R16UI:					return GL_RED_INTEGER;
+				case ImageFormat::R32I:						return GL_RED_INTEGER;
+				case ImageFormat::R32UI:					return GL_RED_INTEGER;
+				case ImageFormat::R32F:						return GL_RED;
+				case ImageFormat::RG8:						return GL_RG_INTEGER;
+				case ImageFormat::RG16F:					return GL_RG;
+				case ImageFormat::RG32F:					return GL_RG;
+				case ImageFormat::RGB:						return GL_RGB;
+				case ImageFormat::RGBA:						return GL_RGBA;
+				case ImageFormat::RGBA16F:					return GL_RGBA;
+				case ImageFormat::RGBA32F:					return GL_RGBA;
+				case ImageFormat::SRGB:						return GL_RGB;
+				case ImageFormat::DEPTH32FSTENCIL8UINT:		return GL_DEPTH_STENCIL;
+				case ImageFormat::DEPTH24STENCIL8:			return GL_DEPTH_STENCIL;
+				case ImageFormat::DEPTH32F:					return GL_DEPTH_COMPONENT;
 			}
-			
+
 			AR_CORE_ASSERT(false, "Unknown Image Format!");
 			return 0;
 		}
@@ -29,24 +42,25 @@ namespace Aurora {
 		{
 			switch (format)
 			{
-			    case ImageFormat::None:						return GL_NONE;
-			    case ImageFormat::R8I:						return GL_R8I;
-			    case ImageFormat::R8UI:						return GL_R8UI;
-			    case ImageFormat::R16I:						return GL_R16I;
-			    case ImageFormat::R16UI:					return GL_R16UI;
-			    case ImageFormat::R32UI:					return GL_R32UI;
-			    case ImageFormat::R32F:						return GL_R32F;
-			    case ImageFormat::RG8:						return GL_RG8;
-			    case ImageFormat::RG16F:					return GL_RG16F;
-			    case ImageFormat::RG32F:					return GL_RG32F;
-			    case ImageFormat::RGB:						return GL_RGB8;
-			    case ImageFormat::RGBA:						return GL_RGBA8;
-			    case ImageFormat::RGBA16F:					return GL_RGBA16F;
-			    case ImageFormat::RGBA32F:					return GL_RGBA32F;
+				case ImageFormat::None:						return GL_NONE;
+				case ImageFormat::R8I:						return GL_R8I;
+				case ImageFormat::R8UI:						return GL_R8UI;
+				case ImageFormat::R16I:						return GL_R16I;
+				case ImageFormat::R16UI:					return GL_R16UI;
+				case ImageFormat::R32I:						return GL_R32I;
+				case ImageFormat::R32UI:					return GL_R32UI;
+				case ImageFormat::R32F:						return GL_R32F;
+				case ImageFormat::RG8:						return GL_RG8;
+				case ImageFormat::RG16F:					return GL_RG16F;
+				case ImageFormat::RG32F:					return GL_RG32F;
+				case ImageFormat::RGB:						return GL_RGB8;
+				case ImageFormat::RGBA:						return GL_RGBA8;
+				case ImageFormat::RGBA16F:					return GL_RGBA16F;
+				case ImageFormat::RGBA32F:					return GL_RGBA32F;
 				case ImageFormat::SRGB:						return GL_SRGB8;
-			    case ImageFormat::DEPTH24STENCIL8:			return GL_DEPTH24_STENCIL8;
-			    case ImageFormat::DEPTH32FSTENCIL8UINT:		return GL_DEPTH32F_STENCIL8;
-			    case ImageFormat::DEPTH32F:					return GL_DEPTH_COMPONENT32F;
+				case ImageFormat::DEPTH32FSTENCIL8UINT:		return GL_DEPTH32F_STENCIL8;
+				case ImageFormat::DEPTH24STENCIL8:			return GL_DEPTH24_STENCIL8;
+				case ImageFormat::DEPTH32F:					return GL_DEPTH_COMPONENT32F;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Image Format!");
@@ -57,11 +71,24 @@ namespace Aurora {
 		{
 			switch (format)
 			{
-			    case Aurora::ImageFormat::RGB:		return GL_UNSIGNED_BYTE;
-			    case Aurora::ImageFormat::RGBA:		return GL_UNSIGNED_BYTE;
-			    case Aurora::ImageFormat::RGBA16F:  return GL_FLOAT;
-			    case Aurora::ImageFormat::RGBA32F:  return GL_FLOAT;
-			    case Aurora::ImageFormat::SRGB:		return GL_UNSIGNED_BYTE;
+				case ImageFormat::R8I:                      return GL_BYTE;
+				case ImageFormat::R8UI:						return GL_UNSIGNED_BYTE;
+				case ImageFormat::R16I:						return GL_SHORT;
+				case ImageFormat::R16UI:					return GL_UNSIGNED_SHORT;
+				case ImageFormat::R32I:						return GL_INT;
+				case ImageFormat::R32UI:					return GL_UNSIGNED_INT;
+				case ImageFormat::R32F:						return GL_FLOAT;
+				case ImageFormat::RG8:						return GL_UNSIGNED_BYTE;
+				case ImageFormat::RG16F:					return GL_FLOAT;
+				case ImageFormat::RG32F:					return GL_FLOAT;
+			    case ImageFormat::RGB:						return GL_UNSIGNED_BYTE;
+			    case ImageFormat::RGBA:						return GL_UNSIGNED_BYTE;
+			    case ImageFormat::RGBA16F:					return GL_FLOAT;
+			    case ImageFormat::RGBA32F:					return GL_FLOAT;
+			    case ImageFormat::SRGB:						return GL_UNSIGNED_BYTE;
+				case ImageFormat::DEPTH32FSTENCIL8UINT:     return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+			    case ImageFormat::DEPTH24STENCIL8:			return GL_UNSIGNED_INT_24_8;
+				case ImageFormat::DEPTH32F:					return GL_FLOAT;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Image Format!");
@@ -93,17 +120,16 @@ namespace Aurora {
 			return 0;
 		}
 
-		// TODO: Move into a header file since these will be used commonly
 		static uint32_t GetImageFormatBPP(ImageFormat format)
 		{
 			switch (format)
 			{
-			    case ImageFormat::R8UI:      return 1;
-			    case ImageFormat::R16UI:     return 2;
-			    case ImageFormat::R32UI:     return 4;
-			    case ImageFormat::R32F:      return 4;
-			    case ImageFormat::RGB:	       
-			    //case ImageFormat::SRGB:        return 3;
+			    case ImageFormat::R8UI:        return 1;
+			    case ImageFormat::R16UI:       return 2;
+			    case ImageFormat::R32UI:       return 4;
+			    case ImageFormat::R32F:        return 4;
+				case ImageFormat::RGB:	       return 3;
+			    case ImageFormat::SRGB:        return 3;
 			    case ImageFormat::RGBA:        return 4;
 			    case ImageFormat::RGBA16F:     return 2 * 4;
 			    case ImageFormat::RGBA32F:     return 4 * 4;
@@ -144,7 +170,7 @@ namespace Aurora {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 
 		Invalidate();
-		m_ImageData = Buffer(); // Release local memory buffer after it is created on the gpu
+		m_ImageData = Buffer();
 	}
 
 	Texture2D::Texture2D(const std::string& filePath, const TextureProperties& props)
@@ -199,9 +225,7 @@ namespace Aurora {
 		Invalidate();
 
 		stbi_image_free(m_ImageData.GetData());
-		m_ImageData = Buffer(); // Reset the buffer, TODO: Check if this whole constructor actually behaves as it should
-		// check if the data being freed here above is the actual data that should be freed! And also check the data
-		// loading process if its legit, whole constructor looks sus!
+		m_ImageData = Buffer(); // Reset the buffer
 	}
 
 	Texture2D::~Texture2D()

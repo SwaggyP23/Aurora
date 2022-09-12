@@ -53,7 +53,7 @@ namespace Aurora {
 		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name == "" ? "AuroraDefault" : name;
+		tag.Tag = name == "" ? "AuroraDefault" : std::move(name);
 
 		return entity;
 	}

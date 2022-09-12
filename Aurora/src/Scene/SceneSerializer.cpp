@@ -129,7 +129,7 @@ namespace Aurora {
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap; // Tag Component
 
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			const std::string& tag = entity.GetComponent<TagComponent>().Tag;
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 
 			out << YAML::EndMap; // Tag Component
@@ -282,7 +282,7 @@ namespace Aurora {
 
 				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID: {0:#04x}, Name: {1}", uuid, entityName);
 
-				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, entityName.c_str());
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, entityName);
 
 				YAML::Node transform = entity["TransformComponent"];
 				if (transform)

@@ -89,8 +89,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ARRAY_BUFFER, size, nullptr, Utils::GLDrawHintTypeFromEnum(drawHint));
+		glNamedBufferData(m_BufferID, size, nullptr, Utils::GLDrawHintTypeFromEnum(drawHint));
 	}
 
 	VertexBuffer::VertexBuffer(float* vertices, uint32_t size, VertexBufferUsage drawHint)
@@ -98,8 +97,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_BufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ARRAY_BUFFER, size, (const void*)vertices, Utils::GLDrawHintTypeFromEnum(drawHint));
+		glNamedBufferData(m_BufferID, size, (const void*)vertices, Utils::GLDrawHintTypeFromEnum(drawHint));
 	}
 
 	VertexBuffer::~VertexBuffer()
@@ -125,8 +123,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+		glNamedBufferSubData(m_BufferID, 0, size, data);
 	}
 
 }

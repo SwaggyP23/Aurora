@@ -11,6 +11,16 @@
 
 #include <math.h>
 
+/*
+ * The way mouse picking works in Luna currently is that in the main framebuffer we have an extra render target
+ * which is cleared to -1 and in place of sprites it has their IDs, when mousebutton is pressed, we read the id
+ * back from the texture to the cpu (Which is demonically slow :( ) and then we compare with the entity ID to
+ * determine if we have to select it. we have to read the pixel every frame and can not make it only when the 
+ * mouse is pressed that we read the pixel since we are actually reading the pixel of the frame that has already
+ * been rendered and therefore if we try to read only when mouse if pressed we will be one frame behind on the
+ * mouse clicks
+ */
+
 namespace Aurora {
 
 #pragma region EditorLayerMainMethods
@@ -20,7 +30,7 @@ namespace Aurora {
 	{
 	}
 
-	// TODO: TEMPORARY!
+	// TODO: TEMPORARY FOR FIXING THE SHADER BUGS!
 	static glm::vec4 s_MaterialAlbedoColor(1.0f);
 
 	void EditorLayer::OnAttach()
@@ -30,16 +40,29 @@ namespace Aurora {
 		EditorResources::Init();
 
 		FramebufferSpecification specification;
-		specification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
+		specification.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I, ImageFormat::Depth};
 		specification.Width = 1280;
 		specification.Height = 720;
-		m_Framebuffer = Framebuffer::Create(specification);
+		specification.Samples = 8;
+		// specification.DepthAttachmentAsTexture = true;
+		m_MSAAFramebuffer = Framebuffer::Create(specification);
+
+		FramebufferSpecification spec2;
+		spec2.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I };
+		spec2.Width = 1280;
+		spec2.Height = 720;
+		m_IntermediateFramebuffer = Framebuffer::Create(spec2);
 
 		m_EditorScene = Scene::Create("Editor Scene");
 		m_ActiveScene = m_EditorScene;
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
 
-		// TODO: Default open scene for now...!
+		// TODO: This is the screenshot demo that i will continue sometime later
+		//auto data = Utils::ImageLoader::LoadImageFile("Resources/textures/Qiyana2.png");
+		//if (Utils::ImageLoader::WriteDataToPNGImage("Resources/Wassup.png", data.PixelData, data.Width, data.Height, data.Channels))
+		//	AR_WARN("Wrote Image Correctly");
+
+		// Default open scene for now...!
 		OpenScene("Resources/scenes/TestingSearchBox.aurora");
 
 		class CameraScript : public ScriptableEntity
@@ -51,11 +74,11 @@ namespace Aurora {
 
 				if (Input::IsKeyPressed(AR_KEY_W))
 					translation.y += speed * ts;
-				if (Input::IsKeyPressed(AR_KEY_S))
+				else if (Input::IsKeyPressed(AR_KEY_S))
 					translation.y -= speed * ts;
 				if (Input::IsKeyPressed(AR_KEY_A))
 					translation.x -= speed * ts;
-				if (Input::IsKeyPressed(AR_KEY_D))
+				else if (Input::IsKeyPressed(AR_KEY_D))
 					translation.x += speed * ts;
 			}
 		};
@@ -75,10 +98,11 @@ namespace Aurora {
 
 		// Framebuffer resizing... This stops the blacked out frames we would get when resizing...
 		// TODO: This should not be handled here...
-		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+		FramebufferSpecification spec = m_MSAAFramebuffer->GetSpecification();
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_MSAAFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_IntermediateFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		m_EditorCamera.SetActive(m_AllowViewportCameraEvents);
@@ -86,13 +110,40 @@ namespace Aurora {
 
 		Renderer3D::ResetStats();
 
-		m_Framebuffer->Bind();
-		RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f }); // TODO: Framebuffers should contain the clear colors and not called like that, and then maybe clear is called in begin scene
+		// Clear default framebuffer
+		RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f });
 		RenderCommand::Clear();
-		m_Framebuffer->ClearTextureAttachment(1, -1);
+
+		m_MSAAFramebuffer->Bind();
+		int clearValue = -1;
+		m_MSAAFramebuffer->ClearTextureAttachment(1, (const void*)&clearValue);
 
 		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera, s_MaterialAlbedoColor);
 		//m_ActiveScene->OnUpdateRuntime(ts);
+
+		m_MSAAFramebuffer->UnBind();
+		m_IntermediateFramebuffer->Bind();
+
+		// Blitting both color attachments
+		{
+			Framebuffer::Blit(m_MSAAFramebuffer->GetFramebufferID(),
+				m_IntermediateFramebuffer->GetFramebufferID(),
+				m_MSAAFramebuffer->GetSpecification().Width,
+				m_MSAAFramebuffer->GetSpecification().Height,
+				0,
+				m_IntermediateFramebuffer->GetSpecification().Width,
+				m_IntermediateFramebuffer->GetSpecification().Height,
+				0);
+
+			Framebuffer::Blit(m_MSAAFramebuffer->GetFramebufferID(),
+				m_IntermediateFramebuffer->GetFramebufferID(),
+				m_MSAAFramebuffer->GetSpecification().Width,
+				m_MSAAFramebuffer->GetSpecification().Height,
+				1,
+				m_IntermediateFramebuffer->GetSpecification().Width,
+				m_IntermediateFramebuffer->GetSpecification().Height,
+				1);
+		}
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportRect.Min.x;
@@ -103,14 +154,16 @@ namespace Aurora {
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
 
-		if(ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
+		// TODO: Just implement Ray casting for god's sake man... :(
+		if (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
 		{
 			// This is a very slow operation, and itself adds about 1-2 milliseconds to our CPU Frame, however this is just for the editor so...
-			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY); // Index 1 since the second buffer is the RED_INTEGER buffer
-			m_HoveredEntity = pixelData == -1 ? Entity::nullEntity : Entity{ (entt::entity)pixelData, m_ActiveScene.raw()};
+			int pixelData;
+			m_IntermediateFramebuffer->ReadPixel(1, mouseX, mouseY, &pixelData);
+			m_HoveredEntity = pixelData == -1 ? Entity::nullEntity : Entity{ (entt::entity)pixelData, m_ActiveScene.raw() };
 		}
-		
-		m_Framebuffer->UnBind();
+
+		m_IntermediateFramebuffer->UnBind();
 
 		if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) && !m_StartedRightClickInViewport && m_ViewportFocused && m_ViewportHovered)
 			m_StartedRightClickInViewport = true;
@@ -354,7 +407,7 @@ namespace Aurora {
 
 	void EditorLayer::DrawEntityNode(Entity entity, const std::string& searchedString)
 	{
-		// Assuming all components have a tag component
+		// All entities have a tag component by default
 		const std::string& tag = entity.GetComponent<TagComponent>().Tag;
 
 		if (!ImGuiUtils::IsMatchingSearch(tag, searchedString, false, true))
@@ -408,7 +461,7 @@ namespace Aurora {
 		if (isSelected)
 		{
 			fillRowWithColour(ImColor(236, 158, 36, 150));
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{ 0.32f, 0.7f, 0.87f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_Text, Theme::TextBrighter);
 		}
 		else if (isHovered)
 		{
@@ -484,7 +537,7 @@ namespace Aurora {
 		ImGui::TableNextColumn();
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		if (isSelected)
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{ 0.32f, 0.7f, 0.87f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_Text, Theme::TextBrighter);
 		else if(isHovered)
 			ImGui::PushStyleColor(ImGuiCol_Text, Theme::Background);
 		ImGui::Text("Entity");
@@ -573,24 +626,38 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 5.0f, 2.5f });
 		if (ImGui::BeginPopup("SceneHierarchySettings"))
 		{
+			ImGui::TextColored(ImVec4{ 0.3f, 0.9f, 0.3f, 1.0f }, "Scene Panel Settings");
+
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, 150.0f);
+
 			ImGui::Text("Show Properties: ");
 
-			ImGui::SameLine();
+			ImGui::NextColumn();
 
 			if (ImGui::Checkbox("##ShowProperties", &m_ShowPropertiesPanel))
 				ImGui::CloseCurrentPopup();
 
+			ImGui::NextColumn();
+
 			ImGui::Text("Enable Sorting: ");
 
-			ImGui::SameLine(0.0f, 20.0f);
+			ImGui::NextColumn();
 
 			if (ImGui::Checkbox("##EnableSorting", &enableSorting))
 				ImGui::CloseCurrentPopup();
 
+			ImGui::Columns(1);
+
 			ImGui::Separator();
 
-			ImGui::TextColored(ImVec4{ 0.3f, 0.9f, 0.3f, 1.0f }, "To deselect an entity:\nShift + LeftClick");
-			//ImGui::Text("To deselect an entity:\nShift + LeftClick");
+			ImGui::TextColored(ImVec4{ 0.3f, 0.9f, 0.3f, 1.0f }, "Scene Info:");
+			ImGui::Text("Number of entites in scene: %d", m_Context->GetAllEntitiesWith<IDComponent>().size());
+
+			ImGui::Separator();
+
+			ImGui::TextColored(ImVec4{ 0.3f, 0.9f, 0.3f, 1.0f }, "Help");
+			ImGui::Text("To deselect an entity: Shift + LeftClick");
 
 			ImGui::EndPopup();
 		}
@@ -893,7 +960,7 @@ namespace Aurora {
 	void EditorLayer::DrawComponents(Entity entity)
 	{
 		FontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
-		std::string& tag = entity.GetComponent<TagComponent>().Tag;
+		std::string& tag = std::string(entity.GetComponent<TagComponent>().Tag);
 
 		// Size of buffer is 128 because there should not be an entity called more than 128 letters like BRUH
 		char buffer[128];
@@ -1111,12 +1178,17 @@ namespace Aurora {
 		{
 			ImGui::Columns(2);
 
+			ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
+								      | ImGuiColorEditFlags_AlphaPreview
+								      | ImGuiColorEditFlags_HDR
+									  | ImGuiColorEditFlags_PickerHueWheel;
+
 			ImGui::SetColumnWidth(0, 100.0f);
 			ImGui::Text("Color");
 			ImGui::NextColumn();
 
 			ImGui::PushItemWidth(-1);
-			ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color));
+			ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color), flags);
 			ImGui::PopItemWidth();
 
 			ImGui::Separator();
@@ -1140,13 +1212,13 @@ namespace Aurora {
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
 
+		// TODO: Temporary, this plane defualy entity should be replaced by a grid
 		Entity plane = m_ActiveScene->CreateEntity();
-		m_GroundEntity = plane;
-		TagComponent& name = m_GroundEntity.GetComponent<TagComponent>();
+		TagComponent& name = plane.GetComponent<TagComponent>();
 		name.Tag = "Plane";
-		TransformComponent& tc = m_GroundEntity.GetComponent<TransformComponent>();
+		TransformComponent& tc = plane.GetComponent<TransformComponent>();
 		tc.Scale = glm::vec3{ 200.0f, 0.5f, 200.0f };
-		SpriteRendererComponent& sp = m_GroundEntity.AddComponent<SpriteRendererComponent>();
+		SpriteRendererComponent& sp = plane.AddComponent<SpriteRendererComponent>();
 		sp.Color = { 0.6f, 0.6f, 0.6f, 1.0f };
 
 		m_EditorScenePath = std::filesystem::path();
@@ -1238,11 +1310,11 @@ namespace Aurora {
 		float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 		m_Peak = peak;
 
-		std::string name = "None";
-		if (m_HoveredEntity && ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
-			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+		//std::string name = "None";
+		//if (m_HoveredEntity && ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
+		//	name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 
-		ImGui::Text("Hovered Entity: %s", name.c_str());
+		//ImGui::Text("Hovered Entity: %s", name.c_str());
 		ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
 		ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
 		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
@@ -1702,13 +1774,12 @@ namespace Aurora {
 		m_ViewportHovered = ImGui::IsWindowHovered();
 
 		ImVec2 viewportOffset = ImGui::GetCursorPos();
-		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
-		m_ViewportSize = viewPortPanelSize;
+		m_ViewportSize = ImGui::GetContentRegionAvail();
 
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		void* textureID = (void*)(uint64_t)m_Framebuffer->GetColorAttachmentID();
+		void* textureID = (void*)(uint64_t)m_IntermediateFramebuffer->GetColorAttachmentID();
 		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
 		//ImGui::Image((ImTextureID)EditorResources::CameraIcon->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
@@ -2070,8 +2141,8 @@ namespace Aurora {
 
 		ShowMenuBarItems();
 
-		// TODO: THIS IS FOR REFERENCE ONLY!
-		//ImGui::ShowDemoWindow();
+		// THIS IS FOR REFERENCE ONLY!
+		// ImGui::ShowDemoWindow();
 
 		if (m_ShowDearImGuiMetricsWindow)
 			ImGui::ShowMetricsWindow(&m_ShowDearImGuiMetricsWindow);

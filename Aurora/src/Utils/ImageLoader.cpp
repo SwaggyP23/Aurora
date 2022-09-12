@@ -24,10 +24,14 @@ namespace Aurora {
 			return m_ImageData;
 		}
 
-		void ImageLoader::WriteDataToPNGImage(const std::string& filePath, const void* data)
+		bool ImageLoader::WriteDataToPNGImage(const std::string& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels)
 		{
 			// Should Return a bool if it works
 			// Should have an enum to select in what format to write the image (tga/png/jpg/hdr...)
+			if (stbi_write_png(filePath.c_str(), width, height, channels, data, width * channels))
+				return true;
+
+			return false;
 		}
 
 		void ImageLoader::FreeImage()
