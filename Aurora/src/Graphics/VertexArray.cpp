@@ -34,22 +34,16 @@ namespace Aurora {
 	VertexArray::VertexArray()
 		: m_IndexBuffer()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glCreateVertexArrays(1, &m_ArrayId);
 	}
 
 	VertexArray::~VertexArray()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glDeleteVertexArrays(1, &m_ArrayId);
 	}
 
 	void VertexArray::Bind() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindVertexArray(m_ArrayId);
 	}
 
@@ -60,8 +54,6 @@ namespace Aurora {
 
 	void VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
-		AR_PROFILE_FUNCTION();
-
 		AR_CORE_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 		glBindVertexArray(m_ArrayId);
@@ -132,8 +124,6 @@ namespace Aurora {
 
 	void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindVertexArray(m_ArrayId);
 		indexBuffer->Bind();
 

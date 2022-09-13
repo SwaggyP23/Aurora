@@ -62,8 +62,10 @@ namespace Aurora {
 	// This is the main style editing panel and everything such as fonts and such child it
 	private:
 		void ShowEditPanelUI();
+		void ShowScreenshotPanel();
 
 		bool m_ShowEditingPanel = false;
+		bool m_ShowScreenshotPanel = false;
 
 	private:
 		void ShowFontPickerUI();
@@ -88,6 +90,8 @@ namespace Aurora {
 		void SaveScene();
 		void SaveSceneAs();
 		void SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path);
+
+		void TakeScreenShotOfOpenScene();
 
 		std::filesystem::path m_EditorScenePath;
 

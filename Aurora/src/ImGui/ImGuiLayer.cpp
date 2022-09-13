@@ -101,8 +101,6 @@ namespace Aurora {
 
 	void ImGuiLayer::SetDarkThemeColor()
 	{
-		AR_PROFILE_FUNCTION();
-
 		ImGuiStyle& style = ImGui::GetStyle();
 		auto& colors = ImGui::GetStyle().Colors;
 

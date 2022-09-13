@@ -37,15 +37,11 @@ namespace Aurora {
 
 	void CubeTexture::Bind(uint32_t slot) const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindTextureUnit(slot, m_TextureID);
 	}
 
 	void CubeTexture::UnBind(uint32_t slot) const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindTextureUnit(slot, 0);
 	}
 

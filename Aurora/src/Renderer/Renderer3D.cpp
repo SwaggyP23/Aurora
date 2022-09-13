@@ -319,8 +319,6 @@ namespace Aurora {
 
 	void Renderer3D::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		AR_PROFILE_FUNCTION();
-
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
@@ -426,7 +424,6 @@ namespace Aurora {
 
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
 	{
-		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
 		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
@@ -460,7 +457,6 @@ namespace Aurora {
 
 	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintcolor, int entityID)
 	{
-		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
 		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
@@ -517,7 +513,6 @@ namespace Aurora {
 
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
 	{
-		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
 		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
@@ -551,7 +546,6 @@ namespace Aurora {
 
 	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintColor, int entityID)
 	{
-		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
 		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)

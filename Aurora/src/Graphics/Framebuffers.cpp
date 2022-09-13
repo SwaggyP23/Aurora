@@ -142,6 +142,31 @@ namespace Aurora {
 			return 0;
 		}
 
+		// TODO: Expand on this for all the other ImageFormats!!
+		static uint32_t GetImageFormatBPP(ImageFormat format)
+		{
+			switch (format)
+			{
+			    case ImageFormat::R8UI:        return 1;
+			    case ImageFormat::R16UI:       return 2;
+			    case ImageFormat::R32UI:       return 4;
+			    case ImageFormat::R32F:        return 4;
+			    case ImageFormat::RGB:	       return 3;
+			    case ImageFormat::SRGB:        return 3;
+			    case ImageFormat::RGBA:        return 4;
+			    case ImageFormat::RGBA16F:     return 2 * 4;
+			    case ImageFormat::RGBA32F:     return 4 * 4;
+			}
+
+			AR_CORE_ASSERT(false, "Unknown Image Format!");
+			return 0;
+		}
+
+		static uint32_t GetImageMemorySize(ImageFormat format, uint32_t width, uint32_t height)
+		{
+			return width * height * GetImageFormatBPP(format);
+		}
+
 		inline static GLenum TextureTarget(bool multisampled)
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -252,8 +277,6 @@ namespace Aurora {
 
 	Framebuffer::~Framebuffer()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glDeleteFramebuffers(1, &m_FrameBufferID);
 		glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
 		glDeleteRenderbuffers(1, &m_DepthAttachment);
@@ -261,8 +284,6 @@ namespace Aurora {
 
 	void Framebuffer::Invalidate()
 	{
-		AR_PROFILE_FUNCTION();
-
 		if (m_FrameBufferID)
 		{
 			glDeleteFramebuffers(1, &m_FrameBufferID);
@@ -361,6 +382,9 @@ namespace Aurora {
 	{
 		constexpr uint32_t s_MaxFramebufferSize = 8192;
 
+		if (!m_Specification.Resizable)
+			return;
+
 		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
 		{
 			AR_CORE_WARN_TAG("Framebuffer", "Attempted to rezize framebuffer to: {0} - {1}", width, height);
@@ -373,7 +397,17 @@ namespace Aurora {
 		Invalidate();
 	}
 
-	// TODO: Remove or maybe keep it since this is really not needed once ray casting is a thing
+	void Framebuffer::GetColorAttachmentData(void* pixels, uint32_t attachmentIndex)
+	{
+		AR_CORE_ASSERT(m_Specification.Samples == 1, "Cant get the pixels of a Multisampled texture!");
+
+		GLenum format = Utils::GLFormatFromAFormat(m_ColorAttachmentsSpecification[attachmentIndex].TextureFormat);
+		GLenum type = Utils::GLDataTypeFromAFormat(m_ColorAttachmentsSpecification[attachmentIndex].TextureFormat);
+
+		uint32_t buffSize = Utils::GetImageMemorySize(m_ColorAttachmentsSpecification[attachmentIndex].TextureFormat, m_Specification.Width, m_Specification.Height);
+		glGetTextureImage(m_ColorAttachments[attachmentIndex], 0, format, type, buffSize, pixels);
+	}
+
 	void Framebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y, void* data)
 	{
 		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Attachment index can not be more than the available attachments");
@@ -384,7 +418,6 @@ namespace Aurora {
 		glReadPixels(x, y, 1, 1, Utils::GLFormatFromAFormat(spec.TextureFormat), Utils::GLDataTypeFromAFormat(spec.TextureFormat), data);
 	}
 
-	// TODO: Remove or maybe keep it since this is really not needed once ray casting is a thing
 	void Framebuffer::ClearTextureAttachment(uint32_t attachmentIndex, const void* data)
 	{
 		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Attachment index can not be more than the available attachments");

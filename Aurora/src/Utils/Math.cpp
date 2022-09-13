@@ -10,7 +10,6 @@ namespace Aurora::Math {
 	// My own making... and is faster with same result!
 	bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
 	{
-		AR_PROFILE_FUNCTION();
 		// Lets start with translation: it is equal to the elements of the last column, we get these and then 0 out that column
 		glm::mat4 Local(transform);
 	

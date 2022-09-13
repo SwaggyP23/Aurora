@@ -145,7 +145,6 @@ namespace Aurora {
 				size += buffer.Size;
 
 			m_UniformStorageBuffer.Allocate(size);
-			m_UniformStorageBuffer.ZeroInit();
 		}
 	}
 

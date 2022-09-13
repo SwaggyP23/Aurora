@@ -54,6 +54,9 @@ namespace Aurora {
 
 		// This is to specify if you want the depth attachment to be a texture or a renderbuffer
 		bool DepthAttachmentAsTexture = false;
+
+		// This sets if the framebuffer is resizable or not
+		bool Resizable = true;
 	};
 
 	class Framebuffer : public RefCountedObject
@@ -71,6 +74,7 @@ namespace Aurora {
 		void Bind() const;
 		void UnBind() const;
 
+		void GetColorAttachmentData(void* pixels, uint32_t attachmentIndex = 0);
 		void ReadPixel(uint32_t attachmentIndex, int x, int y, void* data);
 		void ClearTextureAttachment(uint32_t attachmentIndex, const void* data);
 

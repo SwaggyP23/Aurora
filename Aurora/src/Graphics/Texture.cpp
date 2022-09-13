@@ -120,6 +120,7 @@ namespace Aurora {
 			return 0;
 		}
 
+		// TODO: Expand on this for all the other ImageFormats!!
 		static uint32_t GetImageFormatBPP(ImageFormat format)
 		{
 			switch (format)
@@ -139,7 +140,7 @@ namespace Aurora {
 			return 0;
 		}
 
-		static uint32_t GetImageMemorySize(ImageFormat format, int width, int height)
+		static uint32_t GetImageMemorySize(ImageFormat format, uint32_t width, uint32_t height)
 		{
 			return width * height * GetImageFormatBPP(format);
 		}
@@ -165,7 +166,8 @@ namespace Aurora {
 		: m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
 	{
 		AR_PROFILE_FUNCTION();
-		m_ImageData = Buffer((void*)data, Utils::GetImageMemorySize(format, width, height));
+
+		m_ImageData = Buffer((Byte*)data, Utils::GetImageMemorySize(format, width, height));
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 
@@ -192,7 +194,7 @@ namespace Aurora {
 
 			stbi_set_flip_vertically_on_load(false); // Reset since it is kind of a global state inside stb!
 
-			m_ImageData = Buffer(imageData, Utils::GetImageMemorySize(ImageFormat::RGBA32F, width, height));
+			m_ImageData = Buffer((Byte*)imageData, Utils::GetImageMemorySize(ImageFormat::RGBA32F, width, height));
 			m_Format = ImageFormat::RGBA32F;
 		}
 		else
@@ -224,14 +226,12 @@ namespace Aurora {
 
 		Invalidate();
 
-		stbi_image_free(m_ImageData.GetData());
+		stbi_image_free(m_ImageData.Data);
 		m_ImageData = Buffer(); // Reset the buffer
 	}
 
 	Texture2D::~Texture2D()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glDeleteTextures(1, &m_TextureID);
 		m_TextureID = 0; // Reset textureID just for safety
 	}
@@ -249,7 +249,7 @@ namespace Aurora {
 		{
 			format = Utils::GLFormatFromAFormat(m_Format);
 			GLenum dataType = Utils::GLDataTypeFromAFormat(m_Format);
-			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, format, dataType, m_ImageData.GetData());
+			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, format, dataType, m_ImageData.Data);
 			
 			if (m_Properties.GenerateMips)
 				glGenerateTextureMipmap(m_TextureID);
@@ -258,15 +258,11 @@ namespace Aurora {
 
 	void Texture2D::Bind(uint32_t slot) const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindTextureUnit(slot, m_TextureID);
 	}
 
 	void Texture2D::UnBind(uint32_t slot) const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindTextureUnit(slot, 0);
 	}
 

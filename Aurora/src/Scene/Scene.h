@@ -42,6 +42,7 @@ namespace Aurora {
 			return m_Registry.view<Args...>();
 		}
 
+		inline const std::string& GetName() const { return m_Name; }
 		inline std::string& GetName() { return m_Name; }
 
 	private:

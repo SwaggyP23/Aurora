@@ -23,7 +23,7 @@ namespace Aurora {
 
 		m_Profiler = new PerformanceProfiler();
 
-		WindowSpecification windowSpec;
+		WindowSpecification windowSpec = {};
 		windowSpec.Title = specification.Name;
 		windowSpec.Width = specification.WindowWidth;
 		windowSpec.Height = specification.WindowHeight;
@@ -178,8 +178,6 @@ namespace Aurora {
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
-		AR_PROFILE_FUNCTION();
-
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_Minimized = true;

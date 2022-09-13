@@ -31,8 +31,6 @@ namespace Aurora {
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
-		AR_PROFILE_FUNCTION();
-
 		s_SceneData->viewProjectionMatrix = camera.GetProjection() * camera.GetViewMatrix();;
 	}
 
@@ -42,15 +40,11 @@ namespace Aurora {
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		AR_PROFILE_FUNCTION();
-
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
 	void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
 	{
-		AR_PROFILE_FUNCTION();
-
 		//shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
 		//shader->SetUniformMat4("ml_matrix", model);
 		//shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
@@ -61,8 +55,6 @@ namespace Aurora {
 
 	void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
 	{
-		AR_PROFILE_FUNCTION();
-
 		//shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
 		//shader->SetUniformMat4("ml_matrix", model);
 		//shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));

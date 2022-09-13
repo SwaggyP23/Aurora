@@ -16,7 +16,7 @@ namespace Aurora {
 		{
 		public:
 			static ImageData LoadImageFile(const std::string& filePath);
-			static bool WriteDataToPNGImage(const std::string& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels);
+			static bool WriteDataToPNGImage(const std::string& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip = false);
 			static void FreeImage();
 
 			// This is to be used before calling LoadImageFile()!

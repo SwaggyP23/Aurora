@@ -20,9 +20,7 @@
 #define AR_PASTE_MACRO(x, y) x ## y
 #define AR_CONCAT_MACRO(x, y) AR_PASTE_MACRO(x, y)
 
-#ifdef AURORA_DEBUG
-    #define AR_DEBUG_BREAK() __debugbreak()
-#endif
+#define AR_DEBUG_BREAK() __debugbreak()
 
 #include "Assert.h"
 

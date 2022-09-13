@@ -22,8 +22,6 @@ namespace Aurora {
 	IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
 		: m_Count(count)
 	{
-		AR_PROFILE_FUNCTION();
-
 		glCreateBuffers(1, &m_BufferId);
 		// Since we specified here that it is a GL_ELEMENT_ARRAY_BUFFER, a VAO must be bound when this is created 
 		// otherwise it will not work
@@ -32,15 +30,11 @@ namespace Aurora {
 
 	IndexBuffer::~IndexBuffer()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glDeleteBuffers(1, &m_BufferId);
 	}
 
 	void IndexBuffer::Bind() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId);
 	}
 

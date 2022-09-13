@@ -39,28 +39,23 @@ namespace Aurora {
 
 		EditorResources::Init();
 
-		FramebufferSpecification specification;
-		specification.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I, ImageFormat::Depth};
-		specification.Width = 1280;
-		specification.Height = 720;
-		specification.Samples = 8;
-		// specification.DepthAttachmentAsTexture = true;
-		m_MSAAFramebuffer = Framebuffer::Create(specification);
+		FramebufferSpecification mainSpecification;
+		mainSpecification.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I, ImageFormat::Depth};
+		mainSpecification.Width = 1280;
+		mainSpecification.Height = 720;
+		mainSpecification.Samples = 8;
+		// mainSpecification.DepthAttachmentAsTexture = true;
+		m_MSAAFramebuffer = Framebuffer::Create(mainSpecification);
 
-		FramebufferSpecification spec2;
-		spec2.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I };
-		spec2.Width = 1280;
-		spec2.Height = 720;
-		m_IntermediateFramebuffer = Framebuffer::Create(spec2);
+		FramebufferSpecification intermediateSpecification;
+		intermediateSpecification.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I };
+		intermediateSpecification.Width = 1280;
+		intermediateSpecification.Height = 720;
+		m_IntermediateFramebuffer = Framebuffer::Create(intermediateSpecification);
 
 		m_EditorScene = Scene::Create("Editor Scene");
 		m_ActiveScene = m_EditorScene;
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
-
-		// TODO: This is the screenshot demo that i will continue sometime later
-		//auto data = Utils::ImageLoader::LoadImageFile("Resources/textures/Qiyana2.png");
-		//if (Utils::ImageLoader::WriteDataToPNGImage("Resources/Wassup.png", data.PixelData, data.Width, data.Height, data.Channels))
-		//	AR_WARN("Wrote Image Correctly");
 
 		// Default open scene for now...!
 		OpenScene("Resources/scenes/TestingSearchBox.aurora");
@@ -1283,6 +1278,34 @@ namespace Aurora {
 		serializer.SerializeToText(path.string());
 	}
 
+	void EditorLayer::TakeScreenShotOfOpenScene()
+	{
+		const auto& spec = m_IntermediateFramebuffer->GetSpecification();
+
+		Buffer buff(spec.Width * spec.Height * 4);
+		m_IntermediateFramebuffer->GetColorAttachmentData(buff.Data);
+
+		std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+		std::time_t timePoint = std::chrono::system_clock::to_time_t(currentTime);
+
+		char buffer[64]{};
+		ctime_s(buffer, 64, &timePoint);
+		std::string_view str(buffer);
+		size_t colonPos = str.find_first_of(':');
+		std::string timeString(str.substr(colonPos - 2, 13));
+
+		std::string finalName = m_Context->GetName() + "_" + timeString;
+		for (int i = 0; i < finalName.size(); i++)
+		{
+			if (finalName[i] == ' ' || finalName[i] == ':')
+				finalName[i] = '_';
+		}
+		AR_WARN("{}", finalName);
+
+		if (Utils::ImageLoader::WriteDataToPNGImage(finalName, buff.Data, spec.Width, spec.Height, 4, true))
+			AR_WARN("Wrote Image Correctly");
+	}
+
 #pragma endregion
 
 #pragma region RendererPanels
@@ -1439,7 +1462,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowEditPanelUI()
 	{
-		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
+		constexpr ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
 
 		ImGui::Begin("Editor Style", &m_ShowEditingPanel);
 
@@ -1456,6 +1479,18 @@ namespace Aurora {
 
 			ImGui::TreePop();
 		}
+
+		ImGui::End();
+	}
+
+	void EditorLayer::ShowScreenshotPanel()
+	{
+		ImGui::Begin("Screenshot Panel", &m_ShowScreenshotPanel);
+
+		ImGuiUtils::ShowHelpMarker("Press the button below to take a screenshot of the currently open scene\nand in the position of your camera.");
+
+		if (ImGui::Button("Take Screenshot"))
+			TakeScreenShotOfOpenScene();
 
 		ImGui::End();
 	}
@@ -1663,6 +1698,11 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Tools"))
 			{
+				if (ImGui::MenuItem("Screenshot", NULL, m_ShowScreenshotPanel))
+					m_ShowScreenshotPanel = !m_ShowScreenshotPanel;
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Editor Style", NULL, m_ShowEditingPanel))
 					m_ShowEditingPanel = !m_ShowEditingPanel;
 
@@ -2169,6 +2209,9 @@ namespace Aurora {
 
 		if (m_ShowPerformance)
 			ShowPerformanceUI();
+
+		if (m_ShowScreenshotPanel)
+			ShowScreenshotPanel();
 
 		if (m_ShowEditingPanel)
 			ShowEditPanelUI();

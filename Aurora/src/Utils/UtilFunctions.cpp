@@ -73,8 +73,6 @@ namespace Aurora {
 
 		std::string FileIO::ReadTextFile(const std::filesystem::path& filePath)
 		{
-			AR_PROFILE_FUNCTION();
-
 			std::string result;
 			FILE* f;
 			fopen_s(&f, filePath.string().c_str(), "rb");
@@ -97,8 +95,6 @@ namespace Aurora {
 
 		void FileIO::WriteToFile(const std::filesystem::path& filePath, const void* buffer, size_t typeSize, size_t size)
 		{
-			AR_PROFILE_FUNCTION();
-
 			FILE* f;
 			fopen_s(&f, filePath.string().c_str(), "wb");
 			if (f)

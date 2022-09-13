@@ -66,6 +66,7 @@ namespace Aurora {
 	Entity Scene::CopyEntity(Entity entity)
 	{
 		AR_CORE_ASSERT(false);
+		AR_CORE_CHECK(false, "This is still not working and needs ALOT of rework!");
 
 		static uint32_t nameIncremet = 1;
 		std::string name = entity.GetComponent<TagComponent>().Tag;

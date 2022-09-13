@@ -24,10 +24,19 @@ namespace Aurora {
 			return m_ImageData;
 		}
 
-		bool ImageLoader::WriteDataToPNGImage(const std::string& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels)
+		// TODO: Should have an enum to select in what format to write the image (tga/png/jpg/hdr...)
+		bool ImageLoader::WriteDataToPNGImage(const std::string& name, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip)
 		{
-			// Should Return a bool if it works
-			// Should have an enum to select in what format to write the image (tga/png/jpg/hdr...)
+			if (!std::filesystem::exists("Resources/Screenshots"))
+				std::filesystem::create_directories("Resources/Screenshots");
+
+			std::string filePath = "Resources/Screenshots/" + name + ".png";
+
+			if (flip)
+			{
+				stbi__vertical_flip((void*)data, width, height, channels * sizeof(uint8_t));
+			}
+
 			if (stbi_write_png(filePath.c_str(), width, height, channels, data, width * channels))
 				return true;
 
@@ -36,8 +45,6 @@ namespace Aurora {
 
 		void ImageLoader::FreeImage()
 		{
-			AR_PROFILE_FUNCTION();
-
 			AR_CORE_ASSERT(m_Loading, "Trying to call FreeImage without calling LoadImageFile which is not allowed!");
 
 			m_Loading = false;
@@ -46,8 +53,6 @@ namespace Aurora {
 
 		void ImageLoader::SetFlipVertically(bool boolean)
 		{
-			AR_PROFILE_FUNCTION();
-
 			stbi_set_flip_vertically_on_load(boolean);
 		}
 

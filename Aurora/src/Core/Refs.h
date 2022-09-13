@@ -283,6 +283,7 @@ namespace Aurora {
 		{
 			return m_Ptr ? RefUtils::IsLive(m_Ptr) : false;
 		}
+
 		operator bool() const { return IsValid(); }
 
 	private:

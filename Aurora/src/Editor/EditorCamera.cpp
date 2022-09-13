@@ -169,8 +169,6 @@ namespace Aurora {
 
 	void EditorCamera::UpdateView()
 	{
-		AR_PROFILE_FUNCTION();
-
 		const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 
 		// Extra step to handle the problem when the camera direction is the same as the up vector

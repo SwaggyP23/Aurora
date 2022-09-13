@@ -3,64 +3,105 @@
 
 namespace Aurora {
 
-	Buffer::Buffer(void* data, uint32_t size)
-		: m_Data(data), m_Size(size)
+	Buffer::Buffer(size_t sizeInBytes)
+		: Data(nullptr), Size(sizeInBytes)
 	{
+		Allocate(sizeInBytes);
 	}
 
-	Buffer Buffer::Copy(const void* data, uint32_t size)
+	Buffer::Buffer(Byte* data, size_t sizeInBytes)
+		: Data(data), Size(sizeInBytes)
 	{
-		Buffer newBuffer;
-		newBuffer.Allocate(size);
-		memcpy(newBuffer.GetData(), data, size);
-
-		return newBuffer;
+		AR_CORE_CHECK(sizeInBytes > 0);
 	}
 
-	void Buffer::Allocate(size_t size)
+	Buffer::Buffer(const Buffer& other)
+		: Data(nullptr), Size(other.Size)
 	{
-		delete[] m_Data;
-		m_Data = nullptr;
+		AR_CORE_CHECK(other.Size > 0);
 
-		if (size == 0)
-			return;
+		Data = new Byte[other.Size];
+		memcpy(Data, other.Data, other.Size);
+	}
 
-		m_Data = new Byte[size];
-		m_Size = (uint32_t)size;
+	Buffer::Buffer(Buffer&& other) noexcept
+		: Data(other.Data), Size(other.Size)
+	{
+		AR_CORE_CHECK(other.Size > 0);
+
+		other.Data = nullptr;
+		other.Size = 0;
+	}
+
+	Buffer::~Buffer()
+	{
+		Release();
+	}
+
+	Buffer& Buffer::operator=(const Buffer& other)
+	{
+		// Have to release incase the buffer already was owning some memory
+		Release();
+
+		Data = new Byte[other.Size];
+		Size = other.Size;
+		
+		return *this;
+	}
+
+	Buffer& Buffer::operator=(Buffer&& other) noexcept
+	{
+		Data = other.Data;
+		Size = other.Size;
+
+		other.Data = nullptr;
+		other.Size = 0;
+
+		return *this;
+	}
+
+	void Buffer::Allocate(size_t sizeInBytes)
+	{
+		AR_CORE_CHECK(sizeInBytes > 0);
+
+		if (Data)
+			Release();
+
+		Data = new Byte[sizeInBytes];
+		memset(Data, 0, sizeInBytes);
+
+		Size = sizeInBytes;
 	}
 
 	void Buffer::Release()
 	{
-		if (m_Data)
+		if (Data)
 		{
-			delete[] m_Data;
-			m_Data = nullptr;
+			delete[] Data;
+			Data = nullptr;
 		}
 
-		m_Size = 0;
+		Size = 0;
 	}
 
-	void Buffer::ZeroInit()
+	void Buffer::Write(const void* data, size_t size, uint32_t offset)
 	{
-		if (m_Data)
-			memset(m_Data, 0, m_Size);
+		AR_CORE_ASSERT(offset + size <= Size, "Buffer Overflow!");
+
+		memcpy(Data + offset, data, size);
 	}
 
-	Byte* Buffer::ReadBytes(uint32_t size, uint32_t offset)
+	void Buffer::Reverse()
 	{
-		AR_CORE_ASSERT(offset + size <= m_Size, "Buffer Overflow!");
+		uint8_t* newData = new uint8_t[Size];
+		memset(newData, 0, Size);
 
-		Byte* buffer = new Byte[size];
-		memcpy(buffer, (Byte*)m_Data + offset, size);
+		for (size_t i = 0; i < Size; i++)
+		{
+			newData[i] = Data[Size - 1 - i];
+		}
 
-		return buffer;
-	}
-
-	void Buffer::Write(void* data, uint32_t size, uint32_t offset)
-	{
-		AR_CORE_ASSERT(offset + size <= m_Size, "Buffer Overflow!");
-
-		memcpy((Byte*)m_Data + offset, data, size);
+		memcpy(Data, newData, Size);
 	}
 
 }

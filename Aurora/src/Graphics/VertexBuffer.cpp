@@ -58,8 +58,6 @@ namespace Aurora {
 
 	void BufferLayout::CalcStrideAndOffset()
 	{
-		AR_PROFILE_FUNCTION();
-
 		GLuint offset = 0;
 		m_Stride = 0;
 		for (auto& element : m_Elements)
@@ -86,31 +84,23 @@ namespace Aurora {
 
 	VertexBuffer::VertexBuffer(uint32_t size, VertexBufferUsage drawHint)
 	{
-		AR_PROFILE_FUNCTION();
-
 		glCreateBuffers(1, &m_BufferID);
 		glNamedBufferData(m_BufferID, size, nullptr, Utils::GLDrawHintTypeFromEnum(drawHint));
 	}
 
 	VertexBuffer::VertexBuffer(float* vertices, uint32_t size, VertexBufferUsage drawHint)
 	{
-		AR_PROFILE_FUNCTION();
-
 		glCreateBuffers(1, &m_BufferID);
 		glNamedBufferData(m_BufferID, size, (const void*)vertices, Utils::GLDrawHintTypeFromEnum(drawHint));
 	}
 
 	VertexBuffer::~VertexBuffer()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glDeleteBuffers(1, &m_BufferID);
 	}
 
 	void VertexBuffer::Bind() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 	}
 
@@ -121,8 +111,6 @@ namespace Aurora {
 
 	void VertexBuffer::SetData(const void* data, uint32_t size)
 	{
-		AR_PROFILE_FUNCTION();
-
 		glNamedBufferSubData(m_BufferID, 0, size, data);
 	}
 

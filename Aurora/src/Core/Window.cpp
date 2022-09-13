@@ -136,8 +136,6 @@ namespace Aurora {
 
 	void Window::SetVSync(bool state)
 	{
-		AR_PROFILE_FUNCTION();
-
 		glfwSwapInterval(state);
 		m_Specification.VSync = state;
 	}
@@ -149,12 +147,10 @@ namespace Aurora {
 
 	void Window::Update() const
 	{
-		AR_PROFILE_FUNCTION();
-
 #ifdef AURORA_DEBUG
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
-			AR_CORE_ERROR_TAG("Window", "OpenGL Error : {0}, Function : {1}", error, __FUNCTION__);
+			AR_CORE_ERROR_TAG("Window", "OpenGL Error : {0}", error);
 #endif
 
 		m_Context->SwapBuffers();
