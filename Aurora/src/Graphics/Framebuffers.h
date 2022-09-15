@@ -78,11 +78,11 @@ namespace Aurora {
 		void ReadPixel(uint32_t attachmentIndex, int x, int y, void* data);
 		void ClearTextureAttachment(uint32_t attachmentIndex, const void* data);
 
-		uint32_t GetFramebufferID() const { return m_FrameBufferID; }
-		const FramebufferSpecification& GetSpecification() const { return m_Specification; }
-		uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
+		[[nodiscard]] uint32_t GetFramebufferID() const { return m_FrameBufferID; }
+		[[nodiscard]] const FramebufferSpecification& GetSpecification() const { return m_Specification; }
+		[[nodiscard]] uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
 
-		bool HasDepthAttachment() const { return m_DepthAttachment ? true : false; }
+		[[nodiscard]] bool HasDepthAttachment() const { return m_DepthAttachment ? true : false; }
 
 	private:
 		uint32_t m_FrameBufferID = 0;

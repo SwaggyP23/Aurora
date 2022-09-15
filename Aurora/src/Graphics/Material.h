@@ -41,48 +41,48 @@ namespace Aurora {
 		void SetUpForRendering() const;
 
 		// Uniform Setters..
-		void Set(const std::string& fullname, float value) const;
-		void Set(const std::string& fullname, int value) const;
-		void Set(const std::string& fullname, uint32_t value) const;
-		void Set(const std::string& fullname, bool value) const;
+		void Set(std::string_view fullname, float value) const;
+		void Set(std::string_view fullname, int value) const;
+		void Set(std::string_view fullname, uint32_t value) const;
+		void Set(std::string_view fullname, bool value) const;
 
-		void Set(const std::string& fullname, const glm::ivec2& value) const;
-		void Set(const std::string& fullname, const glm::ivec3& value) const;
-		void Set(const std::string& fullname, const glm::ivec4& value) const;
+		void Set(std::string_view fullname, const glm::ivec2& value) const;
+		void Set(std::string_view fullname, const glm::ivec3& value) const;
+		void Set(std::string_view fullname, const glm::ivec4& value) const;
 
-		void Set(const std::string& fullname, const glm::vec2& value) const;
-		void Set(const std::string& fullname, const glm::vec3& value) const;
-		void Set(const std::string& fullname, const glm::vec4& value) const;
-		void Set(const std::string& fullname, const glm::mat3& value) const;
-		void Set(const std::string& fullname, const glm::mat4& value) const;
+		void Set(std::string_view fullname, const glm::vec2& value) const;
+		void Set(std::string_view fullname, const glm::vec3& value) const;
+		void Set(std::string_view fullname, const glm::vec4& value) const;
+		void Set(std::string_view fullname, const glm::mat3& value) const;
+		void Set(std::string_view fullname, const glm::mat4& value) const;
 
 		// Texture Setters.. Not sure if these should be constant
-		void Set(const std::string& fullname, const Ref<Texture2D>& texture) const;
-		void Set(const std::string& fullname, const Ref<CubeTexture>& cubeTexture) const;
+		void Set(std::string_view fullname, const Ref<Texture2D>& texture) const;
+		void Set(std::string_view, const Ref<CubeTexture>& cubeTexture) const;
 		//void Set(const std::string& fullname, const Ref<Image2D>& image); // Currently not in use untill image2d is actually made
 
 		// Uniform Getters..
-		float& GetFloat(const std::string& name) const;
-		int32_t& GetInt(const std::string& name) const;
-		uint32_t& GetUInt(const std::string& name) const;
-		bool& GetBool(const std::string& name) const;
+		float& GetFloat(std::string_view name) const;
+		int32_t& GetInt(std::string_view name) const;
+		uint32_t& GetUInt(std::string_view name) const;
+		bool& GetBool(std::string_view name) const;
 
-		glm::ivec2& GetIntVec2(const std::string& name) const;
-		glm::ivec3& GetIntVec3(const std::string& name) const;
-		glm::ivec4& GetIntVec4(const std::string& name) const;
+		glm::ivec2& GetIntVec2(std::string_view name) const;
+		glm::ivec3& GetIntVec3(std::string_view name) const;
+		glm::ivec4& GetIntVec4(std::string_view name) const;
 
-		glm::vec2& GetVec2(const std::string& name) const;
-		glm::vec3& GetVec3(const std::string& name) const;
-		glm::vec4& GetVec4(const std::string& name) const;
-		glm::mat3& GetMat3(const std::string& name) const;
-		glm::mat4& GetMat4(const std::string& name) const;
+		glm::vec2& GetVec2(std::string_view name) const;
+		glm::vec3& GetVec3(std::string_view name) const;
+		glm::vec4& GetVec4(std::string_view name) const;
+		glm::mat3& GetMat3(std::string_view name) const;
+		glm::mat4& GetMat4(std::string_view name) const;
 
 		// Texture Getters..
-		Ref<Texture2D> GetTexture2D(const std::string& name);
+		Ref<Texture2D> GetTexture2D(std::string_view name);
 		Ref<CubeTexture> GetCubeTexture(const std::string& name);
 		//Ref<Image2D> GetImage2D(const std::string& name) const; // TODO: Currently not in use untill image2d is actually made
 
-		Ref<Texture2D> TryGetTexture2D(const std::string& name);
+		Ref<Texture2D> TryGetTexture2D(std::string_view name);
 
 		uint32_t GetFlags() const { return m_MaterialFlags; }
 		bool HasFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
@@ -95,7 +95,7 @@ namespace Aurora {
 		void AllocateStorage();
 
 		template<typename T>
-		void Set(const std::string& fullname, const T& value) const
+		void Set(std::string_view fullname, const T& value) const
 		{
 			const ShaderUniform* declaration = FindUniformDeclaration(fullname);
 			if (!declaration)
@@ -109,7 +109,7 @@ namespace Aurora {
 		}
 
 		template<typename T>
-		T& Get(const std::string& fullname) const
+		T& Get(std::string_view fullname) const
 		{
 			const ShaderUniform* declaration = FindUniformDeclaration(fullname);
 			if (!declaration)
@@ -138,22 +138,19 @@ namespace Aurora {
 			return Ref<T>((const Ref<Texture>&)m_Textures[slot]);
 		}
 
-		const ShaderUniform* FindUniformDeclaration(const std::string& name) const;
-		const ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name) const;
+		const ShaderUniform* FindUniformDeclaration(std::string_view name) const;
+		const ShaderResourceDeclaration* FindResourceDeclaration(std::string_view name) const;
 
 	private:
 		std::string m_Name;
 
 		Ref<Shader> m_Shader;
-		//mutable std::vector<Ref<Texture>> m_Textures; // This contains Texture2Ds plus the CubeTextures
-
 		uint32_t m_MaterialFlags = 0;
 
 		mutable Buffer m_UniformStorageBuffer;
 		// These are automatically sorted according to their slot index which is perfect!
 		mutable std::map<uint32_t, Ref<Texture2D>> m_Texture2Ds;
 		mutable std::map<uint32_t, Ref<CubeTexture>> m_CubeTextures;
-		//std::map<uint32_t, Ref<Image2D>> m_Images; // TODO: Currently not in use untill image2d is actually made
 
 	};
 

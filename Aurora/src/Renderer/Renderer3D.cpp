@@ -400,6 +400,8 @@ namespace Aurora {
 	{
 		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::LessOrEqual);
 		s_Data->SkyBoxShader->Bind();
+		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.a", glm::vec4(1.0f));
+		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.b", glm::mat4(1.0f));
 		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.c", 0.3f);
 		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.d", 0.3f);
 		skybox->Bind();
@@ -415,7 +417,7 @@ namespace Aurora {
 	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat, const glm::vec4& tint)
 	{
 		mat->Set("u_Renderer.transform", transform);
-		//mat->Set("u_Materials.AlbedoColor", tint);
+		mat->Set("u_Materials.AlbedoColor", tint);
 		mat->SetUpForRendering();
 		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
 		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);

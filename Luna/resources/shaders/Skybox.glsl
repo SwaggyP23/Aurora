@@ -37,6 +37,7 @@ layout(push_constant) uniform Mats
 
 void main()
 {    
-    o_Color = texture(skybox, v_TexCoords);// * (u_MatsUniforms.c + u_MatsUniforms.d);
+    float a = vec4(u_MatsUniforms.a * u_MatsUniforms.b).x;
+    o_Color = texture(skybox, v_TexCoords) * (u_MatsUniforms.c + u_MatsUniforms.d + a / 2.0f);
     o_EntityID = -1;
 }

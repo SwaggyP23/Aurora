@@ -13,6 +13,7 @@ namespace Aurora {
 
 		//TransformCompIcon = LoadTexture("Icons/transformComponentIcon.png");
 		TextureProperties cameraProps;
+		cameraProps.DebugName = "Camera Icon";
 		cameraProps.FlipOnLoad = true;
 		CameraIcon = LoadTexture("Icons/Camera.png", cameraProps);
 	}

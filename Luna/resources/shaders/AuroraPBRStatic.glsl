@@ -40,6 +40,6 @@ layout(push_constant) uniform Materials
 
 void main()
 {    
-    o_Color = texture(u_AlbedoTexture, v_TexCoords);// * u_Materials.AlbedoColor;
+    o_Color = texture(u_AlbedoTexture, v_TexCoords) * u_Materials.AlbedoColor;
     o_EntityID = -1;
 }
