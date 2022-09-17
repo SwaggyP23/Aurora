@@ -74,6 +74,7 @@ namespace Aurora {
 		std::string FileIO::ReadTextFile(const std::filesystem::path& filePath)
 		{
 			std::string result;
+
 			FILE* f;
 			fopen_s(&f, filePath.string().c_str(), "rb");
 			if (f)
@@ -82,7 +83,7 @@ namespace Aurora {
 				uint64_t size = ftell(f);
 				result.resize(size);
 				fseek(f, 0, SEEK_SET);
-				fread(&result[0], sizeof(char), size, f);
+				fread(&result[0], sizeof(char), size / sizeof(char), f);
 				fclose(f);
 			}
 			else

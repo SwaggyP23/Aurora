@@ -5,6 +5,7 @@
 #include "Utils/UtilFunctions.h"
 
 #include <choc/text/choc_StringUtilities.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Aurora {
 
@@ -256,6 +257,27 @@ namespace Aurora {
 			float hue, sat, val;
 			ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, hue, sat, val);
 			return ImColor::HSV(hue, std::min(sat * multiplier, 1.0f), val);
+		}
+
+		void ColorEdit4Control(const std::string& label, glm::vec4& color, bool showAsWheel)
+		{
+			ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
+									  | ImGuiColorEditFlags_AlphaPreview
+									  | ImGuiColorEditFlags_HDR
+									  | (showAsWheel ? ImGuiColorEditFlags_PickerHueWheel : ImGuiColorEditFlags_PickerHueBar);
+
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, 100.0f);
+
+			ImGui::Text(label.c_str());
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::ColorEdit4(GenerateID(), glm::value_ptr(color), flags);
+			ImGui::PopItemWidth();
+
+			ImGui::Columns(1);
 		}
 
 	}

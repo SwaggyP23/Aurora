@@ -15,48 +15,47 @@ namespace Aurora {
 
 	namespace Utils {
 
-		static const char* GetCacheDirectory()
+		constexpr static const char* GetCacheDirectory()
 		{
 			return "Resources/cache/shaders/OpenGL";
 		}
 
-		static void CreateCacheDirIfNeeded()
+		inline static void CreateCacheDirIfNeeded()
 		{
-			std::string cacheDir = GetCacheDirectory();
+			std::filesystem::path cacheDir = GetCacheDirectory();
 			if (!std::filesystem::exists(cacheDir))
 				std::filesystem::create_directories(cacheDir);
 		}
 
-		static uint32_t/*GLenum*/ ShaderTypeFromString(const std::string& type)
+		inline static uint32_t/*GLenum*/ ShaderTypeFromString(std::string_view type)
 		{
 			if (type == "vertex")
 				return GL_VERTEX_SHADER;
-			else if (type == "fragment")
+			if (type == "fragment")
 				return GL_FRAGMENT_SHADER;
-			else if (type == "compute")
+			if (type == "compute")
 				return GL_COMPUTE_SHADER;
-			else if (type == "geometry")
+			if (type == "geometry")
 				return GL_GEOMETRY_SHADER;
 
 			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return 0;
 		}
 
-		static ShaderErrorType ErrorTypeFromShaderType(uint32_t/*GLenum*/ shaderType)
+		inline static ShaderStageType ErrorTypeFromShaderType(uint32_t/*GLenum*/ shaderStageType)
 		{
-			switch (shaderType)
+			switch (shaderStageType)
 			{
-			    case GL_VERTEX_SHADER:		return ShaderErrorType::Vertex;
-			    case GL_FRAGMENT_SHADER:	return ShaderErrorType::Fragment;
-			    case GL_COMPUTE_SHADER:	    return ShaderErrorType::Compute;
-			    case GL_GEOMETRY_SHADER:	return ShaderErrorType::Geometry;
+			    case GL_VERTEX_SHADER:		return ShaderStageType::Vertex;
+			    case GL_FRAGMENT_SHADER:	return ShaderStageType::Fragment;
+			    case GL_GEOMETRY_SHADER:	return ShaderStageType::Geometry;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown shader type!");
-			return ShaderErrorType::None;
+			return ShaderStageType::None;
 		}
 
-		static const char* GLShaderTypeCachedVulkanFileExtension(uint32_t type)
+		inline static const char* GLShaderTypeCachedVulkanFileExtension(uint32_t/*GLenum*/ type)
 		{
 			switch (type)
 			{
@@ -70,7 +69,7 @@ namespace Aurora {
 			return "";
 		}
 
-		static const char* GLShaderTypeCachedOpenGLFileExtension(uint32_t type)
+		inline static const char* GLShaderTypeCachedOpenGLFileExtension(uint32_t/*GLenum*/ type)
 		{
 			switch (type)
 			{
@@ -84,7 +83,7 @@ namespace Aurora {
 			return "";
 		}
 
-		static shaderc_shader_kind GLShaderTypeToShaderC(uint32_t type)
+		inline static shaderc_shader_kind GLShaderTypeToShaderC(uint32_t/*GLenum*/ type)
 		{
 			switch (type)
 			{
@@ -98,7 +97,7 @@ namespace Aurora {
 			return (shaderc_shader_kind)0;
 		}
 
-		static const char* GLShaderTypeToString(uint32_t type)
+		inline static const char* GLShaderTypeToString(uint32_t/*GLenum*/ type)
 		{
 			switch (type)
 			{
@@ -112,27 +111,30 @@ namespace Aurora {
 			return "";
 		}
 
-		static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
+		inline static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
 		{
 			switch (type.basetype)
 			{
 			    case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
 			    case spirv_cross::SPIRType::Int:
+				{
 			    	if (type.vecsize == 1)            return ShaderUniformType::Int;
 			    	if (type.vecsize == 2)            return ShaderUniformType::IVec2;
 			    	if (type.vecsize == 3)            return ShaderUniformType::IVec3;
 			    	if (type.vecsize == 4)            return ShaderUniformType::IVec4;
+				}
 			    case spirv_cross::SPIRType::UInt:     return ShaderUniformType::UInt;
 			    case spirv_cross::SPIRType::Float:
-			    
+				{
+					// Test for Mat types since if we test for vectors first we can return the wrong type since the default value of vecsize = 1
 			    	if (type.columns == 3)            return ShaderUniformType::Mat3;
 			    	if (type.columns == 4)            return ShaderUniformType::Mat4;
-			    
+
 			    	if (type.vecsize == 1)            return ShaderUniformType::Float;
 			    	if (type.vecsize == 2)            return ShaderUniformType::Vec2;
 			    	if (type.vecsize == 3)            return ShaderUniformType::Vec3;
 			    	if (type.vecsize == 4)            return ShaderUniformType::Vec4;
-			    	break;
+				}
 			}
 
 			AR_CORE_ASSERT(false, "Unknown type!");
@@ -141,6 +143,7 @@ namespace Aurora {
 
 	}
 
+	// TODO: Update the shader library!
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ShaderLibrary!!!!!!!!!
@@ -202,9 +205,18 @@ namespace Aurora {
 	{
 		switch (type)
 		{
-		    case Aurora::ShaderUniformType::Bool:      return std::string("Bool");
-		    case Aurora::ShaderUniformType::Int:       return std::string("Int");
-			case Aurora::ShaderUniformType::Float:     return std::string("Float");
+		    case ShaderUniformType::Bool:       return "Bool";
+		    case ShaderUniformType::Int:	    return "Int";
+		    case ShaderUniformType::UInt:	    return "UInt";
+			case ShaderUniformType::Float:      return "Float";
+			case ShaderUniformType::IVec2:		return "IVec2";
+			case ShaderUniformType::IVec3:      return "IVec3";
+		    case ShaderUniformType::IVec4:		return "IVec4";
+		    case ShaderUniformType::Vec2:		return "Vec2";
+		    case ShaderUniformType::Vec3:		return "Vec3";
+		    case ShaderUniformType::Vec4:		return "Vec4";
+			case ShaderUniformType::Mat3:		return "Mat3";
+			case ShaderUniformType::Mat4:		return "Mat4";
 		}
 
 		AR_CORE_ASSERT(false, "Unknown Shader Uniform Type!");
@@ -217,6 +229,7 @@ namespace Aurora {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	// TODO: Needs rework and it should hash the shader source not the asset path
 	size_t Shader::GetHash() const
 	{
 		return std::hash<std::string>{}(m_AssetPath);
@@ -232,6 +245,38 @@ namespace Aurora {
 			s_AllShaders.push_back(result);
 
 		return result;
+	}
+
+	Ref<Shader> Shader::Create(const ShaderProperties& props, bool forceCompile)
+	{
+		Ref<Shader> result = nullptr;
+
+		result = CreateRef<Shader>(props, forceCompile);
+
+		if (std::find(s_AllShaders.begin(), s_AllShaders.end(), result) == s_AllShaders.end())
+			s_AllShaders.push_back(result);
+
+		return result;
+	}
+
+	Shader::Shader(const ShaderProperties& props, bool forceCompile)
+		: m_Name(props.Name), m_AssetPath(props.AssetPath), m_ShaderType(props.Type)
+	{
+		switch (props.Type)
+		{
+			case ShaderType::TwoStageVertFrag:
+			{
+				std::string shaderFullSource = Utils::FileIO::ReadTextFile(props.AssetPath);
+				Load2Stage(shaderFullSource, forceCompile);
+				break;
+			}
+			case ShaderType::Compute:
+			{
+				std::string shaderFullSource = Utils::FileIO::ReadTextFile(props.AssetPath);
+				LoadCompute(shaderFullSource, forceCompile);
+				break;
+			}
+		}
 	}
 
 	Shader::Shader(const std::string& filePath, bool forceCompile)
@@ -252,7 +297,7 @@ namespace Aurora {
 		// Creating program...
 		{
 			std::string shaderFullSource = Utils::FileIO::ReadTextFile(filePath);
-			Load(shaderFullSource, forceCompile);
+			Load2Stage(shaderFullSource, forceCompile);
 		}
 	}
 
@@ -267,7 +312,17 @@ namespace Aurora {
 	{
 		// Clean the old program object
 		if (m_ShaderID)
+		{
 			glDeleteProgram(m_ShaderID);
+			m_ShaderID = 0;
+
+			m_OpenGLShaderSource.clear();
+			m_OpenGLSPIRV.clear();
+			m_VulkanSPIRV.clear();
+			m_Buffers.clear();
+			m_Resources.clear();
+			m_UniformLocations.clear();
+		}
 
 		Timer timer;
 		std::string shaderFullSource = Utils::FileIO::ReadTextFile(m_AssetPath);
@@ -281,7 +336,7 @@ namespace Aurora {
 		AR_CORE_WARN_TAG("Shader", "Reloading {0} took {1}ms", m_Name, timer.ElapsedMillis());
 	}
 
-	void Shader::Load(const std::string& source, bool forceCompile)
+	void Shader::Load2Stage(const std::string& source, bool forceCompile)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -299,6 +354,21 @@ namespace Aurora {
 		}
 	}
 
+	void Shader::LoadCompute(const std::string& source, bool forceCompile)
+	{
+		m_OpenGLShaderSource[GL_COMPUTE_SHADER] = source;
+
+		Utils::CreateCacheDirIfNeeded();
+
+		{
+			Timer timer;
+			CompileOrGetVulkanBinary(m_OpenGLShaderSource, forceCompile);
+			CompileOrGetOpenGLBinary(forceCompile);
+			CreateProgram();
+			AR_CORE_WARN_TAG("Shader", "Shader creation took {0}ms", timer.ElapsedMillis());
+		}
+	}
+
 	void Shader::CompileOrGetVulkanBinary(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile)
 	{
 		AR_PROFILE_FUNCTION();
@@ -306,13 +376,23 @@ namespace Aurora {
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
 		std::filesystem::path shaderFilePath = m_AssetPath;
 
-		//m_VulkanSPIRV.clear();
-
 		for (const auto& [type, source] : shaderSources)
 		{
 			std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderTypeCachedVulkanFileExtension(type));
 			std::string p = cachedPath.string();
 
+#if AR_NO_USE_FILE_POINTER
+			std::fstream f1(p.c_str(), std::ios::in | std::ios::binary);
+			if (f1.is_open())
+			{
+				f1.seekg(0, std::ios::end);
+				uint64_t size = f1.tellg();
+				f1.seekg(0, std::ios::beg);
+				m_VulkanSPIRV[type].resize(size / sizeof(uint32_t));
+				f1.read((char*)m_VulkanSPIRV[type].data(), size);
+				f1.close();
+			}
+#else
 			FILE* f1;
 			fopen_s(&f1, p.c_str(), "rb"); // read binary
 			if (f1 && !forceCompile)
@@ -321,21 +401,33 @@ namespace Aurora {
 				uint64_t size = ftell(f1);
 				fseek(f1, 0, SEEK_SET);
 				m_VulkanSPIRV[type].resize(size / sizeof(uint32_t));
-				fread(m_VulkanSPIRV[type].data(), sizeof(uint32_t), size, f1);
+				fread(m_VulkanSPIRV[type].data(), sizeof(uint32_t), size / sizeof(uint32_t), f1);
 				fclose(f1);
 			}
+#endif
 			else
 			{
+				// Need to close the opened file if forceCompile is set to true so that it does not leak
+#if AR_NO_USE_FILE_POINTER
+				if (f1.is_open())
+					f1.close();
+#else
+				if (f1)
+					fclose(f1);
+#endif
+
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
 
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
 				options.AddMacroDefinition("OPENGL");
+#ifdef AURORA_DEBUG
 				options.SetGenerateDebugInfo(); // This provides the source when using SPIRV_TOOLS and dissassembling
+#endif
 				options.SetAutoSampledTextures(false); // TODO: Check what this does!
 				options.SetAutoMapLocations(true);
 
-				// Not optimizing shaders when in Vulkan format!
+				// Not optimizing shaders when in Vulkan format since that would break stuff once in OGL format!
 				constexpr bool optimize = false;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -349,9 +441,14 @@ namespace Aurora {
 
 				m_VulkanSPIRV[type] = std::vector<uint32_t>(result.cbegin(), result.cend());
 
-				if (f1)
-					fclose(f1);
-
+#if AR_NO_USE_FILE_POINTER
+				std::fstream f2(p.c_str(), std::ios::out | std::ios::binary);
+				if (f2.is_open())
+				{
+					f2.write((char*)m_VulkanSPIRV[type].data(), m_VulkanSPIRV[type].size() * sizeof(uint32_t));
+					f2.close();
+				}
+#else
 				FILE* f2;
 				fopen_s(&f2, p.c_str(), "wb"); // write binary
 				if (f2)
@@ -359,6 +456,7 @@ namespace Aurora {
 					fwrite(m_VulkanSPIRV[type].data(), sizeof(uint32_t), m_VulkanSPIRV[type].size(), f2);
 					fclose(f2);
 				}
+#endif
 				else
 				{
 					AR_CORE_ERROR_TAG("Shader", "Could not open file for writing '{0}'", p);
@@ -374,7 +472,6 @@ namespace Aurora {
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
 		std::filesystem::path shaderFilePath = m_AssetPath;
 
-		//m_OpenGLSPIRV.clear();
 	 	uint16_t PushBinding = 0;
 		for (const auto& [type, spirv] : m_VulkanSPIRV)
 		{
@@ -392,6 +489,18 @@ namespace Aurora {
 			// At this stage it contains split OpenGL source code
 			m_OpenGLShaderSource[type] = glslCompiler.compile();
 
+#if AR_NO_USE_FILE_POINTER
+			std::fstream f1(p.c_str(), std::ios::in | std::ios::binary);
+			if (f1.is_open())
+			{
+				f1.seekg(0, std::ios::end);
+				uint64_t size = f1.tellg();
+				f1.seekg(0, std::ios::beg);
+				m_OpenGLSPIRV[type].resize(size / sizeof(uint32_t));
+				f1.read((char*)m_OpenGLSPIRV[type].data(), size);
+				f1.close();
+			}
+#else
 			FILE* f1;
 			fopen_s(&f1, p.c_str(), "rb"); // read binary
 			if (f1 && !forceCompile)
@@ -400,17 +509,27 @@ namespace Aurora {
 				uint64_t size = ftell(f1);
 				fseek(f1, 0, SEEK_SET);
 				m_OpenGLSPIRV[type].resize(size / sizeof(uint32_t));
-				fread(m_OpenGLSPIRV[type].data(), sizeof(uint32_t), size, f1);
+				fread(m_OpenGLSPIRV[type].data(), sizeof(uint32_t), size / sizeof(uint32_t), f1);
 				fclose(f1);
 			}
+#endif
 			else
 			{
+				// Need to close the opened file if forceCompile is set to true so that it does not leak
+#if AR_NO_USE_FILE_POINTER
+				if (f1.is_open())
+					f1.close();
+#else
+				if (f1)
+					fclose(f1);
+#endif
+
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
 
 				options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 				options.SetGenerateDebugInfo(); // This provides the source when using SPIRV_TOOLS and dissassembling
-				options.SetAutoSampledTextures(false); // TODO: Check what this does!
+				options.SetAutoSampledTextures(false);
 
 				// Optimize shaders once in OpenGL format!
 				constexpr bool optimize = true;
@@ -424,16 +543,22 @@ namespace Aurora {
 					AR_CORE_ASSERT(false);
 				}
 
-				// TODO: Dissassembling the spirv opengl binaries seem to give the same code and nothing optimized
 				m_OpenGLSPIRV[type] = std::vector<uint32_t>(result.cbegin(), result.cend());
-				//spvtools::SpirvTools tools(SPV_ENV_OPENGL_4_5);
-				//std::string wassup;
-				//tools.Disassemble(m_OpenGLSPIRV[type], &wassup);
-				//AR_WARN("Shader: {0} - {1}\n{2}", m_Name, Utils::GLShaderTypeToString(type), wassup);
+#if AURORA_DEBUG
+				spvtools::SpirvTools tools(SPV_ENV_OPENGL_4_5);
+				std::string debugSPVReturn;
+				tools.Disassemble(m_OpenGLSPIRV[type], &debugSPVReturn);
+				AR_WARN("Shader: {0} - {1}\n{2}", m_Name, Utils::GLShaderTypeToString(type), debugSPVReturn);
+#endif
 
-				if (f1)
-					fclose(f1);
-
+#if AR_NO_USE_FILE_POINTER
+				std::fstream f2(p.c_str(), std::ios::out | std::ios::binary);
+				if (f2.is_open())
+				{
+					f2.write((char*)m_OpenGLSPIRV[type].data(), m_OpenGLSPIRV[type].size() * sizeof(uint32_t));
+					f2.close();
+				}
+#else
 				FILE* f2;
 				fopen_s(&f2, p.c_str(), "wb"); // write binary
 				if (f2)
@@ -441,6 +566,7 @@ namespace Aurora {
 					fwrite(m_OpenGLSPIRV[type].data(), sizeof(uint32_t), m_OpenGLSPIRV[type].size(), f2);
 					fclose(f2);
 				}
+#endif
 				else
 				{
 					AR_CORE_ERROR_TAG("Shader", "Could not open file for writing '{0}'", p);
@@ -448,6 +574,8 @@ namespace Aurora {
 			}
 		}
 	}
+
+	static uint32_t s_SharedPushConstantAttributeOffset = 0;
 
 	void Shader::CreateProgram()
 	{
@@ -494,14 +622,15 @@ namespace Aurora {
 		m_ShaderID = program;
 
 		// Reflection happens after the shaders have been created otherwise we cant know stuff about the sampled images
+		s_SharedPushConstantAttributeOffset = 0;
 		for (const auto& [type, data] : m_VulkanSPIRV)
 			Reflect(type, data);
 
 		glUseProgram(m_ShaderID);
 		// If no push_constant blocks are found, this loop will not enter and thus no uniforms are there to query their location
-		for (auto& [bufferName, buffer] : m_Buffers)
+		for (const auto& [bufferName, buffer] : m_Buffers)
 		{
-			for (auto& [name, uniform] : buffer.Uniforms)
+			for (const auto& [name, uniform] : buffer.Uniforms)
 			{
 				// glGetUniformLocation return a GL_INVALID_VALUE and the object is not a valid object generated by
 				// OpenGL (m_ShaderID) which obviously should be a valid object i cant understand why it wouldnt be
@@ -562,7 +691,6 @@ namespace Aurora {
 		}
 
 		AR_CORE_TRACE_TAG("REFLECT", "Push Constant Buffers:");
-		uint32_t attributeOffset = 0;
 		for (const spirv_cross::Resource& res : resources.push_constant_buffers)
 		{
 			const std::string& bufferName = res.name;
@@ -576,67 +704,24 @@ namespace Aurora {
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Location: {0}", location);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Member Count: {0}", memberCount);
 
-			// Vertex Shader push_constant buffer which will be specific for the renderer!
-			//if (bufferName == "u_Renderer")
-			//	continue;
-
 			// We create and insert a ShaderPushBuffer into the map to later on be used in the material to get the uniform location
 			ShaderPushBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = bufferSize - attributeOffset;
+			buffer.Size = bufferSize;// -attributeOffset;
 
 			for (uint32_t i = 0; i < memberCount; i++)
 			{
-				spirv_cross::SPIRType type = compiler.get_type(bufferType.member_types[i]);
+				const spirv_cross::SPIRType& type = compiler.get_type(bufferType.member_types[i]);
 				const std::string& memberName = compiler.get_member_name(bufferType.self, i);
 				uint32_t memberSize = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
-				uint32_t memberOffset = compiler.type_struct_member_offset(bufferType, i) - attributeOffset;
+				uint32_t memberOffset = compiler.type_struct_member_offset(bufferType, i) + s_SharedPushConstantAttributeOffset;
 
 				std::string UniformName = fmt::format("{}.{}", bufferName, memberName);
 				buffer.Uniforms[UniformName] = ShaderUniform{ UniformName, Utils::SPIRTypeToShaderUniformType(type), memberSize, memberOffset };
 			}
+			s_SharedPushConstantAttributeOffset += bufferSize;
 		}
 		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
-
-		//// TODO: REWRITE!!!!!!!!!!!!!!!!!!!!!!!
-		//AR_CORE_TRACE_TAG("REFLECT", "Push Constant Buffers:");
-		//// Currently this attribute offset var is useless since vulkan glsl supports only one push_constant.
-		//// However if they ever remove that restriction this will be usefull to know the offset of each attribute in every push_constant block.
-		//uint32_t attributeOffset = 0;
-		//for (const spirv_cross::Resource& res : resources.push_constant_buffers)
-		//{
-		//	const std::string& bufferName = res.name; // Name
-		//	const spirv_cross::SPIRType& bufferType = compiler.get_type(res.base_type_id); // Type
-		//	uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType); // Size
-		//	uint32_t memberCount = (uint32_t)bufferType.member_types.size(); // Member count of the push_constant block
-		//	uint32_t location = compiler.get_decoration(res.id, spv::DecorationLocation);
-
-		//	// Since this is just a renderer special push_constant and will give us no valuable info, soo....
-		//	if (bufferName == "u_Renderer")
-		//		continue;
-
-		//	ShaderPushBuffer& buffer = m_Buffers[bufferName];
-		//	buffer.Name = bufferName;
-		//	buffer.Size = bufferSize - attributeOffset;
-
-		//	AR_CORE_TRACE_TAG("REFLECT", "\tName: {0}", bufferName);
-		//	AR_CORE_TRACE_TAG("REFLECT", "\t   Size: {0}", bufferSize);
-		//	AR_CORE_TRACE_TAG("REFLECT", "\t   Location: {0}", location);
-		//	AR_CORE_TRACE_TAG("REFLECT", "\t   Member Count: {0}", memberCount);
-
-		//	// Now we get the uniform/attributes that that push_constant block(buffer) contains...
-		//	for (uint32_t i = 0; i < memberCount; i++)
-		//	{
-		//		spirv_cross::SPIRType type = compiler.get_type(bufferType.member_types[i]); // member type
-		//		const std::string& memberName = compiler.get_member_name(bufferType.self, i); // member Name
-		//		uint32_t size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i); // member Size
-		//		uint32_t offset = compiler.type_struct_member_offset(bufferType, i) - attributeOffset; // member offset
-
-		//		std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
-		//		buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
-		//	}
-		//}
-		//AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 
 		AR_CORE_TRACE_TAG("REFLECT", "Sampled Images:");
 		int32_t sampler = 0;
@@ -660,13 +745,14 @@ namespace Aurora {
 		// TODO: Storage images.... however i wont get to that until ambient occlusion, and even then i might not use them!!!
 	}
 
+	// This should only be for Load2Stage and no compute shaders should pass through this
 	std::unordered_map<uint32_t/*GLenum*/, std::string> Shader::SplitSource(const std::string& source)
 	{ // Props to @TheCherno
 		AR_PROFILE_FUNCTION();
 
 		std::unordered_map<uint32_t/*GLenum*/, std::string> shaderSources;
 
-		const char* typeIdentifier = "#pragma";
+		constexpr const char* typeIdentifier = "#pragma";
 		size_t typeIdentifierLength = strlen(typeIdentifier);
 		size_t pos = source.find(typeIdentifier, 0);
 
@@ -689,7 +775,7 @@ namespace Aurora {
 			// Files containing compute shaders CAN NOT contain any other shader type!!
 			if (shaderType == GL_COMPUTE_SHADER)
 			{
-				m_IsCompute = true;
+				m_ShaderType = ShaderType::Compute;
 				break;
 			}
 		}
@@ -699,8 +785,6 @@ namespace Aurora {
 
 	void Shader::Bind() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glUseProgram(m_ShaderID);
 	}
 
@@ -719,11 +803,9 @@ namespace Aurora {
 
 	int Shader::GetUniformLocation(const std::string& name) const
 	{
-		AR_PROFILE_FUNCTION();
-
 		int location = glGetUniformLocation(m_ShaderID, name.c_str());
 		if (location == -1)
-			AR_CORE_WARN("Could not find uniform '{0}' in shader", name);
+			AR_CORE_WARN("Could not find uniform '{0}' in shader: {1}", name, m_Name);
 
 		return location;
 	}

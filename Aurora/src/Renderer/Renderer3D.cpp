@@ -414,9 +414,9 @@ namespace Aurora {
 	}
 
 	// TODO: TEMPORARY!!!!!!!!
-	void Renderer3D::DrawMaterial(const glm::mat4& transform, const Ref<Material>& mat, const glm::vec4& tint)
+	void Renderer3D::DrawMaterial(const Ref<Material>& mat, const glm::mat4& trans, const glm::vec4& tint)
 	{
-		mat->Set("u_Renderer.transform", transform);
+		mat->Set("u_Renderer.transform", trans);
 		mat->Set("u_Materials.AlbedoColor", tint);
 		mat->SetUpForRendering();
 		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);

@@ -17,7 +17,7 @@
  * do by @implodee(chat link is found in my public server [SwaggyP's Server]), so yea use UBOs for all the info.
  * 
  * NOTE: If you in your shader create a push_constant block and for some reason one of its members is not used throughout the
- * shader, or if it is used but then overridin by something else, for exaple:
+ * shader, or if it is used but then overridin by something else, for example:
  * layout(push_constant) uniform Mats
  * {
  *		float a;
@@ -38,11 +38,21 @@
  * that specific stage...!
  */
 
+// Define as 1 if you want the shader to use std::fstream.
+#define AR_NO_USE_FILE_POINTER 0
+
 namespace Aurora {
 
-	enum class ShaderErrorType : uint8_t
+	enum class ShaderStageType : uint8_t
 	{
-		None = 0, Vertex, Fragment, Geometry, Compute
+		None = 0, Vertex, Fragment, Geometry
+	};
+
+	enum class ShaderType : uint8_t
+	{
+		None = 0,
+		TwoStageVertFrag,
+		Compute
 	};
 
 	enum class ShaderUniformType : uint8_t
@@ -78,6 +88,13 @@ namespace Aurora {
 
 	};
 
+	struct ShaderProperties
+	{
+		std::string Name;
+		std::string AssetPath;
+		ShaderType Type = ShaderType::TwoStageVertFrag;
+	};
+
 	class Shader : public RefCountedObject
 	{
 	private:
@@ -94,6 +111,7 @@ namespace Aurora {
 
 	public:
 		Shader() = default;
+		Shader(const ShaderProperties& props, bool forceCompile);
 		Shader(const std::string& filePath, bool forceCompile);
 		~Shader();
 
@@ -101,10 +119,11 @@ namespace Aurora {
 		void UnBind() const;
 
 		static Ref<Shader> Create(const std::string& filepath, bool forceCompile = false);
+		static Ref<Shader> Create(const ShaderProperties& props, bool forceCompile = false);
 
-		size_t GetHash() const;
+		void Reload(bool forceCompile = true);
 
-		void Reload(bool forceCompile);
+		[[nodiscard]] size_t GetHash() const;
 
 		// Setting uniforms...
 
@@ -120,18 +139,21 @@ namespace Aurora {
 		void SetUniform(const std::string& fullname, const glm::mat3& value) const;
 		void SetUniform(const std::string& fullname, const glm::mat4& value) const;
 
-		inline const std::string& GetName() const { return m_Name; }
-		inline const std::string& GetFilePath() const { return m_AssetPath; }
-		const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
+		[[nodiscard]] inline bool IsCompute() const { return m_ShaderType == ShaderType::Compute; }
+
+		[[nodiscard]] inline const std::string& GetName() const { return m_Name; }
+		[[nodiscard]] inline const std::string& GetFilePath() const { return m_AssetPath; }
+		[[nodiscard]] const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
 		
-		const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
-		const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
+		[[nodiscard]] inline const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
+		[[nodiscard]] inline const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
 
 		// This is temporary untill i have an asset manager. It kind of acts as an asset manager lol having all the shaders
 		static std::vector<Ref<Shader>> s_AllShaders;
 
 	private:
-		void Load(const std::string& source, bool forceCompile = false);
+		void Load2Stage(const std::string& source, bool forceCompile = false);
+		void LoadCompute(const std::string& source, bool forceCompile = false);
 		void CreateProgram();
 
 		void CompileOrGetVulkanBinary(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile);
@@ -166,8 +188,7 @@ namespace Aurora {
 
 		std::string m_Name;
 		std::string m_AssetPath;
-
-		bool m_IsCompute = false;
+		ShaderType m_ShaderType = ShaderType::TwoStageVertFrag;
 
 		std::unordered_map<ShaderStage, std::string> m_OpenGLShaderSource; // OpenGL Source Code...
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;

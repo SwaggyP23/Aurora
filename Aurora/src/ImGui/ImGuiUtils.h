@@ -3,6 +3,7 @@
 #include "Theme.h"
 #include "Editor/EditorResources.h"
 
+#include <glm/glm.hpp>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 
@@ -152,6 +153,8 @@ namespace Aurora {
 		ImColor ColorWithMultiplierValue(const ImColor& color, float multi);
 
 		ImColor ColourWithMultipliedSaturation(const ImColor& color, float multiplier);
+
+		void ColorEdit4Control(const std::string& label, glm::vec4& color, bool showAsWheel = true);
 
 	}
 

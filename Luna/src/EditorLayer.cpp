@@ -32,6 +32,7 @@ namespace Aurora {
 
 	// TODO: TEMPORARY FOR FIXING THE SHADER BUGS!
 	static glm::vec4 s_MaterialAlbedoColor(1.0f);
+	static glm::mat4 s_Transform(1.0f);
 
 	void EditorLayer::OnAttach()
 	{
@@ -113,7 +114,7 @@ namespace Aurora {
 		int clearValue = -1;
 		m_MSAAFramebuffer->ClearTextureAttachment(1, (const void*)&clearValue);
 
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera, s_MaterialAlbedoColor);
+		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera, s_MaterialAlbedoColor, s_Transform);
 		//m_ActiveScene->OnUpdateRuntime(ts);
 
 		m_MSAAFramebuffer->UnBind();
@@ -431,7 +432,7 @@ namespace Aurora {
 		// consecutive rows which is not exactly possible if I dont push and pop a clip rect
 		ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
 
-		ImGuiButtonFlags buttonFlags = ImGuiButtonFlags_AllowItemOverlap
+		constexpr ImGuiButtonFlags buttonFlags = ImGuiButtonFlags_AllowItemOverlap
 			| ImGuiButtonFlags_PressedOnClickRelease
 			| ImGuiButtonFlags_MouseButtonLeft
 			| ImGuiButtonFlags_MouseButtonRight;
@@ -680,7 +681,7 @@ namespace Aurora {
 			// This sets the background of the table since a table is considered as a child window
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, Theme::BackgroundDark);
 
-			ImGuiTableFlags tableFlags = ImGuiTableFlags_NoPadInnerX
+			constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_NoPadInnerX
 				| ImGuiTableFlags_Resizable
 				//| ImGuiTableFlags_Reorderable
 				| ImGuiTableFlags_ScrollY
@@ -1173,7 +1174,7 @@ namespace Aurora {
 		{
 			ImGui::Columns(2);
 
-			ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
+			constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
 								      | ImGuiColorEditFlags_AlphaPreview
 								      | ImGuiColorEditFlags_HDR
 									  | ImGuiColorEditFlags_PickerHueWheel;
@@ -1385,7 +1386,7 @@ namespace Aurora {
 		ImGui::Spacing();
 		ImGui::Spacing();
 
-		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
+		constexpr ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
 			| ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap
 			| ImGuiTreeNodeFlags_FramePadding;
@@ -1411,11 +1412,33 @@ namespace Aurora {
 			{
 				ImGui::Text("Path: %s", shader->GetFilePath().c_str());
 				if (ImGui::Button("Reload"))
-					shader->Reload(true);
+					shader->Reload();
 
 				ImGui::TreePop();
 			}
 		}
+
+		ImGui::End();
+	}
+
+#pragma endregion
+
+#pragma region Materials
+
+	void EditorLayer::ShowMaterialsPanel()
+	{
+		ImGui::Begin("Materials");
+
+		// TODO: This is super temporary since im just working on materials for now...
+		ImGuiUtils::ColorEdit4Control("Material Tint", s_MaterialAlbedoColor);
+
+		static glm::vec3 translate(0.0f), rotate(0.0f), scale(1.0f);
+		DrawVec3Control("Translation", translate);
+		glm::vec3 rotation = glm::degrees(rotate);
+		DrawVec3Control("Rotation", rotation);
+		rotate = glm::radians(rotation);
+		DrawVec3Control("Scale", scale, 1.0f);
+		s_Transform = glm::translate(glm::mat4(1.0f), translate) * glm::toMat4(glm::quat(rotate)) * glm::scale(glm::mat4(1.0f), scale);
 
 		ImGui::End();
 	}
@@ -1442,10 +1465,7 @@ namespace Aurora {
 		ImGui::Text("V Sync: %s", Application::GetApp().GetWindow().IsVSync() ? "On" : "Off");
 		ImGui::Text("Peak FPS: %.f", m_Peak);
 
-		// TODO: This is super temporary since im just working on materials for now...
-		ImGui::ColorEdit4("Material Tint", glm::value_ptr(s_MaterialAlbedoColor));
-
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
+		constexpr ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
 		if (ImGui::TreeNodeEx("CPU Timers (Milliseconds)", flags))
 		{
 			ShowTimers();
@@ -1584,7 +1604,7 @@ namespace Aurora {
 		static bool dockSpaceOpen = true;
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
-		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+		constexpr static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
@@ -1657,27 +1677,32 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("View"))
 			{
-				if (ImGui::MenuItem("Scene Hierarchy", NULL, m_ShowSceneHierarchyPanel))
+				if (ImGui::MenuItem("Scene Hierarchy", nullptr, m_ShowSceneHierarchyPanel))
 					m_ShowSceneHierarchyPanel = !m_ShowSceneHierarchyPanel;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Shaders", NULL, m_ShowShadersPanel))
+				if (ImGui::MenuItem("Shaders", nullptr, m_ShowShadersPanel))
 					m_ShowShadersPanel = !m_ShowShadersPanel;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Performance", NULL, m_ShowPerformance)) 
+				if (ImGui::MenuItem("Materials", nullptr, m_ShowMaterialsPanel))
+					m_ShowMaterialsPanel = !m_ShowMaterialsPanel;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Performance", nullptr, m_ShowPerformance))
 					m_ShowPerformance = !m_ShowPerformance;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Renderer Stats", NULL, m_ShowRenderStatsUI))
+				if (ImGui::MenuItem("Renderer Stats", nullptr, m_ShowRenderStatsUI))
 					m_ShowRenderStatsUI = !m_ShowRenderStatsUI;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Renderer Info", NULL, m_ShowRendererVendorInfo)) 
+				if (ImGui::MenuItem("Renderer Info", nullptr, m_ShowRendererVendorInfo))
 					m_ShowRendererVendorInfo = !m_ShowRendererVendorInfo;
 
 				ImGui::EndMenu();
@@ -1685,12 +1710,12 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Options"))
 			{
-				if (ImGui::MenuItem("Settings...", NULL, m_ShowSettingsUI))
+				if (ImGui::MenuItem("Settings...", nullptr, m_ShowSettingsUI))
 					m_ShowSettingsUI = !m_ShowSettingsUI;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Exit...", NULL, m_ShowCloseModal))
+				if (ImGui::MenuItem("Exit...", nullptr, m_ShowCloseModal))
 					m_ShowCloseModal = !m_ShowCloseModal;
 
 				ImGui::EndMenu();
@@ -1698,29 +1723,29 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Tools"))
 			{
-				if (ImGui::MenuItem("Screenshot", NULL, m_ShowScreenshotPanel))
+				if (ImGui::MenuItem("Screenshot", nullptr, m_ShowScreenshotPanel))
 					m_ShowScreenshotPanel = !m_ShowScreenshotPanel;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Editor Style", NULL, m_ShowEditingPanel))
+				if (ImGui::MenuItem("Editor Style", nullptr, m_ShowEditingPanel))
 					m_ShowEditingPanel = !m_ShowEditingPanel;
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("ImGui StackTool", NULL, m_ShowDearImGuiStackToolWindow))
+				if (ImGui::MenuItem("ImGui StackTool", nullptr, m_ShowDearImGuiStackToolWindow))
 					m_ShowDearImGuiStackToolWindow = !m_ShowDearImGuiStackToolWindow;
 
 				ImGui::Separator();
 
 #ifdef AURORA_DEBUG
-				if (ImGui::MenuItem("ImGui DebugLog", NULL, m_ShowDearImGuiDebugLogWindow))
+				if (ImGui::MenuItem("ImGui DebugLog", nullptr, m_ShowDearImGuiDebugLogWindow))
 					m_ShowDearImGuiDebugLogWindow = !m_ShowDearImGuiDebugLogWindow;
 
 				ImGui::Separator();
 #endif
 
-				if (ImGui::MenuItem("ImGui Metrics", NULL, m_ShowDearImGuiMetricsWindow))
+				if (ImGui::MenuItem("ImGui Metrics", nullptr, m_ShowDearImGuiMetricsWindow))
 					m_ShowDearImGuiMetricsWindow = !m_ShowDearImGuiMetricsWindow;
 
 				ImGui::EndMenu();
@@ -1728,7 +1753,7 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("Help"))
 			{
-				if (ImGui::MenuItem("Editor Camera", NULL, m_ShowEditorCameraHelpUI))
+				if (ImGui::MenuItem("Editor Camera", nullptr, m_ShowEditorCameraHelpUI))
 					m_ShowEditorCameraHelpUI = !m_ShowEditorCameraHelpUI;
 
 				ImGui::EndMenu();
@@ -1850,7 +1875,7 @@ namespace Aurora {
 		ImGui::End();
 	}
 
-	// TODO: Probably needs to be changed lol hard work for nothing xD
+	// TODO: Probably needs to be changed lol
 	template<typename UIFunction>
 	static void DrawSettingsFeatureCheckbox(const std::string& name, const std::string& description, bool* controller, FeatureControl feature, UIFunction func)
 	{
@@ -2206,6 +2231,9 @@ namespace Aurora {
 
 		if (m_ShowShadersPanel)
 			ShowShadersPanel();
+
+		if (m_ShowMaterialsPanel)
+			ShowMaterialsPanel();
 
 		if (m_ShowPerformance)
 			ShowPerformanceUI();

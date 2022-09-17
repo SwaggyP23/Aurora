@@ -32,7 +32,10 @@ namespace Aurora {
 	{
 		if (!s_Created)
 		{
-			s_MatShader = Shader::Create("Resources/shaders/AuroraPBRStatic.glsl");
+			ShaderProperties props = {};
+			props.Name = "AuroraPBRStatic";
+			props.AssetPath = "Resources/shaders/AuroraPBRStatic.glsl";
+			s_MatShader = Shader::Create(props);
 			s_Mat = Material::Create("Test Mat", s_MatShader);
 			s_Props.FlipOnLoad = true;
 			s_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
@@ -105,19 +108,11 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec4 puh) // TODO: TEMPORARY!!!!!!!!!
+	void Scene::OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec4 puh, glm::mat4 trans) // TODO: TEMPORARY!!!!!!!!!
 	{
 		Renderer3D::BeginScene(camera);
 
 		Renderer3D::DrawSkyBox(s_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
-
-		glm::mat4 transform(1.0f);
-		transform = glm::translate(glm::mat4(1.0f), {55.0f, 5.0f, 20.0f});
-		transform *= glm::toMat4(glm::quat({ 2.0f, 90.0f, 55.0f }));
-		transform *= glm::scale(glm::mat4(1.0f), {100.0f, 200.0f, 1.0f});
-		s_Mat->Set("u_AlbedoTexture", s_Texture);
-		//s_Mat->Set("u_Uniforms.AlbedoColor", glm::vec4(puh, 1.0f));
-		Renderer3D::DrawMaterial(transform, s_Mat, puh); // TODO: TEMPORARY!!!!!!!!!
 
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)
@@ -156,6 +151,11 @@ namespace Aurora {
 		}
 
 		Renderer3D::EndScene();
+
+		// Rendered last so that blending can work fine with all the other batched quads
+		s_Mat->Set("u_AlbedoTexture", s_Texture);
+		//s_Mat->Set("u_Uniforms.AlbedoColor", glm::vec4(puh, 1.0f));
+		Renderer3D::DrawMaterial(s_Mat, trans, puh); // TODO: TEMPORARY!!!!!!!!!
 	}
 
 	void Scene::OnUpdateRuntime(TimeStep ts)

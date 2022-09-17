@@ -50,6 +50,12 @@ namespace Aurora {
 		//bool m_ShowRendererOverlay = false;
 		bool m_ShowShadersPanel = true;
 
+	// Material stuff...
+	private:
+		void ShowMaterialsPanel();
+
+		bool m_ShowMaterialsPanel = true;
+
 	// Performance Panel
 	private:
 		void ShowTimers();
