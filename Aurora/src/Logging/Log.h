@@ -111,7 +111,7 @@ namespace Aurora { namespace Logger {
 	}
 
 	template<typename... Args>
-	void Log::PrintAssertMessageWithTag(Log::Type type, std::string_view tag, std::string_view assertFailed, Args&&... args)
+	inline void Log::PrintAssertMessageWithTag(Log::Type type, std::string_view tag, std::string_view assertFailed, Args&&... args)
 	{
 		const auto& logger = (type == Type::Core) ? GetCoreLogger() : GetClientLogger();
 		logger->error("[{0}]: {1}\n\t\t\t  Error: {2}", tag, assertFailed, fmt::format(std::forward<Args>(args)...));

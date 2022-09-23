@@ -9,13 +9,16 @@
 #include <spirv_cross/spirv_glsl.hpp>
 #include <spirv-tools/libspirv.hpp>
 
+// Define as 1 if you want the shader to use std::fstream.
+#define AR_NO_USE_FILE_POINTER 0
+
 namespace Aurora {
 
 	std::vector<Ref<Shader>> Shader::s_AllShaders;
 
 	namespace Utils {
 
-		constexpr static const char* GetCacheDirectory()
+		constexpr inline static const char* GetCacheDirectory()
 		{
 			return "Resources/cache/shaders/OpenGL";
 		}
@@ -35,8 +38,6 @@ namespace Aurora {
 				return GL_FRAGMENT_SHADER;
 			if (type == "compute")
 				return GL_COMPUTE_SHADER;
-			if (type == "geometry")
-				return GL_GEOMETRY_SHADER;
 
 			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return 0;
@@ -48,11 +49,22 @@ namespace Aurora {
 			{
 			    case GL_VERTEX_SHADER:		return ShaderStageType::Vertex;
 			    case GL_FRAGMENT_SHADER:	return ShaderStageType::Fragment;
-			    case GL_GEOMETRY_SHADER:	return ShaderStageType::Geometry;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown shader type!");
 			return ShaderStageType::None;
+		}
+
+		inline static std::string ShaderTypeString(ShaderType type)
+		{
+			switch (type)
+			{
+			    case ShaderType::TwoStageVertFrag:   return "Two Stage Program";
+			    case ShaderType::Compute:			 return "Compute";
+			}
+
+			AR_CORE_ASSERT(false, "Unknown shader type!");
+			return "";
 		}
 
 		inline static const char* GLShaderTypeCachedVulkanFileExtension(uint32_t/*GLenum*/ type)
@@ -61,12 +73,11 @@ namespace Aurora {
 			{
 			    case GL_VERTEX_SHADER:        return ".cachedVulkan.vert";
 			    case GL_FRAGMENT_SHADER:      return ".cachedVulkan.frag";
-			    case GL_GEOMETRY_SHADER:      return ".cachedVulkan.geo";
 			    case GL_COMPUTE_SHADER:       return ".cachedVulkan.comp";
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Shader Type");
-			return "";
+			return "U Messed Up";
 		}
 
 		inline static const char* GLShaderTypeCachedOpenGLFileExtension(uint32_t/*GLenum*/ type)
@@ -75,12 +86,11 @@ namespace Aurora {
 			{
 			    case GL_VERTEX_SHADER:        return ".cachedOpenGL.vert";
 			    case GL_FRAGMENT_SHADER:      return ".cachedOpenGL.frag";
-			    case GL_GEOMETRY_SHADER:      return ".cachedOpenGL.geo";
 			    case GL_COMPUTE_SHADER:       return ".cachedOpenGL.comp";
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Shader Type");
-			return "";
+			return "U Messed Up";
 		}
 
 		inline static shaderc_shader_kind GLShaderTypeToShaderC(uint32_t/*GLenum*/ type)
@@ -89,7 +99,6 @@ namespace Aurora {
 			{
 			    case GL_VERTEX_SHADER:            return shaderc_vertex_shader;
 			    case GL_FRAGMENT_SHADER:          return shaderc_fragment_shader;
-			    case GL_GEOMETRY_SHADER:          return shaderc_geometry_shader;
 			    case GL_COMPUTE_SHADER:           return shaderc_compute_shader;
 			}
 
@@ -103,7 +112,6 @@ namespace Aurora {
 			{
 			    case GL_VERTEX_SHADER:            return "Vertex";
 			    case GL_FRAGMENT_SHADER:          return "Fragment";
-			    case GL_GEOMETRY_SHADER:          return "Geometry";
 			    case GL_COMPUTE_SHADER:           return "Compute";
 			}
 
@@ -143,49 +151,55 @@ namespace Aurora {
 
 	}
 
-	// TODO: Update the shader library!
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// ShaderLibrary!!!!!!!!!
+    ///////////// ShaderLibrary
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	Scope<ShaderLibrary> ShaderLibrary::Create()
+	{
+		return CreateScope<ShaderLibrary>();
+	}
+
 	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 	{
-		AR_PROFILE_FUNCTION();
-
-		AR_CORE_ASSERT(!Exist(name), "Shader already exists!");
+		AR_CORE_ASSERT(Exist(name) == false, "Shader already exists!");
 		m_Shaders[name] = shader;
 	}
 
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
-		AR_PROFILE_FUNCTION();
-
 		const std::string& name = shader->GetName();
-		AR_CORE_ASSERT(!Exist(name), "Shader already exists!");
+		AR_CORE_ASSERT(Exist(name) == false, "Shader already exists!");
 		Add(name, shader);
 	}
 
-	void ShaderLibrary::Load(const std::string& filepath, bool forceCompile)
+	Ref<Shader> ShaderLibrary::Load(const ShaderProperties& props)
 	{
-		Add(Shader::Create(filepath, forceCompile));
+		Ref<Shader> result = Shader::Create(props);
+		Add(props.Name, result);
+
+		return result;
 	}
 
-	void ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+	Ref<Shader> ShaderLibrary::Load(const std::string& filepath, ShaderType type)
 	{
-		Add(name, Shader::Create(filepath));
+		Ref<Shader> result = Shader::Create(filepath, type);
+		Add(result);
+
+		return result;
 	}
 
-	const Ref<Shader>& ShaderLibrary::Get(const std::string& name)
+	const Ref<Shader>& ShaderLibrary::Get(const std::string& name) const
 	{
-		AR_PROFILE_FUNCTION();
-
-		AR_CORE_ASSERT(Exist(name), "Shader not found!");
+		AR_CORE_ASSERT(Exist(name) == true, "Shader not found!");
 		return m_Shaders[name];
 	}
 
-	bool ShaderLibrary::Exist(const std::string& name) const // TODO: See wassup with this since it always crashes
+	// returns true if it found it
+	// TODO: This is a bit buggy and crashy
+	bool ShaderLibrary::Exist(const std::string& name) const
 	{
 		return m_Shaders.find(name) != m_Shaders.end();
 	}
@@ -229,17 +243,11 @@ namespace Aurora {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// TODO: Needs rework and it should hash the shader source not the asset path
-	size_t Shader::GetHash() const
-	{
-		return std::hash<std::string>{}(m_AssetPath);
-	}
-
-	Ref<Shader> Shader::Create(const std::string& filepath, bool forceCompile)
+	Ref<Shader> Shader::Create(const std::string& filepath, ShaderType type)
 	{
 		Ref<Shader> result = nullptr;
 
-		result = CreateRef<Shader>(filepath, forceCompile);
+		result = CreateRef<Shader>(filepath, type);
 
 		if(std::find(s_AllShaders.begin(), s_AllShaders.end(), result) == s_AllShaders.end())
 			s_AllShaders.push_back(result);
@@ -247,11 +255,11 @@ namespace Aurora {
 		return result;
 	}
 
-	Ref<Shader> Shader::Create(const ShaderProperties& props, bool forceCompile)
+	Ref<Shader> Shader::Create(const ShaderProperties& props)
 	{
 		Ref<Shader> result = nullptr;
 
-		result = CreateRef<Shader>(props, forceCompile);
+		result = CreateRef<Shader>(props);
 
 		if (std::find(s_AllShaders.begin(), s_AllShaders.end(), result) == s_AllShaders.end())
 			s_AllShaders.push_back(result);
@@ -259,28 +267,30 @@ namespace Aurora {
 		return result;
 	}
 
-	Shader::Shader(const ShaderProperties& props, bool forceCompile)
+	Shader::Shader(const ShaderProperties& props)
 		: m_Name(props.Name), m_AssetPath(props.AssetPath), m_ShaderType(props.Type)
 	{
+		AR_PROFILE_FUNCTION();
+
 		switch (props.Type)
 		{
 			case ShaderType::TwoStageVertFrag:
 			{
 				std::string shaderFullSource = Utils::FileIO::ReadTextFile(props.AssetPath);
-				Load2Stage(shaderFullSource, forceCompile);
+				Load2Stage(shaderFullSource);
 				break;
 			}
 			case ShaderType::Compute:
 			{
 				std::string shaderFullSource = Utils::FileIO::ReadTextFile(props.AssetPath);
-				LoadCompute(shaderFullSource, forceCompile);
+				LoadCompute(shaderFullSource);
 				break;
 			}
 		}
 	}
 
-	Shader::Shader(const std::string& filePath, bool forceCompile)
-		: m_AssetPath(filePath)
+	Shader::Shader(const std::string& filePath, ShaderType type)
+		: m_AssetPath(filePath), m_ShaderType(type)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -296,20 +306,33 @@ namespace Aurora {
 
 		// Creating program...
 		{
-			std::string shaderFullSource = Utils::FileIO::ReadTextFile(filePath);
-			Load2Stage(shaderFullSource, forceCompile);
+			switch (type)
+			{
+				case ShaderType::TwoStageVertFrag:
+				{
+					std::string shaderFullSource = Utils::FileIO::ReadTextFile(filePath);
+					Load2Stage(shaderFullSource);
+					break;
+				}
+				case ShaderType::Compute:
+				{
+					std::string shaderFullSource = Utils::FileIO::ReadTextFile(filePath);
+					LoadCompute(shaderFullSource);
+					break;
+				}
+			}
 		}
 	}
 
 	Shader::~Shader()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glDeleteProgram(m_ShaderID);
 	}
 
-	void Shader::Reload(bool forceCompile)
+	void Shader::Reload()
 	{
+		Timer timer;
+
 		// Clean the old program object
 		if (m_ShaderID)
 		{
@@ -324,11 +347,12 @@ namespace Aurora {
 			m_UniformLocations.clear();
 		}
 
-		Timer timer;
 		std::string shaderFullSource = Utils::FileIO::ReadTextFile(m_AssetPath);
 		m_OpenGLShaderSource = SplitSource(shaderFullSource);
 
 		Utils::CreateCacheDirIfNeeded();
+
+		constexpr bool forceCompile = true;
 
 		CompileOrGetVulkanBinary(m_OpenGLShaderSource, forceCompile);
 		CompileOrGetOpenGLBinary(forceCompile);
@@ -336,15 +360,15 @@ namespace Aurora {
 		AR_CORE_WARN_TAG("Shader", "Reloading {0} took {1}ms", m_Name, timer.ElapsedMillis());
 	}
 
-	void Shader::Load2Stage(const std::string& source, bool forceCompile)
+	void Shader::Load2Stage(const std::string& source)
 	{
-		AR_PROFILE_FUNCTION();
-
 		// At this stage it contains split Vulkan source code
 		m_OpenGLShaderSource = SplitSource(source);
 
 		Utils::CreateCacheDirIfNeeded();
 	
+		bool forceCompile = GetLastTimeModified() < 5 ? true : false;
+
 		{
 			Timer timer;
 			CompileOrGetVulkanBinary(m_OpenGLShaderSource, forceCompile);
@@ -354,11 +378,13 @@ namespace Aurora {
 		}
 	}
 
-	void Shader::LoadCompute(const std::string& source, bool forceCompile)
+	void Shader::LoadCompute(const std::string& source)
 	{
-		m_OpenGLShaderSource[GL_COMPUTE_SHADER] = source;
+		m_OpenGLShaderSource[GL_COMPUTE_SHADER] = PreprocessComputeSource(source);
 
 		Utils::CreateCacheDirIfNeeded();
+
+		bool forceCompile = GetLastTimeModified() < 5 ? true : false;
 
 		{
 			Timer timer;
@@ -374,11 +400,10 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
-		std::filesystem::path shaderFilePath = m_AssetPath;
 
 		for (const auto& [type, source] : shaderSources)
 		{
-			std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderTypeCachedVulkanFileExtension(type));
+			std::filesystem::path cachedPath = cacheDir / (m_AssetPath.filename().string() + Utils::GLShaderTypeCachedVulkanFileExtension(type));
 			std::string p = cachedPath.string();
 
 #if AR_NO_USE_FILE_POINTER
@@ -424,15 +449,15 @@ namespace Aurora {
 #ifdef AURORA_DEBUG
 				options.SetGenerateDebugInfo(); // This provides the source when using SPIRV_TOOLS and dissassembling
 #endif
-				options.SetAutoSampledTextures(false); // TODO: Check what this does!
 				options.SetAutoMapLocations(true);
+				//options.SetAutoSampledTextures(true);
 
 				// Not optimizing shaders when in Vulkan format since that would break stuff once in OGL format!
 				constexpr bool optimize = false;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, Utils::GLShaderTypeToShaderC(type), m_AssetPath.c_str(), options);
+				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, Utils::GLShaderTypeToShaderC(type), m_AssetPath.string().c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					AR_CORE_ERROR_TAG("ShaderC Compilation", result.GetErrorMessage());
@@ -470,17 +495,15 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
-		std::filesystem::path shaderFilePath = m_AssetPath;
 
 	 	uint16_t PushBinding = 0;
 		for (const auto& [type, spirv] : m_VulkanSPIRV)
 		{
-			std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderTypeCachedOpenGLFileExtension(type));
+			std::filesystem::path cachedPath = cacheDir / (m_AssetPath.filename().string() + Utils::GLShaderTypeCachedOpenGLFileExtension(type));
 			std::string p = cachedPath.string();
 
-			// I am doing this step here so that i can get the ogl source code everytime and not only when the shaders are compiled
 			spirv_cross::CompilerGLSL glslCompiler = spirv_cross::CompilerGLSL(spirv);
-			auto& pushConstResources = glslCompiler.get_shader_resources().push_constant_buffers;
+			const auto& pushConstResources = glslCompiler.get_shader_resources().push_constant_buffers;
 			for (int i = 0; i < pushConstResources.size(); i++)
 			{
 				glslCompiler.set_decoration(pushConstResources[i].id, spv::DecorationLocation, PushBinding++);
@@ -529,14 +552,14 @@ namespace Aurora {
 
 				options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 				options.SetGenerateDebugInfo(); // This provides the source when using SPIRV_TOOLS and dissassembling
-				options.SetAutoSampledTextures(false);
+				//options.SetAutoSampledTextures(true);
 
 				// Optimize shaders once in OpenGL format!
 				constexpr bool optimize = true;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(m_OpenGLShaderSource[type], Utils::GLShaderTypeToShaderC(type), m_AssetPath.c_str(), options);
+				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(m_OpenGLShaderSource[type], Utils::GLShaderTypeToShaderC(type), m_AssetPath.string().c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					AR_CORE_ERROR_TAG("ShaderC Compilation", result.GetErrorMessage());
@@ -605,7 +628,7 @@ namespace Aurora {
 
 			char* message = (char*)alloca(length * sizeof(char));
 			glGetProgramInfoLog(program, length, &length, message);
-			AR_CORE_ERROR_TAG("Program Linkage", "Shader linking failed! {0}:\n\t{1}", m_AssetPath, std::string(message));
+			AR_CORE_ERROR_TAG("Program Linkage", "Shader linking failed! {0}:\n\t{1}", m_AssetPath.string(), std::string(message));
 
 			glDeleteProgram(program);
 
@@ -632,8 +655,6 @@ namespace Aurora {
 		{
 			for (const auto& [name, uniform] : buffer.Uniforms)
 			{
-				// glGetUniformLocation return a GL_INVALID_VALUE and the object is not a valid object generated by
-				// OpenGL (m_ShaderID) which obviously should be a valid object i cant understand why it wouldnt be
 				GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
 				if (location == -1)
 					AR_CORE_WARN_TAG("Shader", "Could not find uniform location {0}", name);
@@ -652,7 +673,7 @@ namespace Aurora {
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
 		AR_CORE_TRACE_TAG("REFLECT", "==============================");
-		AR_CORE_TRACE_TAG("REFLECT", "{0} - {1}", Utils::GLShaderTypeToString(type), m_AssetPath);
+		AR_CORE_TRACE_TAG("REFLECT", "{0} - {1}", Utils::GLShaderTypeToString(type), m_AssetPath.string());
 		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Uniform Buffers", resources.uniform_buffers.size());
 		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Push Constants", resources.push_constant_buffers.size());
 		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Resources", resources.sampled_images.size());
@@ -707,7 +728,7 @@ namespace Aurora {
 			// We create and insert a ShaderPushBuffer into the map to later on be used in the material to get the uniform location
 			ShaderPushBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = bufferSize;// -attributeOffset;
+			buffer.Size = bufferSize;
 
 			for (uint32_t i = 0; i < memberCount; i++)
 			{
@@ -727,22 +748,57 @@ namespace Aurora {
 		int32_t sampler = 0;
 		for (const spirv_cross::Resource& res : resources.sampled_images)
 		{
+			const std::string& name = res.name;
 			const spirv_cross::SPIRType& type = compiler.get_type(res.base_type_id);
 			uint32_t binding = compiler.get_decoration(res.id, spv::DecorationBinding);
-			const std::string& name = res.name;
 			uint32_t dimension = type.image.dim;
 
 			GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
 			AR_CORE_ASSERT(location != -1);
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
-			glProgramUniform1i(m_ShaderID, location, binding); // Eventhough i think this might be useless since the shader sets the binding itself for the textures
+			// This is redundant since the the material sets it and shader sets the binding itself for the textures
+			// glProgramUniform1i(m_ShaderID, location, binding);
 
 			AR_CORE_TRACE_TAG("REFLECT", "\tName: {0}", name);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Binding: {0}", binding);
 		}
 		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 
-		// TODO: Storage images.... however i wont get to that until ambient occlusion, and even then i might not use them!!!
+		AR_CORE_TRACE_TAG("REFLECT", "Storage Images:");
+		for (const spirv_cross::Resource& res : resources.storage_images)
+		{
+			const std::string& name = res.name;
+			const spirv_cross::SPIRType& type = compiler.get_type(res.base_type_id);
+			uint32_t binding = compiler.get_decoration(res.id, spv::DecorationBinding);
+			uint32_t dimension = type.image.dim;
+
+			GLint location = glGetUniformLocation(m_ShaderID, name.c_str());
+			AR_CORE_ASSERT(location != -1);
+			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+			// This is redundant since the the material sets it and shader sets the binding itself for the textures 
+			// glProgramUniform1i(m_ShaderID, location, binding);
+
+			AR_CORE_TRACE_TAG("REFLECT", "\tName: {0}", name);
+			AR_CORE_TRACE_TAG("REFLECT", "\t    Binding: {0}", binding);
+		}
+		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
+	}
+
+	std::string Shader::PreprocessComputeSource(const std::string& source)
+	{
+		constexpr const char* typeIdentifier = "#pragma";
+		uint32_t typeIdentifierLength = (uint32_t)strlen(typeIdentifier);
+		size_t pos = source.find(typeIdentifier, 0);
+
+		uint32_t eol = (uint32_t)source.find_first_of("\r\n", pos); // End of shader type declaration line
+		AR_CORE_ASSERT(eol != std::string::npos, "Syntax error!");
+
+		uint32_t typeBegin = (uint32_t)pos + typeIdentifierLength + 1; // Getting the type
+		std::string type = source.substr(typeBegin, eol - typeBegin);
+		AR_CORE_ASSERT(type == "compute", "Type of shader should be compute since this function ran!");
+
+		uint32_t nextLinePos = (uint32_t)source.find_first_not_of("\r\n", eol); // Start of shader code
+		return source.substr(nextLinePos);
 	}
 
 	// This should only be for Load2Stage and no compute shaders should pass through this
@@ -753,7 +809,7 @@ namespace Aurora {
 		std::unordered_map<uint32_t/*GLenum*/, std::string> shaderSources;
 
 		constexpr const char* typeIdentifier = "#pragma";
-		size_t typeIdentifierLength = strlen(typeIdentifier);
+		uint32_t typeIdentifierLength = (uint32_t)strlen(typeIdentifier);
 		size_t pos = source.find(typeIdentifier, 0);
 
 		while (pos != std::string::npos)
@@ -763,7 +819,7 @@ namespace Aurora {
 
 			size_t typeBegin = pos + typeIdentifierLength + 1; // Getting the type
 			std::string type = source.substr(typeBegin, eol - typeBegin);
-			AR_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "geometry" || type == "compute", "Unknown Shader Type!");
+			AR_CORE_ASSERT(type == "vertex" || type == "fragment", "Unknown Shader Type!");
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol); // Start of shader code
 
@@ -771,13 +827,6 @@ namespace Aurora {
 
 			uint32_t shaderType = Utils::ShaderTypeFromString(type);
 			shaderSources[shaderType] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
-
-			// Files containing compute shaders CAN NOT contain any other shader type!!
-			if (shaderType == GL_COMPUTE_SHADER)
-			{
-				m_ShaderType = ShaderType::Compute;
-				break;
-			}
 		}
 
 		return shaderSources;
@@ -791,6 +840,29 @@ namespace Aurora {
 	void Shader::UnBind() const
 	{
 		glUseProgram(0);
+	}
+
+	// TODO: Needs rework and it should hash the shader source not the asset path
+	size_t Shader::GetHash() const
+	{
+		return std::hash<std::filesystem::path>{}(m_AssetPath);
+	}
+
+	std::string Shader::GetTypeString() const
+	{
+		return Utils::ShaderTypeString(m_ShaderType);
+	}
+
+	uint32_t Shader::GetLastTimeModified() const
+	{
+		// Reference: https://stackoverflow.com/questions/61030383/how-to-convert-stdfilesystemfile-time-type-to-time-t
+		std::filesystem::file_time_type lastTime = std::filesystem::last_write_time(m_AssetPath);
+		uint64_t ticks = lastTime.time_since_epoch().count() - std::filesystem::__std_fs_file_time_epoch_adjustment;
+
+		// create a time_point from ticks
+		Timer::SystemClock::time_point tp{ Timer::SystemClock::time_point::duration(ticks) };
+
+		return std::chrono::duration_cast<Timer::Minutes>(Timer::SystemClock::now() - tp).count();
 	}
 
 	const ShaderResourceDeclaration* Shader::GetShaderResource(const std::string& name) const

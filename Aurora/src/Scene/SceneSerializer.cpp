@@ -256,7 +256,7 @@ namespace Aurora {
 		}
 		catch (YAML::ParserException e)
 		{
-			AR_CORE_ERROR_TAG("SceneSerializer", "Failed to load.aurora file '{0}'\n\t{1}", filepath, e.what());
+			AR_CORE_ERROR_TAG("SceneSerializer", "Failed to load scene file '{0}'\n\t{1}", filepath, e.what());
 		}
 
 		if (!data["Scene"])

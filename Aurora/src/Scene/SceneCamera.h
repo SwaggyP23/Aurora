@@ -17,21 +17,21 @@ namespace Aurora {
 		void SetPerspective(float degVerticalFov, float nearClip, float farClip);
 		void SetOrthographic(float size, float nearClip, float farClip);
 
-		float GetDegPerspectiveVerticalFOV() const { return m_DegPerspectiveFOV; }
+		[[nodiscard]] float GetDegPerspectiveVerticalFOV() const { return m_DegPerspectiveFOV; }
 		void SetDegPerspectiveVerticalFOV(float degVerticalFov) { m_DegPerspectiveFOV = degVerticalFov; }
-		float GetPerspectiveNearClip() const { return m_PerspectiveNear; }
+		[[nodiscard]] float GetPerspectiveNearClip() const { return m_PerspectiveNear; }
 		void SetPerspectiveNearClip(float nearClip) { m_PerspectiveNear = nearClip; }
-		float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
+		[[nodiscard]] float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
 		void SetPerspectiveFarClip(float farClip) { m_PerspectiveFar = farClip; }
 
-		float GetOrthographicSize() const { return m_OrthoSize; }
+		[[nodiscard]] float GetOrthographicSize() const { return m_OrthoSize; }
 		void SetOrthographicSize(float size) { m_OrthoSize = size; }
-		float GetOrthographicNearClip() const { return m_OrthoNear; }
+		[[nodiscard]] float GetOrthographicNearClip() const { return m_OrthoNear; }
 		void SetOrthographicNearClip(float nearClip) { m_OrthoNear = nearClip; }
-		float GetOrthographicFarClip() const { return m_OrthoFar; }
+		[[nodiscard]] float GetOrthographicFarClip() const { return m_OrthoFar; }
 		void SetOrthographicFarClip(float farClip) { m_OrthoFar = farClip; }
 
-		ProjectionType GetProjectionType() const { return m_ProjectionType; }
+		[[nodiscard]] ProjectionType GetProjectionType() const { return m_ProjectionType; }
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; }
 
 	private:

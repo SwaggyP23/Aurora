@@ -11,7 +11,8 @@ namespace Aurora {
 	class Buffer
 	{
 	public:
-		constexpr Buffer() = default;
+		constexpr Buffer() noexcept = default;
+		constexpr Buffer(std::nullptr_t) noexcept {}
 		Buffer(size_t sizeInBytes);
 		Buffer(Byte* data, size_t sizeInBytes);
 		Buffer(const Buffer& other);
@@ -28,6 +29,7 @@ namespace Aurora {
 		void Reverse();
 
 		template<typename T>
+		[[nodiscard]]
 		T& Read(uint32_t offset = 0)
 		{
 			return *(T*)(Data + offset);
@@ -35,8 +37,8 @@ namespace Aurora {
 
 		operator bool() const { return Data; }
 
-		Byte& operator[](int index) { return ((Byte*)Data)[index]; }
-		const Byte& operator[](int index) const { return ((Byte*)Data)[index]; }
+		[[nodiscard]] Byte& operator[](int index) { return ((Byte*)Data)[index]; }
+		[[nodiscard]] const Byte& operator[](int index) const { return ((Byte*)Data)[index]; }
 
 	public:
 		Byte* Data = nullptr;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Base.h"
 #include "Events/ApplicationEvents.h"
 #include "Events/MouseEvents.h"
 #include "Events/KeyEvents.h"
@@ -33,7 +34,7 @@ namespace Aurora {
 		Window(const WindowSpecification& spec);
 		~Window();
 
-		static Scope<Window> Create(const WindowSpecification& spec);
+		[[nodiscard]] static Scope<Window> Create(const WindowSpecification& spec);
 
 		void Init();
 
@@ -45,17 +46,17 @@ namespace Aurora {
 		void Center() const;
 
 		void SetVSync(bool state);
-		inline bool IsVSync() const { return m_Specification.VSync; }
+		[[nodiscard]] inline bool IsVSync() const { return m_Specification.VSync; }
 
 		void PollEvents() const;
 		void Update() const;
 
-		inline uint32_t GetWidth() const { return m_Specification.Width; }
-		inline uint32_t GetHeight() const { return m_Specification.Height; }
-		inline std::pair<uint32_t, uint32_t> GetSize() const { return { m_Specification.Width, m_Specification.Height }; }
-		inline GLFWwindow* GetWindowPointer() const { return m_Window; }
+		[[nodiscard]] inline uint32_t GetWidth() const { return m_Specification.Width; }
+		[[nodiscard]] inline uint32_t GetHeight() const { return m_Specification.Height; }
+		[[nodiscard]] inline std::pair<uint32_t, uint32_t> GetSize() const { return { m_Specification.Width, m_Specification.Height }; }
+		[[nodiscard]] inline GLFWwindow* GetWindowPointer() const { return m_Window; }
 
-		inline Ref<Context> GetRenderContext() const { return m_Context; }
+		[[nodiscard]] inline Ref<Context> GetRenderContext() const { return m_Context; }
 
 	private:
 		void SetIconImage();

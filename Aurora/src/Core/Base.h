@@ -3,16 +3,13 @@
 #include "Logging/Log.h"
 #include "Refs.h"
 #include <filesystem>
+#include <stdint.h>
 
 #ifndef AURORA_PLATFORM_WINDOWS
 	#error Aurora only supports Windows for now!
 #endif
 
-#ifdef AURORA_PLATFORM_WINDOWS
-    #define AR_FORCE_INLINE __forceinline
-#else
-    #define AR_FORCE_INLINE
-#endif
+#define AR_FORCE_INLINE __forceinline
 
 #define AR_EXPAND_MACRO(x) x
 #define AR_STRINGIFY_MACRO(x) #x

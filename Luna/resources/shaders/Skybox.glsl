@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec2 a_TexCoords;
 
-layout(location = 1) out vec3 v_TexCoords; // was 0
+layout(location = 0) out vec3 v_TexCoords;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -23,7 +23,7 @@ void main()
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out int o_EntityID;
 
-layout(location = 1) in vec3 v_TexCoords; // was 0
+layout(location = 0) in vec3 v_TexCoords;
 
 layout(binding = 0) uniform samplerCube skybox;
 
@@ -39,5 +39,7 @@ void main()
 {    
     float a = vec4(u_MatsUniforms.a * u_MatsUniforms.b).x;
     o_Color = texture(skybox, v_TexCoords) * (u_MatsUniforms.c + u_MatsUniforms.d + a / 2.0f);
+//    vec3 envVector = normalize(v_TexCoords);
+//    o_Color = textureLod(skybox, envVector, 0);
     o_EntityID = -1;
 }

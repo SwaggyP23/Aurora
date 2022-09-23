@@ -10,8 +10,8 @@ namespace Aurora {
 		WindowResizeEvent(uint32_t width, uint32_t height)
 			: m_Width(width), m_Height(height) {}
 
-		inline uint32_t GetWidth() const { return m_Width; }
-		inline uint32_t GetHeight() const { return m_Height; }
+		[[nodiscard]] inline uint32_t GetWidth() const { return m_Width; }
+		[[nodiscard]] inline uint32_t GetHeight() const { return m_Height; }
 
 		std::string toString() const override
 		{
@@ -35,7 +35,7 @@ namespace Aurora {
 		WindowMinimizeEvent(bool minimized)
 			: m_Minimized(minimized) {}
 
-		bool IsMinimized() const { return m_Minimized; }
+		[[nodiscard]] bool IsMinimized() const { return m_Minimized; }
 
 		std::string toString() const override
 		{
@@ -101,8 +101,8 @@ namespace Aurora {
 				m_Paths.emplace_back(std::string(paths[i]));
 		}
 
-		inline const paths& GetDroppedPaths() const { return m_Paths; }
-		inline uint32_t GetDroppedPathCount() const { return m_PathCount; }
+		[[nodiscard]] inline const paths& GetDroppedPaths() const { return m_Paths; }
+		[[nodiscard]] inline uint32_t GetDroppedPathCount() const { return m_PathCount; }
 
 		std::string toString() const override
 		{

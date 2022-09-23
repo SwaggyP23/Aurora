@@ -36,6 +36,7 @@ namespace Aurora {
 		}
 
 		template<typename T>
+		[[nodiscard]]
 		T& GetComponent()
 		{
 			AR_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
@@ -52,22 +53,23 @@ namespace Aurora {
 		}
 
 		template<typename T>
+		[[nodiscard]]
 		bool HasComponent()
 		{
 			return m_Scene->m_Registry.has<T>(m_EntityHandle);
 		}
 
-		UUID GetUUID()
+		[[nodiscard]] UUID GetUUID()
 		{
 			return GetComponent<IDComponent>().ID;
 		}
 
-		TransformComponent& Transform()
+		[[nodiscard]] TransformComponent& Transform()
 		{
 			return GetComponent<TransformComponent>();
 		}
 
-		const std::string& GetName() 
+		[[nodiscard]] const std::string& GetName()
 		{ 
 			const std::string& name = GetComponent<TagComponent>().Tag;
 			return name;

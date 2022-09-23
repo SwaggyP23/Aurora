@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base.h"
+
 namespace Aurora {
 
 	class TimeStep
@@ -12,8 +14,8 @@ namespace Aurora {
 
 		operator float() const { return m_Time; }
 
-		inline float GetSeconds() const { return m_Time; }
-		inline float GetMilliSeconds() const { return m_Time * 1000.0f; }
+		[[nodiscard]] inline float GetSeconds() const { return m_Time; }
+		[[nodiscard]] inline float GetMilliSeconds() const { return m_Time * 1000.0f; }
 
 	private:
 		float m_Time;

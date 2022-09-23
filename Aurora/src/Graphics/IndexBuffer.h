@@ -13,20 +13,21 @@ namespace Aurora {
 	{
 	public:
 		IndexBuffer() = default;
-		IndexBuffer(uint32_t* indices, uint32_t count);
+		IndexBuffer(void* indices, uint32_t size);
 		~IndexBuffer();
 
-		static Ref<IndexBuffer> Create();
-		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		[[nodiscard]] static Ref<IndexBuffer> Create();
+		[[nodiscard]] static Ref<IndexBuffer> Create(void* indices, uint32_t size);
 
 		void Bind() const;
 		void UnBind() const;
 
-		inline uint32_t GetCount() const { return m_Count; }
+		[[nodiscard]] inline uint32_t GetSize() const { return m_Size; }
+		[[nodiscard]] inline uint32_t GetBufferID() const { return m_BufferId; }
 
 	private:
 		uint32_t m_BufferId = 0;
-		uint32_t m_Count = 0;
+		uint32_t m_Size = 0;
 
 	};
 

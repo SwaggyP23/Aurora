@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+ * The stride of a buffers's layout is basically the size of all its attributes combined, since the vertexAtribs are not being
+ * sorted into each type first so that works out nicely, eventhough that would have the same stride though we would have an
+ * offset parameter for different elements
+ */
+
 #include "Core/Base.h"
 
 #include <string>
@@ -10,29 +16,20 @@ namespace Aurora {
 
 	enum class ShaderDataType
 	{
-		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
+		None = 0,
+		Float,
+		Float2,
+		Float3,
+		Float4,
+		Mat3,
+		Mat4,
+		Bool,
+		UInt,
+		Int,
+		Int2,
+		Int3,
+		Int4
 	};
-
-	static uint32_t ShaderDataTypeSize(ShaderDataType type)
-	{
-		switch (type)
-		{
-		    case ShaderDataType::Float:   return 4;
-		    case ShaderDataType::Float2:  return 4 * 2;
-		    case ShaderDataType::Float3:  return 4 * 3;
-		    case ShaderDataType::Float4:  return 4 * 4;
-		    case ShaderDataType::Mat3:	  return 4 * 3 * 3;
-		    case ShaderDataType::Mat4:    return 4 * 4 * 4;
-		    case ShaderDataType::Int:	  return 4;
-		    case ShaderDataType::Int2:	  return 4 * 2;
-		    case ShaderDataType::Int3:	  return 4 * 3;
-		    case ShaderDataType::Int4:	  return 4 * 4;
-		    case ShaderDataType::Bool:    return 1;
-		}
-
-		AR_CORE_ASSERT(false, "Unknown Shader Data Type!");
-		return 0;
-	}
 
 	//////////////////////////
 	// BUFFER ELEMENT!!
@@ -49,7 +46,7 @@ namespace Aurora {
 		BufferElement() = default;
 		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
 
-		uint32_t GetComponentCount() const;
+		[[nodiscard]] uint32_t GetComponentCount() const;
 
 	};
 
@@ -69,13 +66,13 @@ namespace Aurora {
 			CalcStrideAndOffset();
 		}
 
-		inline uint32_t GetStride() const { return m_Stride; }
-		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
+		[[nodiscard]] inline uint32_t GetStride() const { return m_Stride; }
+		[[nodiscard]] inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 
-		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
-		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
-		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
-		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
+		inline std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
+		inline std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
+		inline std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
+		inline std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
 
 	private:
 		void CalcStrideAndOffset();
@@ -90,7 +87,7 @@ namespace Aurora {
 	// VERTEX BUFFER!!
 	//////////////////////////
 
-	enum class VertexBufferUsage
+	enum class BufferUsage
 	{
 		None = 0,
 		Static,
@@ -101,19 +98,19 @@ namespace Aurora {
 	{
 	public:
 		VertexBuffer() = default;
-		VertexBuffer(uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
-		VertexBuffer(float* vertices, uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
+		VertexBuffer(uint32_t size, BufferUsage drawHint = BufferUsage::Static);
+		VertexBuffer(void* vertices, uint32_t size, BufferUsage drawHint = BufferUsage::Static);
 		~VertexBuffer();
 
-		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, VertexBufferUsage drawHint = VertexBufferUsage::Static);
+		[[nodiscard]] static Ref<VertexBuffer> Create(uint32_t size, BufferUsage drawHint = BufferUsage::Static);
+		[[nodiscard]] static Ref<VertexBuffer> Create(void* vertices, uint32_t size, BufferUsage drawHint = BufferUsage::Static);
 
 		void Bind() const;
 		void UnBind() const;
 
 		void SetData(const void* data, uint32_t size);
 
-		inline const BufferLayout& GetBufferLayout() const { return m_Layout; }
+		[[nodiscard]] inline const BufferLayout& GetBufferLayout() const { return m_Layout; }
 		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
 
 

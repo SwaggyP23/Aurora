@@ -10,11 +10,24 @@ namespace Aurora {
 		return CreateRef<UniformBuffer>(size, binding);
 	}
 
+	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding, const void* data)
+	{
+		return CreateRef<UniformBuffer>(size, binding, data);
+	}
+
 	UniformBuffer::UniformBuffer(uint32_t size, uint32_t binding)
 		: m_Size(size), m_BindingPoint(binding)
 	{
 		glCreateBuffers(1, &m_BufferID);
 		glNamedBufferData(m_BufferID, size, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_BufferID);
+	}
+
+	UniformBuffer::UniformBuffer(uint32_t size, uint32_t binding, const void* data)
+		: m_Size(size), m_BindingPoint(binding)
+	{
+		glCreateBuffers(1, &m_BufferID);
+		glNamedBufferData(m_BufferID, size, data, GL_DYNAMIC_DRAW);
 		glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_BufferID);
 	}
 

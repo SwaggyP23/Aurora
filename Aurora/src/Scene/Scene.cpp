@@ -6,6 +6,7 @@
 #include "Graphics/UniformBuffer.h" // TODO: Temp...!
 #include "Components.h"
 #include "ScriptableEntity.h"
+#include "Renderer/Renderer.h"
 #include "Renderer/Renderer3D.h"
 #include "Editor/EditorResources.h"
 
@@ -14,12 +15,10 @@
 namespace Aurora {
 
 	static Ref<UniformBuffer> s_ModelUniBuffer;
-	static Ref<Shader> s_MatShader;
 	static Ref<Material> s_Mat;
 	static Ref<Texture2D> s_Texture;
 	static TextureProperties s_Props;
 	static Ref<Shader> s_ModelShader;
-	static Ref<CubeTexture> s_EnvironmentMap;
 	static bool s_Created = false;
 
 	Ref<Scene> Scene::Create(const std::string& debugName)
@@ -32,16 +31,13 @@ namespace Aurora {
 	{
 		if (!s_Created)
 		{
-			ShaderProperties props = {};
-			props.Name = "AuroraPBRStatic";
-			props.AssetPath = "Resources/shaders/AuroraPBRStatic.glsl";
-			s_MatShader = Shader::Create(props);
-			s_Mat = Material::Create("Test Mat", s_MatShader);
+			s_Mat = Material::Create("Test Mat", Renderer::GetShaderLibrary()->Get("AuroraPBRStatic"));
 			s_Props.FlipOnLoad = true;
-			s_EnvironmentMap = CubeTexture::Create("Resources/environment/skybox");
+			s_Props.AnisotropicFiltering = 16.0f;
 			s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png", s_Props);
-			s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
-			s_ModelShader = Shader::Create("Resources/shaders/model.glsl"); // TODO: Temp...
+			//s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
+			// Model still doesnt work since models are now loaded differently and need to adapt to that
+			//s_ModelShader = Renderer::GetShaderLibrary()->Get("Model"); // TODO: Temp...
 			s_Created = true;
 		}
 	}
@@ -55,7 +51,7 @@ namespace Aurora {
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<TransformComponent>();
-		auto& tag = entity.AddComponent<TagComponent>();
+		TagComponent& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name == "" ? "AuroraDefault" : std::move(name);
 
 		return entity;
@@ -112,14 +108,14 @@ namespace Aurora {
 	{
 		Renderer3D::BeginScene(camera);
 
-		Renderer3D::DrawSkyBox(s_EnvironmentMap); // TODO: TEMPORARY!!!!!!!!!
+		Renderer3D::DrawSkyBox(Renderer::GetBlackCubeTexture()); // TODO: TEMPORARY!!!!!!!!!
 
 		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)
 		{
 			auto [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color, 0, (int)entity);
+			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color, (int)entity);
 		}
 
 		// entities with camera components are rendered as white planes for now!
@@ -154,7 +150,6 @@ namespace Aurora {
 
 		// Rendered last so that blending can work fine with all the other batched quads
 		s_Mat->Set("u_AlbedoTexture", s_Texture);
-		//s_Mat->Set("u_Uniforms.AlbedoColor", glm::vec4(puh, 1.0f));
 		Renderer3D::DrawMaterial(s_Mat, trans, puh); // TODO: TEMPORARY!!!!!!!!!
 	}
 
@@ -210,6 +205,9 @@ namespace Aurora {
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
+		if (m_ViewportWidth == width && m_ViewportHeight == height)
+			return;
+
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 

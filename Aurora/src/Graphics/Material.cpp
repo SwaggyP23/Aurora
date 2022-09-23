@@ -1,9 +1,13 @@
 #include "Aurorapch.h"
 #include "Material.h"
 
-//#include <glad/glad.h>
+#include "Renderer/Renderer.h"
 
 namespace Aurora {	
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////// Material
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Ref<Material> Material::Create(const std::string& name, const Ref<Shader>& shader)
 	{
@@ -29,123 +33,108 @@ namespace Aurora {
 		m_Shader->Bind();
 
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
-		// TODO: Check the two here, maybe it should be one since the push_constant in the vertex shader could be avoided
-		AR_CORE_ASSERT(shaderBuffers.size() <= 2, "Only one push_constant buffer is supported!");
+		// Here we are checking if <= 2 since it is possible to have one push_constant in the vertex shader and another in
+		// the fragment shader and so this is considered pushc_constant buffer sharing
+		AR_CORE_ASSERT(shaderBuffers.size() <= 2, "No more than 2 push_constant buffers are allowed per program!");
 
-		if (shaderBuffers.size())
+		for (const auto& [bufferName, buffer] : shaderBuffers)
 		{
-			// TODO: Materials are kind of fixed however look into whatever the fuck that was with the texture
-			// TODO: Here is also a bug, i think this should be a loop through all the buffers. DONE
-			// TODO: since im only getting the first buffer and so only the transform is actually being setup. DONE
-			// TODO: Another bug is that i think since the material also has an offset of 0 in its own buffer, TO BE DONE
-			// TODO: so, when its being written to the m_UniformStorageBuffer its rewriting some of the things there, TO BE DONE
-			// TODO: These is one bug to look into but mainly the loop here. TO BE DONE
-
-			for (const auto& [bufferName, buffer] : shaderBuffers)
+			// This will run once since each shader will contain at most 1 push_constant buffer
+			// however keep it a loop in case vulkan ever think about removing that restriction
+			for (const auto& [name, uniform] : buffer.Uniforms)
 			{
-				// This will run once since each shader will contain at most 1 push_constant buffer
-				// however keep it a loop in case vulkan ever think about removing that restriction
-				for (const auto& [name, uniform] : buffer.Uniforms)
+				switch (uniform.GetUniformType())
 				{
-					switch (uniform.GetUniformType())
+					//  TODO: I dont think the bool case is handled correctly with the uint32_t...!
+					case ShaderUniformType::Bool:
 					{
-						//  TODO: I dont think the bool case is handled correctly with the uint32_t...!
-						case ShaderUniformType::Bool:
-						{
-							const uint32_t value = m_UniformStorageBuffer.Read<uint32_t>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::UInt:
-						{
-							const uint32_t value = m_UniformStorageBuffer.Read<uint32_t>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::Int:
-						{
-							const int value = m_UniformStorageBuffer.Read<int>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::IVec2:
-						{
-							const glm::ivec2& value = m_UniformStorageBuffer.Read<glm::ivec2>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::IVec3:
-						{
-							const glm::ivec3& value = m_UniformStorageBuffer.Read<glm::ivec3>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::IVec4:
-						{
-							const glm::ivec4& value = m_UniformStorageBuffer.Read<glm::ivec4>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::Float:
-						{
-							const float value = m_UniformStorageBuffer.Read<float>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::Vec2:
-						{
-							const glm::vec2& value = m_UniformStorageBuffer.Read<glm::vec2>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::Vec3:
-						{
-							const glm::vec3& value = m_UniformStorageBuffer.Read<glm::vec3>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::Vec4:
-						{
-							const glm::vec4& value = m_UniformStorageBuffer.Read<glm::vec4>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::Mat3:
-						{
-							const glm::mat3& value = m_UniformStorageBuffer.Read<glm::mat3>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						case ShaderUniformType::Mat4:
-						{
-							const glm::mat4& value = m_UniformStorageBuffer.Read<glm::mat4>(uniform.GetOffset());
-							m_Shader->SetUniform(name, value);
-							break;
-						}
-						default:
-						{
-							AR_CORE_ASSERT(false);
-							break;
-						}
+						const uint32_t value = m_UniformStorageBuffer.Read<uint32_t>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::UInt:
+					{
+						const uint32_t value = m_UniformStorageBuffer.Read<uint32_t>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::Int:
+					{
+						const int value = m_UniformStorageBuffer.Read<int>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::IVec2:
+					{
+						const glm::ivec2& value = m_UniformStorageBuffer.Read<glm::ivec2>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::IVec3:
+					{
+						const glm::ivec3& value = m_UniformStorageBuffer.Read<glm::ivec3>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::IVec4:
+					{
+						const glm::ivec4& value = m_UniformStorageBuffer.Read<glm::ivec4>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::Float:
+					{
+						const float value = m_UniformStorageBuffer.Read<float>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::Vec2:
+					{
+						const glm::vec2& value = m_UniformStorageBuffer.Read<glm::vec2>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::Vec3:
+					{
+						const glm::vec3& value = m_UniformStorageBuffer.Read<glm::vec3>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::Vec4:
+					{
+						const glm::vec4& value = m_UniformStorageBuffer.Read<glm::vec4>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::Mat3:
+					{
+						const glm::mat3& value = m_UniformStorageBuffer.Read<glm::mat3>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					case ShaderUniformType::Mat4:
+					{
+						const glm::mat4& value = m_UniformStorageBuffer.Read<glm::mat4>(uniform.GetOffset());
+						m_Shader->SetUniform(name, value);
+						break;
+					}
+					default:
+					{
+						AR_CORE_ASSERT(false);
+						break;
 					}
 				}
 			}
 		}
 
-		if (m_Texture2Ds.size())
+		for (const auto& [slot, texture] : m_Texture2Ds)
 		{
-			for (const auto& [slot, texture] : m_Texture2Ds)
-			{
-				texture->Bind(slot);
-			}
+			texture->Bind(slot);
 		}
 
-		if (m_CubeTextures.size())
+		for (const auto& [slot, texture] : m_CubeTextures)
 		{
-			for (const auto& [slot, texture] : m_CubeTextures)
-			{
-				texture->Bind(slot);
-			}
+			texture->Bind(slot);
 		}
 	}
 
@@ -331,7 +320,7 @@ namespace Aurora {
 
 	Ref<Texture2D> Material::TryGetTexture2D(std::string_view name)
 	{
-		auto decl = FindResourceDeclaration(name);
+		const ShaderResourceDeclaration* decl = FindResourceDeclaration(name);
 		if (!decl)
 			return nullptr;
 
@@ -340,6 +329,19 @@ namespace Aurora {
 			return nullptr;
 
 		return m_Texture2Ds[slot];
+	}
+
+	Ref<CubeTexture> Material::TryGetCubeTexture(std::string_view name)
+	{
+		const ShaderResourceDeclaration* decl = FindResourceDeclaration(name);
+		if (!decl)
+			return nullptr;
+
+		uint32_t slot = decl->GetRegister();
+		if (m_CubeTextures.find(slot) == m_CubeTextures.end())
+			return nullptr;
+
+		return m_CubeTextures[slot];
 	}
 
 	void Material::SetFlag(MaterialFlag flag, bool value)
@@ -359,8 +361,9 @@ namespace Aurora {
 		std::string nameStr = std::string(name);
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
-		// TODO: Check the two here, maybe it should be one since the push_constant in the vertex shader could be avoided
-		AR_CORE_ASSERT(shaderBuffers.size() <= 2, "For now only one push_constant buffer is supported!");
+		// Here we are checking if <= 2 since it is possible to have one push_constant in the vertex shader and another in
+		// the fragment shader and so this is considered pushc_constant buffer sharing
+		AR_CORE_ASSERT(shaderBuffers.size() <= 2, "No more than 2 push_constant buffers are allowed per program!");
 
 		for (const auto& [bufferName, buffer] : shaderBuffers)
 		{
@@ -373,7 +376,7 @@ namespace Aurora {
 
 	const ShaderResourceDeclaration* Material::FindResourceDeclaration(std::string_view name) const
 	{
-		auto& resources = m_Shader->GetShaderResources();
+		const auto& resources = m_Shader->GetShaderResources();
 
 		for (const auto& [resName, res] : resources)
 		{
@@ -382,6 +385,212 @@ namespace Aurora {
 		}
 
 		return nullptr;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////// MaterialAsset
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	static const std::string s_AlbedoColor = "u_MaterialUniforms.AlbedoColor";
+	static const std::string s_UseNormalMap = "u_MaterialUniforms.UseNormalMap";
+	static const std::string s_Roughness = "u_MaterialUniforms.Roughness";
+	static const std::string s_Metalness = "u_MaterialUniforms.Metalness";
+
+	// Textures inputs...
+	static const std::string s_AlbedoMap = "u_AlbedoTexture";
+	static const std::string s_NormalMap = "u_NormalTexture";
+	static const std::string s_RoughnessMap = "u_RoughnessTexture";
+	static const std::string s_MetalnessMap = "u_MetalnessTexture";
+
+	Ref<MaterialAsset> Create()
+	{
+		return CreateRef<MaterialAsset>();
+	}
+
+	Ref<MaterialAsset> Create(Ref<Material> material)
+	{
+		return CreateRef<MaterialAsset>(material);
+	}
+
+	MaterialAsset::MaterialAsset()
+	{
+		// Default name is to set in the SceneHierarchyPanel
+		m_Material = Material::Create("", Renderer::GetShaderLibrary()->Get("AuroraPBRStatic"));
+
+		ResetToDefault();
+	}
+
+	MaterialAsset::MaterialAsset(Ref<Material> material)
+	{
+		m_Material = Material::Create(material->GetName(), material->GetShader());
+	}
+
+	MaterialAsset::~MaterialAsset()
+	{
+	}
+
+	void MaterialAsset::SetAlbedoColor(const glm::vec3& color)
+	{
+		m_Material->Set(s_AlbedoColor, color);
+	}
+
+	glm::vec3& MaterialAsset::GetAlbedoColor()
+	{
+		return m_Material->GetVec3(s_AlbedoColor);
+	}
+
+	void MaterialAsset::SetRoughness(float roughness)
+	{
+		m_Material->Set(s_Roughness, roughness);
+	}
+
+	float& MaterialAsset::GetRoughness()
+	{
+		return m_Material->GetFloat(s_Roughness);
+	}
+
+	void MaterialAsset::SetMetalness(float metalness)
+	{
+		m_Material->Set(s_Metalness, metalness);
+	}
+
+	float& MaterialAsset::GetMetalness()
+	{
+		return m_Material->GetFloat(s_Metalness);
+	}
+
+	void MaterialAsset::SetAlbedoMap(Ref<Texture2D> albedoMap)
+	{
+		m_Material->Set(s_AlbedoMap, albedoMap);
+	}
+
+	void MaterialAsset::ClearAlbedoMap()
+	{
+		m_Material->Set(s_AlbedoMap, Renderer::GetWhiteTexture());
+	}
+
+	Ref<Texture2D> MaterialAsset::GetAlbedoMap()
+	{
+		return m_Material->TryGetTexture2D(s_AlbedoMap);
+	}
+
+	void MaterialAsset::SetNormalMap(Ref<Texture2D> normalMap)
+	{
+		m_Material->Set(s_NormalMap, normalMap);
+	}
+
+	void MaterialAsset::ClearNormalMap()
+	{
+		m_Material->Set(s_NormalMap, Renderer::GetWhiteTexture());
+	}
+
+	void MaterialAsset::UseNormalMap(bool use)
+	{
+		m_Material->Set(s_UseNormalMap, use);
+	}
+
+	Ref<Texture2D> MaterialAsset::GetNormalMap()
+	{
+		return m_Material->TryGetTexture2D(s_NormalMap);
+	}
+
+	bool MaterialAsset::IsUsingNormalMap()
+	{
+		return m_Material->GetBool(s_UseNormalMap);
+	}
+
+	void MaterialAsset::SetRoughnessMap(Ref<Texture2D> roughnessMap)
+	{
+		m_Material->Set(s_RoughnessMap, roughnessMap);
+	}
+
+	void MaterialAsset::ClearRoughnessMap()
+	{
+		m_Material->Set(s_RoughnessMap, Renderer::GetWhiteTexture());
+	}
+
+	Ref<Texture2D> MaterialAsset::GetRoughnessMap()
+	{
+		return m_Material->TryGetTexture2D(s_RoughnessMap);
+	}
+
+	void MaterialAsset::SetMetalnessMap(Ref<Texture2D> metalnessMap)
+	{
+		m_Material->Set(s_MetalnessMap, metalnessMap);
+	}
+
+	void MaterialAsset::ClearMetalnessMap()
+	{
+		m_Material->Set(s_MetalnessMap, Renderer::GetWhiteTexture());
+	}
+
+	Ref<Texture2D> MaterialAsset::GetMetalnessMap()
+	{
+		return m_Material->TryGetTexture2D(s_MetalnessMap);
+	}
+
+	void MaterialAsset::ResetToDefault()
+	{
+		SetAlbedoColor({ 0.8f, 0.8f, 0.8f });
+		UseNormalMap(false);
+		SetRoughness(0.4f);
+		SetMetalness(0.0f);
+
+		SetAlbedoMap(Renderer::GetWhiteTexture());
+		SetNormalMap(Renderer::GetWhiteTexture());
+		SetRoughnessMap(Renderer::GetWhiteTexture());
+		SetMetalnessMap(Renderer::GetWhiteTexture());
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////// MaterialTable
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	Ref<MaterialTable> Create(uint32_t count = 1)
+	{
+		return CreateRef<MaterialTable>(count);
+	}
+
+	Ref<MaterialTable> Create(Ref<MaterialTable> other)
+	{
+		return CreateRef<MaterialTable>(other);
+	}
+
+	MaterialTable::MaterialTable(uint32_t count)
+		: m_MaterialCount(count)
+	{
+	}
+
+	MaterialTable::MaterialTable(Ref<MaterialTable> other)
+		: m_MaterialCount(other->m_MaterialCount)
+	{
+		const std::map<uint32_t, Ref<MaterialAsset>>& meshMaterials = other->GetMaterials();
+		for (const auto& [index, materialAsset] : meshMaterials)
+			SetMaterial(index, materialAsset);
+	}
+
+	MaterialTable::~MaterialTable()
+	{
+	}
+
+	void MaterialTable::SetMaterial(uint32_t index, Ref<MaterialAsset> material)
+	{
+		m_Materials[index] = material;
+		if (index >= m_MaterialCount)
+			m_MaterialCount = index + 1;
+	}
+
+	void MaterialTable::ClearMaterial(uint32_t index)
+	{
+		AR_CORE_ASSERT(HasMaterial(index));
+		m_Materials.erase(index);
+		if (index >= m_MaterialCount)
+			m_MaterialCount = index + 1;
+	}
+
+	void MaterialTable::Clear()
+	{
+		m_Materials.clear();
 	}
 
 }

@@ -32,26 +32,26 @@ namespace Aurora {
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
-		float GetCameraSpeed() const;
+		[[nodiscard]] float GetCameraSpeed() const;
 
-		glm::vec3 GetUpDirection() const;
-		glm::vec3 GetRightDirection() const;
-		glm::vec3 GetForwardDirection() const;
-		glm::quat GetOrientation() const;
+		[[nodiscard]] glm::vec3 GetUpDirection() const;
+		[[nodiscard]] glm::vec3 GetRightDirection() const;
+		[[nodiscard]] glm::vec3 GetForwardDirection() const;
+		[[nodiscard]] glm::quat GetOrientation() const;
 
-		const glm::vec3& GetPosition() const { return m_Position; }
+		[[nodiscard]] const glm::vec3& GetPosition() const { return m_Position; }
 
-		inline float GetDistance() const { return m_Distance; }
+		[[nodiscard]] inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
 
-		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-		glm::mat4 GetViewProjection() const { return GetProjection() * m_ViewMatrix; }
+		[[nodiscard]] const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		[[nodiscard]] glm::mat4 GetViewProjection() const { return GetProjection() * m_ViewMatrix; }
 
 		[[nodiscard]] float GetPitch() const { return m_Pitch; }
 		[[nodiscard]] float GetYaw() const { return m_Yaw; }
 
 		inline void SetActive(bool active) { m_IsActive = active; }
-		inline bool IsActive() const { return m_IsActive; }
+		[[nodiscard]] inline bool IsActive() const { return m_IsActive; }
 
 	private:
 		void UpdateView();

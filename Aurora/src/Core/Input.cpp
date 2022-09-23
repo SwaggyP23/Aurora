@@ -31,7 +31,7 @@ namespace Aurora {
 			if (!windowHandle)
 				continue;
 
-			auto state = glfwGetKey(windowHandle, (int)keycode);
+			int state = glfwGetKey(windowHandle, (int)keycode);
 			if (state == GLFW_PRESS || state == GLFW_REPEAT)
 			{
 				pressed = true;
@@ -65,7 +65,7 @@ namespace Aurora {
 			if (!windowHandle)
 				continue;
 
-			auto state = glfwGetMouseButton(windowHandle, (int)mouseCode);
+			int state = glfwGetMouseButton(windowHandle, (int)mouseCode);
 			if (state == GLFW_PRESS || state == GLFW_REPEAT)
 			{
 				pressed = true;

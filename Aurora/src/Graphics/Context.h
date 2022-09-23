@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Base.h"
-#include "Renderer/RendererPorperties.h"
+#include "Renderer/RendererCaps.h"
 
 struct GLFWwindow;
 

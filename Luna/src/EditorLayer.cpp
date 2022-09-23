@@ -66,7 +66,7 @@ namespace Aurora {
 			virtual void OnUpdate(TimeStep ts) override
 			{
 				auto& translation = GetComponent<TransformComponent>().Translation;
-				const float speed = 5.0f;
+				constexpr float speed = 5.0f;
 
 				if (Input::IsKeyPressed(AR_KEY_W))
 					translation.y += speed * ts;
@@ -103,6 +103,7 @@ namespace Aurora {
 
 		m_EditorCamera.SetActive(m_AllowViewportCameraEvents);
 		m_EditorCamera.OnUpdate(ts);
+		ImGuiUtils::SetMouseEnabled(true);
 
 		Renderer3D::ResetStats();
 
@@ -174,7 +175,7 @@ namespace Aurora {
 
 		m_SortedTimerValues.clear();
 		m_SortedTimerValues.reserve(mp.size());
-		for (auto& [name, val] : mp)
+		for (const auto& [name, val] : mp)
 			m_SortedTimerValues.emplace_back(name, val);
 
 		std::sort(m_SortedTimerValues.begin(), m_SortedTimerValues.end(), [](const std::tuple<const char*, float>& a, const std::tuple<const char*, float>& b) -> bool
@@ -201,6 +202,7 @@ namespace Aurora {
 			bool control = Input::IsKeyPressed(AR_KEY_LEFT_CONTROL) || Input::IsKeyPressed(AR_KEY_RIGHT_CONTROL);
 			bool shift = Input::IsKeyPressed(AR_KEY_LEFT_SHIFT) || Input::IsKeyPressed(AR_KEY_RIGHT_SHIFT);
 			bool alt = Input::IsKeyPressed(AR_KEY_LEFT_ALT) || Input::IsKeyPressed(AR_KEY_RIGHT_ALT);
+			bool mousePressed = Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_MIDDLE);
 
 			bool isSomethingSelected = m_SelectionContext ? true : false;
 
@@ -242,7 +244,7 @@ namespace Aurora {
 			    case AR_KEY_D:
 			    {
 			    	// TODO: Needs rework...
-			    	if (control && isSomethingSelected)
+			    	if (control && isSomethingSelected && !mousePressed)
 			    	{
 			    		m_SelectionContext = m_ActiveScene->CopyEntity(m_SelectionContext);
 			    	}
@@ -357,7 +359,7 @@ namespace Aurora {
 		//}
 		if (e.GetDroppedPathCount() == 1)
 		{
-			std::filesystem::path path = e.GetDroppedPaths().front();
+			const std::filesystem::path& path = e.GetDroppedPaths().front();
 			if (path.extension().string() == ".aurora")
 				OpenScene(path);
 		}
@@ -411,8 +413,8 @@ namespace Aurora {
 
 		std::string strID = fmt::format("{}{}", tag, entity.GetUUID());
 
-		const float edgeOffset = 4.0f;
-		const float rowHeight = 21.0f;
+		constexpr float edgeOffset = 4.0f;
+		constexpr float rowHeight = 21.0f;
 
 		static bool isHovered = false;
 		static bool isHeld = false;
@@ -580,7 +582,7 @@ namespace Aurora {
 		ImGui::Begin("Scene Hierarchy", (bool*)0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
 
 		static bool enableSorting = false;
-		const float edgeOffset = 4.0f;
+		constexpr float edgeOffset = 4.0f;
 
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
@@ -791,7 +793,7 @@ namespace Aurora {
 			ImVec2 contentRegionAvail = ImGui::GetContentRegionAvail();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
+			const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
 			ImGui::Separator();
 
 			// TODO: Add component frame icons
@@ -837,8 +839,10 @@ namespace Aurora {
 			bool removeComponent = false;
 			if (ImGui::BeginPopup("ComponentSettings"))
 			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f });
 				if (ImGui::MenuItem("Remove Component"))
 					removeComponent = true;
+				ImGui::PopStyleColor();
 
 				ImGui::EndPopup();
 			}
@@ -871,8 +875,8 @@ namespace Aurora {
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		const ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
@@ -956,7 +960,7 @@ namespace Aurora {
 	void EditorLayer::DrawComponents(Entity entity)
 	{
 		FontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
-		std::string& tag = std::string(entity.GetComponent<TagComponent>().Tag);
+		std::string& tag = entity.GetComponent<TagComponent>().Tag;
 
 		// Size of buffer is 128 because there should not be an entity called more than 128 letters like BRUH
 		char buffer[128];
@@ -1172,20 +1176,12 @@ namespace Aurora {
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
-			ImGui::Columns(2);
-
 			constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
 								      | ImGuiColorEditFlags_AlphaPreview
 								      | ImGuiColorEditFlags_HDR
 									  | ImGuiColorEditFlags_PickerHueWheel;
 
-			ImGui::SetColumnWidth(0, 100.0f);
-			ImGui::Text("Color");
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color), flags);
-			ImGui::PopItemWidth();
+			ImGuiUtils::ColorEdit4Control("Color", component.Color);
 
 			ImGui::Separator();
 		},
@@ -1315,14 +1311,12 @@ namespace Aurora {
 	{
 		ImGui::Begin("Renderer Vendor", &m_ShowRendererVendorInfo, ImGuiWindowFlags_AlwaysAutoResize);
 
-		// TODO: Change this so that the renderprops are retreived from the Rendere class which then calls renderProps::Get...()...
-		ImGui::Text("Vendor: %s", RendererProperties::GetRendererProperties()->Vendor.c_str());
-		ImGui::Text("Renderer: %s", RendererProperties::GetRendererProperties()->Renderer.c_str());
-		ImGui::Text("OpenGL Version: %s", RendererProperties::GetRendererProperties()->Version.c_str());
-		ImGui::Text("GLSL Version: %s", RendererProperties::GetRendererProperties()->GLSLVersion.c_str());
-		ImGui::Text("Texture Slots Available: %d", RendererProperties::GetRendererProperties()->MaxTextureSlots);
-		ImGui::Text("Max Samples: %d", RendererProperties::GetRendererProperties()->MaxSamples);
-		ImGui::Text("Max Anisotropy: %.f", RendererProperties::GetRendererProperties()->MaxAnisotropy);
+		ImGui::Text("Vendor: %s", Renderer::GetRendererCapabilities().Vendor.c_str());
+		ImGui::Text("Renderer: %s", Renderer::GetRendererCapabilities().Renderer.c_str());
+		ImGui::Text("OpenGL Version: %s", Renderer::GetRendererCapabilities().Version.c_str());
+		ImGui::Text("GLSL Version: %s", Renderer::GetRendererCapabilities().GLSLVersion.c_str());
+		ImGui::Text("Max Samples: %d", Renderer::GetRendererCapabilities().MaxSamples);
+		ImGui::Text("Max Anisotropy: %.f", Renderer::GetRendererCapabilities().MaxAnisotropy);
 
 		ImGui::End();
 	}
@@ -1331,8 +1325,7 @@ namespace Aurora {
 	{
 		ImGui::Begin("Renderer Stats");
 
-		float peak = std::max(m_Peak, ImGui::GetIO().Framerate);
-		m_Peak = peak;
+		m_Peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 
 		//std::string name = "None";
 		//if (m_HoveredEntity && ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
@@ -1374,7 +1367,7 @@ namespace Aurora {
 	{
 		ImGui::Begin("Shaders", &m_ShowShadersPanel);
 
-		const float edgeOffset = 4.0f;
+		constexpr float edgeOffset = 4.0f;
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
 
@@ -1398,19 +1391,28 @@ namespace Aurora {
 			if (!ImGuiUtils::IsMatchingSearch(shaderName, searchString))
 				continue;
 
-			const float framePaddingX = 5.0f;
-			const float framePaddingY = 5.0f; // affects height of the header
+			constexpr float framePaddingX = 5.0f;
+			constexpr float framePaddingY = 5.0f; // affects height of the header
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
-			const bool opened = ImGui::TreeNodeEx(shaderName.c_str(), treeNodeFlags);
+			std::string name = fmt::format("{0}", shaderName);
+			const bool opened = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
 			ImGui::PopStyleVar(2);
 
 			ImGuiUtils::ShiftCursorY(-4.0f);
 
 			if(opened)
 			{
-				ImGui::Text("Path: %s", shader->GetFilePath().c_str());
+				ImGui::Text("Type: %s", shader->GetTypeString().c_str());
+				ImGui::Text("Path: %s", shader->GetFilePath().string().c_str());
+
+				uint32_t lastTimeMod = shader->GetLastTimeModified();
+				if (lastTimeMod <= shader->GetCompileTimeThreshold())
+					ImGui::TextColored(ImVec4{ 0.8f, 0.2f, 0.3f, 1.0f }, "Last time modified: %u minutes", lastTimeMod);
+				else
+					ImGui::Text("Last time modified: %u minutes", lastTimeMod);
+
 				if (ImGui::Button("Reload"))
 					shader->Reload();
 
@@ -1796,9 +1798,9 @@ namespace Aurora {
 		// Snapping
 		bool snap = Input::IsKeyPressed(AR_KEY_LEFT_CONTROL);
 
-		float snapValue = GetSnapValue();
+		const float snapValue = GetSnapValue();
 
-		float snapValues[3] = { snapValue, snapValue, snapValue };
+		const float snapValues[3] = { snapValue, snapValue, snapValue };
 
 		if(ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
@@ -1847,7 +1849,7 @@ namespace Aurora {
 		void* textureID = (void*)(uint64_t)m_IntermediateFramebuffer->GetColorAttachmentID();
 		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
-		//ImGui::Image((ImTextureID)EditorResources::CameraIcon->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		//ImGui::Image((void*)(uint64_t)EditorResources::GearIcon->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
 

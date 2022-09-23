@@ -3,6 +3,8 @@
 #include "KeyCodes.h"
 #include "MouseCodes.h"
 
+#include "Base.h"
+
 #include <utility>
 
 namespace Aurora {
@@ -17,15 +19,15 @@ namespace Aurora {
 	class Input
 	{
 	public:
-		static bool IsKeyPressed(KeyCode keycode);
-		static bool IsMouseButtonPressed(MouseButton mouseCode);
+		[[nodiscard]] static bool IsKeyPressed(KeyCode keycode);
+		[[nodiscard]] static bool IsMouseButtonPressed(MouseButton mouseCode);
 
-		static std::pair<float, float> GetMousePosition();
-		static float GetMouseX();
-		static float GetMouseY();
+		[[nodiscard]] static std::pair<float, float> GetMousePosition();
+		[[nodiscard]] static float GetMouseX();
+		[[nodiscard]] static float GetMouseY();
 
 		static void SetCursorMode(CursorMode mode);
-		static CursorMode GetCursorMode();
+		[[nodiscard]] static CursorMode GetCursorMode();
 
 	};
 

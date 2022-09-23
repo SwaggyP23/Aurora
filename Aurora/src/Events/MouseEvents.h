@@ -10,9 +10,9 @@ namespace Aurora {
 		MouseMovedEvent(float mx, float my)
 			: m_Mx(mx), m_My(my) {}
 
-		inline std::pair<float, float> GetMousePos() const { return { m_Mx, m_My }; }
-		inline float GetMouseX() const { return m_Mx; }
-		inline float GetMouseY() const { return m_My; }
+		[[nodiscard]] inline std::pair<float, float> GetMousePos() const { return { m_Mx, m_My }; }
+		[[nodiscard]] inline float GetMouseX() const { return m_Mx; }
+		[[nodiscard]] inline float GetMouseY() const { return m_My; }
 
 		std::string toString() const override
 		{
@@ -35,8 +35,8 @@ namespace Aurora {
 		MouseScrolledEvent(float xoff, float yoff)
 			: m_Xoffset(xoff), m_Yoffset(yoff) {}
 
-		inline float GetXOffset() const { return m_Xoffset; }
-		inline float GetYOffset() const { return m_Yoffset; }
+		[[nodiscard]] inline float GetXOffset() const { return m_Xoffset; }
+		[[nodiscard]] inline float GetYOffset() const { return m_Yoffset; }
 
 		std::string toString() const override
 		{
@@ -58,7 +58,7 @@ namespace Aurora {
 	public:
 		virtual ~MouseButtonEvent() = default;
 
-		inline MouseButton GetButtonCode() const { return m_ButtonCode; }
+		[[nodiscard]] inline MouseButton GetButtonCode() const { return m_ButtonCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 

@@ -14,7 +14,7 @@ namespace Aurora {
 			switch (flag)
 			{
 			    case Aurora::RenderFlags::None:            return GL_NONE;
-			    case Aurora::RenderFlags::Fill:       return GL_FILL;
+			    case Aurora::RenderFlags::Fill:            return GL_FILL;
 			    case Aurora::RenderFlags::WireFrame:       return GL_LINE;
 			    case Aurora::RenderFlags::Vertices:        return GL_POINT;
 			}
@@ -167,7 +167,8 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		vertexArray->Bind();
-		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
+		// TODO: How to the number of indices to render...??
+		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetSize() / 4 : indexCount;
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 

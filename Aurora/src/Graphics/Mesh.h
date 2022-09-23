@@ -1,97 +1,175 @@
-//#pragma once
-//
-//// This is to be continued when reworking the shader to system to use Spir-V and Uniform Buffers that way meshes and materials are easier
-//
-//#include "Core/Base.h"
-//#include "Buffer.h"
-//#include "VertexArray.h"
-//
-//#include <glm/glm.hpp>
-//
-//namespace Aurora {
-//
-//	struct Vertex
-//	{
-//		glm::vec3 Position;
-//		glm::vec3 Normal;
-//		glm::vec2 TexCoords;
-//	};
-//
-//	class Mesh
-//	{
-//	public:
-//		Mesh(const Ref<VertexArray>& vao, const Ref<IndexBuffer>& ibo/*TODO: material*/);
-//		Mesh(const Mesh& other);
-//		~Mesh();
-//
-//		void Draw();
-//
-//	private:
-//		Ref<VertexArray> m_VertexArray; // This will need to include a vertex buffer and an index buffer
-//		Ref<IndexBuffer> m_IndexBuffer;
-//		// TODO: m_Material
-//
-//	};
-//
-//}
+#pragma once
 
-#ifndef MESH_H
-#define MESH_H
+#include "Core/Base.h"
+#include "Core/AABB.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "Material.h"
 
-#include "Graphics/Shader.h"
-#include "Renderer/RenderCommand.h"
-
-#include <string>
+#include <glm/glm.hpp>
 #include <vector>
 
-#define MAX_BONE_INFLUENCE 4
+/*
+ * Taken straight from Hazel: https://hazelengine.com/ since i know nothing on how to use assimp. It was a good
+ * learning experience
+ */
+
+struct aiNode;
+struct aiAnimation;
+struct aiNodeAnim;
+struct aiScene;
+
+namespace Assimp {
+    class Importer;
+}
 
 namespace Aurora {
 
-    struct Vertex {
-        // position
+    struct Vertex 
+    {
         glm::vec3 Position;
-        // normal
         glm::vec3 Normal;
-        // texCoords
-        glm::vec2 TexCoords;
-        // tangent
         glm::vec3 Tangent;
-        // bitangent
-        glm::vec3 Bitangent;
-        //bone indexes which will influence this vertex
-        int m_BoneIDs[MAX_BONE_INFLUENCE];
-        //weights from each bone
-        float m_Weights[MAX_BONE_INFLUENCE];
+        glm::vec3 Binormal;
+        glm::vec2 TexCoords;
     };
 
-    struct TextureMesh {
-        unsigned int id;
-        std::string type;
-        std::string path;
+    static const int s_NumAttributes = 5;
+    
+    struct Index
+    {
+        uint32_t V1;
+        uint32_t V2;
+        uint32_t V3;
     };
 
-    class Mesh {
+    static_assert(sizeof(Index) == 3 * sizeof(uint32_t));
+
+    struct Triangle
+    {
+        Vertex V1;
+        Vertex V2;
+        Vertex V3;
+
+        Triangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
+            : V1(v1), V2(v2), V3(v3) {}
+    };
+
+    struct SubMesh
+    {
+        uint32_t BaseVertex;
+        uint32_t BaseIndex;
+        uint32_t MaterialIndex;
+        uint32_t IndexCount;
+        uint32_t VertexCount;
+
+        glm::mat4 Transform = glm::mat4(1.0f); // World transform
+        glm::mat4 LocalTransform = glm::mat4(1.0f);
+        AABB BoundingBox;
+
+        std::string NodeName;
+        std::string MeshName;
+        bool IsRigged = false;
+    };
+
+    class MeshSource : public RefCountedObject
+    {
     public:
-        // mesh Data
-        std::vector<Vertex>       vertices;
-        std::vector<unsigned int> indices;
-        std::vector<TextureMesh>      textures;
-        unsigned int VAO;
+        MeshSource(const std::filesystem::path& filePath);
+        MeshSource(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform);
+        MeshSource(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes);
+        ~MeshSource();
 
-        // constructor
-        Mesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::vector<TextureMesh> textures);
+        void DumpVertexBuffer();
 
-        // render the mesh
-        void Draw(Aurora::Shader& shader);
+        [[nodiscard]] std::vector<SubMesh>& GetSubMeshes() { return m_SubMeshes; }
+        [[nodiscard]] const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
+
+        [[nodiscard]] const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
+        [[nodiscard]] const std::vector<Index>& GetIndices() const { return m_Indices; }
+
+        [[nodiscard]] bool IsSubmeshRigged(uint32_t submeshIndex) const { return m_SubMeshes[submeshIndex].IsRigged; }
+
+        [[nodiscard]] std::vector<Ref<Material>>& GetMaterials() { return m_Materials; }
+        [[nodiscard]] const std::vector<Ref<Material>>& GetMaterials() const { return m_Materials; }
+        [[nodiscard]] const std::filesystem::path& GetAssetPath() const { return m_AssetPath; }
+
+        [[nodiscard]] const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
+
+        [[nodiscard]] Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
+        [[nodiscard]] Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
+        [[nodiscard]] Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
+
+        [[nodiscard]] const AABB& GetBoundingBox() const { return m_BoundingBox; }
 
     private:
-        // render data 
-        uint32_t VBO, EBO;
+        void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
-        // initializes all the buffer objects/arrays
-        void setupMesh();
+    private:
+        std::vector<SubMesh> m_SubMeshes;
+
+        // note: the importer owns data pointed to by m_Scene, and m_NodeMap and hence must stay in scope for lifetime of MeshSource.
+        Scope<Assimp::Importer> m_Importer;
+
+        Ref<VertexBuffer> m_VertexBuffer;
+        Ref<IndexBuffer> m_IndexBuffer;
+        // For OpenGL this is really all i need to draw the model i can just bind this and is index buffer to draw
+        Ref<VertexArray> m_VertexArray;
+
+        std::vector<Vertex> m_Vertices;
+        std::vector<Index> m_Indices;
+        std::unordered_map<aiNode*, std::vector<uint32_t>> m_NodeMap;
+        const aiScene* m_Scene;
+
+        std::vector<Ref<Material>> m_Materials;
+
+        std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
+
+        AABB m_BoundingBox;
+
+        std::filesystem::path m_AssetPath;
+
+        friend class Scene;
+        friend class Renderer;
+        // TODO: Should be SceneHierarchyPanel and MeshViewerPanel once these are somethings
+        friend class EditorLayer;
+        friend class Mesh;
+
+    };
+
+    class StaticMesh : public RefCountedObject
+    {
+    public:
+        StaticMesh(Ref<MeshSource> meshSource);
+        StaticMesh(Ref<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes);
+        StaticMesh(const Ref<StaticMesh>& other);
+        ~StaticMesh();
+
+        // Pass in an empty vector to set all submeshes of meshSource!
+        void SetSubMeshes(const std::vector<uint32_t>& subMeshes);
+
+        [[nodiscard]] std::vector<uint32_t>& GetSubMeshes() { return m_SubMeshes; }
+        [[nodiscard]] const std::vector<uint32_t>& GetSubMeshes() const { return m_SubMeshes; }
+
+        void SetMeshSource(Ref<MeshSource> meshSource) { m_MeshSource = meshSource; }
+
+        [[nodiscard]] Ref<MeshSource> GetMeshSource() { return m_MeshSource; }
+        [[nodiscard]] Ref<MeshSource> GetMeshSource() const { return m_MeshSource; }
+
+        [[nodiscard]] const Ref<MaterialTable>& GetMaterial() const { return m_MaterialsTable; }
+
+    private:
+        Ref<MeshSource> m_MeshSource;
+        std::vector<uint32_t> m_SubMeshes;
+
+        Ref<MaterialTable> m_MaterialsTable;
+
+        friend class Scene;
+        friend class Renderer;
+        // TODO: Should be SceneHierarchyPanel and MeshViewerPanel once these are a thing
+        friend class EditorLayer;
+
     };
 
 }
-#endif

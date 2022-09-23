@@ -8,24 +8,34 @@ namespace Aurora {
 
 	class Timer
 	{
-	private:
+	public:
 		using HighResClock = std::chrono::high_resolution_clock;
+		using SystemClock = std::chrono::system_clock;
+		using SteadyClock = std::chrono::steady_clock;
+
 		using NanoSeconds = std::chrono::nanoseconds;
 		using MicroSeconds = std::chrono::microseconds;
+		using MilliSeconds = std::chrono::milliseconds;
+		using Seconds = std::chrono::seconds;
+		using Minutes = std::chrono::minutes;
+		using Hours = std::chrono::hours;
+
+		template<typename ClockType>
+		using TimePoint = std::chrono::time_point<ClockType>;
 
 	public:
 		AR_FORCE_INLINE Timer() { Reset(); }
 
-		AR_FORCE_INLINE void Timer::Reset() { m_Start = HighResClock::now(); }
+		AR_FORCE_INLINE void Reset() { m_Start = HighResClock::now(); }
 
 		// Returns time in seconds
-		AR_FORCE_INLINE float Timer::Elapsed() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f; }
+		[[nodiscard]] AR_FORCE_INLINE float Elapsed() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f; }
 
 		// Returns time in milliseconds
-		AR_FORCE_INLINE float Timer::ElapsedMillis() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f; }
+		[[nodiscard]] AR_FORCE_INLINE float ElapsedMillis() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f; }
 
 	private:
-		std::chrono::time_point<HighResClock> m_Start;
+		TimePoint<HighResClock> m_Start;
 	};
 
 	class ScopedTimer
@@ -58,7 +68,7 @@ namespace Aurora {
 		}
 
 		void Clear() { m_PerFrameData.clear(); }
-		const std::unordered_map<const char*, float>& GetPerFrameData() const { return m_PerFrameData; }
+		[[nodiscard]] const std::unordered_map<const char*, float>& GetPerFrameData() const { return m_PerFrameData; }
 
 	private:
 		std::unordered_map<const char*, float> m_PerFrameData;

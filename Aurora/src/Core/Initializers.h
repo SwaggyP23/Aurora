@@ -10,13 +10,13 @@ namespace Aurora {
 		Logger::Log::Init();
 		Random::Init();
 
-		AR_CORE_TRACE_TAG("Core", "Aurora Engine");
-		AR_CORE_TRACE_TAG("Core", "Initializing...");
+		AR_CORE_INFO_TAG("Core", "Aurora Engine");
+		AR_CORE_INFO_TAG("Core", "Initializing...");
 	}
 
 	static void ShutdownCore()
 	{
-		AR_CORE_TRACE_TAG("Core", "Shutting down...");
+		AR_CORE_INFO_TAG("Core", "Shutting down...");
 
 		Logger::Log::ShutDown();
 	}

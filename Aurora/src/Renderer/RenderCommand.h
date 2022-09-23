@@ -72,7 +72,7 @@ namespace Aurora {
 		static void ShutDown();
 
 		static void SetRenderFlag(RenderFlags flag);
-		static RenderFlags GetRenderFlag() { return m_Flags; }
+		[[nodiscard]] static RenderFlags GetRenderFlag() { return m_Flags; }
 
 		static void Enable(FeatureControl feature); // TODO: Think of better naming for this api since its a disaster
 		static void Disable(FeatureControl feature);

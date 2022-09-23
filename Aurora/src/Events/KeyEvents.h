@@ -9,7 +9,7 @@ namespace Aurora {
 	public:
 		virtual ~KeyEvent() = default;
 
-		inline KeyCode GetKeyCode() const { return m_KeyCode; }
+		[[nodiscard]] inline KeyCode GetKeyCode() const { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 
@@ -27,7 +27,7 @@ namespace Aurora {
 		KeyPressedEvent(KeyCode keycode, int repeatCount)
 			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
-		inline uint32_t GetRepeatCount() const { return m_RepeatCount; }
+		[[nodiscard]] inline uint32_t GetRepeatCount() const { return m_RepeatCount; }
 
 		std::string toString() const override
 		{

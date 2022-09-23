@@ -1,7 +1,6 @@
 #pragma once
 
-#ifndef MODEL_H
-#define MODEL_H
+#if 1
 
 #include "Mesh.h"
 
@@ -20,8 +19,8 @@ namespace Aurora {
     {
     public:
         // model data 
-        std::vector<TextureMesh> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-        std::vector<Mesh>    meshes;
+        std::vector<int> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+        std::vector<int>    meshes;
         std::string directory;
         bool gammaCorrection;
 
@@ -39,11 +38,11 @@ namespace Aurora {
         // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
         void processNode(aiNode* node, const aiScene* scene);
 
-        Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+        int processMesh(aiMesh* mesh, const aiScene* scene);
 
         // checks all material textures of a given type and loads the textures if they're not loaded yet.
         // the required info is returned as a Texture struct.
-		std::vector<TextureMesh> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+		std::vector<int> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 
     };
 

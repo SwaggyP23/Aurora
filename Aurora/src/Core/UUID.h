@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+ * Inside std::hash there is no need to return std::hash<uint64_t>{}(uuid) since std::hash returns a hash for non uniformly
+ * distributed numbers and UUID are created with a std::uniform_distribution therefore we should just return it and hashing it
+ * is redundant
+ */
+
 #include <xhash>
 
 namespace Aurora {
@@ -41,7 +47,7 @@ namespace std {
 	{
 		std::size_t operator()(const Aurora::UUID& uuid) const
 		{
-			return hash<uint64_t>{}((uint64_t)uuid);
+			return (uint64_t)uuid;
 		}
 	};
 
@@ -50,7 +56,7 @@ namespace std {
 	{
 		std::size_t operator()(const Aurora::UUID32& uuid) const
 		{
-			return hash<uint32_t>{}((uint32_t)uuid);
+			return (uint32_t)uuid;
 		}
 	};
 

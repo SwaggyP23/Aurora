@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base.h"
+
 /*
  * This is a very very very basic implementation of a reference counting system and is very temporary, and will be changed when I get
  * access to hazel-dev and look at an actual real reference counting system and implementation, however for now, i will use my own 
@@ -16,7 +18,7 @@ namespace Aurora {
 		void IncrementRefCount() const;
 		void DecrementRefCount() const;
 
-		uint32_t GetRefCount() const { return m_RefCount.load(); }
+		[[nodiscard]] uint32_t GetRefCount() const { return m_RefCount.load(); }
 
 	private:
 		mutable std::atomic<uint32_t> m_RefCount = 0;
@@ -43,7 +45,7 @@ namespace Aurora {
 		Ref(T* ptr)
 			: m_Ptr(ptr)
 		{
-			static_assert(std::is_base_of<RefCountedObject, T>::value, "Class is  not a RefCountedObject!");
+			static_assert(std::is_base_of<RefCountedObject, T>::value, "Class is not a RefCountedObject!");
 
 			IncrementRef();
 		}
@@ -132,8 +134,8 @@ namespace Aurora {
 			m_Ptr = ptr;
 		}
 
-		T* raw() { return m_Ptr; }
-		const T* raw() const { return m_Ptr; }
+		[[nodiscard]] T* raw() { return m_Ptr; }
+		[[nodiscard]] const T* raw() const { return m_Ptr; }
 
 		operator bool() const { return m_Ptr != nullptr; }
 
@@ -171,10 +173,10 @@ namespace Aurora {
 		}
 
 	private:
+		mutable T* m_Ptr = nullptr;
+
 		template<typename T2>
 		friend class Ref;
-
-		mutable T* m_Ptr = nullptr;
 
 	};
 
@@ -279,7 +281,7 @@ namespace Aurora {
 			m_Ptr = ptr;
 		}
 
-		bool IsValid()
+		[[nodiscard]] bool IsValid()
 		{
 			return m_Ptr ? RefUtils::IsLive(m_Ptr) : false;
 		}

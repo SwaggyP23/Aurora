@@ -5,25 +5,30 @@
 
 namespace Aurora {
 
-	static uint32_t ShaderDataTypeToOpenGLType(ShaderDataType type)
-	{
-		switch (type)
+	namespace Utils {
+
+		static uint32_t ShaderDataTypeToOpenGLType(ShaderDataType type)
 		{
-			case ShaderDataType::Float:	        return GL_FLOAT;
-			case ShaderDataType::Float2:        return GL_FLOAT;
-			case ShaderDataType::Float3:        return GL_FLOAT;
-			case ShaderDataType::Float4:        return GL_FLOAT;
-			case ShaderDataType::Mat3:	        return GL_FLOAT;
-			case ShaderDataType::Mat4:	        return GL_FLOAT;
-			case ShaderDataType::Int:	        return GL_INT;
-			case ShaderDataType::Int2:	        return GL_INT;
-			case ShaderDataType::Int3:	        return GL_INT;
-			case ShaderDataType::Int4:	        return GL_INT;
-			case ShaderDataType::Bool:	        return GL_BOOL;
+			switch (type)
+			{
+			    case ShaderDataType::Float:	        return GL_FLOAT;
+			    case ShaderDataType::Float2:        return GL_FLOAT;
+			    case ShaderDataType::Float3:        return GL_FLOAT;
+			    case ShaderDataType::Float4:        return GL_FLOAT;
+			    case ShaderDataType::Mat3:	        return GL_FLOAT;
+			    case ShaderDataType::Mat4:	        return GL_FLOAT;
+				case ShaderDataType::UInt:			return GL_UNSIGNED_INT;
+			    case ShaderDataType::Int:	        return GL_INT;
+			    case ShaderDataType::Int2:	        return GL_INT;
+			    case ShaderDataType::Int3:	        return GL_INT;
+			    case ShaderDataType::Int4:	        return GL_INT;
+			    case ShaderDataType::Bool:	        return GL_BOOL;
+			}
+
+			AR_CORE_ASSERT(false, "Unknown Shader Data Type!");
+			return 0;
 		}
 
-		AR_CORE_ASSERT(false, "Unknown Shader Data Type!");
-		return 0;
 	}
 
 	Ref<VertexArray> VertexArray::Create()
@@ -52,16 +57,17 @@ namespace Aurora {
 		glBindVertexArray(0);
 	}
 
-	void VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+	// TODO: Rework to support Instanced Rendering...
+	void VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer, uint32_t index)
 	{
 		AR_CORE_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 		glBindVertexArray(m_ArrayId);
 		vertexBuffer->Bind();
 
-		int index = 0;
-		const auto& layout = vertexBuffer->GetBufferLayout();
-		for (const auto& element : layout)
+		uint32_t atribIndex = 0;
+		const BufferLayout& layout = vertexBuffer->GetBufferLayout();
+		for (const BufferElement& element : layout)
 		{
 			switch (element.type)
 			{
@@ -70,62 +76,61 @@ namespace Aurora {
 			    case ShaderDataType::Float3:
 			    case ShaderDataType::Float4:
 			    {
-			    	glVertexAttribPointer(index,
+			    	glVertexAttribPointer(atribIndex,
 			    		element.GetComponentCount(),
-			    		ShaderDataTypeToOpenGLType(element.type),
+			    		Utils::ShaderDataTypeToOpenGLType(element.type),
 			    		element.normalized ? GL_TRUE : GL_FALSE,
 			    		layout.GetStride(),
 			    		(const void*)element.offset);
 			    
-			    	glEnableVertexAttribArray(index++);
+			    	glEnableVertexAttribArray(atribIndex++);
 			    	break;
 			    }
+				case ShaderDataType::UInt:
 				case ShaderDataType::Int:
 				case ShaderDataType::Int2:
 				case ShaderDataType::Int3:
 				case ShaderDataType::Int4:
 				case ShaderDataType::Bool:
 				{
-					glVertexAttribIPointer(index,
+					glVertexAttribIPointer(atribIndex,
 						element.GetComponentCount(),
-						ShaderDataTypeToOpenGLType(element.type),
+						Utils::ShaderDataTypeToOpenGLType(element.type),
 						layout.GetStride(),
 						(const void*)element.offset);
 
-					glEnableVertexAttribArray(index++);
+					glEnableVertexAttribArray(atribIndex++);
 					break;
 				}
 				case ShaderDataType::Mat3:
-				case ShaderDataType::Mat4: // Dunno what the F is this i just copied
+				case ShaderDataType::Mat4:
 				{
-					Byte count = element.GetComponentCount();
-					for (Byte i = 0; i < count; i++)
+					uint32_t count = element.GetComponentCount();
+					for (uint32_t i = 0; i < count; i++)
 					{
-						glVertexAttribPointer(index,
+						glVertexAttribPointer(atribIndex,
 							count,
-							ShaderDataTypeToOpenGLType(element.type),
+							Utils::ShaderDataTypeToOpenGLType(element.type),
 							element.normalized ? GL_TRUE : GL_FALSE,
 							layout.GetStride(),
 							(const void*)(element.offset + sizeof(float) * count * i));
-						glVertexAttribDivisor(index, 1);
+						glVertexAttribDivisor(atribIndex, 1);
 
-						glEnableVertexAttribArray(index++);
+						glEnableVertexAttribArray(atribIndex++);
 					}
 
 					break;
 				}
 			}
-
-			
 		}
 
-		m_VertexBuffers.push_back(vertexBuffer);
+		m_VertexBuffers[index] = vertexBuffer;
 	}
 
 	void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
-		glBindVertexArray(m_ArrayId);
-		indexBuffer->Bind();
+		// With the OpenGL new API and DSA I could use this instead of binding both buffers and that means they are bound...
+		glVertexArrayElementBuffer(m_ArrayId, indexBuffer->GetBufferID());
 
 		m_IndexBuffer = indexBuffer;
 	}

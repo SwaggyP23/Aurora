@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/Base.h"
+
 #include <string>
 
 namespace Aurora {
@@ -12,9 +14,9 @@ namespace Aurora {
 			: m_Name(name), m_Register(resourceRegister), m_Count(count) {}
 		~ShaderResourceDeclaration() = default;
 
-		const std::string& GetName() const { return m_Name; }
-		uint32_t GetRegister() const { return m_Register; }
-		uint32_t GetCount() const { return m_Count; }
+		[[nodiscard]] const std::string& GetName() const { return m_Name; }
+		[[nodiscard]] uint32_t GetRegister() const { return m_Register; }
+		[[nodiscard]] uint32_t GetCount() const { return m_Count; }
 
 	private:
 		std::string m_Name;

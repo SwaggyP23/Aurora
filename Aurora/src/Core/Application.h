@@ -67,19 +67,19 @@ namespace Aurora {
 		void PopOverlay(Layer* layer);
 		void ProcessEvents();
 
-		inline float GetCPUTime() const { return m_CPUTime; }
-		inline float GetFrameTime() const { return m_FrameTime; }
-		inline TimeStep GetTimeStep() const { return m_Timestep; }
+		[[nodiscard]] inline float GetCPUTime() const { return m_CPUTime; }
+		[[nodiscard]] inline float GetFrameTime() const { return m_FrameTime; }
+		[[nodiscard]] inline TimeStep GetTimeStep() const { return m_Timestep; }
 		inline void SetTickDeltaTime(float delta) { m_TickDelta = delta; }
 
-		inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
+		[[nodiscard]] inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 
-		inline Window& GetWindow() { return *m_Window; }
+		[[nodiscard]] inline Window& GetWindow() { return *m_Window; }
 
-		inline static Application& GetApp() { return *s_Instance; }
-		inline const ApplicationSpecification& GetSpecification() const { return m_Specification; }
+		[[nodiscard]] inline static Application& GetApp() { return *s_Instance; }
+		[[nodiscard]] inline const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 
-		inline PerformanceProfiler* GetPerformanceProfiler() const { return m_Profiler; }
+		[[nodiscard]] inline PerformanceProfiler* GetPerformanceProfiler() const { return m_Profiler; }
 
 	private:
 		void Run();

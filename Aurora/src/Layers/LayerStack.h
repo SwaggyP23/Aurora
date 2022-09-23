@@ -15,7 +15,7 @@ namespace Aurora {
 		void PopLayer(Layer* layer);
 		void PopOverlay(Layer* layer);
 
-		size_t Size() const { return m_Layers.size(); }
+		[[nodiscard]] size_t Size() const { return m_Layers.size(); }
 
 		Layer* operator[](uint32_t index) { return m_Layers[index]; }
 		const Layer* operator[](uint32_t index) const { return m_Layers[index]; }

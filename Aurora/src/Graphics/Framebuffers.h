@@ -20,7 +20,7 @@ namespace Aurora {
 
 	struct FramebufferTextureSpecification
 	{
-		FramebufferTextureSpecification() = default;
+		constexpr FramebufferTextureSpecification() = default;
 		FramebufferTextureSpecification(ImageFormat format)
 			: TextureFormat(format) {}
 		FramebufferTextureSpecification(ImageFormat format, TextureWrap wrapMode)
@@ -52,7 +52,7 @@ namespace Aurora {
 		uint32_t Samples = 1; // MSAA
 		FramebufferAttachmentSpecification AttachmentsSpecification;
 
-		// This is to specify if you want the depth attachment to be a texture or a renderbuffer
+		// This is to specify if you want the depth attachments to be as a Texture or as a Renderbuffer
 		bool DepthAttachmentAsTexture = false;
 
 		// This sets if the framebuffer is resizable or not
@@ -65,8 +65,8 @@ namespace Aurora {
 		Framebuffer(const FramebufferSpecification& spec);
 		~Framebuffer();
 
-		static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
-		static void Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment);
+		[[nodiscard]] static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
+		[[nodiscard]] static void Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment);
 
 		void Invalidate();
 		void Resize(uint32_t width, uint32_t height);
@@ -75,7 +75,7 @@ namespace Aurora {
 		void UnBind() const;
 
 		void GetColorAttachmentData(void* pixels, uint32_t attachmentIndex = 0);
-		void ReadPixel(uint32_t attachmentIndex, int x, int y, void* data);
+		void ReadPixel(uint32_t attachmentIndex, uint32_t x, uint32_t y, void* data);
 		void ClearTextureAttachment(uint32_t attachmentIndex, const void* data);
 
 		[[nodiscard]] uint32_t GetFramebufferID() const { return m_FrameBufferID; }
@@ -83,6 +83,7 @@ namespace Aurora {
 		[[nodiscard]] uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
 
 		[[nodiscard]] bool HasDepthAttachment() const { return m_DepthAttachment ? true : false; }
+		[[nodiscard]] uint32_t GetMaxFramebufferSize() const { return s_MaxFramebufferSize; }
 
 	private:
 		uint32_t m_FrameBufferID = 0;
@@ -93,6 +94,9 @@ namespace Aurora {
 
 		FramebufferTextureSpecification m_DepthAttachmentSpecification = ImageFormat::None;
 		uint32_t m_DepthAttachment = 0;
+
+		// 8K DCI which is 256:135 Aspect Ratio and measuring 8192x4320 pixels which is HUGE
+		static constexpr uint32_t s_MaxFramebufferSize = 8192;
 
 	};
 

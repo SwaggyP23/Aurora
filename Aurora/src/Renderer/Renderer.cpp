@@ -1,41 +1,84 @@
 #include "Aurorapch.h"
-#include "RendererPorperties.h"
 #include "Renderer.h"
+
+#include "Core/Application.h"
 #include "Renderer3D.h"
 #include "RenderCommand.h"
-#include "Core/Application.h"
-
-// Currently this is totally useless
 
 namespace Aurora {
 
-	Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
+	struct RendererData
+	{
+		Scope<ShaderLibrary> ShaderLibrary;
+		Ref<Texture2D> WhiteTexture;
+		Ref<Texture2D> BlackTexture;
+		Ref<CubeTexture> BlackCubeTexture;
+		Ref<Environment> NullEnvironment;
+	};
 
+	static RendererData* s_Data = nullptr;
+
+	// TODO: Maybe should handle UBOs initialization here?
 	void Renderer::Init()
 	{
-		// Currently not in use
-		// AR_PROFILE_FUNCTION();
-		
-		// Renderer3D::Init();
-		// RenderCommand::Init();
+		RendererCapabilities::Init();
+
+		s_Data = new RendererData();
+
+		s_Data->ShaderLibrary = ShaderLibrary::Create();
+
+		ShaderProperties renderer2DShaderProps = {};
+		renderer2DShaderProps.Name = "MainShader";
+		renderer2DShaderProps.AssetPath = "Resources/shaders/MainShader.glsl";
+		s_Data->ShaderLibrary->Load(renderer2DShaderProps);
+
+		ShaderProperties skyBoxProps = {};
+		skyBoxProps.Name = "Skybox";
+		skyBoxProps.AssetPath = "Resources/shaders/Skybox.glsl";
+		s_Data->ShaderLibrary->Load(skyBoxProps);
+
+		ShaderProperties auroraPBRStaticProps = {};
+		auroraPBRStaticProps.Name = "AuroraPBRStatic";
+		auroraPBRStaticProps.AssetPath = "Resources/shaders/AuroraPBRStatic.glsl";
+		s_Data->ShaderLibrary->Load(auroraPBRStaticProps);
+
+		ShaderProperties equirectangularToCubeMapProps = {};
+		equirectangularToCubeMapProps.Name = "EquirectToCubeMap";
+		equirectangularToCubeMapProps.AssetPath = "Resources/shaders/EquiRectangularToCubeMap.glsl";
+		equirectangularToCubeMapProps.Type = ShaderType::Compute;
+		s_Data->ShaderLibrary->Load(equirectangularToCubeMapProps);
+
+		// TODO: This is a temporary shader that will be dicarded and replaced by the AuroraPBRStatic
+		ShaderProperties modelProps = {};
+		modelProps.Name = "Model";
+		modelProps.AssetPath = "Resources/shaders/model.glsl";
+		s_Data->ShaderLibrary->Load(modelProps);
+
+		// 0xABGR
+		constexpr uint32_t whiteTextureData = 0xffffffff;
+		s_Data->WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
+
+		constexpr uint32_t blackTextureData = 0xff000000;
+		s_Data->BlackTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &blackTextureData);
+
+		constexpr uint32_t blackCubeTexture[] = { 0xff0000ff, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
+		TextureProperties blackCubeTexProps = {};
+		blackCubeTexProps.GenerateMips = false;
+		s_Data->BlackCubeTexture = CubeTexture::Create(ImageFormat::RGB, 1, 1, (const void*)blackCubeTexture, blackCubeTexProps);
+
+		s_Data->NullEnvironment = Environment::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
+
+		RenderCommand::Init();
+		Renderer3D::Init();
 	}
 
 	void Renderer::ShutDown()
 	{
-		// Currently not in use
-		// PROFILE_FUNCTION();
+		 Renderer3D::ShutDown();
+		 RenderCommand::ShutDown();
+		 RendererCapabilities::ShutDown();
 
-		// Renderer3D::ShutDown();
-		// RenderCommand::ShutDown();
-	}
-
-	void Renderer::BeginScene(const EditorCamera& camera)
-	{
-		s_SceneData->viewProjectionMatrix = camera.GetProjection() * camera.GetViewMatrix();;
-	}
-
-	void Renderer::EndScene()
-	{
+		 delete s_Data;
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -43,24 +86,42 @@ namespace Aurora {
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer::DrawQuad(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
+	void Renderer::BeginScene(const Ref<EditorCamera>& camera)
 	{
-		//shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-		//shader->SetUniformMat4("ml_matrix", model);
-		//shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
-
-		VAO->Bind();
-		RenderCommand::DrawIndexed(VAO, true);
 	}
 
-	void Renderer::DrawSphere(const Ref<Shader>& shader, const glm::mat4& model, const Ref<VertexArray>& VAO)
+	void Renderer::EndScene()
 	{
-		//shader->SetUniformMat4("vw_pr_matrix", s_SceneData->viewProjectionMatrix);
-		//shader->SetUniformMat4("ml_matrix", model);
-		//shader->SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(model)));
+	}
 
-		VAO->Bind();
-		RenderCommand::DrawIndexed(VAO, false);
+	const Scope<ShaderLibrary>& Renderer::GetShaderLibrary()
+	{
+		return s_Data->ShaderLibrary;
+	}
+
+	const RendererProperties& Renderer::GetRendererCapabilities()
+	{
+		return RendererCapabilities::GetRendererProperties();
+	}
+
+	const Ref<Texture2D>& Renderer::GetWhiteTexture()
+	{
+		return s_Data->WhiteTexture;
+	}
+
+	const Ref<Texture2D> Renderer::GetBlackTexture()
+	{
+		return s_Data->BlackTexture;
+	}
+
+	const Ref<CubeTexture>& Renderer::GetBlackCubeTexture()
+	{
+		return s_Data->BlackCubeTexture;
+	}
+
+	const Ref<Environment>& Renderer::GetBlackEnvironment()
+	{
+		return s_Data->NullEnvironment;
 	}
 
 }

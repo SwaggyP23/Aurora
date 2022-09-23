@@ -54,9 +54,9 @@ namespace Aurora {
 		void AddFont(const std::string& fontName, FontIdentifier type, float fontSize = 18.0f);
 		void LoadFont(const std::string& fontName, const std::string& filepath);
 
-		FontTypes GetFont(const std::string& fontName);
+		[[nodiscard]] FontTypes GetFont(const std::string& fontName);
 
-		inline const std::unordered_map<std::pair<std::string, FontIdentifier>, uint32_t>& GetFontNamesAndIdentifier() const { return m_FontIndices; }
+		[[nodiscard]] inline const std::unordered_map<std::pair<std::string, FontIdentifier>, uint32_t>& GetFontNamesAndIdentifier() const { return m_FontIndices; }
 
 	private:
 		bool m_BoldHandled = false;

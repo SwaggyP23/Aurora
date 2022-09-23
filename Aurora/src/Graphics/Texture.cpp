@@ -2,6 +2,7 @@
 #include "Texture.h"
 
 #include "Utils/ImageLoader.h"
+#include "Renderer/Renderer.h"
 
 #include <glad/glad.h>
 #include <stb_image/stb_image.h>
@@ -120,36 +121,6 @@ namespace Aurora {
 			return 0;
 		}
 
-		// TODO: Expand on this for all the other ImageFormats!!
-		static uint32_t GetImageFormatBPP(ImageFormat format)
-		{
-			switch (format)
-			{
-			    case ImageFormat::R8UI:        return 1;
-			    case ImageFormat::R16UI:       return 2;
-			    case ImageFormat::R32UI:       return 4;
-			    case ImageFormat::R32F:        return 4;
-				case ImageFormat::RGB:	       return 3;
-			    case ImageFormat::SRGB:        return 3;
-			    case ImageFormat::RGBA:        return 4;
-			    case ImageFormat::RGBA16F:     return 2 * 4;
-			    case ImageFormat::RGBA32F:     return 4 * 4;
-			}
-
-			AR_CORE_ASSERT(false, "Unknown Image Format!");
-			return 0;
-		}
-
-		static uint32_t GetImageMemorySize(ImageFormat format, uint32_t width, uint32_t height)
-		{
-			return width * height * GetImageFormatBPP(format);
-		}
-
-		static uint32_t CalcMipCount(uint32_t width, uint32_t height)
-		{
-			return (uint32_t)std::floor(std::log2(std::min(width, height))) + 1;
-		}
-
 	}
 
 	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
@@ -167,6 +138,8 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
+		m_AssetPath = "No Path Set!";
+
 		m_ImageData = Buffer((Byte*)data, Utils::GetImageMemorySize(format, width, height));
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
@@ -180,11 +153,12 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		int32_t width, height, numChannels;
+		int32_t width;
+		int32_t height;
+		int32_t numChannels;
 
 		if (stbi_is_hdr(filePath.c_str()))
 		{
-			// TODO: Log if the texture is SRGB or not!
 			AR_CORE_INFO_TAG("Texture", "Loading an HDR texture from: {0}, SRGB: {1}", filePath.c_str(), props.SRGB);
 
 			stbi_set_flip_vertically_on_load(props.FlipOnLoad);
@@ -192,7 +166,7 @@ namespace Aurora {
 			float* imageData = stbi_loadf(filePath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
 			AR_CORE_ASSERT(imageData, "Image was not loaded!");
 
-			stbi_set_flip_vertically_on_load(false); // Reset since it is kind of a global state inside stb!
+			stbi_set_flip_vertically_on_load(false); // Reset since stbi is kind of a global state machine!
 
 			m_ImageData = Buffer((Byte*)imageData, Utils::GetImageMemorySize(ImageFormat::RGBA32F, width, height));
 			m_Format = ImageFormat::RGBA32F;
@@ -203,23 +177,25 @@ namespace Aurora {
 
 			stbi_set_flip_vertically_on_load(props.FlipOnLoad);
 
-			uint8_t* imageData = stbi_load(filePath.c_str(), &width, &height, &numChannels, props.SRGB ? STBI_rgb : STBI_rgb_alpha);
+			Byte* imageData = stbi_load(filePath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
 			AR_CORE_ASSERT(imageData);
 
-			stbi_set_flip_vertically_on_load(false); // Reset since it is kind of a global state inside stb!
+			stbi_set_flip_vertically_on_load(false); // Reset since stbi is kind of a global state machine!
 
-			ImageFormat format = props.SRGB ? ImageFormat::RGB : ImageFormat::RGBA;
+			ImageFormat format = ImageFormat::RGBA;
 			m_ImageData = Buffer(imageData, Utils::GetImageMemorySize(format, width, height));
 			m_Format = format;
 		}
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 
+		// Filtering and wrapping parameters
 		glTextureParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, Utils::GLFilterTypeFromTextureFilter(props.SamplerFilter, props.GenerateMips));
 		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, Utils::GLFilterTypeFromTextureFilter(props.SamplerFilter, false));
-		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_R, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
 		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_S, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
 		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_R, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
+		glTextureParameterf(m_TextureID, GL_TEXTURE_MAX_ANISOTROPY, glm::min(props.AnisotropicFiltering, Renderer::GetRendererCapabilities().MaxAnisotropy));
 
 		m_Width = width;
 		m_Height = height;
@@ -227,7 +203,7 @@ namespace Aurora {
 		Invalidate();
 
 		stbi_image_free(m_ImageData.Data);
-		m_ImageData = Buffer(); // Reset the buffer
+		m_ImageData = Buffer();
 	}
 
 	Texture2D::~Texture2D()
@@ -264,6 +240,87 @@ namespace Aurora {
 	void Texture2D::UnBind(uint32_t slot) const
 	{
 		glBindTextureUnit(slot, 0);
+	}
+
+	uint32_t Texture2D::GetMipCount() const
+	{
+		return Utils::CalcMipCount(m_Width, m_Height);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////// CubeTexture
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	Ref<CubeTexture> CubeTexture::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
+	{
+		return CreateRef<CubeTexture>(format, width, height, data, props);
+	}
+
+	Ref<CubeTexture> CubeTexture::Create(const std::string& filePath, const TextureProperties& props)
+	{
+		return CreateRef<CubeTexture>(filePath, props);
+	}
+
+	CubeTexture::CubeTexture(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
+		: m_AssetPath("No Path Set!"), m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
+	{
+		// Since we have 6 layers we need memory for 6 * sizeof(one face)
+		m_ImageData = Buffer((Byte*)data, Utils::GetImageMemorySize(format, width, height) * 6);
+
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_TextureID);
+		
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, Utils::GLFilterTypeFromTextureFilter(props.SamplerFilter, props.GenerateMips));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, Utils::GLFilterTypeFromTextureFilter(props.SamplerFilter, false));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_S, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_R, Utils::GLWrapTypeFromTextureWrap(props.SamplerWrap));
+
+		Invalidate();
+		m_ImageData = Buffer();
+	}
+
+	CubeTexture::CubeTexture(const std::string& filePath, const TextureProperties& props)
+		: m_AssetPath(filePath), m_Properties(props)
+	{
+		AR_CORE_ASSERT(false, "Not Implemented");
+	}
+
+	CubeTexture::~CubeTexture()
+	{
+		glDeleteTextures(1, &m_TextureID);
+	}
+
+	void CubeTexture::Invalidate()
+	{
+		GLenum internalFormat;
+		internalFormat = Utils::GLInternalFormatFromAFormat(m_Format);
+		
+		uint32_t mipCount = Utils::CalcMipCount(m_Width, m_Height);
+		glTextureStorage2D(m_TextureID, mipCount, internalFormat, m_Width, m_Height);
+		if (m_ImageData)
+		{
+			GLenum format = Utils::GLFormatFromAFormat(m_Format);
+			GLenum dataType = Utils::GLDataTypeFromAFormat(m_Format);
+			glTextureSubImage3D(m_TextureID, 0, 0, 0, 0, m_Width, m_Height, 6, format, dataType, m_ImageData.Data);
+
+			if (m_Properties.GenerateMips)
+				glGenerateTextureMipmap(m_TextureID);
+		}
+	}
+
+	void CubeTexture::Bind(uint32_t slot) const
+	{
+		glBindTextureUnit(slot, m_TextureID);
+	}
+
+	void CubeTexture::UnBind(uint32_t slot) const
+	{
+		glBindTextureUnit(slot, 0);
+	}
+
+	uint32_t CubeTexture::GetMipCount() const
+	{
+		return Utils::CalcMipCount(m_Width, m_Height);
 	}
 
 }

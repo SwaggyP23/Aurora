@@ -27,11 +27,10 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Renderer3D.h"
 #include "Renderer/RenderCommand.h"
-#include "Renderer/RendererPorperties.h"
+#include "Renderer/RendererCaps.h"
 
 #include "Graphics/VertexBuffer.h"
 #include "Graphics/IndexBuffer.h"
-#include "Graphics/CubeTexture.h"
 #include "Graphics/Framebuffers.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"

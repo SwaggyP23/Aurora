@@ -1,13 +1,14 @@
 #include "Aurorapch.h"
 #include "Renderer3D.h"
 
+// TODO: TO BE REWORKED ENTIRELY (THIS WILL BECOME A RENDERER2D AND NOT A 3D!!) 
+
 // Everything concerning the entityIDs is EDITOR-ONLY since when making a game no one cares about entity ids in the shaders
 // Aurora Uses a clockwise orientation to determine the backfaces of each quad for back face culling
+#include "Renderer.h"
 
 #include "Core/Application.h"
 #include "Graphics/UniformBuffer.h"
-
-#include <glad/glad.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -15,8 +16,6 @@
 #include <ImGui/imgui.h>
 
 namespace Aurora {
-
-	Ref<Texture2D> Renderer3D::m_ContainerTexture; // TODO: Fuck is this xD?????
 
 	struct QuadVertex
 	{
@@ -26,7 +25,6 @@ namespace Aurora {
 		glm::vec2 TexCoords;
 		float TextureIndex;
 		float TilingFactor;
-		int light;
 
 		// This is for the editor only
 		int EntityID = -1;
@@ -36,23 +34,20 @@ namespace Aurora {
 	// from the CPU to the GPU, even if you are only rendering like 15 quads it will not peak in fps since, again, the memory is too big!
 	// Therefore for lowerend laptops, it is better to keep the MaxQuads under the 1.5k mark.
 
-	struct RendererData
+	struct Renderer3DData
 	{
 		static const size_t MaxQuads = 1000;
 		static const size_t MaxVertices = MaxQuads * 24;
 		static const size_t MaxIndices = MaxQuads * 36; // Sill in the 16-bit range
-		static const size_t MaxTextureSlots = 16;
-		// const size_t MaxTextureSlots = RendererProperties::GetRendererProperties()->TextureSlots;
+		static const size_t MaxTextureSlots = 16; // TODO: RenderCaps?
 
 		Ref<VertexArray> SkyBoxVertexArray;
 		Ref<VertexBuffer> SkyBoxVertexBuffer;
 		Ref<Shader> SkyBoxShader;
-		Ref<Shader> MatShader;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<Shader> QuadShader;
-		Ref<Texture2D> WhiteTex;
 
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr; // This is to keep track of the base of memory allocations
@@ -71,6 +66,8 @@ namespace Aurora {
 
 		Renderer3D::Statistics Stats;
 
+		// TODO: Move this uniform buffer since i dont think the batch renderer should set it and there should be
+		// a global uniform set that gets inited with the renderer in the beginning
 		struct CameraData
 		{
 			glm::mat4 ViewProjection;
@@ -78,18 +75,16 @@ namespace Aurora {
 		};
 		CameraData CameraBuffer;
 		Ref<UniformBuffer> CameraUniformBuffer;
+
 	};
 
-	static RendererData* s_Data;
+	static Renderer3DData* s_Data;
 
 	void Renderer3D::Init()
 	{
 		AR_PROFILE_FUNCTION();
 
-		s_Data = new RendererData();
-
-		RendererProperties::Init();
-		RenderCommand::Init();
+		s_Data = new Renderer3DData();
 
 		s_Data->QuadVertexPositions[0] =  { -0.5f, -0.5f, -0.5f, 1.0f };
 		s_Data->QuadVertexPositions[1] =  {  0.5f, -0.5f, -0.5f, 1.0f };
@@ -205,7 +200,7 @@ namespace Aurora {
 		};
 
 		s_Data->SkyBoxVertexArray = VertexArray::Create();
-		s_Data->SkyBoxVertexBuffer = VertexBuffer::Create(skyboxQuad, sizeof(skyboxQuad), VertexBufferUsage::Static);
+		s_Data->SkyBoxVertexBuffer = VertexBuffer::Create(skyboxQuad, sizeof(skyboxQuad), BufferUsage::Static);
 		s_Data->SkyBoxVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoords"}
@@ -213,7 +208,7 @@ namespace Aurora {
 		s_Data->SkyBoxVertexArray->AddVertexBuffer(s_Data->SkyBoxVertexBuffer);
 
 		s_Data->QuadVertexArray = VertexArray::Create();
-		s_Data->QuadVertexBuffer = VertexBuffer::Create((uint32_t)s_Data->MaxVertices * sizeof(QuadVertex), VertexBufferUsage::Dynamic);
+		s_Data->QuadVertexBuffer = VertexBuffer::Create((uint32_t)s_Data->MaxVertices * sizeof(QuadVertex), BufferUsage::Dynamic);
 		s_Data->QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
@@ -221,30 +216,26 @@ namespace Aurora {
 			{ ShaderDataType::Float2, "a_TexCoord"     },
 			{ ShaderDataType::Float,  "a_TexIndex"     },
 			{ ShaderDataType::Float,  "a_TilingFactor" },
-			{ ShaderDataType::Int,    "a_Light"        },
 			{ ShaderDataType::Int,    "a_EntityID"     }
 		});
 		s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
 
 		s_Data->QuadVertexBufferBase = new QuadVertex[s_Data->MaxVertices];
 
-		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, s_Data->MaxIndices);
+		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, s_Data->MaxIndices * sizeof(uint32_t));
 		s_Data->QuadVertexArray->SetIndexBuffer(quadIB);
 		s_Data->SkyBoxVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
-
-		constexpr uint32_t whiteTextureData = 0xffffffff;
-		s_Data->WhiteTex = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
 
 		int samplers[s_Data->MaxTextureSlots];
 		for (int i = 0; i < s_Data->MaxTextureSlots; i++)
 			samplers[i] = i;
 		// This is the sampler that will be submitted to OpenGL and in which OpenGL will be sampling the textures from according to the passed index
 
-		s_Data->SkyBoxShader = Shader::Create("Resources/shaders/Skybox.glsl");
-		s_Data->QuadShader = Shader::Create("Resources/shaders/MainShader.glsl");
+		s_Data->SkyBoxShader = Renderer::GetShaderLibrary()->Get("Skybox");
+		s_Data->QuadShader = Renderer::GetShaderLibrary()->Get("MainShader");
 
-		s_Data->TextureSlots[0] = s_Data->WhiteTex; // index 0 is for the white texture.
+		s_Data->TextureSlots[0] = Renderer::GetWhiteTexture(); // index 0 is for the white texture.
 
 		s_Data->textureCoords[0] =  { 1.0f, 0.0f };
 		s_Data->textureCoords[1] =  { 0.0f, 0.0f };
@@ -306,15 +297,15 @@ namespace Aurora {
 		s_Data->QuadNormalPositions[22] = { 0.0f,  1.0f,  0.0f };
 		s_Data->QuadNormalPositions[23] = { 0.0f,  1.0f,  0.0f };
 
-		s_Data->CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
+		// TODO: This should be changed and maybe all UBOs should be created at the initiation of the renderer in
+		// a UBO set, so as for the storage buffers and all that similar stuff
+		s_Data->CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer3DData::CameraData), 0);
 	}
 
 	void Renderer3D::ShutDown()
 	{
 		delete[] s_Data->QuadVertexBufferBase;
 		delete s_Data;
-
-		RendererProperties::ShutDown();
 	}
 
 	void Renderer3D::OnWindowResize(uint32_t width, uint32_t height)
@@ -332,7 +323,7 @@ namespace Aurora {
 
 		s_Data->CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
 		s_Data->CameraBuffer.SkyVP = skyview;
-		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(RendererData::CameraData));
+		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(Renderer3DData::CameraData));
 
 		s_Data->QuadShader->Bind();
 
@@ -348,7 +339,7 @@ namespace Aurora {
 
 		s_Data->CameraBuffer.ViewProjection = camera.GetViewProjection();
 		s_Data->CameraBuffer.SkyVP = skyViewProj;
-		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(RendererData::CameraData));
+		s_Data->CameraUniformBuffer->SetData(&(s_Data->CameraBuffer), sizeof(Renderer3DData::CameraData));
 
 		s_Data->QuadShader->Bind();
 		
@@ -384,6 +375,7 @@ namespace Aurora {
 				s_Data->TextureSlots[i]->Bind(i);
 
 			s_Data->QuadShader->Bind();
+			// If we pass 0 to the indexCount it will render whatever is in the indexBuffer of the passed VAO
 			RenderCommand::DrawIndexed(s_Data->QuadVertexArray, s_Data->QuadIndexCount);
 
 			s_Data->Stats.DrawCalls++;
@@ -398,7 +390,6 @@ namespace Aurora {
 
 	void Renderer3D::DrawSkyBox(const Ref<CubeTexture>& skybox) // TODO: Temp...
 	{
-		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::LessOrEqual);
 		s_Data->SkyBoxShader->Bind();
 		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.a", glm::vec4(1.0f));
 		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.b", glm::mat4(1.0f));
@@ -406,7 +397,8 @@ namespace Aurora {
 		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.d", 0.3f);
 		skybox->Bind();
 
-		auto flag = RenderCommand::GetRenderFlag();
+		RenderFlags flag = RenderCommand::GetRenderFlag();
+		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::LessOrEqual);
 		RenderCommand::SetRenderFlag(RenderFlags::Fill);
 		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);
 		RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
@@ -417,22 +409,22 @@ namespace Aurora {
 	void Renderer3D::DrawMaterial(const Ref<Material>& mat, const glm::mat4& trans, const glm::vec4& tint)
 	{
 		mat->Set("u_Renderer.transform", trans);
-		mat->Set("u_Materials.AlbedoColor", tint);
+		mat->Set("u_MaterialUniforms.AlbedoColor", tint);
 		mat->SetUpForRendering();
 		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
 		RenderCommand::DrawIndexed(s_Data->SkyBoxVertexArray, 36);
 		RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
 	}
 
-	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
+	void Renderer3D::DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int entityID)
 	{
 		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
-		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= Renderer3DData::MaxIndices)
 			NextBatch();
 
-		const float whiteTexIndex = 0.0f; // White texture.
-		const float TilingFactor = 1.0f; // TilingFactor.
+		constexpr float whiteTexIndex = 0.0f; // White texture.
+		constexpr float TilingFactor = 1.0f; // TilingFactor.
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), scale);
@@ -447,7 +439,6 @@ namespace Aurora {
 			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
 			s_Data->QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
 			s_Data->QuadVertexBufferPtr->TilingFactor = TilingFactor;
-			s_Data->QuadVertexBufferPtr->light = light;
 			s_Data->QuadVertexBufferPtr->EntityID = entityID;
 			s_Data->QuadVertexBufferPtr++;
 		}
@@ -461,7 +452,7 @@ namespace Aurora {
 	{
 		AR_SCOPE_PERF("Renderer3D::DrawQuad");
 
-		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= Renderer3DData::MaxIndices)
 			NextBatch();
 
 		// textureIndex is the index that will be submitted in the VBO with everything and then passed on to the fragment shader so 
@@ -472,7 +463,7 @@ namespace Aurora {
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_Data->TextureSlotIndex; i++)
 		{
-			if (*(s_Data->TextureSlots[i]) == *texture)
+			if (s_Data->TextureSlots[i] == texture)
 			{
 				textureIndex = (float)i;
 				break;
@@ -488,8 +479,6 @@ namespace Aurora {
 			s_Data->TextureSlotIndex++;
 		}
 
-		const int light = 0;
-
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), scale);
 
@@ -503,7 +492,6 @@ namespace Aurora {
 			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
 			s_Data->QuadVertexBufferPtr->TextureIndex = textureIndex;
 			s_Data->QuadVertexBufferPtr->TilingFactor = tiling;
-			s_Data->QuadVertexBufferPtr->light = light;
 			s_Data->QuadVertexBufferPtr->EntityID = entityID;
 			s_Data->QuadVertexBufferPtr++;
 		}
@@ -513,15 +501,15 @@ namespace Aurora {
 		s_Data->Stats.QuadCount++;
 	}
 
-	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int light, int entityID)
+	void Renderer3D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec3& scale, const glm::vec4& color, int entityID)
 	{
 		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
-		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= Renderer3DData::MaxIndices)
 			NextBatch();
 
-		const float whiteTexIndex = 0.0f; // White texture.
-		const float TilingFactor = 1.0f; // TilingFactor.
+		constexpr float TilingFactor = 1.0f; // TilingFactor.
+		constexpr float whiteTexIndex = 0.0f; // White texture.
 
 		glm::mat4 Rotation = glm::toMat4(glm::quat(rotations));
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * Rotation * glm::scale(glm::mat4(1.0f), scale);
@@ -536,7 +524,6 @@ namespace Aurora {
 			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
 			s_Data->QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
 			s_Data->QuadVertexBufferPtr->TilingFactor = TilingFactor;
-			s_Data->QuadVertexBufferPtr->light = light;
 			s_Data->QuadVertexBufferPtr->EntityID = entityID;
 			s_Data->QuadVertexBufferPtr++;
 		}
@@ -550,13 +537,13 @@ namespace Aurora {
 	{
 		AR_SCOPE_PERF("Renderer3D::DrawRotatedQuad");
 
-		if (s_Data->QuadIndexCount >= RendererData::MaxIndices)
+		if (s_Data->QuadIndexCount >= Renderer3DData::MaxIndices)
 			NextBatch();
 
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_Data->TextureSlotIndex; i++)
 		{
-			if (*(s_Data->TextureSlots[i]) == *texture)
+			if (s_Data->TextureSlots[i] == texture)
 			{
 				textureIndex = (float)i;
 				break;
@@ -569,8 +556,6 @@ namespace Aurora {
 			s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
 			s_Data->TextureSlotIndex++;
 		}
-
-		const int light = 0;
 
 		glm::mat4 Rotation = glm::toMat4(glm::quat(rotations));
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * Rotation * glm::scale(glm::mat4(1.0f), scale);
@@ -585,7 +570,6 @@ namespace Aurora {
 			s_Data->QuadVertexBufferPtr->TexCoords = s_Data->textureCoords[i];
 			s_Data->QuadVertexBufferPtr->TextureIndex = textureIndex;
 			s_Data->QuadVertexBufferPtr->TilingFactor = tiling;
-			s_Data->QuadVertexBufferPtr->light = light;
 			s_Data->QuadVertexBufferPtr->EntityID = entityID;
 			s_Data->QuadVertexBufferPtr++;
 		}

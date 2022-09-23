@@ -38,16 +38,9 @@
  * that specific stage...!
  */
 
-// Define as 1 if you want the shader to use std::fstream.
-#define AR_NO_USE_FILE_POINTER 0
-
 namespace Aurora {
 
-	enum class ShaderStageType : uint8_t
-	{
-		None = 0, Vertex, Fragment, Geometry
-	};
-
+	// To be expanded...
 	enum class ShaderType : uint8_t
 	{
 		None = 0,
@@ -55,15 +48,28 @@ namespace Aurora {
 		Compute
 	};
 
+	enum class ShaderStageType : uint8_t
+	{
+		None = 0,
+		Vertex,
+		Fragment
+	};
+
 	enum class ShaderUniformType : uint8_t
 	{
 		None = 0,
 		Bool,
-		Int, UInt,
+		Int,
+		UInt,
 		Float,
-		IVec2, IVec3, IVec4,
-		Vec2, Vec3, Vec4,
-		Mat3, Mat4
+		IVec2,
+		IVec3,
+		IVec4,
+		Vec2, 
+		Vec3, 
+		Vec4,
+		Mat3,
+		Mat4
 	};
 
 	// A representation of a uniform
@@ -73,12 +79,12 @@ namespace Aurora {
 		ShaderUniform() = default;
 		ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset);
 
-		const std::string& GetName() const { return m_Name; }
-		ShaderUniformType GetUniformType() const { return m_Type; }
-		uint32_t GetSize() const { return m_Size; }
-		uint32_t GetOffset() const { return m_Offset; }
+		[[nodiscard]] const std::string& GetName() const { return m_Name; }
+		[[nodiscard]] ShaderUniformType GetUniformType() const { return m_Type; }
+		[[nodiscard]] uint32_t GetSize() const { return m_Size; }
+		[[nodiscard]] uint32_t GetOffset() const { return m_Offset; }
 
-		static std::string UniformTypeToString(ShaderUniformType type);
+		[[nodiscard]] static std::string UniformTypeToString(ShaderUniformType type);
 
 	private:
 		std::string m_Name;
@@ -91,7 +97,7 @@ namespace Aurora {
 	struct ShaderProperties
 	{
 		std::string Name;
-		std::string AssetPath;
+		std::filesystem::path AssetPath;
 		ShaderType Type = ShaderType::TwoStageVertFrag;
 	};
 
@@ -111,19 +117,21 @@ namespace Aurora {
 
 	public:
 		Shader() = default;
-		Shader(const ShaderProperties& props, bool forceCompile);
-		Shader(const std::string& filePath, bool forceCompile);
+		Shader(const ShaderProperties& props);
+		Shader(const std::string& filePath, ShaderType type);
 		~Shader();
 
 		void Bind() const;
 		void UnBind() const;
 
-		static Ref<Shader> Create(const std::string& filepath, bool forceCompile = false);
-		static Ref<Shader> Create(const ShaderProperties& props, bool forceCompile = false);
+		[[nodiscard]] static Ref<Shader> Create(const std::string& filepath, ShaderType type = ShaderType::TwoStageVertFrag);
+		[[nodiscard]] static Ref<Shader> Create(const ShaderProperties& props);
 
-		void Reload(bool forceCompile = true);
+		void Reload();
 
 		[[nodiscard]] size_t GetHash() const;
+		// Returns last time modified of the asset path in minutes
+		[[nodiscard]] uint32_t GetLastTimeModified() const;
 
 		// Setting uniforms...
 
@@ -142,8 +150,10 @@ namespace Aurora {
 		[[nodiscard]] inline bool IsCompute() const { return m_ShaderType == ShaderType::Compute; }
 
 		[[nodiscard]] inline const std::string& GetName() const { return m_Name; }
-		[[nodiscard]] inline const std::string& GetFilePath() const { return m_AssetPath; }
+		[[nodiscard]] inline const std::filesystem::path& GetFilePath() const { return m_AssetPath; }
 		[[nodiscard]] const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
+		[[nodiscard]] std::string GetTypeString() const;
+		[[nodiscard]] uint32_t GetCompileTimeThreshold() const { return s_CompileTimeThreshold; }
 		
 		[[nodiscard]] inline const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
 		[[nodiscard]] inline const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
@@ -152,14 +162,15 @@ namespace Aurora {
 		static std::vector<Ref<Shader>> s_AllShaders;
 
 	private:
-		void Load2Stage(const std::string& source, bool forceCompile = false);
-		void LoadCompute(const std::string& source, bool forceCompile = false);
+		void Load2Stage(const std::string& source);
+		void LoadCompute(const std::string& source);
 		void CreateProgram();
 
 		void CompileOrGetVulkanBinary(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile);
 		void CompileOrGetOpenGLBinary(bool forceCompile);
 		void Reflect(ShaderStage type, const std::vector<uint32_t>& shaderData);
 
+		std::string PreprocessComputeSource(const std::string& source);
 		std::unordered_map<uint32_t/*GLenum*/, std::string> SplitSource(const std::string& source);
 
 		// Currently not used...
@@ -187,7 +198,7 @@ namespace Aurora {
 		uint32_t m_ShaderID = 0;
 
 		std::string m_Name;
-		std::string m_AssetPath;
+		std::filesystem::path m_AssetPath;
 		ShaderType m_ShaderType = ShaderType::TwoStageVertFrag;
 
 		std::unordered_map<ShaderStage, std::string> m_OpenGLShaderSource; // OpenGL Source Code...
@@ -197,6 +208,9 @@ namespace Aurora {
 		std::unordered_map<std::string, ShaderPushBuffer> m_Buffers;
 		std::unordered_map<std::string, ShaderResourceDeclaration> m_Resources;
 		mutable std::unordered_map<std::string, int> m_UniformLocations;
+
+		// If the shader's last time modified is less than 5 minutes, recompilation occurs
+		constexpr static uint32_t s_CompileTimeThreshold = 5;
 
 	};
 
@@ -208,20 +222,22 @@ namespace Aurora {
 		ShaderLibrary() = default;
 		~ShaderLibrary() = default;
 
+		static Scope<ShaderLibrary> Create();
+
 		// Adds an already created shader into the library
 		void Add(const Ref<Shader>& shader);
 		void Add(const std::string& name, const Ref<Shader>& shader);
 
 		// Loads a shader into the library
-		void Load(const std::string& filepath, bool forceCompile = false);
-		void Load(const std::string& name, const std::string& filepath); // Gives the option to specify name
+		Ref<Shader> Load(const std::string& filepath, ShaderType type = ShaderType::TwoStageVertFrag);
+		Ref<Shader> Load(const ShaderProperties& props); // Gives the option to specify name
 
-		const Ref<Shader>& Get(const std::string& name);
+		[[nodiscard]] const Ref<Shader>& Get(const std::string& name) const;
 
-		bool Exist(const std::string& name) const;
+		[[nodiscard]] bool Exist(const std::string& name) const;
 
 	private:
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders{};
+		mutable std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 
 	};
 

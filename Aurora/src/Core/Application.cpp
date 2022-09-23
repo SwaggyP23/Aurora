@@ -1,7 +1,7 @@
 #include "Aurorapch.h"
 #include "Application.h"
 
-#include "Renderer/Renderer3D.h"
+#include "Renderer/Renderer.h"
 #include "Utils/UtilFunctions.h"
 
 extern bool g_ApplicationRunning;
@@ -40,7 +40,7 @@ namespace Aurora {
 		else
 			m_Window->Center();
 
-		Renderer3D::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initialization
+		Renderer::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initialization
 
 		if (m_Specification.EnableImGui)
 		{
@@ -64,7 +64,7 @@ namespace Aurora {
 			delete layer;
 		}
 
-		Renderer3D::ShutDown(); // Look into moving to Aurora Core Shutdown with similar shutdown functions
+		Renderer::ShutDown();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -187,7 +187,7 @@ namespace Aurora {
 
 		m_Minimized = false;
 
-		Renderer3D::OnWindowResize(e.GetWidth(), e.GetHeight());
+		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 
 		return true;
 	}

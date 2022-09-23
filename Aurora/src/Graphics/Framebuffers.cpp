@@ -1,16 +1,33 @@
 #include "Aurorapch.h"
 #include "Framebuffers.h"
 
+#include "Renderer/Renderer.h"
+
 #include <glad/glad.h>
 
 namespace Aurora {
 
 	namespace Utils {
 
-		static GLenum GLDepthAttachmentType(ImageFormat format)
+		static GLenum GLAttachmentType(ImageFormat format)
 		{
 			switch (format)
 			{
+			    case ImageFormat::R8I:                      return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::R8UI:						return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::R16I:						return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::R16UI:					return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::R32I:						return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::R32UI:					return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::R32F:						return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::RG8:						return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::RG16F:					return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::RG32F:					return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::RGB:						return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::RGBA:						return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::RGBA16F:					return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::RGBA32F:					return GL_COLOR_ATTACHMENT0;
+			    case ImageFormat::SRGB:						return GL_COLOR_ATTACHMENT0;
 			    case ImageFormat::DEPTH24STENCIL8:			return GL_DEPTH_STENCIL_ATTACHMENT;
 			    case ImageFormat::DEPTH32FSTENCIL8UINT:		return GL_DEPTH_STENCIL_ATTACHMENT;
 			    case ImageFormat::DEPTH32F:					return GL_DEPTH_ATTACHMENT;
@@ -142,31 +159,6 @@ namespace Aurora {
 			return 0;
 		}
 
-		// TODO: Expand on this for all the other ImageFormats!!
-		static uint32_t GetImageFormatBPP(ImageFormat format)
-		{
-			switch (format)
-			{
-			    case ImageFormat::R8UI:        return 1;
-			    case ImageFormat::R16UI:       return 2;
-			    case ImageFormat::R32UI:       return 4;
-			    case ImageFormat::R32F:        return 4;
-			    case ImageFormat::RGB:	       return 3;
-			    case ImageFormat::SRGB:        return 3;
-			    case ImageFormat::RGBA:        return 4;
-			    case ImageFormat::RGBA16F:     return 2 * 4;
-			    case ImageFormat::RGBA32F:     return 4 * 4;
-			}
-
-			AR_CORE_ASSERT(false, "Unknown Image Format!");
-			return 0;
-		}
-
-		static uint32_t GetImageMemorySize(ImageFormat format, uint32_t width, uint32_t height)
-		{
-			return width * height * GetImageFormatBPP(format);
-		}
-
 		inline static GLenum TextureTarget(bool multisampled)
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -184,7 +176,7 @@ namespace Aurora {
 
 		inline static void CreateRenderBuffer(uint32_t* outID, uint32_t count)
 		{
-			glCreateRenderbuffers(1, outID);
+			glCreateRenderbuffers(count, outID);
 		}
 
 		inline static void BindRenderBuffer(uint32_t id)
@@ -192,7 +184,7 @@ namespace Aurora {
 			glBindRenderbuffer(GL_RENDERBUFFER, id);
 		}
 
-		static void AttachColorTexture(uint32_t id, uint32_t samples, const FramebufferTextureSpecification& spec, uint32_t width, uint32_t height, uint32_t index, bool fixedSamples)
+		static void AttachColorTexture(uint32_t fboID, uint32_t id, uint32_t samples, const FramebufferTextureSpecification& spec, uint32_t width, uint32_t height, uint32_t index, bool fixedSamples)
 		{
 			bool multiSampled = samples > 1;
 			GLenum internalFormat = GLInternalFormatFromAFormat(spec.TextureFormat);
@@ -200,10 +192,12 @@ namespace Aurora {
 			GLenum dataType = GLDataTypeFromAFormat(spec.TextureFormat);
 
 			if (multiSampled)
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, width, height, fixedSamples ? GL_TRUE : GL_FALSE);
+			{
+				glTextureStorage2DMultisample(id, samples, internalFormat, width, height, fixedSamples ? GL_TRUE : GL_FALSE);
+			}
 			else
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, nullptr);
+				glTextureStorage2D(id, 1, internalFormat, width, height);
 				
 				glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GLFilterTypeFromTextureFilter(spec.FilterMode, false));
 				glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GLFilterTypeFromTextureFilter(spec.FilterMode, false));
@@ -212,10 +206,10 @@ namespace Aurora {
 				glTextureParameteri(id, GL_TEXTURE_WRAP_T, GLWrapTypeFromTextureWrap(spec.WrapMode));
 			}
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multiSampled), id, 0);
+			glNamedFramebufferTexture(fboID, GL_COLOR_ATTACHMENT0 + index, id, 0);
 		}
 
-		static void AttachDepthTexture(uint32_t id, uint32_t samples, const FramebufferTextureSpecification& spec, uint32_t width, uint32_t height)
+		static void AttachDepthTexture(uint32_t fboID, uint32_t id, uint32_t samples, const FramebufferTextureSpecification& spec, uint32_t width, uint32_t height)
 		{
 			bool multiSampled = samples > 1;
 			GLenum internalFormat = GLInternalFormatFromAFormat(spec.TextureFormat);
@@ -223,10 +217,12 @@ namespace Aurora {
 			GLenum dataType = GLDataTypeFromAFormat(spec.TextureFormat);
 
 			if (multiSampled)
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, width, height, GL_FALSE);
+			{
+				glTextureStorage2DMultisample(id, samples, internalFormat, width, height, GL_FALSE);
+			}
 			else
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, nullptr);
+				glTextureStorage2D(id, 1, internalFormat, width, height);
 
 				glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GLFilterTypeFromTextureFilter(spec.FilterMode, false));
 				glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GLFilterTypeFromTextureFilter(spec.FilterMode, false));
@@ -235,10 +231,10 @@ namespace Aurora {
 				glTextureParameteri(id, GL_TEXTURE_WRAP_T, GLWrapTypeFromTextureWrap(spec.WrapMode));
 			}
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GLDepthAttachmentType(spec.TextureFormat), TextureTarget(multiSampled), id, 0);
+			glNamedFramebufferTexture(fboID, GLAttachmentType(spec.TextureFormat), id, 0);
 		}
 
-		static void AttachDepthRenderBuffer(uint32_t id, uint32_t samples, GLenum internalFormat, GLenum attachmentType, uint32_t width, uint32_t height)
+		static void AttachDepthRenderBuffer(uint32_t fboID, uint32_t id, uint32_t samples, GLenum internalFormat, GLenum attachmentType, uint32_t width, uint32_t height)
 		{
 			bool multiSampled = samples > 1;
 
@@ -251,7 +247,7 @@ namespace Aurora {
 				glNamedRenderbufferStorage(id, internalFormat, width, height);
 			}
 
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachmentType, GL_RENDERBUFFER, id);
+			glNamedFramebufferRenderbuffer(fboID, attachmentType, GL_RENDERBUFFER, id);
 		}
 
 	}
@@ -277,25 +273,41 @@ namespace Aurora {
 
 	Framebuffer::~Framebuffer()
 	{
+		// Delete FBO
 		glDeleteFramebuffers(1, &m_FrameBufferID);
+		// Delete Color Attachments
 		glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
-		glDeleteRenderbuffers(1, &m_DepthAttachment);
+
+		// Delete Depth Attachment
+		if (m_Specification.DepthAttachmentAsTexture)
+			glDeleteTextures(1, &m_DepthAttachment);
+		else
+			glDeleteRenderbuffers(1, &m_DepthAttachment);
 	}
 
 	void Framebuffer::Invalidate()
 	{
 		if (m_FrameBufferID)
 		{
+			// Delete FBO
 			glDeleteFramebuffers(1, &m_FrameBufferID);
+			// Delete Color Attachments
 			glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
-			glDeleteRenderbuffers(1, &m_DepthAttachment);
 
+			// Delete Depth Attachment
+			if (m_Specification.DepthAttachmentAsTexture)
+				glDeleteTextures(1, &m_DepthAttachment);
+			else
+				glDeleteRenderbuffers(1, &m_DepthAttachment);
+
+			// Reset all
 			m_ColorAttachments.clear();
 			m_DepthAttachment = 0;
+			m_FrameBufferID = 0;
 		}
 
+		// No need to bind after creation because of DSA
 		glCreateFramebuffers(1, &m_FrameBufferID);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferID);
 
 		// Attachments
 		const bool multiSample = m_Specification.Samples > 1;
@@ -308,9 +320,9 @@ namespace Aurora {
 
 			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
 			{
-				Utils::BindTexture(multiSample, m_ColorAttachments[i]);
-
-				Utils::AttachColorTexture(m_ColorAttachments[i],
+				Utils::AttachColorTexture(
+					m_FrameBufferID,
+					m_ColorAttachments[i],
 					m_Specification.Samples,
 					m_ColorAttachmentsSpecification[i],
 					m_Specification.Width,
@@ -326,9 +338,10 @@ namespace Aurora {
 			if (m_Specification.DepthAttachmentAsTexture)
 			{
 				Utils::CreateTextures(multiSample, &m_DepthAttachment, 1);
-				Utils::BindTexture(multiSample, m_DepthAttachment);
 
-				Utils::AttachDepthTexture(m_DepthAttachment, 
+				Utils::AttachDepthTexture(
+					m_FrameBufferID,
+					m_DepthAttachment,
 					m_Specification.Samples, 
 					m_DepthAttachmentSpecification,
 					m_Specification.Width,
@@ -337,11 +350,13 @@ namespace Aurora {
 			else
 			{
 				GLenum internalFormat = Utils::GLInternalFormatFromAFormat(m_DepthAttachmentSpecification.TextureFormat);
-				GLenum attachmentType = Utils::GLDepthAttachmentType(m_DepthAttachmentSpecification.TextureFormat);
+				GLenum attachmentType = Utils::GLAttachmentType(m_DepthAttachmentSpecification.TextureFormat);
 
 				Utils::CreateRenderBuffer(&m_DepthAttachment, 1);
-				Utils::BindRenderBuffer(m_DepthAttachment);
-				Utils::AttachDepthRenderBuffer(m_DepthAttachment,
+
+				Utils::AttachDepthRenderBuffer(
+					m_FrameBufferID,
+					m_DepthAttachment,
 					m_Specification.Samples,
 					internalFormat,
 					attachmentType,
@@ -350,25 +365,27 @@ namespace Aurora {
 			}
 		}
 
-		if (m_ColorAttachments.size() > 1)
+		if (m_ColorAttachments.size() >= 1)
 		{
-			AR_CORE_ASSERT(m_ColorAttachments.size() <= 4, "For now we only support a max of 4 color attachments");
+			// Number of color attachments should not exceed the maximum amount of draw buffers supported by the implementation!
+			uint32_t numOfDrawBuffers = (uint32_t)m_ColorAttachments.size();
+			AR_CORE_CHECK(numOfDrawBuffers <= Renderer::GetRendererCapabilities().MaxDrawBuffers);
 
-			// TODO: For now we only support 4 draw buffer however that could be exapanded since we could support
-			// up to 8 attachments!
-			// This is us telling OpenGL that we want to draw to 4 different attachments
-			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-			glDrawBuffers((GLsizei)m_ColorAttachments.size(), buffers);
+			std::vector<GLenum> buffers;
+			buffers.reserve(numOfDrawBuffers);
+
+			for (uint32_t i = 0; i < numOfDrawBuffers; i++)
+				buffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
+
+			glNamedFramebufferDrawBuffers(m_FrameBufferID, (GLsizei)m_ColorAttachments.size(), &buffers[0]);
 		}
 		else if(m_ColorAttachments.empty())
 		{
 			// Only depth-pass
-			glDrawBuffer(GL_NONE);
+			glNamedFramebufferDrawBuffer(m_FrameBufferID, GL_NONE);
 		}
 
-		AR_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete Frambuffer!");
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		AR_CORE_ASSERT(glCheckNamedFramebufferStatus(m_FrameBufferID, GL_FRAMEBUFFER), "Incomplete Framebuffer!");
 	}
 
 	void Framebuffer::Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment)
@@ -380,8 +397,6 @@ namespace Aurora {
 
 	void Framebuffer::Resize(uint32_t width, uint32_t height)
 	{
-		constexpr uint32_t s_MaxFramebufferSize = 8192;
-
 		if (!m_Specification.Resizable)
 			return;
 
@@ -408,7 +423,7 @@ namespace Aurora {
 		glGetTextureImage(m_ColorAttachments[attachmentIndex], 0, format, type, buffSize, pixels);
 	}
 
-	void Framebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y, void* data)
+	void Framebuffer::ReadPixel(uint32_t attachmentIndex, uint32_t x, uint32_t y, void* data)
 	{
 		AR_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Attachment index can not be more than the available attachments");
 

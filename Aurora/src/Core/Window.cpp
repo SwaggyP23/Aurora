@@ -107,7 +107,7 @@ namespace Aurora {
 		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
-		AR_CORE_DEBUG_TAG("Window", "Creating Window: {0} ({1}, {2})", m_Specification.Title, mode->width, mode->height);
+		AR_CORE_INFO_TAG("Window", "Creating Window: {0} ({1}, {2})", m_Specification.Title, mode->width, mode->height);
 
 		glfwWindowHint(GLFW_DECORATED, false);
 		glfwWindowHint(GLFW_RED_BITS, mode->redBits);
@@ -126,7 +126,7 @@ namespace Aurora {
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-		AR_CORE_DEBUG_TAG("Window", "Creating window: {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
+		AR_CORE_INFO_TAG("Window", "Creating window: {0} ({1}, {2})", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), NULL, NULL);
 		AR_CORE_ASSERT(m_Window, "Failed to initialize the window!");
@@ -149,8 +149,11 @@ namespace Aurora {
 	{
 #ifdef AURORA_DEBUG
 		GLenum error = glGetError();
-		if (error != GL_NO_ERROR)
+		while (error != GL_NO_ERROR)
+		{
 			AR_CORE_ERROR_TAG("Window", "OpenGL Error : {0}", error);
+			error = glGetError();
+		}
 #endif
 
 		m_Context->SwapBuffers();
@@ -160,7 +163,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_DEBUG_TAG("Window", "Maximizing Window...");
+		AR_CORE_INFO_TAG("Window", "Maximizing Window...");
 		glfwMaximizeWindow(m_Window);
 	}
 
@@ -168,7 +171,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		AR_CORE_DEBUG_TAG("Window", "Centering Window...");
+		AR_CORE_INFO_TAG("Window", "Centering Window...");
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 

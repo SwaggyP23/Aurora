@@ -16,7 +16,7 @@ namespace Aurora {
 		void SetPerspectiveProjectionMatrix(float degFov, float width, float height, float nearClip, float farClip);
 		void SetOrthographicProjectionMatrix(float width, float height, float nearClip, float farClip);
 
-		const glm::mat4& GetProjection() const { return m_Projection; }
+		[[nodiscard]] const glm::mat4& GetProjection() const { return m_Projection; }
 
 	private:
 		glm::mat4 m_Projection = glm::mat4{ 1.0f };

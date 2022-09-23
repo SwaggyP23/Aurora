@@ -54,6 +54,7 @@ project "GLFW"
     }
 
     filter "configurations:Profile"
+        defines "NDEBUG"
         runtime "Release"
         optimize "on"
 
@@ -62,11 +63,13 @@ project "GLFW"
         symbols "on"
 
     filter "configurations:Release"
+        defines "NDEBUG"
         runtime "Release"
         optimize "Speed"
         inlining "Auto"
 
     filter "configurations:Dist"
+        defines "NDEBUG"
         runtime "Release"
         optimize "Speed"
         inlining "Auto"
