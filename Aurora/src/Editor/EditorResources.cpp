@@ -13,7 +13,6 @@ namespace Aurora {
 
 		//TransformCompIcon = LoadTexture("Icons/transformComponentIcon.png");
 		TextureProperties cameraProps;
-		cameraProps.DebugName = "Camera Icon";
 		cameraProps.FlipOnLoad = true;
 		CameraIcon = LoadTexture("Icons/Camera.png", cameraProps);
 	}
@@ -26,11 +25,11 @@ namespace Aurora {
 		CloseIcon.Reset();
 		ResetIcon.Reset();
 
-		//TransformCompIcon.Reset();
+		//TransformCompIcon.Reset(); // TODO: Add icons to components...
 		CameraIcon.Reset();
 	}
 
-	Ref<Texture2D> EditorResources::LoadTexture(const std::filesystem::path& texturePath, const TextureProperties& props)
+	Ref<Texture2D> EditorResources::LoadTexture(const std::string& texturePath, const TextureProperties& props)
 	{
 		std::filesystem::path path = std::filesystem::path("Resources") / "EditorInternal" / texturePath;
 

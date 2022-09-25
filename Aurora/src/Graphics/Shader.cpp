@@ -12,6 +12,10 @@
 // Define as 1 if you want the shader to use std::fstream.
 #define AR_NO_USE_FILE_POINTER 0
 
+// FOR DEBUGGING!!!!
+// Define if you want the shader dissassembly after compilation to print to console
+//! #define AR_PRINT_SHADER_DISSASSEMBLY
+
 namespace Aurora {
 
 	std::vector<Ref<Shader>> Shader::s_AllShaders;
@@ -162,23 +166,19 @@ namespace Aurora {
 		return CreateScope<ShaderLibrary>();
 	}
 
-	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
-	{
-		AR_CORE_ASSERT(Exist(name) == false, "Shader already exists!");
-		m_Shaders[name] = shader;
-	}
-
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
-		const std::string& name = shader->GetName();
-		AR_CORE_ASSERT(Exist(name) == false, "Shader already exists!");
-		Add(name, shader);
+		// Hash the name of the shader which supposibely should be UNIQUE
+		const size_t hash = std::hash<std::string>{}(shader->GetName());
+		AR_CORE_ASSERT(!ExistHash(hash), "Shader already exists!");
+
+		m_ShadersWithHash[hash] = shader;
 	}
 
 	Ref<Shader> ShaderLibrary::Load(const ShaderProperties& props)
 	{
 		Ref<Shader> result = Shader::Create(props);
-		Add(props.Name, result);
+		Add(result);
 
 		return result;
 	}
@@ -191,22 +191,37 @@ namespace Aurora {
 		return result;
 	}
 
+	Ref<Shader> ShaderLibrary::TryGet(const std::string& name) const
+	{
+		const size_t hash = std::hash<std::string>{}(name);
+		if (ExistHash(hash))
+			return m_ShadersWithHash[hash];
+
+		AR_CORE_ERROR_TAG("ShaderLibrary", "Coutld not find shader {0}", name.c_str());
+		return nullptr;
+	}
+
 	const Ref<Shader>& ShaderLibrary::Get(const std::string& name) const
 	{
-		AR_CORE_ASSERT(Exist(name) == true, "Shader not found!");
-		return m_Shaders[name];
+		const size_t hash = std::hash<std::string>{}(name);
+		AR_CORE_ASSERT(ExistHash(hash), "Shader not found!");
+		return m_ShadersWithHash[hash];
 	}
 
-	// returns true if it found it
-	// TODO: This is a bit buggy and crashy
 	bool ShaderLibrary::Exist(const std::string& name) const
 	{
-		return m_Shaders.find(name) != m_Shaders.end();
+		const size_t hash = std::hash<std::string>{}(name);
+		return ExistHash(hash);
+	}
+
+	bool ShaderLibrary::ExistHash(const size_t hash) const
+	{
+		return m_ShadersWithHash.find(hash) != m_ShadersWithHash.end();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/// Shader Uniform!!!!!!!!!
+	///////////// Shader Uniform
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -234,12 +249,12 @@ namespace Aurora {
 		}
 
 		AR_CORE_ASSERT(false, "Unknown Shader Uniform Type!");
-		return "None";
+		return "";
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/// Shader!!!!!!!!!!!!!!!!!
+	///////////// Shader
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -360,6 +375,12 @@ namespace Aurora {
 		AR_CORE_WARN_TAG("Shader", "Reloading {0} took {1}ms", m_Name, timer.ElapsedMillis());
 	}
 
+	void Shader::Dispatch(uint32_t dimX, uint32_t dimY, uint32_t dimZ) const
+	{
+		AR_CORE_ASSERT(m_ShaderType == ShaderType::Compute, "Shader has to be a compute shader in order to dispatch it!");
+		glDispatchCompute(dimX, dimY, dimZ);
+	}
+
 	void Shader::Load2Stage(const std::string& source)
 	{
 		// At this stage it contains split Vulkan source code
@@ -446,7 +467,7 @@ namespace Aurora {
 
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
 				options.AddMacroDefinition("OPENGL");
-#ifdef AURORA_DEBUG
+#ifdef AR_PRINT_SHADER_DISSASSEMBLY
 				options.SetGenerateDebugInfo(); // This provides the source when using SPIRV_TOOLS and dissassembling
 #endif
 				options.SetAutoMapLocations(true);
@@ -460,7 +481,7 @@ namespace Aurora {
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, Utils::GLShaderTypeToShaderC(type), m_AssetPath.string().c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					AR_CORE_ERROR_TAG("ShaderC Compilation", result.GetErrorMessage());
+					AR_CORE_ERROR_TAG("Shaderc Compiler", result.GetErrorMessage());
 					AR_CORE_ASSERT(false);
 				}
 
@@ -567,7 +588,7 @@ namespace Aurora {
 				}
 
 				m_OpenGLSPIRV[type] = std::vector<uint32_t>(result.cbegin(), result.cend());
-#if AURORA_DEBUG
+#ifdef AR_PRINT_SHADER_DISSASSEMBLY
 				spvtools::SpirvTools tools(SPV_ENV_OPENGL_4_5);
 				std::string debugSPVReturn;
 				tools.Disassemble(m_OpenGLSPIRV[type], &debugSPVReturn);
@@ -675,8 +696,11 @@ namespace Aurora {
 		AR_CORE_TRACE_TAG("REFLECT", "==============================");
 		AR_CORE_TRACE_TAG("REFLECT", "{0} - {1}", Utils::GLShaderTypeToString(type), m_AssetPath.string());
 		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Uniform Buffers", resources.uniform_buffers.size());
-		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Push Constants", resources.push_constant_buffers.size());
-		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Resources", resources.sampled_images.size());
+		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Push Constant Buffers", resources.push_constant_buffers.size());
+		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Storage Buffers", resources.storage_buffers.size());
+		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Sampled Images", resources.sampled_images.size());
+		AR_CORE_TRACE_TAG("REFLECT", "\t{0} Storage Images", resources.storage_images.size());
+
 
 		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 
@@ -692,8 +716,8 @@ namespace Aurora {
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Size: {0}", bufferSize);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Binding: {0}", binding);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Member Count: {0}", memberCount);
-			AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 		}
+		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 
 		AR_CORE_TRACE_TAG("REFLECT", "Storage Buffers:");
 		for (const spirv_cross::Resource& res : resources.storage_buffers)
@@ -708,8 +732,8 @@ namespace Aurora {
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Size: {0}", bufferSize);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Binding: {0}", binding);
 			AR_CORE_TRACE_TAG("REFLECT", "\t   Member Count: {0}", memberCount);
-			AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 		}
+		AR_CORE_TRACE_TAG("REFLECT", "------------------------------");
 
 		AR_CORE_TRACE_TAG("REFLECT", "Push Constant Buffers:");
 		for (const spirv_cross::Resource& res : resources.push_constant_buffers)

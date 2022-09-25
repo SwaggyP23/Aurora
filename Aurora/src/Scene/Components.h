@@ -4,6 +4,7 @@
 
 #include "SceneCamera.h"
 #include "Graphics/Model.h"
+#include "Graphics/SceneEnvironment.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,20 +18,11 @@ namespace Aurora {
 	struct IDComponent
 	{
 		UUID ID;
-
-		IDComponent() = default;
-		IDComponent(const IDComponent&) = default;
 	};
 
 	struct TagComponent
 	{
 		std::string Tag;
-
-		TagComponent() = default;
-		TagComponent(const std::string& tag)
-			: Tag(tag) {}
-		TagComponent(const TagComponent&) = default;
-
 	};
 
 	// TODO: Use quaternions for rotation...
@@ -39,11 +31,6 @@ namespace Aurora {
 		glm::vec3 Translation{ 0.0f };
 		glm::vec3 Rotation{ 0.0f }; // Stored in radians
 		glm::vec3 Scale{ 1.0f };
-
-		TransformComponent() = default;
-		TransformComponent(const glm::vec3& translation, const glm::vec3& rotation = glm::vec3(0.0f), const glm::vec3& scale = glm::vec3(1.0f))
-			: Translation(translation), Rotation(rotation), Scale(scale) {}
-		TransformComponent(const TransformComponent&) = default;
 
 		glm::mat4 GetTransform()
 		{
@@ -59,22 +46,12 @@ namespace Aurora {
 	{
 		Model model;
 
-		ModelComponent() = default;
-		ModelComponent(const std::string& filepath)
-			: model(filepath) {}
-		ModelComponent(const ModelComponent&) = default;
-
 	};
 
 	// TODO: Rework...
 	struct SpriteRendererComponent
 	{// This should contain a Ref<Material/MaterialInstance> and a shader to that material...(Materials are capable of holding both the shader and data
 		glm::vec4 Color{ 1.0f };
-
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const glm::vec4& color)
-			: Color(color) {}
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 
 	};
 
@@ -83,9 +60,6 @@ namespace Aurora {
 	{
 		SceneCamera Camera;
 		bool Primary = true;
-
-		CameraComponent() = default;
-		CameraComponent(const CameraComponent&) = default;
 
 	};
 
@@ -107,6 +81,24 @@ namespace Aurora {
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nativeScriptComp) { delete nativeScriptComp->Instance; nativeScriptComp->Instance = nullptr; };
 		}
+	};
+
+	enum class LightType
+	{
+		None = 0,
+		Directional,
+		Point
+	};
+
+	struct SkyLightComponent
+	{
+		Ref<Environment> SceneEnvironment;
+		float Level = 0.5f;
+		float Intensity = 1.0f;
+
+		bool DynamicSky = false;
+		glm::vec3 TurbidityAzimuthInclination{ 2.0f, 0.0f, 0.0f };
+
 	};
 
 }

@@ -34,7 +34,7 @@ namespace Aurora {
 		static void EndScene();
 		static void Flush();
 
-		static void DrawSkyBox(const Ref<CubeTexture>& skybox);
+		static void DrawSkyBox(const Ref<CubeTexture>& skybox, const float LOD, const float intensity);
 		static void DrawMaterial(const Ref<Material>& mat, const glm::mat4& trans, const glm::vec4& tint);
 
 		static void DrawQuad(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color, int entityID = -1);

@@ -1,3 +1,9 @@
+// Aurora Engine PBR Shader
+// References: LearnOpenGL: https://learnopengl.com/
+// References: Michal Siejak's PBR project: https://github.com/Nadrin
+// References: Sparky Engine: https://github.com/TheCherno/Sparky
+// References: Hazel Engine: https://hazelengine.com/
+
 #pragma vertex
 #version 450 core
 layout (location = 0) in vec3 a_Position;
@@ -32,6 +38,9 @@ void main()
 
 #pragma fragment
 #version 450 core
+
+layout(early_fragment_tests) in;
+
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out int o_EntityID;
 
@@ -57,8 +66,26 @@ layout(push_constant) uniform Materials
     bool UseNormalMap;
 } u_MaterialUniforms;
 
+struct PBRParameters
+{
+    vec3 Albedo;
+    float Roughness;
+    float Metalness;
+
+    vec3 Normal;
+    vec3 View;
+    float NdotV;
+
+} g_Params;
+
 void main()
 {    
-    o_Color = texture(u_AlbedoTexture, v_Input.TexCoords) * u_MaterialUniforms.AlbedoColor;
+    g_Params.Albedo = texture(u_AlbedoTexture, v_Input.TexCoords).rgb * u_MaterialUniforms.AlbedoColor.rgb;
+    g_Params.Metalness = texture(u_MetalnessTexture, v_Input.TexCoords).r * u_MaterialUniforms.Metalness;
+    g_Params.Roughness = texture(u_RoughnessTexture, v_Input.TexCoords).r * u_MaterialUniforms.Roughness;
+//    g_Params.Roughness = max(g_Params.Roughness, 0.05f); ????
+
+//    o_Color = vec4(g_Params.Albedo, 1.0f); // TODO: When switching to deferred this is what should be used!!
+    o_Color = vec4(g_Params.Albedo, u_MaterialUniforms.AlbedoColor.a);
     o_EntityID = -1;
 }

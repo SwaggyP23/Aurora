@@ -31,10 +31,14 @@ namespace Aurora {
 	{
 		if (!s_Created)
 		{
-			s_Mat = Material::Create("Test Mat", Renderer::GetShaderLibrary()->Get("AuroraPBRStatic"));
+			s_Mat = Material::Create("Test Mat", Renderer::GetShaderLibrary()->TryGet("AuroraPBRStatic"));
 			s_Props.FlipOnLoad = true;
 			s_Props.AnisotropicFiltering = 16.0f;
 			s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png", s_Props);
+
+			//const auto& [radiance, irradiance] = Renderer::CreateEnvironmentMap("Resources/environment/dikhololo_night_4k.hdr");
+			//m_Environment = Environment::Create(radiance, irradiance);
+
 			//s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
 			// Model still doesnt work since models are now loaded differently and need to adapt to that
 			//s_ModelShader = Renderer::GetShaderLibrary()->Get("Model"); // TODO: Temp...
@@ -108,12 +112,27 @@ namespace Aurora {
 	{
 		Renderer3D::BeginScene(camera);
 
-		Renderer3D::DrawSkyBox(Renderer::GetBlackCubeTexture()); // TODO: TEMPORARY!!!!!!!!!
-
-		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-		for (auto entity : view)
+		// TODO: Rework all this shit for skylights
+		auto skyLightView = m_Registry.view<TransformComponent, SkyLightComponent>();
+		if (skyLightView.empty())
+			Renderer3D::DrawSkyBox(Renderer::GetBlackCubeTexture(), 0.0f, 0.0f);
+		for (auto entity : skyLightView)
 		{
-			auto [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+			auto [tranform, skyLight] = skyLightView.get<TransformComponent, SkyLightComponent>(entity);
+			m_Environment = skyLight.SceneEnvironment;
+			m_EnvironmentIntensity = skyLight.Intensity;
+			m_EnvironmentLOD = skyLight.Level;
+			if (m_Environment)
+			{
+				Renderer3D::DrawSkyBox(m_Environment->RadianceMap, m_EnvironmentLOD, m_EnvironmentIntensity);
+			}
+		}
+
+
+		auto spriteRendererView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+		for (auto entity : spriteRendererView)
+		{
+			auto [transform, sprite] = spriteRendererView.get<TransformComponent, SpriteRendererComponent>(entity);
 
 			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color, (int)entity);
 		}

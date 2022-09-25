@@ -402,12 +402,12 @@ namespace Aurora {
 	static const std::string s_RoughnessMap = "u_RoughnessTexture";
 	static const std::string s_MetalnessMap = "u_MetalnessTexture";
 
-	Ref<MaterialAsset> Create()
+	Ref<MaterialAsset> MaterialAsset::Create()
 	{
 		return CreateRef<MaterialAsset>();
 	}
 
-	Ref<MaterialAsset> Create(Ref<Material> material)
+	Ref<MaterialAsset> MaterialAsset::Create(Ref<Material> material)
 	{
 		return CreateRef<MaterialAsset>(material);
 	}
@@ -546,12 +546,12 @@ namespace Aurora {
 	//////////// MaterialTable
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Ref<MaterialTable> Create(uint32_t count = 1)
+	Ref<MaterialTable> MaterialTable::Create(uint32_t count)
 	{
 		return CreateRef<MaterialTable>(count);
 	}
 
-	Ref<MaterialTable> Create(Ref<MaterialTable> other)
+	Ref<MaterialTable> MaterialTable::Create(Ref<MaterialTable> other)
 	{
 		return CreateRef<MaterialTable>(other);
 	}

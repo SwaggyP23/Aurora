@@ -48,7 +48,7 @@ namespace Aurora {
 
 		~ScopedTimer()
 		{
-			AR_CORE_TRACE_TAG("TIMER", "{0} - {1} milliSecs", m_Name, (float)m_Timer.ElapsedMillis());
+			AR_CORE_DEBUG_TAG("TIMER", "{0} - {1} milliSecs", m_Name, (float)m_Timer.ElapsedMillis());
 		}
 
 	private:
@@ -99,8 +99,8 @@ namespace Aurora {
 // To disable timers just do #if 0
 #if 1
 
-	#define AR_SCOPE_PERF(name)      Aurora::PerFrameTimer AR_CONCAT_MACRO(timer, __LINE__)(name, Aurora::Application::GetApp().GetPerformanceProfiler())
-	#define AR_SCOPED_TIMER(name)    Aurora::ScopedTimer AR_CONCAT_MACRO(timer, __LINE__)(name)
+	#define AR_SCOPE_PERF(name)      ::Aurora::PerFrameTimer AR_CONCAT_MACRO(timer, __LINE__)(name, Aurora::Application::GetApp().GetPerformanceProfiler())
+	#define AR_SCOPED_TIMER(name)    ::Aurora::ScopedTimer AR_CONCAT_MACRO(timer, __LINE__)(name)
 
 #else
 

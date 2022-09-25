@@ -76,9 +76,11 @@ namespace Aurora {
 		TextureWrap SamplerWrap = TextureWrap::Repeat;
 		TextureFilter SamplerFilter = TextureFilter::Linear;
 		float AnisotropicFiltering = 1.0f; // For anisotropic filtering
+
 		bool FlipOnLoad = false;
-		bool GenerateMips = true;
-		bool SRGB = false; // Currently not in use! However it is used to determine the number of channels to be loaded with stb
+		bool GenerateMips = false;
+		// Currently not in use! However it is used to determine the number of channels to be loaded with stb
+		bool SRGB = false;
 	};
 
 	class Texture : public RefCountedObject
@@ -105,11 +107,11 @@ namespace Aurora {
 	{
 	public:
 		Texture2D(const std::string& filePath, const TextureProperties& props = TextureProperties());
-		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props = TextureProperties());
+		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
 		virtual ~Texture2D();
 
 		[[nodiscard]] static Ref<Texture2D> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
-		[[nodiscard]] static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props = TextureProperties());
+		[[nodiscard]] static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
 
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void UnBind(uint32_t slot = 0) const override;
@@ -144,11 +146,11 @@ namespace Aurora {
 	class CubeTexture : public Texture
 	{
 	public:
-		CubeTexture(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props);
+		CubeTexture(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
 		CubeTexture(const std::string& filePath, const TextureProperties& props = TextureProperties());
 		virtual ~CubeTexture();
 
-		static Ref<CubeTexture> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props);
+		static Ref<CubeTexture> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
 		static Ref<CubeTexture> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
 
 		virtual void Bind(uint32_t slot = 0) const override;
@@ -191,6 +193,7 @@ namespace Aurora {
 			    case ImageFormat::R16UI:       return 2;
 			    case ImageFormat::R32UI:       return 4;
 			    case ImageFormat::R32F:        return 4;
+				case ImageFormat::RG16F:	   return 2 * 4;
 			    case ImageFormat::RGB:	       return 3;
 			    case ImageFormat::SRGB:        return 3;
 			    case ImageFormat::RGBA:        return 4;

@@ -37,20 +37,31 @@ namespace Aurora {
 			return m_ImageData;
 		}
 
-		// TODO: Should have an enum to select in what format to write the image (tga/png/jpg/hdr...)
-		bool ImageLoader::WriteDataToPNGImage(const std::string& name, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip)
+		bool ImageLoader::WriteDataToPNGImage(const std::filesystem::path& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip)
 		{
-			if (!std::filesystem::exists("Resources/Screenshots"))
-				std::filesystem::create_directories("Resources/Screenshots");
-
-			std::string filePath = "Resources/Screenshots/" + name + ".png";
+			AR_CORE_ASSERT(filePath.extension() == ".png");
 
 			if (flip)
 			{
 				stbi__vertical_flip((void*)data, width, height, channels * sizeof(uint8_t));
 			}
 
-			if (stbi_write_png(filePath.c_str(), width, height, channels, data, width * channels))
+			if (stbi_write_png(filePath.string().c_str(), width, height, channels, data, width * channels))
+				return true;
+
+			return false;
+		}
+
+		bool ImageLoader::WriteDataToTGAImage(const std::filesystem::path& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip)
+		{
+			AR_CORE_ASSERT(filePath.extension() == ".tga");
+
+			if (flip)
+			{
+				stbi__vertical_flip((void*)data, width, height, channels * sizeof(uint8_t));
+			}
+
+			if (stbi_write_tga(filePath.string().c_str(), width, height, channels, data))
 				return true;
 
 			return false;

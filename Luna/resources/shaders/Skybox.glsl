@@ -14,7 +14,7 @@ layout(std140, binding = 0) uniform Camera
 void main()
 {
     v_TexCoords = a_Position;
-    vec4 pos = u_SkyVP * vec4(a_Position, 1.0);
+    vec4 pos = u_SkyVP * vec4(a_Position, 1.0f);
     gl_Position = pos.xyww;
 }  
 
@@ -25,21 +25,17 @@ layout(location = 1) out int o_EntityID;
 
 layout(location = 0) in vec3 v_TexCoords;
 
-layout(binding = 0) uniform samplerCube skybox;
+layout(binding = 0) uniform samplerCube u_EnvFiltered;
 
-layout(push_constant) uniform Mats
+layout(push_constant) uniform Uniforms
 {
-    /*layout(offset = 0) */ vec4 a;
-    /*layout(offset = 16)*/ mat4 b;
-    /*layout(offset = 80)*/ float c;
-    /*layout(offset = 84)*/ float d;
-} u_MatsUniforms;
+    float TextureLOD;
+    float Intensity;
+} u_Uniforms;
 
 void main()
 {    
-    float a = vec4(u_MatsUniforms.a * u_MatsUniforms.b).x;
-    o_Color = texture(skybox, v_TexCoords) * (u_MatsUniforms.c + u_MatsUniforms.d + a / 2.0f);
-//    vec3 envVector = normalize(v_TexCoords);
-//    o_Color = textureLod(skybox, envVector, 0);
+    vec3 envVector = normalize(v_TexCoords);
+    o_Color = textureLod(u_EnvFiltered, envVector, u_Uniforms.TextureLOD) * u_Uniforms.Intensity;
     o_EntityID = -1;
 }

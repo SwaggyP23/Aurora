@@ -97,6 +97,7 @@ namespace Aurora {
 		//SetFeatureControlFunction(FeatureControl::StencilTesting, OpenGLFunction::Always);
 		
 		glEnable(GL_MULTISAMPLE);
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 		//glEnable(GL_FRAMEBUFFER_SRGB);
 		// This is the shit that was giving me a very dull look on the screen when i was reworking the texture API

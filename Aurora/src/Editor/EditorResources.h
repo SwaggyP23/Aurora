@@ -22,7 +22,7 @@ namespace Aurora {
 		static void Shutdown();
 
 	private:
-		static Ref<Texture2D> LoadTexture(const std::filesystem::path& texturePath, const TextureProperties& props = TextureProperties());
+		static Ref<Texture2D> LoadTexture(const std::string& texturePath, const TextureProperties& props = TextureProperties());
 
 	};
 

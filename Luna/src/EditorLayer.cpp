@@ -57,9 +57,10 @@ namespace Aurora {
 		m_EditorScene = Scene::Create("Editor Scene");
 		m_ActiveScene = m_EditorScene;
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
-
 		// Default open scene for now...!
 		OpenScene("Resources/scenes/TestingSearchBox.aurora");
+
+		m_DisplayImage = Renderer::GetBlackTexture();
 
 		class CameraScript : public ScriptableEntity
 		{
@@ -349,9 +350,9 @@ namespace Aurora {
 
 	bool EditorLayer::OnPathDrop(WindowPathDropEvent& e)
 	{
-		// TODO: We can retrieve more than one path at a time however that needs special handling. For opening
+		// We can retrieve more than one path at a time however that needs special handling. For opening
 		// scenes, only one scene at a time can be open at the moment, When support for multiple scenes to be open
-		// at the same time, we can then go through the vector and open all the scene if more than one was dropped
+		// at the same time, we can then go through the vector and open all the scenes if more than one was dropped
 		// For Example...
 		//for (const auto& path : e.GetDroppedPaths())
 		//{
@@ -957,6 +958,8 @@ namespace Aurora {
 		}
 	}
 
+	static std::string environmentMapName = "Aurora Default";
+
 	void EditorLayer::DrawComponents(Entity entity)
 	{
 		FontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
@@ -996,6 +999,7 @@ namespace Aurora {
 			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
 			DrawPopUpMenuItems<ModelComponent>("Model Component", entity, m_SelectionContext);
+			DrawPopUpMenuItems<SkyLightComponent>("SkyLight", entity, m_SelectionContext);
 
 			ImGui::EndPopup();
 		}
@@ -1190,6 +1194,95 @@ namespace Aurora {
 			glm::vec4& color = component.Color;
 			color = glm::vec4(1.0f);
 		});
+
+		DrawComponent<SkyLightComponent>("SkyLight", entity, [](SkyLightComponent& component)
+		{
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, 150.0f);
+
+			ImGui::Text("Environment:");
+
+			ImGui::NextColumn();
+
+			float width = ImGui::GetContentRegionAvail().x;
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+			if (ImGui::Button(environmentMapName.c_str(), { width, 25.0f }))
+			{
+				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("HDR Image");
+				environmentMapName = p.filename().string();
+
+				if (environmentMapName.size())
+				{
+					const auto&[radianceMap, irradianceMap] = Renderer::CreateEnvironmentMap(p.string());
+					component.SceneEnvironment = Environment::Create(radianceMap, irradianceMap);
+				}
+			}
+			ImGui::PopStyleColor();
+
+			ImGui::NextColumn();
+
+			ImGui::Text("LOD:");
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##lod", &component.Level, 0.05f, 0.0f, 10.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+
+			ImGui::Text("Intensity:");
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##intensity", &component.Intensity, 0.05f, 0.0f, 10.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::Separator();
+			ImGui::NextColumn();
+
+			ImGui::Text("Dynamic Sky:");
+
+			ImGui::NextColumn();
+
+			ImGui::Checkbox("##dynamic", &component.DynamicSky);
+			
+			ImGui::NextColumn();
+
+			ImGui::Text("Turbidity:");
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##turbidity", &component.TurbidityAzimuthInclination.x, 0.05f, 0.0f, 20.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+
+			ImGui::Text("Azimuth:");
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##azimuth", &component.TurbidityAzimuthInclination.y, 0.05f, 0.0f, 20.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+
+			ImGui::Text("Inclination:");
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##inclincation", &component.TurbidityAzimuthInclination.z, 0.05f, 0.0f, 20.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::Columns(1);
+		},
+		[](SkyLightComponent& component) // Reset Function
+		{
+			environmentMapName = "Aurora Default";
+			component.SceneEnvironment = Renderer::GetBlackEnvironment();
+			component.Level = 0.5f;
+			component.Intensity = 1.0f;
+			component.DynamicSky = false;
+			component.TurbidityAzimuthInclination = { 2.0f, 0.0f, 0.0f };
+		});
 	}
 
 #pragma endregion
@@ -1203,15 +1296,6 @@ namespace Aurora {
 		m_ActiveScene = Scene::Create("New Scene"); // Creating new scene
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
-
-		// TODO: Temporary, this plane defualy entity should be replaced by a grid
-		Entity plane = m_ActiveScene->CreateEntity();
-		TagComponent& name = plane.GetComponent<TagComponent>();
-		name.Tag = "Plane";
-		TransformComponent& tc = plane.GetComponent<TransformComponent>();
-		tc.Scale = glm::vec3{ 200.0f, 0.5f, 200.0f };
-		SpriteRendererComponent& sp = plane.AddComponent<SpriteRendererComponent>();
-		sp.Color = { 0.6f, 0.6f, 0.6f, 1.0f };
 
 		m_EditorScenePath = std::filesystem::path();
 		m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
@@ -1273,34 +1357,6 @@ namespace Aurora {
 	{
 		SceneSerializer serializer(scene);
 		serializer.SerializeToText(path.string());
-	}
-
-	void EditorLayer::TakeScreenShotOfOpenScene()
-	{
-		const auto& spec = m_IntermediateFramebuffer->GetSpecification();
-
-		Buffer buff(spec.Width * spec.Height * 4);
-		m_IntermediateFramebuffer->GetColorAttachmentData(buff.Data);
-
-		std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
-		std::time_t timePoint = std::chrono::system_clock::to_time_t(currentTime);
-
-		char buffer[64]{};
-		ctime_s(buffer, 64, &timePoint);
-		std::string_view str(buffer);
-		size_t colonPos = str.find_first_of(':');
-		std::string timeString(str.substr(colonPos - 2, 13));
-
-		std::string finalName = m_Context->GetName() + "_" + timeString;
-		for (int i = 0; i < finalName.size(); i++)
-		{
-			if (finalName[i] == ' ' || finalName[i] == ':')
-				finalName[i] = '_';
-		}
-		AR_WARN("{}", finalName);
-
-		if (Utils::ImageLoader::WriteDataToPNGImage(finalName, buff.Data, spec.Width, spec.Height, 4, true))
-			AR_WARN("Wrote Image Correctly");
 	}
 
 #pragma endregion
@@ -1433,7 +1489,7 @@ namespace Aurora {
 
 		// TODO: This is super temporary since im just working on materials for now...
 		ImGuiUtils::ColorEdit4Control("Material Tint", s_MaterialAlbedoColor);
-
+		// TODO: Reword all this shit into its own panels
 		static glm::vec3 translate(0.0f), rotate(0.0f), scale(1.0f);
 		DrawVec3Control("Translation", translate);
 		glm::vec3 rotation = glm::degrees(rotate);
@@ -1509,12 +1565,53 @@ namespace Aurora {
 	{
 		ImGui::Begin("Screenshot Panel", &m_ShowScreenshotPanel);
 
-		ImGuiUtils::ShowHelpMarker("Press the button below to take a screenshot of the currently open scene\nand in the position of your camera.");
-
 		if (ImGui::Button("Take Screenshot"))
 			TakeScreenShotOfOpenScene();
 
+		ImGui::SameLine();
+
+		ImGuiUtils::ShowHelpMarker("Press the button to take a screenshot of the currently open scene.");
+
+		ImGui::Text("Output path: Luna/SandboxProject/Screenshots");
+
+		ImVec2 size = ImGui::GetContentRegionAvail();
+		uint64_t textureID = (uint64_t)m_DisplayImage->GetTextureID();
+		ImGui::Image((void*)textureID, size, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
+
 		ImGui::End();
+	}
+
+	void EditorLayer::TakeScreenShotOfOpenScene()
+	{
+		const auto& spec = m_IntermediateFramebuffer->GetSpecification();
+
+		Buffer buff(spec.Width * spec.Height * 4);
+		m_IntermediateFramebuffer->GetColorAttachmentData(buff.Data);
+
+		std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+		std::time_t timePoint = std::chrono::system_clock::to_time_t(currentTime);
+
+		char buffer[64]{};
+		ctime_s(buffer, 64, &timePoint);
+
+		std::string_view str(buffer);
+		size_t colonPos = str.find_first_of(':');
+		std::string timeString(str.substr(colonPos - 2, 13));
+
+		std::string finalName = "SandboxProject/Screenshots/" + m_Context->GetName() + "_" + timeString + ".png";
+		for (uint32_t i = 21; i < finalName.size(); i++)
+		{
+			if (finalName[i] == ' ' || finalName[i] == ':')
+				finalName[i] = '_';
+		}
+
+		//m_DisplayImage = Texture2D::Create(ImageFormat::RGBA, spec.Width, spec.Height, buff.Data);
+		// If stb writes the image correctly i know that everything is good and i create the texture
+		if (Utils::ImageLoader::WriteDataToPNGImage(finalName, buff.Data, spec.Width, spec.Height, 4, true))
+		{
+			AR_WARN("Wrote image to {0}", finalName);
+			m_DisplayImage = Texture2D::Create(finalName);
+		}
 	}
 
 #pragma endregion
@@ -1538,8 +1635,9 @@ namespace Aurora {
 
 		ImGui::NextColumn();
 
+		static std::string selectedFontName = "OpenSans, Medium";
 		ImGui::PushItemWidth(-1);
-		if (ImGui::BeginCombo("##FontPicker", m_SelectedFontName.c_str()))
+		if (ImGui::BeginCombo("##FontPicker", selectedFontName.c_str()))
 		{
 			for (const auto&[pair, second] : fontsLib.GetFontNamesAndIdentifier())
 			{
@@ -1564,7 +1662,7 @@ namespace Aurora {
 				if (ImGui::Selectable(displayName.c_str()))
 				{
 					fontsLib.SetDefaultFont(fontName, type);
-					m_SelectedFontName = displayName;
+					selectedFontName = displayName;
 				}
 				fontsLib.PopTemporaryFont();
 			}
@@ -1849,7 +1947,7 @@ namespace Aurora {
 		void* textureID = (void*)(uint64_t)m_IntermediateFramebuffer->GetColorAttachmentID();
 		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
-		//ImGui::Image((void*)(uint64_t)EditorResources::GearIcon->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		// ImGui::Image((void*)(uint64_t)Renderer::GetBRDFLutTexture()->GetTextureID(), {m_ViewportSize.x, m_ViewportSize.y}, ImVec2{0, 1}, ImVec2{1, 0});
 
 		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
 

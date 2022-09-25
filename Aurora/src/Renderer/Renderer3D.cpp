@@ -232,8 +232,8 @@ namespace Aurora {
 			samplers[i] = i;
 		// This is the sampler that will be submitted to OpenGL and in which OpenGL will be sampling the textures from according to the passed index
 
-		s_Data->SkyBoxShader = Renderer::GetShaderLibrary()->Get("Skybox");
-		s_Data->QuadShader = Renderer::GetShaderLibrary()->Get("MainShader");
+		s_Data->SkyBoxShader = Renderer::GetShaderLibrary()->TryGet("Skybox");
+		s_Data->QuadShader = Renderer::GetShaderLibrary()->TryGet("MainShader");
 
 		s_Data->TextureSlots[0] = Renderer::GetWhiteTexture(); // index 0 is for the white texture.
 
@@ -388,13 +388,11 @@ namespace Aurora {
 		StartBatch();
 	}
 
-	void Renderer3D::DrawSkyBox(const Ref<CubeTexture>& skybox) // TODO: Temp...
+	void Renderer3D::DrawSkyBox(const Ref<CubeTexture>& skybox, const float LOD, float intensity) // TODO: Temp...
 	{
 		s_Data->SkyBoxShader->Bind();
-		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.a", glm::vec4(1.0f));
-		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.b", glm::mat4(1.0f));
-		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.c", 0.3f);
-		s_Data->SkyBoxShader->SetUniform("u_MatsUniforms.d", 0.3f);
+		s_Data->SkyBoxShader->SetUniform("u_Uniforms.TextureLOD", LOD);
+		s_Data->SkyBoxShader->SetUniform("u_Uniforms.Intensity", intensity);
 		skybox->Bind();
 
 		RenderFlags flag = RenderCommand::GetRenderFlag();

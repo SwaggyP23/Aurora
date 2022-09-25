@@ -42,12 +42,12 @@ namespace Aurora {
 	private:
 		void ShowRendererStatsUI(); // This will eventually be moved to become a panel that is optionally displayed and not mandatory
 		void ShowRendererVendorInfoUI();
-		//void ShowRendererOverlay(); // To be implemented later
+		//void ShowRendererOverlay(); // TODO: to be implemented later
 		void ShowShadersPanel();
 
 		bool m_ShowRendererVendorInfo = false;
 		bool m_ShowRenderStatsUI = true;
-		//bool m_ShowRendererOverlay = false;
+		//bool m_ShowRendererOverlay = false; // TODO: to be implemented later
 		bool m_ShowShadersPanel = true;
 
 	// Material stuff...
@@ -69,14 +69,14 @@ namespace Aurora {
 	private:
 		void ShowEditPanelUI();
 		void ShowScreenshotPanel();
+		void TakeScreenShotOfOpenScene();
 
 		bool m_ShowEditingPanel = false;
 		bool m_ShowScreenshotPanel = false;
+		Ref<Texture2D> m_DisplayImage = nullptr;
 
 	private:
 		void ShowFontPickerUI();
-
-		std::string m_SelectedFontName = "OpenSans, Medium";
 
 	// Help Panels and UI
 	private:
@@ -96,8 +96,6 @@ namespace Aurora {
 		void SaveScene();
 		void SaveSceneAs();
 		void SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path);
-
-		void TakeScreenShotOfOpenScene();
 
 		std::filesystem::path m_EditorScenePath;
 

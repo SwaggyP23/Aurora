@@ -56,7 +56,7 @@ namespace Aurora {
 			IncrementRef();
 		}
 
-		Ref(Ref<T>&& other)
+		Ref(Ref<T>&& other) noexcept
 		{
 			m_Ptr = other.m_Ptr;
 			other.m_Ptr = nullptr;

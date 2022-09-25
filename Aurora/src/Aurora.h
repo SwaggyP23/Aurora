@@ -4,6 +4,7 @@
 #include "Core/Base.h"
 
 #include "Core/Application.h"
+#include "Core/Buffer.h"
 
 #include "Logging/Log.h"
 #include "Layers/Layer.h"

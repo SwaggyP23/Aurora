@@ -3,6 +3,7 @@
 #include "Core/TimeStep.h"
 #include "Core/UUID.h"
 #include "Editor/EditorCamera.h"
+#include "Graphics/SceneEnvironment.h"
 
 #include "Graphics/Shader.h" // TODO: Temp...
 #include "Graphics/Model.h" // TODO: Temp...
@@ -49,7 +50,12 @@ namespace Aurora {
 		std::string m_Name = "Untitled Scene";
 
 		entt::registry m_Registry;
-		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+		uint32_t m_ViewportWidth = 0;
+		uint32_t m_ViewportHeight = 0;
+
+		Ref<Environment> m_Environment = nullptr;
+		float m_EnvironmentIntensity = 0;
+		float m_EnvironmentLOD = 0.0f;
 
 		friend class Entity;
 		friend class EditorLayer; // Should be SceneHierarchyPanel once they are split up into separate classes

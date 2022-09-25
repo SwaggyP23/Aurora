@@ -216,14 +216,13 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		GLenum format, internalFormat;
-		internalFormat = Utils::GLInternalFormatFromAFormat(m_Format);
+		GLenum internalFormat = Utils::GLInternalFormatFromAFormat(m_Format);
 
 		uint32_t mipCount = Utils::CalcMipCount(m_Width, m_Height);
 		glTextureStorage2D(m_TextureID, mipCount, internalFormat, m_Width, m_Height);
 		if (m_ImageData)
 		{
-			format = Utils::GLFormatFromAFormat(m_Format);
+			GLenum format = Utils::GLFormatFromAFormat(m_Format);
 			GLenum dataType = Utils::GLDataTypeFromAFormat(m_Format);
 			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, format, dataType, m_ImageData.Data);
 			
@@ -292,8 +291,7 @@ namespace Aurora {
 
 	void CubeTexture::Invalidate()
 	{
-		GLenum internalFormat;
-		internalFormat = Utils::GLInternalFormatFromAFormat(m_Format);
+		GLenum internalFormat = Utils::GLInternalFormatFromAFormat(m_Format);
 		
 		uint32_t mipCount = Utils::CalcMipCount(m_Width, m_Height);
 		glTextureStorage2D(m_TextureID, mipCount, internalFormat, m_Width, m_Height);
@@ -302,9 +300,6 @@ namespace Aurora {
 			GLenum format = Utils::GLFormatFromAFormat(m_Format);
 			GLenum dataType = Utils::GLDataTypeFromAFormat(m_Format);
 			glTextureSubImage3D(m_TextureID, 0, 0, 0, 0, m_Width, m_Height, 6, format, dataType, m_ImageData.Data);
-
-			if (m_Properties.GenerateMips)
-				glGenerateTextureMipmap(m_TextureID);
 		}
 	}
 

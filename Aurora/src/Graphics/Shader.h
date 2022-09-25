@@ -4,6 +4,7 @@
 #include "ShaderResource.h"
 
 #include <string>
+#include <map>
 #include <unordered_map>
 
 #include <glm/glm.hpp>
@@ -13,11 +14,10 @@
 /*
  * The std::vector<uint32_t>s used are basically the byte buffers for the binaries, however spriv and shaderc dont use single 
  * uint8_t bytes rather they use "Words" of 4 bytes each.
- * Currently i will not be using push_constants, rather i will be heavily using uniform buffers which is what i was adviced to
- * do by @implodee(chat link is found in my public server [SwaggyP's Server]), so yea use UBOs for all the info.
  * 
  * NOTE: If you in your shader create a push_constant block and for some reason one of its members is not used throughout the
- * shader, or if it is used but then overridin by something else, for example:
+ * shader, for example:
+ * 
  * layout(push_constant) uniform Mats
  * {
  *		float a;
@@ -26,16 +26,12 @@
  * 
  * ... 
  * 
- * o_Color = vec4(a);
  * o_Color = vec4(b);
  * 
  * then the member "a" of the push_constant block will not be converted into an opengl uniform and it wont be found when calling
  * glGetUniformLocation(shaderID, name);
  * Therefore be careful of what members you are putting in the push_constant blocks and if you are using them or not!
  * 
- * TODO: Add better reloading workflow. Since now if i change something little in the vertex shader, the reload actually reloads
- * the vertex and also the fragment shader, which is inefficient so need to find out a way to see what changed and then recompile
- * that specific stage...!
  */
 
 namespace Aurora {
@@ -128,6 +124,7 @@ namespace Aurora {
 		[[nodiscard]] static Ref<Shader> Create(const ShaderProperties& props);
 
 		void Reload();
+		void Dispatch(uint32_t dimX, uint32_t dimY, uint32_t dimZ) const;
 
 		[[nodiscard]] size_t GetHash() const;
 		// Returns last time modified of the asset path in minutes
@@ -222,22 +219,23 @@ namespace Aurora {
 		ShaderLibrary() = default;
 		~ShaderLibrary() = default;
 
-		static Scope<ShaderLibrary> Create();
+		[[nodiscard]] static Scope<ShaderLibrary> Create();
 
 		// Adds an already created shader into the library
 		void Add(const Ref<Shader>& shader);
-		void Add(const std::string& name, const Ref<Shader>& shader);
 
 		// Loads a shader into the library
 		Ref<Shader> Load(const std::string& filepath, ShaderType type = ShaderType::TwoStageVertFrag);
 		Ref<Shader> Load(const ShaderProperties& props); // Gives the option to specify name
 
+		[[nodiscard]] Ref<Shader> TryGet(const std::string& name) const;
 		[[nodiscard]] const Ref<Shader>& Get(const std::string& name) const;
 
 		[[nodiscard]] bool Exist(const std::string& name) const;
+		[[nodiscard]] bool ExistHash(const size_t hash) const;
 
 	private:
-		mutable std::unordered_map<std::string, Ref<Shader>> m_Shaders;
+		mutable std::map<size_t, Ref<Shader>> m_ShadersWithHash;
 
 	};
 
