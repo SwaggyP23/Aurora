@@ -20,6 +20,14 @@ namespace Aurora {
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Aurora::Event& e) override;
 
+		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool OnPathDrop(WindowPathDropEvent& e);
+
+		void OnRender2D();
+
+		std::pair<float, float> GetMouseInViewportSpace();
+		std::pair<glm::vec3, glm::vec3> CastRay(const EditorCamera& camera, float mx, float my);
 
 	// Scene Hierarchy Panel
 	private:
@@ -97,6 +105,10 @@ namespace Aurora {
 		void SaveSceneAs();
 		void SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path);
 
+		void OnScenePlay();
+		//void OnSceneSimulate(); // TODO: Implement when we have physics
+		void OnSceneStop();
+
 		std::filesystem::path m_EditorScenePath;
 
 	// Primary Panels for the editor
@@ -109,10 +121,6 @@ namespace Aurora {
 
 		void ManipulateGizmos();
 
-		bool OnKeyPressed(KeyPressedEvent& e);
-		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-		bool OnPathDrop(WindowPathDropEvent& e);
-
 		void ShowSettingsUI();
 		void ShowCloseModalUI();
 
@@ -121,25 +129,46 @@ namespace Aurora {
 
 	private:
 		EditorCamera m_EditorCamera;
-		Ref<Framebuffer> m_MSAAFramebuffer;
-		Ref<Framebuffer> m_IntermediateFramebuffer;
+
+		Ref<Renderer2D> m_Renderer2D;
+
+		struct SelectionData
+		{
+			Aurora::Entity Entity;
+			SubMesh* Mesh = nullptr;
+			float Distance = 0.0f;
+		};
 
 		Ref<Scene> m_EditorScene;
+		Ref<Scene> m_RuntimeScene;
 		Ref<Scene> m_ActiveScene;
+		
+		Ref<SceneRenderer> m_ViewportRenderer;
 
 		ImRect m_ViewportRect;
 		ImVec2 m_ViewportSize = { 0.0f, 0.0f };
+		uint32_t m_ViewportWidth = 0;
+		uint32_t m_ViewportHeight = 0;
 
-		int16_t m_GizmoType = -1;
+		int32_t m_GizmoType = -1;
+
+		float m_LineWidth = 2.0f;
+
+		enum class SceneState
+		{
+			Edit = 0, Play = 1, Pause = 2, Simulate = 3
+		};
+
+		SceneState m_SceneState = SceneState::Edit;
+
+		// TODO: Change to be default true!
+		bool m_ShowIcons = false;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
 		bool m_AllowViewportCameraEvents = false;
 		bool m_StartedRightClickInViewport = false;
-		// TODO: This is temp until I have a real grid and a grid shader!
-		bool m_ShowImGuizmoGrid = false;
-
-		glm::vec4 m_Color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+		bool m_EditorCameraInRuntime = false;
 
 	};
 

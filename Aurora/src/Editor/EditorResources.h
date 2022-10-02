@@ -14,9 +14,17 @@ namespace Aurora {
 		inline static Ref<Texture2D> CloseIcon = nullptr;
 		inline static Ref<Texture2D> ResetIcon = nullptr;
 
+		inline static Ref<Texture2D> PlayButton = nullptr;
+		inline static Ref<Texture2D> SimulateButton = nullptr;
+		inline static Ref<Texture2D> PauseButton = nullptr;
+		inline static Ref<Texture2D> StopButton = nullptr;
+
 		// Components...
 		inline static Ref<Texture2D> TransformCompIcon = nullptr;
 		inline static Ref<Texture2D> CameraIcon = nullptr;
+
+		// TODO: TEMP...
+		inline static Ref<Texture2D> FIXME = nullptr;
 
 		static void Init();
 		static void Shutdown();

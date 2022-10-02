@@ -19,7 +19,7 @@
 
 namespace Aurora {
 
-	enum class MaterialFlag
+	enum class MaterialFlag : uint8_t
 	{
 		None           = BIT(0),
 		DepthTest      = BIT(1),
@@ -31,7 +31,7 @@ namespace Aurora {
 	{
 	public:
 		Material(const std::string& name, const Ref<Shader>& shader);
-		~Material();
+		virtual ~Material();
 
 		static Ref<Material> Create(const std::string& name, const Ref<Shader>& shader);
 
@@ -82,7 +82,7 @@ namespace Aurora {
 		[[nodiscard]] Ref<CubeTexture> TryGetCubeTexture(std::string_view name);
 
 		[[nodiscard]] uint32_t GetFlags() const { return m_MaterialFlags; }
-		[[nodiscard]] bool HasFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
+		[[nodiscard]] bool HasFlag(MaterialFlag flag) const { return (uint32_t)flag & (uint32_t)m_MaterialFlags; }
 		void SetFlag(MaterialFlag flag, bool value);
 
 		[[nodiscard]] Ref<Shader> GetShader() const { return m_Shader; }
@@ -107,18 +107,18 @@ namespace Aurora {
 		}
 
 		template<typename T>
-		T& Get(std::string_view fullname) const
+		T* Get(std::string_view fullname) const
 		{
 			const ShaderUniform* declaration = FindUniformDeclaration(fullname);
 			if (!declaration)
 			{
+				// If this prints then probs are u messed up matching the uniform names from code with shader or wrong shader / wrong uniform
 				AR_CORE_WARN_TAG("Material", "Could not find the uniform with name: {0}", fullname);
-				T nullvalue = T();
-				return nullvalue;
+				return nullptr;
 			}
 
 			Buffer& buffer = m_UniformStorageBuffer;
-			return buffer.Read<T>(declaration->GetOffset());
+			return &(buffer.Read<T>(declaration->GetOffset()));
 		}
 
 		const ShaderUniform* FindUniformDeclaration(std::string_view name) const;
@@ -143,7 +143,7 @@ namespace Aurora {
 	public:
 		MaterialAsset();
 		MaterialAsset(Ref<Material> material);
-		~MaterialAsset();
+		virtual ~MaterialAsset();
 
 		static Ref<MaterialAsset> Create();
 		static Ref<MaterialAsset> Create(Ref<Material> material);
@@ -195,7 +195,7 @@ namespace Aurora {
 	public:
 		MaterialTable(uint32_t count = 1);
 		MaterialTable(Ref<MaterialTable> other);
-		~MaterialTable();
+		virtual ~MaterialTable();
 
 		static Ref<MaterialTable> Create(uint32_t count = 1);
 		static Ref<MaterialTable> Create(Ref<MaterialTable> other);

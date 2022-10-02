@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logging/Log.h"
+#include "Core/Log.h"
 
 #include <assimp/LogStream.hpp>
 #include <assimp/DefaultLogger.hpp>
@@ -10,6 +10,8 @@ namespace Aurora {
 	class AssimpLogStream : public Assimp::LogStream
 	{
 	public:
+		virtual ~AssimpLogStream() = default;
+
 		static void Init()
 		{
 			if (Assimp::DefaultLogger::isNullLogger())

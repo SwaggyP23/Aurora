@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Logging/Log.h"
+#include "Log.h"
 #include "Refs.h"
-#include <filesystem>
+
 #include <stdint.h>
 
 #ifndef AURORA_PLATFORM_WINDOWS

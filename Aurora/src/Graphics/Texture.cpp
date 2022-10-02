@@ -123,6 +123,11 @@ namespace Aurora {
 
 	}
 
+	Ref<Texture2D> Texture2D::Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format)
+	{
+		return CreateRef<Texture2D>(id, width, height, format);
+	}
+
 	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
 	{
 		return CreateRef<Texture2D>(format, width, height, data, props);
@@ -133,12 +138,15 @@ namespace Aurora {
 		return CreateRef<Texture2D>(filePath, props);
 	}
 
+	Texture2D::Texture2D(uint32_t id, uint32_t width, uint32_t height, ImageFormat format)
+		: m_TextureID(id), m_Width(width), m_Height(height), m_Format(format)
+	{
+	}
+
 	Texture2D::Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
 		: m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
 	{
 		AR_PROFILE_FUNCTION();
-
-		m_AssetPath = "No Path Set!";
 
 		m_ImageData = Buffer((Byte*)data, Utils::GetImageMemorySize(format, width, height));
 
@@ -228,6 +236,8 @@ namespace Aurora {
 			
 			if (m_Properties.GenerateMips)
 				glGenerateTextureMipmap(m_TextureID);
+
+			m_IsLoaded = true;
 		}
 	}
 

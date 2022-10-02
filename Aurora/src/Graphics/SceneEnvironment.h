@@ -10,7 +10,7 @@ namespace Aurora {
 		constexpr Environment() = default;
 		Environment(const Ref<CubeTexture>& radianceMap, const Ref<CubeTexture>& irradianceMap)
 			: RadianceMap(radianceMap), IrradianceMap(irradianceMap) {}
-		~Environment() = default;
+		virtual ~Environment() = default;
 
 		static Ref<Environment> Create(const Ref<CubeTexture>& radianceMap, const Ref<CubeTexture>& irradianceMap);
 

@@ -64,6 +64,8 @@ namespace Aurora {
 
 		ImRect RectExpanded(const ImRect& input, float x, float y);
 
+		ImRect RectOffset(const ImRect& input, float x, float y);
+
 		void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenNotActive = false, ImColor colorWhenActive = ImColor(80, 80, 80));
 
 		void DrawButtonImage(const Ref<Texture2D>& texture, ImColor tintNormal, ImColor tintHovered, ImColor tintActive, ImRect rect);

@@ -100,7 +100,7 @@ namespace Aurora {
 		VertexBuffer() = default;
 		VertexBuffer(uint32_t size, BufferUsage drawHint = BufferUsage::Static);
 		VertexBuffer(void* vertices, uint32_t size, BufferUsage drawHint = BufferUsage::Static);
-		~VertexBuffer();
+		virtual ~VertexBuffer();
 
 		[[nodiscard]] static Ref<VertexBuffer> Create(uint32_t size, BufferUsage drawHint = BufferUsage::Static);
 		[[nodiscard]] static Ref<VertexBuffer> Create(void* vertices, uint32_t size, BufferUsage drawHint = BufferUsage::Static);

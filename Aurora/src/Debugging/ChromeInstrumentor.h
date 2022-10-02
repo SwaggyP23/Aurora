@@ -9,7 +9,7 @@
  */
 
 #include "Core/Base.h"
-#include "Logging/Log.h"
+#include "Core/Log.h"
 
 #include <algorithm>
 #include <chrono>

@@ -7,7 +7,7 @@
 
 namespace Aurora {
 
-	enum class RenderFlags
+	enum class RenderFlags : uint8_t
 	{
 		None = 0,
 		Fill,
@@ -15,16 +15,15 @@ namespace Aurora {
 		Vertices
 	};
 
-	enum class FeatureControl
+	enum class Capability : uint8_t
 	{
 		None = 0,
 		Blending,
 		Culling,
-		DepthTesting,
-		StencilTesting // Not implemented yet!
+		DepthTesting
 	};
 
-	enum class OpenGLEquation
+	enum class BlendEquation : uint8_t
 	{
 		Add,
 		Subtract,
@@ -33,7 +32,7 @@ namespace Aurora {
 		Maximum
 	};
 
-	enum class OpenGLFunction
+	enum class Comparator : uint8_t
 	{
 		None = 0,
 
@@ -74,10 +73,10 @@ namespace Aurora {
 		static void SetRenderFlag(RenderFlags flag);
 		[[nodiscard]] static RenderFlags GetRenderFlag() { return m_Flags; }
 
-		static void Enable(FeatureControl feature); // TODO: Think of better naming for this api since its a disaster
-		static void Disable(FeatureControl feature);
-		static void SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function);
-		static void SetBlendFunctionEquation(OpenGLEquation equation);
+		static void Enable(Capability feature); // TODO: Think of better naming for this api since its a disaster
+		static void Disable(Capability feature);
+		static void SetCapabilityFunction(Capability feature, Comparator function);
+		static void SetBlendFunctionEquation(BlendEquation equation);
 
 		static void SetClearColor(const glm::vec4& color);
 		static void Clear();

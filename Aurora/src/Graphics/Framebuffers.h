@@ -6,8 +6,7 @@
  * As for the depth attachment for framebuffers, via this implementation, it is defaulted to use render buffers for the Depth/Stencil 
  * attachment and that is because these attachments are rarely to ever be directly read from therefore it is more optimized to attach them
  * as render buffers.
- * TODO: Currently I dont think i support Stencil Attachments, like just pure stencil attachments, however I do
- * support Depth/Stencil attachments
+ * TODO: Currently I dont think i support pure Stencil Attachments, however I do support Depth/Stencil attachments
  */
 
 #include "Core/Base.h"
@@ -46,29 +45,33 @@ namespace Aurora {
 
 	struct FramebufferSpecification
 	{
+		std::string DebugName;
 		uint32_t Width = 1280;
 		uint32_t Height = 720;
 		glm::vec4 ClearColor = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
 		uint32_t Samples = 1; // MSAA
 		FramebufferAttachmentSpecification AttachmentsSpecification;
 
-		// This is to specify if you want the depth attachments to be as a Texture or as a Renderbuffer
-		bool DepthAttachmentAsTexture = false;
-
 		// This sets if the framebuffer is resizable or not
 		bool Resizable = true;
+
+		bool ClearOnBind = true;
+
+		// Provides the ability to attach existing images instead of creating new ones
+		// The index provided should map exactly with the layout provided to the spec
+		// And also the number of samples should also map exactly with the framebuffer it is being referenced from
+		std::map<uint32_t, Ref<Texture2D>> ExistingImages;
 	};
 
 	class Framebuffer : public RefCountedObject
 	{
 	public:
 		Framebuffer(const FramebufferSpecification& spec);
-		~Framebuffer();
+		virtual ~Framebuffer();
 
 		[[nodiscard]] static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
-		[[nodiscard]] static void Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment);
+		[[nodiscard]] static void Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment, bool depth = false);
 
-		void Invalidate();
 		void Resize(uint32_t width, uint32_t height);
 
 		void Bind() const;
@@ -80,20 +83,28 @@ namespace Aurora {
 
 		[[nodiscard]] uint32_t GetFramebufferID() const { return m_FrameBufferID; }
 		[[nodiscard]] const FramebufferSpecification& GetSpecification() const { return m_Specification; }
-		[[nodiscard]] uint32_t GetColorAttachmentID(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
+		[[nodiscard]] Ref<Texture2D> GetColorAttachment(uint32_t index = 0) const { AR_CORE_ASSERT(index < m_ColorAttachments.size(), "Index cant be greater than the size");  return m_ColorAttachments[index]; }
+		[[nodiscard]] Ref<Texture2D> GetDepthAttachment() { AR_CORE_ASSERT(m_DepthAttachment); return m_DepthAttachment; }
 
 		[[nodiscard]] bool HasDepthAttachment() const { return m_DepthAttachment ? true : false; }
 		[[nodiscard]] uint32_t GetMaxFramebufferSize() const { return s_MaxFramebufferSize; }
+
+	private:
+		void Invalidate();
+		void AttachExisting();
 
 	private:
 		uint32_t m_FrameBufferID = 0;
 		FramebufferSpecification m_Specification;
 
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentsSpecification;
-		std::vector<uint32_t> m_ColorAttachments;
+		std::vector<Ref<Texture2D>> m_ColorAttachments;
 
+		// Depth attachments always created as textures and for now only supports ONE depth attachment
 		FramebufferTextureSpecification m_DepthAttachmentSpecification = ImageFormat::None;
-		uint32_t m_DepthAttachment = 0;
+		Ref<Texture2D> m_DepthAttachment = nullptr;
+
+		bool m_AttachExisting = false;
 
 		// 8K DCI which is 256:135 Aspect Ratio and measuring 8192x4320 pixels which is HUGE
 		static constexpr uint32_t s_MaxFramebufferSize = 8192;

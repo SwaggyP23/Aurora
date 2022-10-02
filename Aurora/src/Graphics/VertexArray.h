@@ -13,7 +13,7 @@ namespace Aurora {
 	{
 	public:
 		VertexArray();
-		~VertexArray();
+		virtual ~VertexArray();
 
 		[[nodiscard]] static Ref<VertexArray> Create();
 

@@ -2,24 +2,14 @@
 #include "Scene.h"
 #include "Entity.h"
 
-#include "Graphics/Model.h"
-#include "Graphics/UniformBuffer.h" // TODO: Temp...!
 #include "Components.h"
 #include "ScriptableEntity.h"
 #include "Renderer/Renderer.h"
-#include "Renderer/Renderer3D.h"
 #include "Editor/EditorResources.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Aurora {
-
-	static Ref<UniformBuffer> s_ModelUniBuffer;
-	static Ref<Material> s_Mat;
-	static Ref<Texture2D> s_Texture;
-	static TextureProperties s_Props;
-	static Ref<Shader> s_ModelShader;
-	static bool s_Created = false;
 
 	Ref<Scene> Scene::Create(const std::string& debugName)
 	{
@@ -29,25 +19,58 @@ namespace Aurora {
 	Scene::Scene(const std::string& debugName)
 		: m_Name(debugName)
 	{
-		if (!s_Created)
-		{
-			s_Mat = Material::Create("Test Mat", Renderer::GetShaderLibrary()->TryGet("AuroraPBRStatic"));
-			s_Props.FlipOnLoad = true;
-			s_Props.AnisotropicFiltering = 16.0f;
-			s_Texture = Texture2D::Create("Resources/textures/Qiyana2.png", s_Props);
-
-			//const auto& [radiance, irradiance] = Renderer::CreateEnvironmentMap("Resources/environment/dikhololo_night_4k.hdr");
-			//m_Environment = Environment::Create(radiance, irradiance);
-
-			//s_ModelUniBuffer = UniformBuffer::Create(sizeof(glm::mat4) + sizeof(int), 1);
-			// Model still doesnt work since models are now loaded differently and need to adapt to that
-			//s_ModelShader = Renderer::GetShaderLibrary()->Get("Model"); // TODO: Temp...
-			s_Created = true;
-		}
 	}
 
 	Scene::~Scene()
 	{
+	}
+
+	template<typename T>
+	static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
+	{
+		auto srcEntites = srcRegistry.view<T>();
+		for (auto srcEntity : srcEntites)
+		{
+
+			entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponent>(srcEntity).ID);
+
+			auto& srcComponent = srcRegistry.get<T>(srcEntity);
+			auto& destComponent = dstRegistry.emplace_or_replace<T>(destEntity, srcComponent);
+		}
+	}
+
+	void Scene::CopyTo(Ref<Scene> target)
+	{
+		target->m_Name = m_Name;
+
+		target->m_Environment = m_Environment;
+		target->m_EnvironmentIntensity = m_EnvironmentIntensity;
+		target->m_EnvironmentLOD = m_EnvironmentLOD;
+
+		entt::registry& srcSceneRegistry = m_Registry;
+		entt::registry& dstSceneRegistry = target->m_Registry;
+		std::unordered_map<UUID, entt::entity> enttMap;
+
+		auto idView = srcSceneRegistry.view<IDComponent>();
+		for (auto e : idView)
+		{
+			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
+			const std::string& name = srcSceneRegistry.get<TagComponent>(e).Tag;
+
+			Entity newEntity = target->CreateEntityWithUUID(uuid, name);
+			enttMap[uuid] = (entt::entity)newEntity;
+		}
+
+		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<StaticMeshComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
+
+		target->m_ViewportWidth = m_ViewportWidth;
+		target->m_ViewportHeight = m_ViewportHeight;
 	}
 
 	Entity Scene::CreateEntityWithUUID(UUID id, const std::string& name)
@@ -108,117 +131,154 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnUpdateEditor(TimeStep ts, const EditorCamera& camera, glm::vec4 puh, glm::mat4 trans) // TODO: TEMPORARY!!!!!!!!!
+	void Scene::OnRenderEditor(Ref<SceneRenderer> renderer, TimeStep ts, const EditorCamera& camera)
 	{
-		Renderer3D::BeginScene(camera);
-
-		// TODO: Rework all this shit for skylights
-		auto skyLightView = m_Registry.view<TransformComponent, SkyLightComponent>();
-		if (skyLightView.empty())
-			Renderer3D::DrawSkyBox(Renderer::GetBlackCubeTexture(), 0.0f, 0.0f);
-		for (auto entity : skyLightView)
 		{
-			auto [tranform, skyLight] = skyLightView.get<TransformComponent, SkyLightComponent>(entity);
-			m_Environment = skyLight.SceneEnvironment;
-			m_EnvironmentIntensity = skyLight.Intensity;
-			m_EnvironmentLOD = skyLight.Level;
-			if (m_Environment)
+			auto skyLightView = m_Registry.view<TransformComponent, SkyLightComponent>();
+			if (skyLightView.empty())
+				m_Environment = Renderer::GetBlackEnvironment();
+
+			for (auto entity : skyLightView)
 			{
-				Renderer3D::DrawSkyBox(m_Environment->RadianceMap, m_EnvironmentLOD, m_EnvironmentIntensity);
+				auto [tranform, skyLight] = skyLightView.get<TransformComponent, SkyLightComponent>(entity);
+
+				if (!skyLight.SceneEnvironment && skyLight.DynamicSky)
+				{
+					const glm::vec3& TAI = skyLight.TurbidityAzimuthInclination;
+					Ref<CubeTexture> preethamEnv = Renderer::CreatePreethamSky(TAI.x, TAI.y, TAI.z);
+					skyLight.SceneEnvironment = Environment::Create(preethamEnv, preethamEnv);
+				}
+
+				m_Environment = skyLight.SceneEnvironment;
+				m_EnvironmentIntensity = skyLight.Intensity;
+				m_EnvironmentLOD = skyLight.Level;
+			}
+		}
+		
+		renderer->SetScene(this);
+		renderer->BeginScene({ camera, camera.GetViewMatrix(), camera.GetNearClip(), camera.GetFarClip(), camera.GetFOV() });
+
+		// Static meshes
+		{
+			auto meshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
+			for (auto entity : meshGroup)
+			{
+				auto [transform, staticMesh] = meshGroup.get<TransformComponent, StaticMeshComponent>(entity);
+
+				if (staticMesh.StaticMesh)
+				{
+					Entity e = Entity{ entity, this };
+					glm::mat4 transform = GetWorldSpaceTransformMatrix(e);
+
+					renderer->SubmitStaticMesh(staticMesh.StaticMesh, staticMesh.MaterialTable, transform, nullptr);
+				}
 			}
 		}
 
+		// End scene here since only meshes are the entities to be rendered and batch renderer is separate
+		renderer->EndScene();
 
-		auto spriteRendererView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-		for (auto entity : spriteRendererView)
+		if (renderer->GetFinalPassImage())
 		{
-			auto [transform, sprite] = spriteRendererView.get<TransformComponent, SpriteRendererComponent>(entity);
+			Ref<Renderer2D> renderer2D = renderer->GetRenderer2D();
 
-			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color, (int)entity);
+			// Render only text and debug renderer when that is a thing... and therefore we need to depth test
+			renderer2D->BeginScene(camera.GetViewProjection(), camera.GetViewMatrix(), true);
+			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
+
+			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 0.8f, 0.3f, 0.8f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+
+			renderer2D->EndScene();
 		}
-
-		// entities with camera components are rendered as white planes for now!
-		auto cameraView = m_Registry.view<TransformComponent, CameraComponent>();
-		for (auto entity : cameraView)
-		{
-			auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
-
-			// TODO: Fix the way the camera icon is displayed
-			Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, { transform.Scale.x, transform.Scale.y, 0.0f },
-				EditorResources::CameraIcon, 1.0f, glm::vec4(1.0f), (int)entity);
-		}
-
-		auto ModelView = m_Registry.view<TransformComponent, ModelComponent>(); // TODO: Rework...!!!
-		for (auto entity : ModelView)
-		{
-			auto[transform, modelComp] = ModelView.get<TransformComponent, ModelComponent>(entity);
-
-			auto model = modelComp.model;
-
-			auto rotation = glm::toMat4(glm::quat(transform.Rotation));
-			auto trans = glm::translate(glm::mat4(1.0f), transform.Translation) * rotation * glm::scale(glm::mat4(1.0f), transform.Scale);
-
-			s_ModelShader->Bind();
-
-			s_ModelUniBuffer->SetData(glm::value_ptr(trans), sizeof(glm::mat4));
-			s_ModelUniBuffer->SetData(&entity, sizeof(int), sizeof(glm::mat4));
-			model.Draw(*(s_ModelShader.raw()));
-		}
-
-		Renderer3D::EndScene();
-
-		// Rendered last so that blending can work fine with all the other batched quads
-		s_Mat->Set("u_AlbedoTexture", s_Texture);
-		Renderer3D::DrawMaterial(s_Mat, trans, puh); // TODO: TEMPORARY!!!!!!!!!
 	}
 
-	void Scene::OnUpdateRuntime(TimeStep ts)
+	void Scene::OnRenderRuntime(Ref<SceneRenderer> renderer, TimeStep ts)
 	{
-		//Update Scripts...
+		////Update Scripts...
+		//{
+		//	m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc)
+		//	{
+		//		// TODO: Move to OnScenePlay()... and OnSceneStop() we need to call the OnDestroy for the scripts
+		//		if(!nsc.Instance)
+		//		{
+		//			nsc.Instance = nsc.InstantiateScript();
+		//			nsc.Instance->m_Entity = Entity{ entity, this };
+		//			nsc.Instance->OnCreate();					
+		//		}
+
+		//		nsc.Instance->OnUpdate(ts);
+		//	});
+		//}
+
+		Entity cameraEntity = GetPrimaryCameraEntity();
+		if (!cameraEntity)
+			return;
+
+		glm::mat4 cameraViewMatrix = glm::inverse(GetWorldSpaceTransformMatrix(cameraEntity));
+		AR_CORE_CHECK(cameraEntity != Entity::nullEntity, "Scene does not contain any cameras!");
+		SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>();
+		camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc)
+			auto skyLightView = m_Registry.view<TransformComponent, SkyLightComponent>();
+			if (skyLightView.empty())
+				m_Environment = Renderer::GetBlackEnvironment();
+
+			for (auto entity : skyLightView)
 			{
-				// TODO: Move to OnScenePlay()... and OnSceneStop() we need to call the OnDestroy for the scripts
-				if(!nsc.Instance)
+				auto [tranform, skyLight] = skyLightView.get<TransformComponent, SkyLightComponent>(entity);
+
+				if (!skyLight.SceneEnvironment && skyLight.DynamicSky)
 				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();					
+					const glm::vec3& TAI = skyLight.TurbidityAzimuthInclination;
+					Ref<CubeTexture> preethamEnv = Renderer::CreatePreethamSky(TAI.x, TAI.y, TAI.z);
+					skyLight.SceneEnvironment = Environment::Create(preethamEnv, preethamEnv);
 				}
 
-				nsc.Instance->OnUpdate(ts);
-			});
+				m_Environment = skyLight.SceneEnvironment;
+				m_EnvironmentIntensity = skyLight.Intensity;
+				m_EnvironmentLOD = skyLight.Level;
+			}
 		}
 
-		SceneCamera* mainCamera = nullptr;
-		glm::mat4 mainTransform;
-		{
-			auto view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto entity : view)
-			{
-				auto[transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+		renderer->SetScene(this);
+		renderer->BeginScene({ camera, cameraViewMatrix, camera.GetPerspectiveNearClip(), camera.GetPerspectiveFarClip(), camera.GetDegPerspectiveVerticalFOV() });
 
-				if (camera.Primary)
+		// Static meshes
+		{
+			auto meshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
+			for (auto entity : meshGroup)
+			{
+				auto [transform, staticMesh] = meshGroup.get<TransformComponent, StaticMeshComponent>(entity);
+
+				if (staticMesh.StaticMesh)
 				{
-					mainCamera = &camera.Camera;
-					mainTransform = transform.GetTransform();
+					Entity e = Entity{ entity, this };
+					glm::mat4 transform = GetWorldSpaceTransformMatrix(e);
+
+					renderer->SubmitStaticMesh(staticMesh.StaticMesh, staticMesh.MaterialTable, transform, nullptr);
 				}
 			}
 		}
 
-		if (mainCamera)
+		// End scene here since only meshes are the entities to be rendered and batch renderer is separate
+		renderer->EndScene();
+
+		if (renderer->GetFinalPassImage())
 		{
-			Renderer3D::BeginScene(*mainCamera, mainTransform);
+			Ref<Renderer2D> renderer2D = renderer->GetRenderer2D();
 
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			for (auto entity : view)
-			{
-				auto[transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+			// Render only text and debug renderer when that is a thing... and therefore we need to depth test
+			renderer2D->BeginScene(camera.GetProjection() * cameraViewMatrix, cameraViewMatrix, true);
+			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
-				Renderer3D::DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color, (int)entity);
-			}
+			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 0.8f, 0.3f, 0.8f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
 
-			Renderer3D::EndScene();
+			renderer2D->EndScene();
 		}
 	}
 
@@ -230,7 +290,6 @@ namespace Aurora {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
-		// Resize the non-fixed aspect ratio cameras...
 		auto view = m_Registry.view<CameraComponent>();
 		for (auto entity : view)
 		{
@@ -245,11 +304,22 @@ namespace Aurora {
 		for (auto entity : view)
 		{
 			const auto& camera = view.get<CameraComponent>(entity);
+
 			if (camera.Primary)
+			{
+				AR_CORE_ASSERT(camera.Camera.GetOrthographicSize() || camera.Camera.GetDegPerspectiveVerticalFOV(), "Camera is not fully initialized!");
 				return Entity{ entity, this };
+			}
 		}
 
-		return {};
+		return Entity::nullEntity;
+	}
+
+	glm::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity)
+	{
+		glm::mat4 transform = glm::mat4(1.0f);
+
+		return transform * entity.Transform().GetTransform();
 	}
 
 }

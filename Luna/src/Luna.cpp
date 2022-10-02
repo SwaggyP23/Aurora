@@ -33,6 +33,9 @@ namespace Aurora {
 
 		//specification.WorkingDirectory // TODO: Needs to be handled...
 
+		specification.RendererConfiguration.EnvironmentMapResolution = 1024;
+		specification.RendererConfiguration.IrradianceMapComputeSamples = 1024;
+
 		return new Luna(specification);
 	}
 

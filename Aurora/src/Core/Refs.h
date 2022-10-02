@@ -15,6 +15,8 @@ namespace Aurora {
 	class RefCountedObject
 	{
 	public:
+		virtual ~RefCountedObject() = default;
+
 		void IncrementRefCount() const;
 		void DecrementRefCount() const;
 

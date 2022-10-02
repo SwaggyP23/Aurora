@@ -240,62 +240,62 @@ namespace Aurora {
 
 	float& Material::GetFloat(std::string_view name) const
 	{
-		return Get<float>(name);
+		return *Get<float>(name);
 	}
 
 	int32_t& Material::GetInt(std::string_view name) const
 	{
-		return Get<int32_t>(name);
+		return *Get<int32_t>(name);
 	}
 
 	uint32_t& Material::GetUInt(std::string_view name) const
 	{
-		return Get<uint32_t>(name);
+		return *Get<uint32_t>(name);
 	}
 
 	bool& Material::GetBool(std::string_view name) const
 	{
-		return Get<bool>(name);
+		return *Get<bool>(name);
 	}
 
 	glm::ivec2& Material::GetIntVec2(std::string_view name) const
 	{
-		return Get<glm::ivec2>(name);
+		return *Get<glm::ivec2>(name);
 	}
 
 	glm::ivec3& Material::GetIntVec3(std::string_view name) const
 	{
-		return Get<glm::ivec3>(name);
+		return *Get<glm::ivec3>(name);
 	}
 
 	glm::ivec4& Material::GetIntVec4(std::string_view name) const
 	{
-		return Get<glm::ivec4>(name);
+		return *Get<glm::ivec4>(name);
 	}
 
 	glm::vec2& Material::GetVec2(std::string_view name) const
 	{
-		return Get<glm::vec2>(name);
+		return *Get<glm::vec2>(name);
 	}
 
 	glm::vec3& Material::GetVec3(std::string_view name) const
 	{
-		return Get<glm::vec3>(name);
+		return *Get<glm::vec3>(name);
 	}
 
 	glm::vec4& Material::GetVec4(std::string_view name) const
 	{
-		return Get<glm::vec4>(name);
+		return *Get<glm::vec4>(name);
 	}
 
 	glm::mat3& Material::GetMat3(std::string_view name) const
 	{
-		return Get<glm::mat3>(name);
+		return *Get<glm::mat3>(name);
 	}
 
 	glm::mat4& Material::GetMat4(std::string_view name) const
 	{
-		return Get<glm::mat4>(name);
+		return *Get<glm::mat4>(name);
 	}
 
 	Ref<Texture2D> Material::GetTexture2D(std::string_view name)

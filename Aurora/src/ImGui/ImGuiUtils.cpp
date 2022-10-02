@@ -163,6 +163,16 @@ namespace Aurora {
 			return res;
 		}
 
+		ImRect RectOffset(const ImRect& input, float x, float y)
+		{
+			ImRect res = input;
+			res.Min.x += x;
+			res.Min.y += y;
+			res.Max.x += x;
+			res.Max.y += y;
+			return res;
+		}
+
 		void DrawItemActivityOutline(float rounding, bool drawWhenNotActive, ImColor colorWhenActive)
 		{
 			ImDrawList* drawList = ImGui::GetWindowDrawList();

@@ -40,7 +40,7 @@ namespace Aurora {
 		else
 			m_Window->Center();
 
-		Renderer::Init(); // This handles the Renderer3D, RenderCommand and RendererProperties initialization
+		Renderer::Init(specification.RendererConfiguration);
 
 		if (m_Specification.EnableImGui)
 		{

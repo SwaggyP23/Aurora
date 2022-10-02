@@ -58,7 +58,7 @@ namespace Aurora {
 	public:
 		virtual ~MouseButtonEvent() = default;
 
-		[[nodiscard]] inline MouseButton GetButtonCode() const { return m_ButtonCode; }
+		[[nodiscard]] inline MouseButton GetMouseButtonCode() const { return m_ButtonCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 

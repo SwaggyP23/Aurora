@@ -7,25 +7,33 @@ layout(location = 0) out vec3 v_TexCoords;
 
 layout(std140, binding = 0) uniform Camera
 {
-    mat4 u_ViewProjMatrix;
-    mat4 u_SkyVP;
-};
+	mat4 ViewProjectionMatrix;
+	mat4 InverseViewProjectionMatrix;
+	mat4 ProjectionMatrix;
+	mat4 InverseProjectionMatrix;
+	mat4 ViewMatrix;
+	mat4 InverseViewMatrix;
+	float NearClip;
+	float FarClip;
+	float FOV; // Radians
+	float Padding0;
+} u_Camera;
 
 void main()
 {
     v_TexCoords = a_Position;
-    vec4 pos = u_SkyVP * vec4(a_Position, 1.0f);
+    vec4 pos = u_Camera.ProjectionMatrix * mat4(mat3(u_Camera.ViewMatrix)) * vec4(a_Position, 1.0f);
     gl_Position = pos.xyww;
+//	gl_Position = pos;
 }  
 
 #pragma fragment
 #version 450 core
 layout(location = 0) out vec4 o_Color;
-layout(location = 1) out int o_EntityID;
 
 layout(location = 0) in vec3 v_TexCoords;
 
-layout(binding = 0) uniform samplerCube u_EnvFiltered;
+layout(binding = 0) uniform samplerCube u_RadianceMap;
 
 layout(push_constant) uniform Uniforms
 {
@@ -34,8 +42,9 @@ layout(push_constant) uniform Uniforms
 } u_Uniforms;
 
 void main()
-{    
-    vec3 envVector = normalize(v_TexCoords);
-    o_Color = textureLod(u_EnvFiltered, envVector, u_Uniforms.TextureLOD) * u_Uniforms.Intensity;
-    o_EntityID = -1;
+{	
+	// TODO: FIXME! The intensitiy multiplication kind of works however for now it does not register in renderdoc which i need
+	// for debugging, So when im happy with the stuff and dont need renderdoc as much ill uncomment it!
+    o_Color = textureLod(u_RadianceMap, v_TexCoords, u_Uniforms.TextureLOD);// * u_Uniforms.Intensity;
+	o_Color.a = 1.0f; // Instead of disabling then enabling blending
 }

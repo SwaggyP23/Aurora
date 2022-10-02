@@ -14,7 +14,7 @@ namespace Aurora {
 	public:
 		IndexBuffer() = default;
 		IndexBuffer(void* indices, uint32_t size);
-		~IndexBuffer();
+		virtual ~IndexBuffer();
 
 		[[nodiscard]] static Ref<IndexBuffer> Create();
 		[[nodiscard]] static Ref<IndexBuffer> Create(void* indices, uint32_t size);
@@ -23,6 +23,7 @@ namespace Aurora {
 		void UnBind() const;
 
 		[[nodiscard]] inline uint32_t GetSize() const { return m_Size; }
+		[[nodiscard]] inline uint32_t GetCount() const { return m_Size / sizeof(uint32_t); }
 		[[nodiscard]] inline uint32_t GetBufferID() const { return m_BufferId; }
 
 	private:

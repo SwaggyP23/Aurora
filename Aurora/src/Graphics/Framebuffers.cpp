@@ -184,7 +184,7 @@ namespace Aurora {
 			glBindRenderbuffer(GL_RENDERBUFFER, id);
 		}
 
-		static void AttachColorTexture(uint32_t fboID, uint32_t id, uint32_t samples, const FramebufferTextureSpecification& spec, uint32_t width, uint32_t height, uint32_t index, bool fixedSamples)
+		static void AttachColorTexture(uint32_t fboID, uint32_t id, uint32_t samples, const FramebufferTextureSpecification& spec, uint32_t width, uint32_t height, uint32_t index)
 		{
 			bool multiSampled = samples > 1;
 			GLenum internalFormat = GLInternalFormatFromAFormat(spec.TextureFormat);
@@ -193,7 +193,7 @@ namespace Aurora {
 
 			if (multiSampled)
 			{
-				glTextureStorage2DMultisample(id, samples, internalFormat, width, height, fixedSamples ? GL_TRUE : GL_FALSE);
+				glTextureStorage2DMultisample(id, samples, internalFormat, width, height, GL_FALSE);
 			}
 			else
 			{
@@ -260,50 +260,101 @@ namespace Aurora {
 	Framebuffer::Framebuffer(const FramebufferSpecification& spec)
 		: m_Specification(spec)
 	{
-		for (const auto& format : spec.AttachmentsSpecification.Attachments)
+		// If no existing images create ones
+		if (spec.ExistingImages.empty())
 		{
-			if (Utils::IsDepthFormat(format.TextureFormat))
-				m_DepthAttachmentSpecification = format;
-			else
-				m_ColorAttachmentsSpecification.emplace_back(format);
-		}
+			for (const auto& format : spec.AttachmentsSpecification.Attachments)
+			{
+				if (Utils::IsDepthFormat(format.TextureFormat))
+					m_DepthAttachmentSpecification = format;
+				else
+					m_ColorAttachmentsSpecification.emplace_back(format);
+			}
 
-		Invalidate();
+			Invalidate();
+
+			m_AttachExisting = false;
+		}
+		else
+		{
+			AR_CORE_CHECK(spec.ExistingImages.size() == spec.AttachmentsSpecification.Attachments.size());
+
+			uint32_t attachmentIndex = 0;
+			for (const auto& format : spec.AttachmentsSpecification.Attachments)
+			{
+				if (Utils::IsDepthFormat(format.TextureFormat))
+				{
+					m_DepthAttachmentSpecification = format;
+					AR_CORE_ASSERT(spec.ExistingImages.find(attachmentIndex) != spec.ExistingImages.end());
+					m_DepthAttachment = spec.ExistingImages.find(attachmentIndex)->second;
+				}
+				else
+				{
+					m_ColorAttachmentsSpecification.emplace_back(format);
+					AR_CORE_ASSERT(spec.ExistingImages.find(attachmentIndex) != spec.ExistingImages.end());
+					m_ColorAttachments.emplace_back(spec.ExistingImages.find(attachmentIndex)->second);
+				}
+
+				++attachmentIndex;
+			}
+
+			m_AttachExisting = true;
+
+			AttachExisting();
+		}
 	}
 
 	Framebuffer::~Framebuffer()
 	{
 		// Delete FBO
 		glDeleteFramebuffers(1, &m_FrameBufferID);
-		// Delete Color Attachments
-		glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
 
-		// Delete Depth Attachment
-		if (m_Specification.DepthAttachmentAsTexture)
-			glDeleteTextures(1, &m_DepthAttachment);
-		else
-			glDeleteRenderbuffers(1, &m_DepthAttachment);
+		// Delete Attachments ONLY if they are NOT existing attachments. Since if they are already existing, their creator should delete them!
+		if (!m_AttachExisting)
+		{
+			for (const auto& texture : m_ColorAttachments)
+			{
+				uint32_t colorID = texture->GetTextureID();
+				glDeleteTextures(1, &colorID);
+			}
+
+			if (m_DepthAttachment)
+			{
+				uint32_t depthID = m_DepthAttachment->GetTextureID();
+				glDeleteTextures(1, &depthID);
+			}
+		}
 	}
 
 	void Framebuffer::Invalidate()
 	{
+		AR_CORE_ASSERT(!m_AttachExisting);
+
 		if (m_FrameBufferID)
 		{
 			// Delete FBO
 			glDeleteFramebuffers(1, &m_FrameBufferID);
-			// Delete Color Attachments
-			glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
-
-			// Delete Depth Attachment
-			if (m_Specification.DepthAttachmentAsTexture)
-				glDeleteTextures(1, &m_DepthAttachment);
-			else
-				glDeleteRenderbuffers(1, &m_DepthAttachment);
-
-			// Reset all
-			m_ColorAttachments.clear();
-			m_DepthAttachment = 0;
 			m_FrameBufferID = 0;
+
+			// Delete Attachments ONLY if they are NOT existing attachments. Since if they are already existing, their creator should delete them!
+			if (!m_AttachExisting)
+			{
+				for (const auto& texture : m_ColorAttachments)
+				{
+					uint32_t colorID = texture->GetTextureID();
+					glDeleteTextures(1, &colorID);
+				}
+
+				if (m_DepthAttachment)
+				{
+					uint32_t depthID = m_DepthAttachment->GetTextureID();
+					glDeleteTextures(1, &depthID);
+				}
+
+				// Reset all
+				m_ColorAttachments.clear();
+				m_DepthAttachment = nullptr;
+			}
 		}
 
 		// No need to bind after creation because of DSA
@@ -315,57 +366,46 @@ namespace Aurora {
 		// Color attachments
 		if (m_ColorAttachmentsSpecification.size())
 		{
+			std::vector<uint32_t> colorAttachmentIDs;
+			colorAttachmentIDs.resize(m_ColorAttachmentsSpecification.size());
 			m_ColorAttachments.resize(m_ColorAttachmentsSpecification.size());
-			Utils::CreateTextures(multiSample, m_ColorAttachments.data(), (uint32_t)m_ColorAttachments.size());
+			Utils::CreateTextures(multiSample, colorAttachmentIDs.data(), (uint32_t)m_ColorAttachments.size());
 
 			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
 			{
 				Utils::AttachColorTexture(
 					m_FrameBufferID,
-					m_ColorAttachments[i],
+					colorAttachmentIDs[i],
 					m_Specification.Samples,
 					m_ColorAttachmentsSpecification[i],
 					m_Specification.Width,
 					m_Specification.Height,
-					(uint32_t)i,
-					m_Specification.DepthAttachmentAsTexture ? false : true);
+					(uint32_t)i);
+
+				// Create an api wrapper over the id
+				m_ColorAttachments[i] = Texture2D::Create(colorAttachmentIDs[i], m_Specification.Width, m_Specification.Height, m_ColorAttachmentsSpecification[i].TextureFormat);
 			}
 		}
 
 		// Depth attachments
 		if (m_DepthAttachmentSpecification.TextureFormat != ImageFormat::None)
 		{
-			if (m_Specification.DepthAttachmentAsTexture)
-			{
-				Utils::CreateTextures(multiSample, &m_DepthAttachment, 1);
+			uint32_t depthAttachmentID = 0;
+			Utils::CreateTextures(multiSample, &depthAttachmentID, 1);
 
-				Utils::AttachDepthTexture(
-					m_FrameBufferID,
-					m_DepthAttachment,
-					m_Specification.Samples, 
-					m_DepthAttachmentSpecification,
-					m_Specification.Width,
-					m_Specification.Height);
-			}
-			else
-			{
-				GLenum internalFormat = Utils::GLInternalFormatFromAFormat(m_DepthAttachmentSpecification.TextureFormat);
-				GLenum attachmentType = Utils::GLAttachmentType(m_DepthAttachmentSpecification.TextureFormat);
+			Utils::AttachDepthTexture(
+				m_FrameBufferID,
+				depthAttachmentID,
+				m_Specification.Samples,
+				m_DepthAttachmentSpecification,
+				m_Specification.Width,
+				m_Specification.Height);
 
-				Utils::CreateRenderBuffer(&m_DepthAttachment, 1);
-
-				Utils::AttachDepthRenderBuffer(
-					m_FrameBufferID,
-					m_DepthAttachment,
-					m_Specification.Samples,
-					internalFormat,
-					attachmentType,
-					m_Specification.Width,
-					m_Specification.Height);
-			}
+			// Create an api wrapper over the id
+			m_DepthAttachment = Texture2D::Create(depthAttachmentID, m_Specification.Width, m_Specification.Height, m_DepthAttachmentSpecification.TextureFormat);
 		}
 
-		if (m_ColorAttachments.size() >= 1)
+		if (m_ColorAttachments.size() > 0)
 		{
 			// Number of color attachments should not exceed the maximum amount of draw buffers supported by the implementation!
 			uint32_t numOfDrawBuffers = (uint32_t)m_ColorAttachments.size();
@@ -377,9 +417,9 @@ namespace Aurora {
 			for (uint32_t i = 0; i < numOfDrawBuffers; i++)
 				buffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
 
-			glNamedFramebufferDrawBuffers(m_FrameBufferID, (GLsizei)m_ColorAttachments.size(), &buffers[0]);
+			glNamedFramebufferDrawBuffers(m_FrameBufferID, (GLsizei)numOfDrawBuffers, &buffers[0]);
 		}
-		else if(m_ColorAttachments.empty())
+		else
 		{
 			// Only depth-pass
 			glNamedFramebufferDrawBuffer(m_FrameBufferID, GL_NONE);
@@ -388,11 +428,69 @@ namespace Aurora {
 		AR_CORE_ASSERT(glCheckNamedFramebufferStatus(m_FrameBufferID, GL_FRAMEBUFFER), "Incomplete Framebuffer!");
 	}
 
-	void Framebuffer::Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment)
+	void Framebuffer::AttachExisting()
+	{
+		AR_CORE_ASSERT(m_AttachExisting);
+
+		if (m_FrameBufferID)
+		{
+			glDeleteFramebuffers(1, &m_FrameBufferID);
+			m_FrameBufferID = 0;
+
+			// Should not clear the attachments here since they are just references to already created textures!
+		}
+
+		glCreateFramebuffers(1, &m_FrameBufferID);
+
+		const bool multiSample = m_Specification.Samples > 1;
+
+		// Attach color attachments
+		for (size_t i = 0; i < m_ColorAttachments.size(); i++)
+		{
+			glNamedFramebufferTexture(
+				m_FrameBufferID,
+				(GLenum)(GL_COLOR_ATTACHMENT0 + i),
+				m_ColorAttachments[i]->GetTextureID(),
+				(int)0);
+		}
+
+		// Attach depth attachment
+		if (m_DepthAttachmentSpecification.TextureFormat != ImageFormat::None)
+		{
+			glNamedFramebufferTexture(
+				m_FrameBufferID,
+				Utils::GLAttachmentType(m_DepthAttachmentSpecification.TextureFormat),
+				m_DepthAttachment->GetTextureID(),
+				0);
+		}
+
+		if (m_ColorAttachments.size() > 0)
+		{
+			uint32_t numDrawBuffer = (uint32_t)m_ColorAttachments.size();
+			AR_CORE_CHECK(numDrawBuffer <= Renderer::GetRendererCapabilities().MaxDrawBuffers);
+
+			std::vector<GLenum> buffers;
+			buffers.reserve(numDrawBuffer);
+
+			for (uint32_t i = 0; i < numDrawBuffer; i++)
+				buffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
+
+			glNamedFramebufferDrawBuffers(m_FrameBufferID, numDrawBuffer, &buffers[0]);
+		}
+		else
+		{
+			// Only depth-pass
+			glNamedFramebufferDrawBuffer(m_FrameBufferID, GL_NONE);
+		}
+
+		AR_CORE_ASSERT(glCheckNamedFramebufferStatus(m_FrameBufferID, GL_FRAMEBUFFER), "Incomplete Framebuffer!");
+	}
+
+	void Framebuffer::Blit(uint32_t src, uint32_t dst, uint32_t srcWidth, uint32_t srcHeight, uint32_t srcAttachment, uint32_t dstWidth, uint32_t dstHeight, uint32_t dstAttachment, bool depth)
 	{
 		glNamedFramebufferReadBuffer(src, GL_COLOR_ATTACHMENT0 + srcAttachment);
 		glNamedFramebufferDrawBuffer(dst, GL_COLOR_ATTACHMENT0 + dstAttachment);
-		glBlitNamedFramebuffer(src, dst, 0, 0, srcWidth, srcHeight, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBlitNamedFramebuffer(src, dst, 0, 0, srcWidth, srcHeight, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT | (depth ? GL_DEPTH_BUFFER_BIT : 0), GL_NEAREST);
 	}
 
 	void Framebuffer::Resize(uint32_t width, uint32_t height)
@@ -409,7 +507,10 @@ namespace Aurora {
 		m_Specification.Width = width;
 		m_Specification.Height = height;
 
-		Invalidate();
+		if (m_AttachExisting)
+			AttachExisting();
+		else
+			Invalidate();
 	}
 
 	void Framebuffer::GetColorAttachmentData(void* pixels, uint32_t attachmentIndex)
@@ -420,7 +521,7 @@ namespace Aurora {
 		GLenum type = Utils::GLDataTypeFromAFormat(m_ColorAttachmentsSpecification[attachmentIndex].TextureFormat);
 
 		uint32_t buffSize = Utils::GetImageMemorySize(m_ColorAttachmentsSpecification[attachmentIndex].TextureFormat, m_Specification.Width, m_Specification.Height);
-		glGetTextureImage(m_ColorAttachments[attachmentIndex], 0, format, type, buffSize, pixels);
+		glGetTextureImage(m_ColorAttachments[attachmentIndex]->GetTextureID(), 0, format, type, buffSize, pixels);
 	}
 
 	void Framebuffer::ReadPixel(uint32_t attachmentIndex, uint32_t x, uint32_t y, void* data)
@@ -440,7 +541,7 @@ namespace Aurora {
 		// m_ColorAttachments and m_ColorAttachmentsSpecification are always equal in size the indexing matches perfectly
 		const auto& spec = m_ColorAttachmentsSpecification[attachmentIndex];
 
-		uint32_t textureID = m_ColorAttachments[attachmentIndex];
+		uint32_t textureID = m_ColorAttachments[attachmentIndex]->GetTextureID();
 		glClearTexImage(textureID, 0, Utils::GLFormatFromAFormat(spec.TextureFormat), Utils::GLDataTypeFromAFormat(spec.TextureFormat), data);
 	}
 
@@ -450,6 +551,9 @@ namespace Aurora {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferID);
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+
+		if (!m_Specification.ClearOnBind)
+			return;
 
 		const glm::vec4& clearColor = m_Specification.ClearColor;
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);

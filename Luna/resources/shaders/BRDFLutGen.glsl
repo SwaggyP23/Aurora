@@ -14,7 +14,7 @@ const float Epsilon = 0.001f; // This program needs a larger epsilon
 const uint Samples = 1024;
 const float InvNumSamples = 1.0f / float(Samples);
 
-layout(binding = 0) restrict writeonly uniform image2D u_Lut;
+layout(binding = 0, rg16f) restrict writeonly uniform image2D u_Lut;
 
 // ----------------------------------------------------------------------------
 // Compute Van Der Corpus radical inverse

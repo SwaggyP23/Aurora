@@ -19,15 +19,14 @@ namespace Aurora {
 			static ImageData LoadImageFile(const std::string& filePath);
 			static bool WriteDataToPNGImage(const std::filesystem::path& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip = false);
 			static bool WriteDataToTGAImage(const std::filesystem::path& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip = false);
-			static void FreeImage();
+			static bool WriteDataToBMPImage(const std::filesystem::path& filePath, const void* data, uint32_t width, uint32_t height, uint32_t channels, bool flip = false);
+			static bool WriteDataToHDRImage(const std::filesystem::path& filePath, const float* data, uint32_t width, uint32_t height, uint32_t channels, bool flip = false);
+			static void FreeImage(void* data);
 
 			// This is to be used before calling LoadImageFile()!
 			static void SetFlipVertically(bool boolean);
 
-			[[nodiscard]] static inline ImageData GetImageData() { return m_ImageData; }
-
 		private:
-			static ImageData m_ImageData;
 			static bool m_Loading;
 
 		};

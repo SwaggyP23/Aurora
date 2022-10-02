@@ -40,6 +40,21 @@ namespace Aurora {
     /////////// MeshSource
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    Ref<MeshSource> MeshSource::Create(const std::filesystem::path filePath)
+    {
+        return CreateRef<MeshSource>(filePath);
+    }
+
+    Ref<MeshSource> MeshSource::Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform)
+    {
+        return CreateRef<MeshSource>(vertices, indices, transform);
+    }
+
+    Ref<MeshSource> MeshSource::Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes)
+    {
+        return CreateRef<MeshSource>(vertices, indices, subMeshes);
+    }
+
     MeshSource::MeshSource(const std::filesystem::path& filePath)
     {
         AssimpLogStream::Init();
@@ -205,7 +220,6 @@ namespace Aurora {
                     Ref<Texture2D> albedoTexture;
                     TextureProperties props = {};
                     props.DebugName = aiTexturePath.C_Str();
-                    props.SRGB = true;
                     const aiTexture* aiTextureEmbedded = scene->GetEmbeddedTexture(aiTexturePath.C_Str());
                     if (aiTextureEmbedded)
                     {
@@ -453,7 +467,7 @@ namespace Aurora {
         }
 #endif
 
-        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex)), BufferUsage::Dynamic);
+        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex)), BufferUsage::Static);
         m_VertexBuffer->SetLayout({
             { ShaderDataType::Float3, "a_Position" },
             { ShaderDataType::Float3, "a_Normal"   },
@@ -479,7 +493,7 @@ namespace Aurora {
         subMesh.Transform = transform;
         m_SubMeshes.push_back(subMesh);
 
-        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex), BufferUsage::Dynamic));
+        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex), BufferUsage::Static));
         m_VertexBuffer->SetLayout({
             { ShaderDataType::Float3, "a_Position" },
             { ShaderDataType::Float3, "a_Normal"   },
@@ -498,7 +512,7 @@ namespace Aurora {
     MeshSource::MeshSource(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes)
         : m_Vertices(vertices), m_Indices(indices), m_SubMeshes(subMeshes)
     {
-        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex), BufferUsage::Dynamic));
+        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex), BufferUsage::Static));
         m_VertexBuffer->SetLayout({
             { ShaderDataType::Float3, "a_Position" },
             { ShaderDataType::Float3, "a_Normal"   },
@@ -564,6 +578,16 @@ namespace Aurora {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////// StaticMesh
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Ref<StaticMesh> StaticMesh::Create(Ref<MeshSource> meshSource)
+    {
+        return CreateRef<StaticMesh>(meshSource);
+    }
+
+    Ref<StaticMesh> StaticMesh::Create(Ref<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes)
+    {
+        return CreateRef<StaticMesh>(meshSource, subMeshes);
+    }
 
     StaticMesh::StaticMesh(Ref<MeshSource> meshSource)
         : m_MeshSource(meshSource)

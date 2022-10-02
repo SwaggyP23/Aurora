@@ -106,10 +106,12 @@ namespace Aurora {
 	class Texture2D : public Texture
 	{
 	public:
+		Texture2D(uint32_t id, uint32_t width, uint32_t height, ImageFormat format);
 		Texture2D(const std::string& filePath, const TextureProperties& props = TextureProperties());
 		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
 		virtual ~Texture2D();
 
+		[[nodiscard]] static Ref<Texture2D> Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format);
 		[[nodiscard]] static Ref<Texture2D> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
 		[[nodiscard]] static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
 
@@ -122,7 +124,7 @@ namespace Aurora {
 		[[nodiscard]] virtual uint32_t GetMipCount() const override;
 		[[nodiscard]] inline virtual const std::filesystem::path& GetAssetPath() const override { return m_AssetPath; }
 		[[nodiscard]] inline virtual ImageFormat GetFormat() const override { return m_Format; }
-		[[nodiscard]] inline virtual bool IsLoaded() const override { return m_ImageData; }
+		[[nodiscard]] inline virtual bool IsLoaded() const override { return m_IsLoaded; }
 		[[nodiscard]] inline TextureProperties& GetTextureProperties() { return m_Properties; }
 
 		bool operator==(const Ref<Texture2D>& other) const { return m_TextureID == other->m_TextureID; }
@@ -138,6 +140,8 @@ namespace Aurora {
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 		Buffer m_ImageData = nullptr;
+
+		bool m_IsLoaded = false;
 
 		ImageFormat m_Format = ImageFormat::None;
 

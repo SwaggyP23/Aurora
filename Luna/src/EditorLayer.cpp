@@ -30,37 +30,23 @@ namespace Aurora {
 	{
 	}
 
-	// TODO: TEMPORARY FOR FIXING THE SHADER BUGS!
-	static glm::vec4 s_MaterialAlbedoColor(1.0f);
-	static glm::mat4 s_Transform(1.0f);
-
 	void EditorLayer::OnAttach()
 	{
 		AR_PROFILE_FUNCTION();
 
 		EditorResources::Init();
-
-		FramebufferSpecification mainSpecification;
-		mainSpecification.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I, ImageFormat::Depth};
-		mainSpecification.Width = 1280;
-		mainSpecification.Height = 720;
-		mainSpecification.Samples = 8;
-		// mainSpecification.DepthAttachmentAsTexture = true;
-		m_MSAAFramebuffer = Framebuffer::Create(mainSpecification);
-
-		FramebufferSpecification intermediateSpecification;
-		intermediateSpecification.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::R32I };
-		intermediateSpecification.Width = 1280;
-		intermediateSpecification.Height = 720;
-		m_IntermediateFramebuffer = Framebuffer::Create(intermediateSpecification);
+		m_DisplayImage = Renderer::GetBlackTexture();
 
 		m_EditorScene = Scene::Create("Editor Scene");
 		m_ActiveScene = m_EditorScene;
+		m_ViewportRenderer = SceneRenderer::Create(m_ActiveScene);
 		SetContextForSceneHeirarchyPanel(m_ActiveScene);
+		m_Renderer2D = m_ViewportRenderer->GetRenderer2D();
+
+		m_ViewportRenderer->SetLineWidth(m_LineWidth);
+
 		// Default open scene for now...!
 		OpenScene("Resources/scenes/TestingSearchBox.aurora");
-
-		m_DisplayImage = Renderer::GetBlackTexture();
 
 		class CameraScript : public ScriptableEntity
 		{
@@ -93,75 +79,51 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 		AR_SCOPE_PERF("EditorLayer::OnUpdate");
 
-		// Framebuffer resizing... This stops the blacked out frames we would get when resizing...
-		// TODO: This should not be handled here...
-		FramebufferSpecification spec = m_MSAAFramebuffer->GetSpecification();
-		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		switch (m_SceneState)
 		{
-			m_MSAAFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_IntermediateFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		    case SceneState::Edit:
+		    {
+				m_EditorCamera.SetActive(m_AllowViewportCameraEvents);
+				m_EditorCamera.OnUpdate(ts);
+				m_EditorScene->OnRenderEditor(m_ViewportRenderer, ts, m_EditorCamera);
+
+				OnRender2D();
+
+		    	break;
+		    }
+		    case SceneState::Play:
+		    {
+				if (m_EditorCameraInRuntime)
+				{
+					m_EditorCamera.SetActive(m_ViewportHovered || m_AllowViewportCameraEvents);
+					m_EditorCamera.OnUpdate(ts);
+					m_RuntimeScene->OnRenderEditor(m_ViewportRenderer, ts, m_EditorCamera);
+
+					OnRender2D();
+				}
+				else
+				{
+					m_RuntimeScene->OnRenderRuntime(m_ViewportRenderer, ts);
+				}
+
+		    	break;
+		    }
+		    case SceneState::Pause:
+		    {
+				m_EditorCamera.SetActive(m_ViewportHovered);
+				m_EditorCamera.OnUpdate(ts);
+
+				m_RuntimeScene->OnRenderRuntime(m_ViewportRenderer, ts);
+
+		    	break;
+		    }
+		    case SceneState::Simulate:
+		    {
+				AR_CORE_ASSERT(false, "Not Implemented Until Physics!");
+
+		    	break;
+		    }
 		}
-
-		m_EditorCamera.SetActive(m_AllowViewportCameraEvents);
-		m_EditorCamera.OnUpdate(ts);
-		ImGuiUtils::SetMouseEnabled(true);
-
-		Renderer3D::ResetStats();
-
-		// Clear default framebuffer
-		RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f });
-		RenderCommand::Clear();
-
-		m_MSAAFramebuffer->Bind();
-		int clearValue = -1;
-		m_MSAAFramebuffer->ClearTextureAttachment(1, (const void*)&clearValue);
-
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera, s_MaterialAlbedoColor, s_Transform);
-		//m_ActiveScene->OnUpdateRuntime(ts);
-
-		m_MSAAFramebuffer->UnBind();
-		m_IntermediateFramebuffer->Bind();
-
-		// Blitting both color attachments
-		{
-			Framebuffer::Blit(m_MSAAFramebuffer->GetFramebufferID(),
-				m_IntermediateFramebuffer->GetFramebufferID(),
-				m_MSAAFramebuffer->GetSpecification().Width,
-				m_MSAAFramebuffer->GetSpecification().Height,
-				0,
-				m_IntermediateFramebuffer->GetSpecification().Width,
-				m_IntermediateFramebuffer->GetSpecification().Height,
-				0);
-
-			Framebuffer::Blit(m_MSAAFramebuffer->GetFramebufferID(),
-				m_IntermediateFramebuffer->GetFramebufferID(),
-				m_MSAAFramebuffer->GetSpecification().Width,
-				m_MSAAFramebuffer->GetSpecification().Height,
-				1,
-				m_IntermediateFramebuffer->GetSpecification().Width,
-				m_IntermediateFramebuffer->GetSpecification().Height,
-				1);
-		}
-
-		auto [mx, my] = ImGui::GetMousePos();
-		mx -= m_ViewportRect.Min.x;
-		my -= m_ViewportRect.Min.y;
-		ImVec2 viewportSize = { m_ViewportRect.Max.x - m_ViewportRect.Min.x, m_ViewportRect.Max.y - m_ViewportRect.Min.y };
-		my = viewportSize.y - my;
-
-		int mouseX = (int)mx;
-		int mouseY = (int)my;
-
-		// TODO: Just implement Ray casting for god's sake man... :(
-		if (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
-		{
-			// This is a very slow operation, and itself adds about 1-2 milliseconds to our CPU Frame, however this is just for the editor so...
-			int pixelData;
-			m_IntermediateFramebuffer->ReadPixel(1, mouseX, mouseY, &pixelData);
-			m_HoveredEntity = pixelData == -1 ? Entity::nullEntity : Entity{ (entt::entity)pixelData, m_ActiveScene.raw() };
-		}
-
-		m_IntermediateFramebuffer->UnBind();
 
 		if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) && !m_StartedRightClickInViewport && m_ViewportFocused && m_ViewportHovered)
 			m_StartedRightClickInViewport = true;
@@ -204,6 +166,7 @@ namespace Aurora {
 			bool shift = Input::IsKeyPressed(AR_KEY_LEFT_SHIFT) || Input::IsKeyPressed(AR_KEY_RIGHT_SHIFT);
 			bool alt = Input::IsKeyPressed(AR_KEY_LEFT_ALT) || Input::IsKeyPressed(AR_KEY_RIGHT_ALT);
 			bool mousePressed = Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_MIDDLE);
+			bool inRuntime = m_ActiveScene == m_RuntimeScene;
 
 			bool isSomethingSelected = m_SelectionContext ? true : false;
 
@@ -268,6 +231,9 @@ namespace Aurora {
 			    // Gizmos
 			    case AR_KEY_Q:
 			    {
+					if (inRuntime)
+						break;
+
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = -1;
 			    
@@ -276,6 +242,9 @@ namespace Aurora {
 			    
 			    case AR_KEY_W:
 			    {
+					if (inRuntime)
+						break;
+
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 			    
@@ -284,6 +253,9 @@ namespace Aurora {
 			    
 			    case AR_KEY_E:
 			    {
+					if (inRuntime)
+						break;
+
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 			    
@@ -292,6 +264,9 @@ namespace Aurora {
 			    
 			    case AR_KEY_R:
 			    {
+					if (inRuntime)
+						break;
+
 			    	if (!ImGuizmo::IsUsing())
 			    		m_GizmoType = ImGuizmo::OPERATION::SCALE;
 			    
@@ -327,25 +302,87 @@ namespace Aurora {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		bool isImGuizmoOver = ImGuizmo::IsOver();
-		bool isAltPressed = Input::IsKeyPressed(AR_KEY_LEFT_ALT);
-		bool inSceneHierarchyTableRect = ImGuiUtils::IsMouseInRectRegion(m_SceneHierarchyTableRect, false);
-		bool inViewportRect = ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false);
-		bool isAnyImGuiItemHovered = ImGui::IsAnyItemHovered();
-		bool leftCLick = e.GetButtonCode() == AR_MOUSE_BUTTON_LEFT;
+		if (m_ActiveScene == m_RuntimeScene)
+			return false;
 
-		// I want to control the selection ONLY IN THE SCENE HIERARCHY AND IN THE VIEWPORT!
-		if (leftCLick && !isImGuizmoOver && !isAltPressed && !isAnyImGuiItemHovered && (inSceneHierarchyTableRect || inViewportRect))
+		if (e.GetMouseButtonCode() != MouseButton::ButtonLeft)
+			return false;
+
+		if (!m_ViewportHovered)
+			return false;
+
+		if (Input::IsKeyPressed(KeyCode::LeftAlt) || Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+			return false;
+
+		if (ImGuizmo::IsOver())
+			return false;
+
+		ImGui::ClearActiveID();
+
+		std::vector<SelectionData> selectionData;
+
+		auto [mouseX, mouseY] = GetMouseInViewportSpace();
+		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
 		{
-			if (m_HoveredEntity != Entity::nullEntity && inViewportRect)
-				m_SelectionContext = m_HoveredEntity;
-			else
+			const EditorCamera& camera = m_EditorCamera;
+			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
+
+			auto staticMeshEntites = m_ActiveScene->GetAllEntitiesWith<StaticMeshComponent>();
+			for (auto e : staticMeshEntites)
+			{
+				Entity entity{ e, m_ActiveScene.raw() };
+				StaticMeshComponent& smc = entity.GetComponent<StaticMeshComponent>();
+
+				Ref<StaticMesh> staticMesh = smc.StaticMesh;
+				if (!staticMesh)
+					continue;
+
+				std::vector<SubMesh>& subMeshes = staticMesh->GetMeshSource()->GetSubMeshes();
+				constexpr float lastT = std::numeric_limits<float>::max();
+				for (uint32_t i = 0; i < subMeshes.size(); i++)
+				{
+					SubMesh& subMesh = subMeshes[i];
+					glm::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+
+					Ray ray = {
+						glm::inverse(transform * subMesh.Transform) * glm::vec4(origin, 1.0f),
+						glm::inverse(glm::mat3(transform * subMesh.Transform)) * direction
+					};
+
+					float t;
+					bool intersects = ray.IntersectsAABB(subMesh.BoundingBox, t);
+					if (intersects)
+					{
+						const std::vector<Triangle>& triangleCache = staticMesh->GetMeshSource()->GetTriangleCache(i);
+						for (const Triangle& triangle : triangleCache)
+						{
+							if (ray.IntersectsTriangle(triangle.V1.Position, triangle.V2.Position, triangle.V3.Position, t))
+							{
+								AR_WARN("INTERSECTION: {0}, t = {1}", subMesh.NodeName, t);
+								selectionData.push_back({ entity, &subMesh, t });
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			std::sort(selectionData.begin(), selectionData.end(), [](SelectionData& a, SelectionData& b) {return a.Distance < b.Distance; });
+
+			bool ctrlDown = Input::IsKeyPressed(KeyCode::LeftControl) || Input::IsKeyPressed(KeyCode::RightControl);
+			bool shiftDown = Input::IsKeyPressed(KeyCode::LeftShift) || Input::IsKeyPressed(KeyCode::RightShift);
+
+			if (!ctrlDown)
 				m_SelectionContext = {};
 
-			return true;
+			if (!selectionData.empty())
+			{
+				Entity entityy = selectionData.front().Entity;
+				m_SelectionContext = entityy;
+			}
 		}
 
-		return true;
+		return false;
 	}
 
 	bool EditorLayer::OnPathDrop(WindowPathDropEvent& e)
@@ -366,6 +403,62 @@ namespace Aurora {
 		}
 
 		return true;
+	}
+
+	void EditorLayer::OnRender2D()
+	{
+		if (!m_ViewportRenderer->GetFinalPassImage())
+			return;
+
+		m_Renderer2D->BeginScene(m_EditorCamera.GetViewProjection(), m_EditorCamera.GetViewMatrix());
+		m_Renderer2D->SetTargetRenderPass(m_ViewportRenderer->GetExternalCompositeRenderPass());
+
+		auto spriteRendererView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
+		for (auto entity : spriteRendererView)
+		{
+			auto[transform, sprite] = spriteRendererView.get<TransformComponent, SpriteRendererComponent>(entity);
+
+			m_Renderer2D->DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
+		}
+
+		if (m_ShowIcons)
+		{
+			auto cameraView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
+			for (auto entity : cameraView)
+			{
+				auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
+
+				m_Renderer2D->DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, EditorResources::CameraIcon, 1.0f, glm::vec4(1.0f));
+			}
+		}
+
+		m_Renderer2D->EndScene();
+	}
+
+	std::pair<float, float> EditorLayer::GetMouseInViewportSpace()
+	{
+		auto [mx, my] = ImGui::GetMousePos();
+
+		mx -= m_ViewportRect.Min.x;
+		my -= m_ViewportRect.Min.y;
+		ImVec2 viewportSize = { m_ViewportRect.Max.x - m_ViewportRect.Min.x, m_ViewportRect.Max.y - m_ViewportRect.Min.y };
+		my = viewportSize.y - my; // Invert my
+
+		return { (mx / viewportSize.x) * 2.0f - 1.0f, (my / viewportSize.y) * 2.0f - 1.0f };
+	}
+
+	std::pair<glm::vec3, glm::vec3> EditorLayer::CastRay(const EditorCamera& camera, float mx, float my)
+	{
+		glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+		glm::mat4 inverseProj = glm::inverse(camera.GetProjection());
+		glm::mat3 inverseView = glm::inverse(camera.GetViewMatrix());
+
+		glm::vec4 ray = inverseProj * mouseClipPos;
+		glm::vec3 rayPos = camera.GetPosition();
+		glm::vec3 rayDir = inverseView * glm::vec3(ray);
+
+		return { rayPos, rayDir };
 	}
 
 #pragma endregion
@@ -928,32 +1021,12 @@ namespace Aurora {
 	template<typename Component>
 	static void DrawPopUpMenuItems(std::string_view compName, Entity entity, Entity& selectionContext)
 	{
-		if (typeid(Component).hash_code() != typeid(ModelComponent).hash_code())
+		if (!entity.HasComponent<Component>())
 		{
-			if (!entity.HasComponent<Component>())
+			if (ImGui::MenuItem(compName.data()))
 			{
-				if (ImGui::MenuItem(compName.data()))
-				{
-					selectionContext.AddComponent<Component>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-		}
-		else
-		{
-			if (!entity.HasComponent<Component>())
-			{
-				if (ImGui::MenuItem(compName.data()))
-				{
-					std::filesystem::path path = Utils::WindowsFileDialogs::OpenFileDialog("Model file");
-
-					if (path != "")
-					{
-						selectionContext.AddComponent<ModelComponent>(path.string());
-					}
-
-					ImGui::CloseCurrentPopup();
-				}
+				selectionContext.AddComponent<Component>();
+				ImGui::CloseCurrentPopup();
 			}
 		}
 	}
@@ -998,8 +1071,8 @@ namespace Aurora {
 		{
 			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
-			DrawPopUpMenuItems<ModelComponent>("Model Component", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SkyLightComponent>("SkyLight", entity, m_SelectionContext);
+			DrawPopUpMenuItems<StaticMeshComponent>("StaticMesh", entity, m_SelectionContext);
 
 			ImGui::EndPopup();
 		}
@@ -1165,19 +1238,6 @@ namespace Aurora {
 			}
 		});
 
-		DrawComponent<ModelComponent>("Model", entity, [](ModelComponent& component)
-		{
-			std::string path = component.model.directory;
-			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), path.c_str());
-			ImGui::InputTextWithHint("##Filepath", "Filepath...", buffer, sizeof(buffer));
-		},
-		[](ModelComponent& component) // Reset Function
-		{
-			AR_DEBUG("WASSUP NOTHING TO RESET");
-		});
-
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
 			constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
@@ -1213,9 +1273,11 @@ namespace Aurora {
 
 				if (environmentMapName.size())
 				{
-					const auto&[radianceMap, irradianceMap] = Renderer::CreateEnvironmentMap(p.string());
+					const auto& [radianceMap, irradianceMap] = Renderer::CreateEnvironmentMap(p.string());
 					component.SceneEnvironment = Environment::Create(radianceMap, irradianceMap);
 				}
+				else
+					environmentMapName = "Aurora Default";
 			}
 			ImGui::PopStyleColor();
 
@@ -1236,7 +1298,7 @@ namespace Aurora {
 			ImGui::NextColumn();
 
 			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##intensity", &component.Intensity, 0.05f, 0.0f, 10.0f);
+			ImGui::DragFloat("##intensity", &component.Intensity, 0.05f, 0.01f, 10.0f);
 			ImGui::PopItemWidth();
 
 			ImGui::Separator();
@@ -1253,7 +1315,7 @@ namespace Aurora {
 			ImGui::Text("Turbidity:");
 			ImGui::NextColumn();
 			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##turbidity", &component.TurbidityAzimuthInclination.x, 0.05f, 0.0f, 20.0f);
+			ImGui::DragFloat("##turbidity", &component.TurbidityAzimuthInclination.x, 0.05f, 2.0f, 20.0f);
 			ImGui::PopItemWidth();
 
 			ImGui::NextColumn();
@@ -1277,11 +1339,25 @@ namespace Aurora {
 		[](SkyLightComponent& component) // Reset Function
 		{
 			environmentMapName = "Aurora Default";
-			component.SceneEnvironment = Renderer::GetBlackEnvironment();
+			component.SceneEnvironment = nullptr;
 			component.Level = 0.5f;
 			component.Intensity = 1.0f;
 			component.DynamicSky = false;
 			component.TurbidityAzimuthInclination = { 2.0f, 0.0f, 0.0f };
+		});
+
+		DrawComponent<StaticMeshComponent>("StaticMesh", entity, [](StaticMeshComponent& component)
+		{
+			if (ImGui::Button("Static Mesh Path"))
+			{
+				std::filesystem::path path = Utils::WindowsFileDialogs::OpenFileDialog("StaticMesh");
+				Ref<MeshSource> meshSource = MeshSource::Create(path);
+				component.StaticMesh = StaticMesh::Create(meshSource);
+			}
+		},
+		[](StaticMeshComponent& component)
+		{
+
 		});
 	}
 
@@ -1292,10 +1368,15 @@ namespace Aurora {
 
 	void EditorLayer::NewScene()
 	{
-		m_ActiveScene->Clear();
-		m_ActiveScene = Scene::Create("New Scene"); // Creating new scene
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		SetContextForSceneHeirarchyPanel(m_ActiveScene);
+		m_EditorScene->Clear();
+		m_EditorScene = nullptr;
+		m_ActiveScene = nullptr;
+
+		m_EditorScene = Scene::Create("New Scene"); // Creating new scene
+		m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		SetContextForSceneHeirarchyPanel(m_EditorScene);
+
+		m_ActiveScene = m_EditorScene;
 
 		m_EditorScenePath = std::filesystem::path();
 		m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
@@ -1359,6 +1440,36 @@ namespace Aurora {
 		serializer.SerializeToText(path.string());
 	}
 
+	void EditorLayer::OnScenePlay()
+	{
+		m_SelectionContext = {};
+
+		m_SceneState = SceneState::Play;
+
+		m_RuntimeScene = Scene::Create();
+		m_EditorScene->CopyTo(m_RuntimeScene);
+		//m_RuntimeScene->OnRuntimeStart(); // TODO: When we have physics and scripting...
+		m_ActiveScene = m_RuntimeScene;
+	}
+
+	//void EditorLayer::OnSceneSimulate()
+	//{
+
+	//}
+
+	void EditorLayer::OnSceneStop()
+	{
+		m_SelectionContext = {};
+
+		//m_RuntimeScene->OnRuntimeStop(); // TODO: When we have physics and scripting...
+
+		m_SceneState = SceneState::Edit;
+		Input::SetCursorMode(CursorMode::Normal);
+
+		m_RuntimeScene = nullptr;
+		m_ActiveScene = m_EditorScene;
+	}
+
 #pragma endregion
 
 #pragma region RendererPanels
@@ -1379,7 +1490,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowRendererStatsUI()
 	{
-		ImGui::Begin("Renderer Stats");
+		ImGui::Begin("Renderer2D Stats");
 
 		m_Peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 
@@ -1388,11 +1499,12 @@ namespace Aurora {
 		//	name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 
 		//ImGui::Text("Hovered Entity: %s", name.c_str());
-		ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
-		ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
-		ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
-		ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
-		ImGui::Text("Vertex Buffer Usage: %.3f Megabytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
+		// TODO: SceneRenderer::GetStats() + All the stats from Renderer2D
+		//ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
+		//ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
+		//ImGui::Text("Vertex Count: %d", Renderer3D::GetStats().GetTotalVertexCount());
+		//ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
+		//ImGui::Text("Vertex Buffer Usage: %.3f Megabytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
 
 		static bool wireFrame = false;
 		static bool vertices = false;
@@ -1487,16 +1599,7 @@ namespace Aurora {
 	{
 		ImGui::Begin("Materials");
 
-		// TODO: This is super temporary since im just working on materials for now...
-		ImGuiUtils::ColorEdit4Control("Material Tint", s_MaterialAlbedoColor);
-		// TODO: Reword all this shit into its own panels
-		static glm::vec3 translate(0.0f), rotate(0.0f), scale(1.0f);
-		DrawVec3Control("Translation", translate);
-		glm::vec3 rotation = glm::degrees(rotate);
-		DrawVec3Control("Rotation", rotation);
-		rotate = glm::radians(rotation);
-		DrawVec3Control("Scale", scale, 1.0f);
-		s_Transform = glm::translate(glm::mat4(1.0f), translate) * glm::toMat4(glm::quat(rotate)) * glm::scale(glm::mat4(1.0f), scale);
+		ImGui::Image((void*)(uint64_t)EditorResources::FIXME->GetTextureID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
 
 		ImGui::End();
 	}
@@ -1583,10 +1686,9 @@ namespace Aurora {
 
 	void EditorLayer::TakeScreenShotOfOpenScene()
 	{
-		const auto& spec = m_IntermediateFramebuffer->GetSpecification();
-
-		Buffer buff(spec.Width * spec.Height * 4);
-		m_IntermediateFramebuffer->GetColorAttachmentData(buff.Data);
+		// TODO: Change the hard coded numbers to the width and height of the framebuffers
+		Buffer buff(m_ViewportWidth * m_ViewportHeight * 4);
+		m_ViewportRenderer->GetFinalPassImageData(buff.Data); // Returns the id of the image
 
 		std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
 		std::time_t timePoint = std::chrono::system_clock::to_time_t(currentTime);
@@ -1607,7 +1709,7 @@ namespace Aurora {
 
 		//m_DisplayImage = Texture2D::Create(ImageFormat::RGBA, spec.Width, spec.Height, buff.Data);
 		// If stb writes the image correctly i know that everything is good and i create the texture
-		if (Utils::ImageLoader::WriteDataToPNGImage(finalName, buff.Data, spec.Width, spec.Height, 4, true))
+		if (Utils::ImageLoader::WriteDataToPNGImage(finalName, buff.Data, m_ViewportWidth, m_ViewportHeight, 4, true))
 		{
 			AR_WARN("Wrote image to {0}", finalName);
 			m_DisplayImage = Texture2D::Create(finalName);
@@ -1941,20 +2043,26 @@ namespace Aurora {
 		ImVec2 viewportOffset = ImGui::GetCursorPos();
 		m_ViewportSize = ImGui::GetContentRegionAvail();
 
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_ViewportWidth = (uint32_t)m_ViewportSize.x;
+		m_ViewportHeight = (uint32_t)m_ViewportSize.y;
+		m_EditorScene->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		if (m_RuntimeScene)
+			m_RuntimeScene->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		m_EditorCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		m_ViewportRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
-		void* textureID = (void*)(uint64_t)m_IntermediateFramebuffer->GetColorAttachmentID();
+		// TODO: SceneRenderer->GetFinalPassImage();
+		void* textureID = (void*)(uint64_t)m_ViewportRenderer->GetFinalPassImage()->GetTextureID();
 		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
-		// ImGui::Image((void*)(uint64_t)Renderer::GetBRDFLutTexture()->GetTextureID(), {m_ViewportSize.x, m_ViewportSize.y}, ImVec2{0, 1}, ImVec2{1, 0});
+		// ImGui::Image((void*)(uint64_t)Renderer::GetBRDFLutTexture()->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
 
 		ImGuiUtils::SetInputEnabled(!m_ViewportFocused || !m_ViewportHovered);
 
 		// Gizmos...
-		if (m_SelectionContext != Entity::nullEntity && m_GizmoType != -1)
+		if (m_SelectionContext != Entity::nullEntity && m_GizmoType != -1 && m_ActiveScene != m_RuntimeScene)
 		{
 			float windowWidth = m_ViewportRect.Max.x - m_ViewportRect.Min.x;
 			float windowHeight = m_ViewportRect.Max.y - m_ViewportRect.Min.y;
@@ -1966,18 +2074,97 @@ namespace Aurora {
 			ManipulateGizmos();
 		}
 
-		if(m_ShowImGuizmoGrid)
-			ImGuizmo::DrawGrid(glm::value_ptr(m_EditorCamera.GetViewMatrix()), glm::value_ptr(m_EditorCamera.GetProjection()), glm::value_ptr(glm::mat4(1.0f)), 100.0f);
+		// Viewport Scene Tools
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 0.0f });
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+
+			constexpr float buttonSize = 18.0f + 5.0f;
+			constexpr float edgeOffset = 4.0f;
+			constexpr float windowHeight = 32.0f; // ImGui does not allow for the window to be less than 32.0f pixels
+			constexpr float numberOfButtons = 3.0f;
+			constexpr float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+
+			float toolbarX = (m_ViewportRect.Min.x + m_ViewportRect.Max.x) / 2.0f;
+			ImGui::SetNextWindowPos(ImVec2{ toolbarX - (backgroundWidth / 2.0f), m_ViewportRect.Min.y + edgeOffset });
+			ImGui::SetNextWindowSize(ImVec2{ backgroundWidth, windowHeight });
+			ImGui::SetNextWindowBgAlpha(0.0f);
+			ImGui::Begin("##viewportSceneControls", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+			// A hack to make icon panel appear smaller than minimum allowed by ImGui size
+			// Filling the background for the desired 26px height
+			constexpr float desiredHeight = 26.0f + 5.0f;
+			ImRect background = ImGuiUtils::RectExpanded(ImGui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+			ImGui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+			
+			ImGui::BeginVertical("##viewportSceneControlsV", ImVec2{ backgroundWidth, ImGui::GetContentRegionAvail().y });
+			ImGui::Spring();
+			ImGui::BeginHorizontal("##viewportSceneControlsH", ImVec2{ backgroundWidth, ImGui::GetContentRegionAvail().y });
+			ImGui::Spring();
+			{
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ edgeOffset * 2.0f, 0.0f });
+
+				auto toolbarButton = [buttonSize](const Ref<Texture2D>& icon, const ImColor& tint, float paddingY = 0.0f) -> bool
+				{
+					const float height = std::min((float)icon->GetHeight(), buttonSize) - paddingY * 2.0f;
+					const float width = (float)icon->GetWidth() / (float)icon->GetHeight() * height;
+					const bool clicked = ImGui::InvisibleButton(ImGuiUtils::GenerateID(), ImVec2{ width, height });
+					ImGuiUtils::DrawButtonImage(icon, tint, tint, tint, ImGuiUtils::RectOffset(ImGuiUtils::GetItemRect(), 0.0f, paddingY));
+
+					return clicked;
+				};
+
+				Ref<Texture2D> buttonTex = m_SceneState == SceneState::Play ? EditorResources::StopButton : EditorResources::PlayButton;
+				if (toolbarButton(buttonTex, Theme::Text))
+				{
+					if (m_SceneState == SceneState::Edit)
+						OnScenePlay();
+					else if (m_SceneState != SceneState::Simulate)
+						OnSceneStop();
+				}
+				if(ImGui::IsItemHovered())
+					ImGuiUtils::ToolTip(m_SceneState == SceneState::Edit ? "Play" : "Stop");
+
+				if (toolbarButton(EditorResources::SimulateButton, Theme::Text))
+				{
+					AR_CORE_WARN_TAG("EditorLayer", "Wassup Mate?");
+				}
+				if (ImGui::IsItemHovered())
+					ImGuiUtils::ToolTip("Simulate");
+
+				if (toolbarButton(EditorResources::PauseButton, Theme::Text))
+				{
+					if (m_SceneState == SceneState::Play)
+						m_SceneState = SceneState::Pause;
+					else if (m_SceneState == SceneState::Pause)
+						m_SceneState = SceneState::Play;
+				}
+				if (ImGui::IsItemHovered())
+					ImGuiUtils::ToolTip(m_SceneState == SceneState::Edit ? "Resume" : "Pause");
+
+				ImGui::PopStyleVar();
+			}
+
+			ImGui::Spring();
+			ImGui::EndHorizontal();
+			ImGui::Spring();
+			ImGui::EndVertical();
+
+			ImGui::End();
+			ImGui::PopStyleVar(4);
+		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
 
-		ImGui::End();
+		ImGui::End(); // Docking window
 	}
 
 	// TODO: Probably needs to be changed lol
 	template<typename UIFunction>
-	static void DrawSettingsFeatureCheckbox(const std::string& name, const std::string& description, bool* controller, FeatureControl feature, UIFunction func)
+	static void DrawSettingsFeatureCheckbox(const std::string& name, const std::string& description, bool* controller, Capability feature, UIFunction func)
 	{
 		ImGui::Text((name + ":").c_str());
 		ImGui::SameLine();
@@ -2032,6 +2219,22 @@ namespace Aurora {
 
 		ImGui::NextColumn();
 
+		ImGui::Text("Show Grid");
+
+		ImGui::NextColumn();
+
+		ImGui::Checkbox("##showGrid", &m_ViewportRenderer->GetOptions().ShowGrid);
+
+		ImGui::NextColumn();
+
+		ImGui::Text("Show Icons");
+
+		ImGui::NextColumn();
+
+		ImGui::Checkbox("##showIcons", &m_ShowIcons);
+
+		ImGui::NextColumn();
+
 		ImGui::Text("Allow gizmo flip:");
 
 		ImGui::NextColumn();
@@ -2041,18 +2244,80 @@ namespace Aurora {
 
 		ImGui::NextColumn();
 
-		ImGui::Text("Show Grid:");
+		ImGui::Text("Environment Map Size:");
 
 		ImGui::NextColumn();
 
-		ImGui::Checkbox("##ImGUizmoGrid", &m_ShowImGuizmoGrid);
+		RendererConfig& rendererConfig = Renderer::GetConfig();
+
+		{
+			const char* environmentMapSizes[] = { "128", "256", "512", "1024", "2048", "4096" };
+			uint32_t currentSize = (uint32_t)glm::log2((float)rendererConfig.EnvironmentMapResolution) - 7;
+			const char* current = environmentMapSizes[currentSize];
+
+			ImGui::PushItemWidth(-1);
+			if (ImGui::BeginCombo("##envMap_size", current))
+			{
+				for (uint32_t i = 0; i < 6; i++)
+				{
+					const bool selected = (current == environmentMapSizes[i]);
+					if (ImGui::Selectable(environmentMapSizes[i], selected))
+					{
+						current = environmentMapSizes[i];
+						currentSize = i;
+					}
+
+					if (selected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				rendererConfig.EnvironmentMapResolution = (uint32_t)glm::pow(2, currentSize + 7);
+
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+		}
+
+		ImGui::NextColumn();
+
+		ImGui::Text("Irradiance Map Samples:");
+
+		ImGui::NextColumn();
+
+		{
+			const char* irradianceComputeSamples[] = { "128", "256", "512", "1024", "2048", "4096" };
+			uint32_t currentSamples = (uint32_t)glm::log2((float)rendererConfig.IrradianceMapComputeSamples) - 7;
+			const char* current = irradianceComputeSamples[currentSamples];
+
+			ImGui::PushItemWidth(-1);
+			if (ImGui::BeginCombo("##irradianceMap_samples", current))
+			{
+				for (uint32_t i = 0; i < 6; i++)
+				{
+					const bool selected = (current == irradianceComputeSamples[i]);
+					if (ImGui::Selectable(irradianceComputeSamples[i], selected))
+					{
+						current = irradianceComputeSamples[i];
+						currentSamples = i;
+					}
+
+					if (selected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				rendererConfig.IrradianceMapComputeSamples = (uint32_t)glm::pow(2, currentSamples + 7);
+
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+		}
 
 		ImGui::Columns(1);
 
 		ImGui::Separator();
 
 		std::string blendDesc = "Blending is the technique that allows and implements the \"Transparency\" within objects.";
-		DrawSettingsFeatureCheckbox("Blending", blendDesc, &enableBlending, FeatureControl::Blending, []()
+		DrawSettingsFeatureCheckbox("Blending", blendDesc, &enableBlending, Capability::Blending, []()
 		{
 			ImGui::Columns(2);
 			ImGui::SetColumnWidth(0, 200.0f);
@@ -2063,49 +2328,49 @@ namespace Aurora {
 			{
 				if (ImGui::Selectable("Zero"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::Zero);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::Zero);
 					blendOption = "Zero";
 				}
 
 				else if (ImGui::Selectable("One"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::One);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::One);
 					blendOption = "One";
 				}
 
 				else if (ImGui::Selectable("Source Color"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::SrcColor);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::SrcColor);
 					blendOption = "Source Color";
 				}
 
 				else if (ImGui::Selectable("Source Alpha"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::SrcAlpha);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::SrcAlpha);
 					blendOption = "Source Alpha";
 				}
 
 				else if (ImGui::Selectable("Destination Color"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::DstColor);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::DstColor);
 					blendOption = "Destination Color";
 				}
 
 				else if (ImGui::Selectable("One Minus Source Color"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusSrcColor);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::OneMinusSrcColor);
 					blendOption = "One Minus Source Color";
 				}
 
 				else if (ImGui::Selectable("One Minus Source Alpha"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusSrcAlpha);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::OneMinusSrcAlpha);
 					blendOption = "One Minus Source Alpha";
 				}
 
 				else if (ImGui::Selectable("One Minus Destination Color"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusDstColor);
+					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::OneMinusDstColor);
 					blendOption = "One Minus Destination Color";
 				}
 
@@ -2122,31 +2387,31 @@ namespace Aurora {
 		{
 			if (ImGui::Selectable("Add"))
 			{
-				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Add);
+				RenderCommand::SetBlendFunctionEquation(BlendEquation::Add);
 				blendEquation = "Add";
 			}
 
 			else if (ImGui::Selectable("Subtract"))
 			{
-				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Subtract);
+				RenderCommand::SetBlendFunctionEquation(BlendEquation::Subtract);
 				blendEquation = "Subtract";
 			}
 
 			else if (ImGui::Selectable("Reverse Subtract"))
 			{
-				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::ReverseSubtract);
+				RenderCommand::SetBlendFunctionEquation(BlendEquation::ReverseSubtract);
 				blendEquation = "Reverse Subtract";
 			}
 
 			else if (ImGui::Selectable("Minimum"))
 			{
-				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Minimum);
+				RenderCommand::SetBlendFunctionEquation(BlendEquation::Minimum);
 				blendEquation = "Minimum";
 			}
 
 			else if (ImGui::Selectable("Maximum"))
 			{
-				RenderCommand::SetBlendFunctionEquation(OpenGLEquation::Maximum);
+				RenderCommand::SetBlendFunctionEquation(BlendEquation::Maximum);
 				blendEquation = "Maximum";
 			}
 
@@ -2158,7 +2423,7 @@ namespace Aurora {
 
 		ImGui::Columns(1);
 		std::string cullingDesc = "Culling is used to specify to the renderer what face is not to be processed thus reducing processing time.";
-		DrawSettingsFeatureCheckbox("Culling", cullingDesc, &enableCulling, FeatureControl::Culling, []()
+		DrawSettingsFeatureCheckbox("Culling", cullingDesc, &enableCulling, Capability::Culling, []()
 		{
 			ImGui::Columns(2);
 			ImGui::SetColumnWidth(0, 200.0f);
@@ -2169,19 +2434,19 @@ namespace Aurora {
 			{
 				if (ImGui::Selectable("Back"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
+					RenderCommand::SetCapabilityFunction(Capability::Culling, Comparator::Back);
 					cullOption = "Back";
 				}
 
 				else if (ImGui::Selectable("Front"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Front);
+					RenderCommand::SetCapabilityFunction(Capability::Culling, Comparator::Front);
 					cullOption = "Front";
 				}
 
 				else if (ImGui::Selectable("Front and Back"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::FrontAndBack);
+					RenderCommand::SetCapabilityFunction(Capability::Culling, Comparator::FrontAndBack);
 					cullOption = "FronAndBack";
 				}
 
@@ -2194,7 +2459,7 @@ namespace Aurora {
 		ImGui::Separator();
 
 		std::string depthDesc = "Depth testing is what allows for 3D objects to appear on the screen via a depth buffer.";
-		DrawSettingsFeatureCheckbox("DepthTesting", depthDesc, &enableDepthTesting, FeatureControl::DepthTesting, []()
+		DrawSettingsFeatureCheckbox("DepthTesting", depthDesc, &enableDepthTesting, Capability::DepthTesting, []()
 		{
 			ImGui::Columns(2);
 			ImGui::SetColumnWidth(0, 200.0f);
@@ -2205,49 +2470,49 @@ namespace Aurora {
 			{
 				if (ImGui::Selectable("Never"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Never);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Never);
 					depthOption = "Never";
 				}
 
 				else if (ImGui::Selectable("Equal"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Equal);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Equal);
 					depthOption = "Equal";
 				}
 
 				else if (ImGui::Selectable("Not Equal"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::NotEqual);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::NotEqual);
 					depthOption = "Not Equal";
 				}
 
 				else if (ImGui::Selectable("Less"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Less);
 					depthOption = "Less";
 				}
 
 				if (ImGui::Selectable("Less Or Equal"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::LessOrEqual);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::LessOrEqual);
 					depthOption = "Less Or Equal";
 				}
 
 				else if (ImGui::Selectable("Greater"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Greater);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Greater);
 					depthOption = "Greater";
 				}
 
 				else if (ImGui::Selectable("Greater Or Equal"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::GreaterOrEqual);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::GreaterOrEqual);
 					depthOption = "Greater Or Equal";
 				}
 
 				else if (ImGui::Selectable("Always"))
 				{
-					RenderCommand::SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Always);
+					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Always);
 					depthOption = "Always";
 				}
 

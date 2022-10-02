@@ -115,7 +115,7 @@ namespace Aurora {
 		Shader() = default;
 		Shader(const ShaderProperties& props);
 		Shader(const std::string& filePath, ShaderType type);
-		~Shader();
+		virtual ~Shader();
 
 		void Bind() const;
 		void UnBind() const;

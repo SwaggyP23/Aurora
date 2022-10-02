@@ -44,7 +44,7 @@ namespace Aurora {
 		AR_CORE_INFO_TAG("Renderer", "   --> Max Color Attachments: {0}", s_Props.MaxColorAttachments);
 
 		// Compute paramters
-		AR_CORE_INFO_TAG("Renderer", "Copmpute shaders properties");
+		AR_CORE_INFO_TAG("Renderer", "Copmpute shaders properties:");
 		AR_CORE_INFO_TAG("Renderer", "   Max WorkGroup Count:");
 		AR_CORE_INFO_TAG("Renderer", "      --> X: {0}, Y: {1}, Z: {2}", s_Props.MaxWorkGroupCount[0], s_Props.MaxWorkGroupCount[1], s_Props.MaxWorkGroupCount[2]);
 		AR_CORE_INFO_TAG("Renderer", "   Max WorkGroup Size:");

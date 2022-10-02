@@ -13,70 +13,69 @@ namespace Aurora {
 		{
 			switch (flag)
 			{
-			    case Aurora::RenderFlags::None:            return GL_NONE;
-			    case Aurora::RenderFlags::Fill:            return GL_FILL;
-			    case Aurora::RenderFlags::WireFrame:       return GL_LINE;
-			    case Aurora::RenderFlags::Vertices:        return GL_POINT;
+			    case RenderFlags::None:            return GL_NONE;
+			    case RenderFlags::Fill:            return GL_FILL;
+			    case RenderFlags::WireFrame:       return GL_LINE;
+			    case RenderFlags::Vertices:        return GL_POINT;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Render Flag!");
 			return 0;
 		}
 
-		static GLenum GLFunctionFromEnum(OpenGLFunction func)
+		static GLenum GLFunctionFromEnum(Comparator func)
 		{
 			switch (func)
 			{
-			    case OpenGLFunction::None:                         return GL_NONE;
-			    case OpenGLFunction::Never:                        return GL_NEVER;
-			    case OpenGLFunction::Less:                         return GL_LESS;
-			    case OpenGLFunction::Equal:                        return GL_EQUAL;
-			    case OpenGLFunction::LessOrEqual:                  return GL_LEQUAL;
-			    case OpenGLFunction::Greater:                      return GL_GREATER;
-			    case OpenGLFunction::GreaterOrEqual:               return GL_GEQUAL;
-			    case OpenGLFunction::NotEqual:                     return GL_NOTEQUAL;
-			    case OpenGLFunction::Always:                       return GL_ALWAYS;
-				case OpenGLFunction::Zero:                         return GL_ZERO;
-				case OpenGLFunction::One:                          return GL_ONE;
-				case OpenGLFunction::SrcColor:                     return GL_SRC_COLOR;
-				case OpenGLFunction::OneMinusSrcColor:             return GL_ONE_MINUS_SRC_COLOR;
-				case OpenGLFunction::DstColor:                     return GL_DST_COLOR;
-				case OpenGLFunction::OneMinusDstColor:             return GL_ONE_MINUS_DST_COLOR;
-				case OpenGLFunction::SrcAlpha:                     return GL_SRC_ALPHA;
-				case OpenGLFunction::OneMinusSrcAlpha:             return GL_ONE_MINUS_SRC_ALPHA;
-				case OpenGLFunction::Front:                        return GL_FRONT;
-				case OpenGLFunction::Back:                         return GL_BACK;
-				case OpenGLFunction::FrontAndBack:                 return GL_FRONT_AND_BACK;
+			    case Comparator::None:                         return GL_NONE;
+			    case Comparator::Never:                        return GL_NEVER;
+			    case Comparator::Less:                         return GL_LESS;
+			    case Comparator::Equal:                        return GL_EQUAL;
+			    case Comparator::LessOrEqual:                  return GL_LEQUAL;
+			    case Comparator::Greater:                      return GL_GREATER;
+			    case Comparator::GreaterOrEqual:               return GL_GEQUAL;
+			    case Comparator::NotEqual:                     return GL_NOTEQUAL;
+			    case Comparator::Always:                       return GL_ALWAYS;
+				case Comparator::Zero:                         return GL_ZERO;
+				case Comparator::One:                          return GL_ONE;
+				case Comparator::SrcColor:                     return GL_SRC_COLOR;
+				case Comparator::OneMinusSrcColor:             return GL_ONE_MINUS_SRC_COLOR;
+				case Comparator::DstColor:                     return GL_DST_COLOR;
+				case Comparator::OneMinusDstColor:             return GL_ONE_MINUS_DST_COLOR;
+				case Comparator::SrcAlpha:                     return GL_SRC_ALPHA;
+				case Comparator::OneMinusSrcAlpha:             return GL_ONE_MINUS_SRC_ALPHA;
+				case Comparator::Front:                        return GL_FRONT;
+				case Comparator::Back:                         return GL_BACK;
+				case Comparator::FrontAndBack:                 return GL_FRONT_AND_BACK;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Function!");
 			return 0;
 		}
 
-		static GLenum GLEquationfromOpenGLEquation(OpenGLEquation eq)
+		static GLenum GLEquationfromOpenGLEquation(BlendEquation eq)
 		{
 			switch (eq)
 			{
-			    case Aurora::OpenGLEquation::Add:                 return GL_FUNC_ADD;
-			    case Aurora::OpenGLEquation::Subtract:            return GL_FUNC_SUBTRACT;
-			    case Aurora::OpenGLEquation::ReverseSubtract:     return GL_FUNC_REVERSE_SUBTRACT;
-			    case Aurora::OpenGLEquation::Minimum:             return GL_MIN;
-			    case Aurora::OpenGLEquation::Maximum:             return GL_MAX;
+			    case BlendEquation::Add:                 return GL_FUNC_ADD;
+			    case BlendEquation::Subtract:            return GL_FUNC_SUBTRACT;
+			    case BlendEquation::ReverseSubtract:     return GL_FUNC_REVERSE_SUBTRACT;
+			    case BlendEquation::Minimum:             return GL_MIN;
+			    case BlendEquation::Maximum:             return GL_MAX;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Function Equation!");
 			return 0;
 		}
 
-		static GLenum GLFeatureFromFeatureControl(FeatureControl feat)
+		static GLenum GLFeatureFromFeatureControl(Capability feat)
 		{
 			switch (feat)
 			{
-			    case FeatureControl::None:                return GL_NONE;
-			    case FeatureControl::DepthTesting:        return GL_DEPTH_TEST;
-			    case FeatureControl::Culling:             return GL_CULL_FACE;
-			    case FeatureControl::Blending:            return GL_BLEND;
-			    case FeatureControl::StencilTesting:      return GL_STENCIL_TEST;
+			    case Capability::None:                return GL_NONE;
+			    case Capability::DepthTesting:        return GL_DEPTH_TEST;
+			    case Capability::Culling:             return GL_CULL_FACE;
+			    case Capability::Blending:            return GL_BLEND;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Feature to enable!");
@@ -90,23 +89,20 @@ namespace Aurora {
 		// These are the defualt types of function and enables that the editor comes with right out of the box, things could be added or removed using the settings panel
 		AR_PROFILE_FUNCTION();
 
-		Enable(FeatureControl::DepthTesting);
-		SetFeatureControlFunction(FeatureControl::DepthTesting, OpenGLFunction::Less);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
 
-		//Enable(FeatureControl::StencilTesting); // Not implemented currently
-		//SetFeatureControlFunction(FeatureControl::StencilTesting, OpenGLFunction::Always);
-		
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		// glEnable(GL_FRAMEBUFFER_SRGB);
+		// Different color space
 
-		//glEnable(GL_FRAMEBUFFER_SRGB);
-		// This is the shit that was giving me a very dull look on the screen when i was reworking the texture API
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
 
-		Enable(FeatureControl::Culling);
-		SetFeatureControlFunction(FeatureControl::Culling, OpenGLFunction::Back);
-
-		Enable(FeatureControl::Blending);
-		SetFeatureControlFunction(FeatureControl::Blending, OpenGLFunction::OneMinusSrcAlpha);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		m_Flags = RenderFlags::Fill;
 	}
@@ -121,30 +117,29 @@ namespace Aurora {
 		glPolygonMode(GL_FRONT_AND_BACK, Utils::GLTypeFromRenderFlags(flag));
 	}
 
-	void RenderCommand::Enable(FeatureControl feature)
+	void RenderCommand::Enable(Capability feature)
 	{
 		glEnable(Utils::GLFeatureFromFeatureControl(feature));
 	}
 
-	void RenderCommand::Disable(FeatureControl feature)
+	void RenderCommand::Disable(Capability feature)
 	{
 		glDisable(Utils::GLFeatureFromFeatureControl(feature));
 	}
 
-	void RenderCommand::SetBlendFunctionEquation(OpenGLEquation equation)
+	void RenderCommand::SetBlendFunctionEquation(BlendEquation equation)
 	{
 		glBlendEquation(Utils::GLEquationfromOpenGLEquation(equation));
 	}
 
-	void RenderCommand::SetFeatureControlFunction(FeatureControl feature, OpenGLFunction function)
+	void RenderCommand::SetCapabilityFunction(Capability feature, Comparator function)
 	{
 		switch (feature)
 		{
-		    case Aurora::FeatureControl::None:                  break;
-		    case Aurora::FeatureControl::DepthTesting:          glDepthFunc(Utils::GLFunctionFromEnum(function)); break;
-		    case Aurora::FeatureControl::Culling:               glCullFace(Utils::GLFunctionFromEnum(function)); break;
-		    case Aurora::FeatureControl::Blending:              glBlendFunc(GL_SRC_ALPHA, Utils::GLFunctionFromEnum(function)); break;
-		    case Aurora::FeatureControl::StencilTesting:        AR_CORE_ASSERT(false); break;
+		    case Capability::None:                  break;
+		    case Capability::DepthTesting:          glDepthFunc(Utils::GLFunctionFromEnum(function)); break;
+		    case Capability::Culling:               glCullFace(Utils::GLFunctionFromEnum(function)); break;
+		    case Capability::Blending:              glBlendFunc(GL_SRC_ALPHA, Utils::GLFunctionFromEnum(function)); break;
 		}
 	}
 
@@ -168,8 +163,7 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		vertexArray->Bind();
-		// TODO: How to the number of indices to render...??
-		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetSize() / 4 : indexCount;
+		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 

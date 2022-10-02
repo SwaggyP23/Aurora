@@ -17,7 +17,7 @@ namespace Aurora {
 		AR_CORE_ASSERT(m_WindowHandle, "Window handle is null!");
 	}
 
-	void Context::Init() const
+	void Context::Init()
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -27,6 +27,11 @@ namespace Aurora {
 		AR_CORE_ASSERT(gladSuccess, "Failed to initialize glad!");
 
 		AR_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "OpenGL version is less that 4.5!");
+	}
+
+	void Context::Shutdown()
+	{
+		glfwTerminate();
 	}
 
 	void Context::SwapBuffers() const

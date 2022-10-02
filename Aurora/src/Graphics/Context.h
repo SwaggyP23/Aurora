@@ -11,14 +11,18 @@ namespace Aurora {
 	{
 	public:
 		Context(GLFWwindow* windowHandle);
+		virtual ~Context() = default;
+
 		static Ref<Context> Create(GLFWwindow* handle);
 
-		void Init() const;
+		void Init();
+		void Shutdown();
+
 		void SwapBuffers() const;
 		void PollEvents() const;
 
 	private:
-		GLFWwindow* m_WindowHandle;
+		GLFWwindow* m_WindowHandle = nullptr;
 
 	};
 

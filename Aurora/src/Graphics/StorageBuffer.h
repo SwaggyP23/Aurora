@@ -9,7 +9,7 @@ namespace Aurora {
 	public:
 		StorageBuffer(uint32_t size, uint32_t binding);
 		StorageBuffer(uint32_t size, uint32_t binding, const void* data);
-		~StorageBuffer();
+		virtual ~StorageBuffer();
 
 		[[nodiscard]] static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding);
 		[[nodiscard]] static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding, const void* data);

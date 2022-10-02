@@ -22,6 +22,7 @@ namespace Aurora {
 	public:
 		EditorCamera() = default;
 		EditorCamera(float degFov, float width, float height, float nearClip, float farClip);
+		virtual ~EditorCamera() = default;
 
 		void Init();
 
@@ -31,6 +32,11 @@ namespace Aurora {
 		void Focus(const glm::vec3& focusPoint);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
+
+		[[nodiscard]] float GetFOV() const { return m_FOV; }
+		[[nodiscard]] float GetAspectRatio() const { return m_AspectRatio; }
+		[[nodiscard]] float GetNearClip() const { return m_NearClip; }
+		[[nodiscard]] float GetFarClip() const { return m_FarClip; }
 
 		[[nodiscard]] float GetCameraSpeed() const;
 
@@ -69,7 +75,10 @@ namespace Aurora {
 		glm::vec3 CalculatePosition() const;
 
 	private:
-		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
+		float m_FOV = 45.0f;
+		float m_AspectRatio = 1.778f;
+		float m_NearClip = 0.1f;
+		float m_FarClip = 1000.0f;
 
 		glm::mat4 m_ViewMatrix;
 

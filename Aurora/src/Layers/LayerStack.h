@@ -4,7 +4,7 @@
 
 namespace Aurora {
 
-	class LayerStack : public Layer
+	class LayerStack
 	{
 	public:
 		LayerStack();

@@ -54,26 +54,11 @@ namespace Aurora {
 
 		template<typename T>
 		[[nodiscard]]
-		bool HasComponent()
-		{
-			return m_Scene->m_Registry.has<T>(m_EntityHandle);
-		}
+		bool HasComponent() { return m_Scene->m_Registry.has<T>(m_EntityHandle); }
 
-		[[nodiscard]] UUID GetUUID()
-		{
-			return GetComponent<IDComponent>().ID;
-		}
-
-		[[nodiscard]] TransformComponent& Transform()
-		{
-			return GetComponent<TransformComponent>();
-		}
-
-		[[nodiscard]] const std::string& GetName()
-		{ 
-			const std::string& name = GetComponent<TagComponent>().Tag;
-			return name;
-		}
+		[[nodiscard]] UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		[[nodiscard]] TransformComponent& Transform() { return GetComponent<TransformComponent>(); }
+		[[nodiscard]] const std::string& GetName() {  return GetComponent<TagComponent>().Tag; }
 
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }

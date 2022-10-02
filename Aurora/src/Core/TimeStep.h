@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Base.h"
-
 namespace Aurora {
 
 	class TimeStep
@@ -18,7 +16,7 @@ namespace Aurora {
 		[[nodiscard]] inline float GetMilliSeconds() const { return m_Time * 1000.0f; }
 
 	private:
-		float m_Time;
+		float m_Time = 0.0f;
 	};
 
 }

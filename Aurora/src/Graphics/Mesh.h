@@ -79,7 +79,11 @@ namespace Aurora {
         MeshSource(const std::filesystem::path& filePath);
         MeshSource(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform);
         MeshSource(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes);
-        ~MeshSource();
+        virtual ~MeshSource();
+
+        static Ref<MeshSource> Create(const std::filesystem::path filePath);
+        static Ref<MeshSource> Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform);
+        static Ref<MeshSource> Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes);
 
         void DumpVertexBuffer();
 
@@ -144,7 +148,10 @@ namespace Aurora {
         StaticMesh(Ref<MeshSource> meshSource);
         StaticMesh(Ref<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes);
         StaticMesh(const Ref<StaticMesh>& other);
-        ~StaticMesh();
+        virtual ~StaticMesh();
+
+        static Ref<StaticMesh> Create(Ref<MeshSource> meshSource);
+        static Ref<StaticMesh> Create(Ref<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes);
 
         // Pass in an empty vector to set all submeshes of meshSource!
         void SetSubMeshes(const std::vector<uint32_t>& subMeshes);
@@ -157,7 +164,7 @@ namespace Aurora {
         [[nodiscard]] Ref<MeshSource> GetMeshSource() { return m_MeshSource; }
         [[nodiscard]] Ref<MeshSource> GetMeshSource() const { return m_MeshSource; }
 
-        [[nodiscard]] const Ref<MaterialTable>& GetMaterial() const { return m_MaterialsTable; }
+        [[nodiscard]] const Ref<MaterialTable>& GetMaterials() const { return m_MaterialsTable; }
 
     private:
         Ref<MeshSource> m_MeshSource;

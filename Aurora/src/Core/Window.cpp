@@ -58,6 +58,9 @@ namespace Aurora {
 		glfwSetErrorCallback(glfw_error_callback);
 #endif
 
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_DECORATED, m_Specification.Decorated ? GLFW_TRUE : GLFW_FALSE);
 
 		glfwWindowHint(GLFW_RESIZABLE, m_Specification.Resizable ? GLFW_TRUE : GLFW_FALSE);
@@ -182,7 +185,7 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		auto& imageData = Utils::ImageLoader::LoadImageFile(m_Specification.WindowIconPath);
+		Utils::ImageData imageData = Utils::ImageLoader::LoadImageFile(m_Specification.WindowIconPath);
 
 		GLFWimage images[1];
 		images[0].width = imageData.Width;
@@ -191,7 +194,7 @@ namespace Aurora {
 
 		glfwSetWindowIcon(m_Window, 1, images);
 
-		Utils::ImageLoader::FreeImage(); // Free image right after glfw copies its data internally
+		Utils::ImageLoader::FreeImage(imageData.PixelData); // Free image right after glfw copies its data internally
 	}
 
 	void Window::SetGLFWCallbacks()
@@ -322,7 +325,8 @@ namespace Aurora {
 
 		glfwDestroyWindow(m_Window);
 		m_Window = nullptr;
-		glfwTerminate();
+
+		m_Context->Shutdown();
 	}
 
 }

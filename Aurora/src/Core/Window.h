@@ -32,7 +32,7 @@ namespace Aurora {
 
 	public:
 		Window(const WindowSpecification& spec);
-		~Window();
+		virtual ~Window();
 
 		[[nodiscard]] static Scope<Window> Create(const WindowSpecification& spec);
 

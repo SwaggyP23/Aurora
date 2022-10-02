@@ -9,7 +9,7 @@ namespace Aurora {
 	public:
 		UniformBuffer(uint32_t size, uint32_t binding);
 		UniformBuffer(uint32_t size, uint32_t binding, const void* data);
-		~UniformBuffer();
+		virtual ~UniformBuffer();
 
 		[[nodiscard]] static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
 		[[nodiscard]] static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding, const void* data);

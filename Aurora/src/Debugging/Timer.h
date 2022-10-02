@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logging/Log.h"
+#include "Core/Log.h"
 
 #include <unordered_map>
 

@@ -25,11 +25,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "Logging/Log.h"
 #include "Core/Base.h"
+#include "Core/Log.h"
+#include "Events/Events.h"
 
 #include "Debugging/Instrumentation.h"
 #include "Debugging/Timer.h"
+
+#include "Utils/Math.h"
 
 #ifdef AURORA_PLATFORM_WINDOWS
     #include <Windows.h>

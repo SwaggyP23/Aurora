@@ -1,9 +1,8 @@
 #pragma once
 
-// TODO: to be added, mesh components by refering to darianopolis on discord
-
 #include "SceneCamera.h"
-#include "Graphics/Model.h"
+#include "Graphics/Material.h"
+#include "Graphics/Mesh.h"
 #include "Graphics/SceneEnvironment.h"
 
 #include <glm/glm.hpp>
@@ -12,8 +11,6 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace Aurora {
-
-	// TODO: Add the UUID component
 
 	struct IDComponent
 	{
@@ -41,10 +38,16 @@ namespace Aurora {
 
 	};
 
-	// TODO: Rework...
-	struct ModelComponent
+	struct StaticMeshComponent
 	{
-		Model model;
+		Ref<StaticMesh> StaticMesh;
+		Ref<MaterialTable> MaterialTable = MaterialTable::Create();
+
+		StaticMeshComponent() = default;
+		StaticMeshComponent(const StaticMeshComponent& other)
+			: StaticMesh(other.StaticMesh), MaterialTable(other.MaterialTable) {}
+		StaticMeshComponent(const Ref<Aurora::StaticMesh>& other)
+			: StaticMesh(other) {}
 
 	};
 
@@ -55,11 +58,16 @@ namespace Aurora {
 
 	};
 
-	// TODO: Rework...!
 	struct CameraComponent
 	{
 		SceneCamera Camera;
 		bool Primary = true;
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent& other) = default;
+
+		operator SceneCamera& () { return Camera; }
+		operator const SceneCamera& () const { return Camera; }
 
 	};
 

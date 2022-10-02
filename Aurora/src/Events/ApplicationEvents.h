@@ -2,6 +2,8 @@
 
 #include "Events.h"
 
+#include <filesystem>
+
 namespace Aurora {
 
 	class WindowResizeEvent : public Event

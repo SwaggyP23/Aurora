@@ -7,6 +7,7 @@
 #include "TimeStep.h"
 #include "Debugging/Timer.h"
 #include "Window.h"
+#include "Renderer/Renderer.h"
 
 #include "ImGui/ImGuiLayer.h"
 
@@ -44,6 +45,8 @@ namespace Aurora {
 
 		// Sets the path for the application's icon
 		std::string ApplicationWindowIconPath = "../Resources/Icons/AuroraIcon1.png";
+
+		RendererConfig RendererConfiguration;
 	};
 
 	class Application
