@@ -21,10 +21,14 @@ layout(std140, binding = 0) uniform Camera
 
 void main()
 {
-    v_TexCoords = a_Position;
-    vec4 pos = u_Camera.ProjectionMatrix * mat4(mat3(u_Camera.ViewMatrix)) * vec4(a_Position, 1.0f);
-    gl_Position = pos.xyww;
-//	gl_Position = pos;
+//    v_TexCoords = a_Position;
+//    vec4 pos = u_Camera.ProjectionMatrix * mat4(mat3(u_Camera.ViewMatrix)) * vec4(a_Position, 1.0f);
+//    gl_Position = pos.xyww;
+
+	vec4 position = vec4(a_Position.xy, 1.0f, 1.0f);
+	gl_Position = position;
+
+	v_TexCoords = (u_Camera.InverseViewProjectionMatrix * position).xyz;
 }  
 
 #pragma fragment
