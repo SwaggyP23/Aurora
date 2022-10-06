@@ -165,33 +165,16 @@ namespace Aurora {
 		s_Data->Settings.EnvironmentMapResolution = configuration.EnvironmentMapResolution;
 		s_Data->Settings.IrradianceMapComputeSamples = configuration.IrradianceMapComputeSamples;
 
-		// TODO: REORDER THE WAY OF LOADING THEM
-		ShaderProperties renderer2DShaderProps = {};
-		renderer2DShaderProps.Name = "Renderer2D";
-		renderer2DShaderProps.AssetPath = "Resources/shaders/Renderer2D.glsl";
-		s_Data->ShaderLibrary->Load(renderer2DShaderProps);
-
-		ShaderProperties skyBoxProps = {};
-		skyBoxProps.Name = "Skybox";
-		skyBoxProps.AssetPath = "Resources/shaders/Skybox.glsl";
-		s_Data->ShaderLibrary->Load(skyBoxProps);
-
 		ShaderProperties auroraPBRStaticProps = {};
 		auroraPBRStaticProps.Name = "AuroraPBRStatic";
 		auroraPBRStaticProps.AssetPath = "Resources/shaders/AuroraPBRStatic.glsl";
 		s_Data->ShaderLibrary->Load(auroraPBRStaticProps);
 
-		ShaderProperties equirectangularToCubeMapProps = {};
-		equirectangularToCubeMapProps.Name = "EquirectToCubeMap";
-		equirectangularToCubeMapProps.AssetPath = "Resources/shaders/EquiRectangularToCubeMap.glsl";
-		equirectangularToCubeMapProps.Type = ShaderType::Compute;
-		s_Data->ShaderLibrary->Load(equirectangularToCubeMapProps);
-
-		ShaderProperties environmentLevelFilter = {};
-		environmentLevelFilter.Name = "EnvironmentMipFilter";
-		environmentLevelFilter.AssetPath = "Resources/shaders/EnvironmentLevelFilter.glsl";
-		environmentLevelFilter.Type = ShaderType::Compute;
-		s_Data->ShaderLibrary->Load(environmentLevelFilter);
+		ShaderProperties BRDFLutShaderProps = {};
+		BRDFLutShaderProps.Name = "BRDFLutGen";
+		BRDFLutShaderProps.AssetPath = "Resources/shaders/BRDFLutGen.glsl";
+		BRDFLutShaderProps.Type = ShaderType::Compute;
+		s_Data->ShaderLibrary->Load(BRDFLutShaderProps);
 
 		ShaderProperties environmentIrradiance = {};
 		environmentIrradiance.Name = "EnvironmentIrradiance";
@@ -199,11 +182,17 @@ namespace Aurora {
 		environmentIrradiance.Type = ShaderType::Compute;
 		s_Data->ShaderLibrary->Load(environmentIrradiance);
 
-		ShaderProperties BRDFLutShaderProps = {};
-		BRDFLutShaderProps.Name = "BRDFLutGen";
-		BRDFLutShaderProps.AssetPath = "Resources/shaders/BRDFLutGen.glsl";
-		BRDFLutShaderProps.Type = ShaderType::Compute;
-		s_Data->ShaderLibrary->Load(BRDFLutShaderProps);
+		ShaderProperties environmentLevelFilter = {};
+		environmentLevelFilter.Name = "EnvironmentMipFilter";
+		environmentLevelFilter.AssetPath = "Resources/shaders/EnvironmentLevelFilter.glsl";
+		environmentLevelFilter.Type = ShaderType::Compute;
+		s_Data->ShaderLibrary->Load(environmentLevelFilter);
+
+		ShaderProperties equirectangularToCubeMapProps = {};
+		equirectangularToCubeMapProps.Name = "EquirectToCubeMap";
+		equirectangularToCubeMapProps.AssetPath = "Resources/shaders/EquiRectangularToCubeMap.glsl";
+		equirectangularToCubeMapProps.Type = ShaderType::Compute;
+		s_Data->ShaderLibrary->Load(equirectangularToCubeMapProps);
 
 		ShaderProperties gridProps = {};
 		gridProps.Name = "Grid";
@@ -216,6 +205,21 @@ namespace Aurora {
 		preethamSkyProps.AssetPath = "Resources/shaders/PreethamSky.glsl";
 		preethamSkyProps.Type = ShaderType::Compute;
 		s_Data->ShaderLibrary->Load(preethamSkyProps);
+
+		ShaderProperties renderer2DLineShaderProps = {};
+		renderer2DLineShaderProps.Name = "Renderer2DLine";
+		renderer2DLineShaderProps.AssetPath = "Resources/shaders/Renderer2D_Line.glsl";
+		s_Data->ShaderLibrary->Load(renderer2DLineShaderProps);
+
+		ShaderProperties renderer2DQuadShaderProps = {};
+		renderer2DQuadShaderProps.Name = "Renderer2DQuad";
+		renderer2DQuadShaderProps.AssetPath = "Resources/shaders/Renderer2D_Quad.glsl";
+		s_Data->ShaderLibrary->Load(renderer2DQuadShaderProps);
+
+		ShaderProperties skyBoxProps = {};
+		skyBoxProps.Name = "Skybox";
+		skyBoxProps.AssetPath = "Resources/shaders/Skybox.glsl";
+		s_Data->ShaderLibrary->Load(skyBoxProps);
 
 		// 0xABGR
 		constexpr uint32_t whiteTextureData = 0xffffffff;
@@ -454,7 +458,7 @@ namespace Aurora {
 			AR_PROFILE_SCOPE("Generating BRDFLut");
 
 			AR_CORE_WARN_TAG("Renderer", "Did not find BRDF Look up texture!");
-			AR_CORE_INFO_TAG("Renderer", "Generating a BRDF Look up texture...");
+			AR_CORE_INFO_TAG("Renderer", "Generating BRDF Look up texture...");
 
 			Ref<Shader> BRDFShader = s_Data->ShaderLibrary->Get("BRDFLutGen");
 			TextureProperties BRDFProps = {};
@@ -468,9 +472,15 @@ namespace Aurora {
 			glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			// glGenerateTextureMipmap(BRDFTexture->GetTextureID()); // Now gen mips
 			
-			Buffer buff(Utils::GetImageMemorySize(ImageFormat::RG16F, 256, 256));
-			glGetTextureImage(BRDFTexture->GetTextureID(), 0, GL_RGB, GL_UNSIGNED_BYTE, (GLsizei)buff.Size, buff.Data);
-			Utils::ImageLoader::WriteDataToTGAImage("Resources/cache/renderer/BRDFLut.tga", buff.Data, 256, 256, 3);
+			// Cache image to disk
+			{
+				Buffer buff(Utils::GetImageMemorySize(ImageFormat::RG16F, 256, 256));
+				glGetTextureImage(BRDFTexture->GetTextureID(), 0, GL_RGB, GL_UNSIGNED_BYTE, (GLsizei)buff.Size, buff.Data);
+
+				if(!std::filesystem::exists("Resources/cache/renderer"))
+					std::filesystem::create_directories("Resources/cache/renderer");
+				Utils::ImageLoader::WriteDataToTGAImage(BRDFLutPath, buff.Data, 256, 256, 3);
+			}
 			
 			s_Data->BRDFLutTexture = BRDFTexture;
 		}

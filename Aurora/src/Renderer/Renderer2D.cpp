@@ -15,11 +15,14 @@
  * NOTE: Setting up the Vertex Attributes are unrolled on purpose!
  */
 
+ // Define to 1 if you want to visualize what the Renderer2D is rendering by making it render to its own framebuffer!
+#define RENDERER2D_DEBUG 0
+
 namespace Aurora {
 
-	Ref<Renderer2D> Renderer2D::Create()
+	Ref<Renderer2D> Renderer2D::Create(const Renderer2DSpecification& spec)
 	{
-		return CreateRef<Renderer2D>();
+		return CreateRef<Renderer2D>(spec);
 	}
 
 	Renderer2D::Renderer2D(const Renderer2DSpecification& spec)
@@ -35,71 +38,126 @@ namespace Aurora {
 
 	void Renderer2D::Init()
 	{
+#if RENDERER2D_DEBUG
+		FramebufferSpecification spec = {};
+		spec.DebugName = "Renderer2D_DebugFBO";
+		spec.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::Depth };
+		spec.ClearColor = { 0.05f, 0.4f, 0.1f, 1.0f };
+		//spec.ClearOnBind = false;
+		spec.Width = 1280;
+		spec.Height = 720;
+
+		RenderPassSpecification rspec = {};
+		rspec.DebugName = "Renderer2DDebugPass";
+		rspec.TargetFramebuffer = Framebuffer::Create(spec);
+		m_DebugRenderPass = RenderPass::Create(rspec);
+#endif
+
+		// Quads...
+		{
+			uint32_t* quadIndices = new uint32_t[MaxQuadIndices];
+
+			uint32_t offset = 0;
+			for (uint32_t i = 0; i < MaxQuadIndices; i += 6)
+			{
+				quadIndices[i + 0] = offset + 0;
+				quadIndices[i + 1] = offset + 1;
+				quadIndices[i + 2] = offset + 2;
+
+				quadIndices[i + 3] = offset + 2;
+				quadIndices[i + 4] = offset + 3;
+				quadIndices[i + 5] = offset + 0;
+
+				offset += 4;
+			}
+
+			Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, MaxQuadIndices);
+			delete[] quadIndices;
+
+			m_QuadVertexArray = VertexArray::Create();
+
+			m_QuadVertexBuffer = VertexBuffer::Create(MaxQuadVertices * sizeof(QuadVertex));
+			m_QuadVertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position"     },
+				{ ShaderDataType::Float4, "a_Color"        },
+				{ ShaderDataType::Float2, "a_TexCoord"     },
+				{ ShaderDataType::Float,  "a_TexIndex"     },
+				{ ShaderDataType::Float,  "a_TilingFactor" }
+				});
+			m_QuadVertexArray->AddVertexBuffer(m_QuadVertexBuffer);
+			m_QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
+
+			m_QuadVertexBufferBase = new QuadVertex[MaxQuadVertices];
+
+			m_QuadMaterial = Material::Create("Renderer2D_Quad", Renderer::GetShaderLibrary()->Get("Renderer2DQuad"));
+		}
+
+		// Lines...
+		{
+			uint32_t* lineIndices = new uint32_t[MaxLineIndices];
+
+			for (uint32_t i = 0; i < MaxLineIndices; i++)
+				lineIndices[i] = i;
+
+			Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, MaxLineIndices);
+			delete[] lineIndices;
+
+			m_LineVertexArray = VertexArray::Create();
+
+			m_LineVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
+			m_LineVertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float4, "a_Color"    }
+				});
+			m_LineVertexArray->AddVertexBuffer(m_LineVertexBuffer);
+			m_LineVertexArray->SetIndexBuffer(lineIndexBuffer);
+
+			m_LineVertexBufferBase = new LineVertex[MaxLineVertices];
+
+			m_LineMaterial = Material::Create("Renderer2D_Line", Renderer::GetShaderLibrary()->Get("Renderer2DLine"));
+			m_LineMaterial->SetFlag(MaterialFlag::DepthTest, false); // TODO: Make this optional...
+		}
+
+		m_WhiteTexture = Renderer::GetWhiteTexture();
+
+		// Set first texture slot to the white texture
+		m_TextureSlots[0] = m_WhiteTexture;
+
 		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[1] = { -0.5f,  0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[3] = {  0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		m_TextureCoords[0] = { 0.0f, 0.0f };
 		m_TextureCoords[1] = { 1.0f, 0.0f };
 		m_TextureCoords[2] = { 1.0f, 1.0f };
 		m_TextureCoords[3] = { 0.0f, 1.0f };
 
-		uint32_t* quadIndices = new uint32_t[MaxIndices];
-
-		uint32_t offset = 0;
-		for (uint32_t i = 0; i < MaxIndices; i += 6)
-		{
-			quadIndices[i + 0] = 0;
-			quadIndices[i + 1] = 1;
-			quadIndices[i + 2] = 2;
-
-			quadIndices[i + 3] = 2;
-			quadIndices[i + 4] = 3;
-			quadIndices[i + 5] = 0;
-
-			offset += 4;
-		}
-
-		m_QuadIndexBuffer = IndexBuffer::Create(quadIndices, MaxIndices);
-		delete[] quadIndices;
-
-		m_QuadVertexArray = VertexArray::Create();
-		m_QuadVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(QuadVertex), BufferUsage::Dynamic);
-		m_QuadVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position"    },
-			{ ShaderDataType::Float4, "a_Color"       },
-			{ ShaderDataType::Float2, "a_TexCoord"    },
-			{ ShaderDataType::Float, "a_TexIndex"     },
-			{ ShaderDataType::Float, "a_TilingFactor" }
-		});
-		m_QuadVertexArray->AddVertexBuffer(m_QuadVertexBuffer);
-		m_QuadVertexArray->SetIndexBuffer(m_QuadIndexBuffer);
-
-		m_QuadVertexBufferBase = new QuadVertex[MaxVertices];
-
-		m_WhiteTexture = Renderer::GetWhiteTexture();
-
-		// Set all the textures to a default white texture at first
-		for (uint32_t i = 0; i < m_TextureSlots.size(); i++)
-			m_TextureSlots[i] = m_WhiteTexture;
-
-		// Renderer2D Exclusive camera Uniform Buffer at Binding point 2
-		m_CamUniformBuffer = UniformBuffer::Create(sizeof(UBCamera), 2);
-
-		m_QuadMaterial = Material::Create("QuadMaterial", Renderer::GetShaderLibrary()->Get("Renderer2D"));
-
 		m_TargetRenderPass = nullptr;
+
+		m_CamUniformBuffer = UniformBuffer::Create(sizeof(UBCamera), 2);
 	}
 
 	void Renderer2D::ShutDown()
 	{
 		delete[] m_QuadVertexBufferBase;
+
+		delete[] m_LineVertexBufferBase;
 	}
 
 	void Renderer2D::SetTargetRenderPass(Ref<RenderPass> renderPass)
 	{
 		m_TargetRenderPass = renderPass;
+	}
+
+	Ref<Texture2D> Renderer2D::GetFinalImage()
+	{
+		return m_DebugRenderPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0);
+	}
+
+	Ref<RenderPass> Renderer2D::GetRenderPass()
+	{
+		return m_DebugRenderPass;
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& viewProj, const glm::mat4& view, bool depthTest)
@@ -111,15 +169,15 @@ namespace Aurora {
 		m_DepthTest = depthTest;
 
 		// Update uniform buffer
-		m_CamUniformBuffer->SetData(&viewProj, sizeof(UBCamera));
+		m_CamUniformBuffer->SetData(&m_CameraViewProj, sizeof(UBCamera));
 
 		m_QuadIndexCount = 0;
 		m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
 
-		m_TextureSlotIndex = 1;
+		m_LineIndexCount = 0;
+		m_LineVertexBufferPtr = m_LineVertexBufferBase;
 
-		for (uint32_t i = 0; i < m_TextureSlots.size(); i++)
-			m_TextureSlots[i] = m_WhiteTexture;
+		m_TextureSlotIndex = 1;
 	}
 
 	void Renderer2D::FlushAndReset()
@@ -129,23 +187,28 @@ namespace Aurora {
 		m_QuadIndexCount = 0;
 		m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
 
-		m_TextureSlotIndex = 1;
+		m_LineIndexCount = 0;
+		m_LineVertexBufferPtr = m_LineVertexBufferBase;
 
-		for (uint32_t i = 0; i < m_TextureSlots.size(); i++)
-			m_TextureSlots[i] = m_WhiteTexture;
+		m_TextureSlotIndex = 1;
 	}
 
 	void Renderer2D::EndScene()
 	{
 		AR_CORE_ASSERT(m_TargetRenderPass, "Should specify a target renderPass to render to!");
 
+#if RENDERER2D_DEBUG
+		Renderer::BeginRenderPass(m_DebugRenderPass);
+#else
 		Renderer::BeginRenderPass(m_TargetRenderPass);
-		
+#endif
+
+		// Quads...
 		AR_CORE_ASSERT(m_QuadVertexBufferPtr >= m_QuadVertexBufferBase);
-		uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
-		if (dataSize)
+		uint32_t quadDataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
+		if (quadDataSize)
 		{
-			m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, dataSize);
+			m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, quadDataSize);
 
 			// TODO: Bind textures for now. This SHOULD/WILL change to be handled by the material when it supports texture arrays
 			for (uint32_t i = 0; i < m_TextureSlotIndex; i++)
@@ -158,9 +221,7 @@ namespace Aurora {
 				glDisable(GL_DEPTH_TEST);
 
 			glDisable(GL_CULL_FACE);
-			//glDrawElements(GL_TRIANGLES, m_QuadIndexCount, GL_UNSIGNED_INT, nullptr);
-			glDrawElementsBaseVertex(GL_TRIANGLES, m_QuadIndexCount, GL_UNSIGNED_INT, nullptr, 0);
-			//Renderer::RenderGeometry(nullptr, nullptr, m_QuadMaterial, m_QuadVertexArray, m_QuadIndexCount);
+			Renderer::RenderGeometry(nullptr, nullptr, m_QuadMaterial, m_QuadVertexArray, m_QuadIndexCount);
 			glEnable(GL_CULL_FACE);
 
 			if (!m_DepthTest)
@@ -169,12 +230,40 @@ namespace Aurora {
 			m_Stats.DrawCalls++;
 		}
 
+		// Lines...
+		AR_CORE_ASSERT(m_LineVertexBufferPtr >= m_LineVertexBufferBase);
+		uint32_t lineDataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase);
+		if (lineDataSize)
+		{
+			m_LineVertexBuffer->SetData(m_LineVertexBufferBase, lineDataSize);
+
+			glLineWidth(m_LineWidth);
+
+			if (!m_LineMaterial->HasFlag(MaterialFlag::DepthTest))
+				glDisable(GL_DEPTH_TEST);
+
+			glDisable(GL_CULL_FACE);
+			m_LineMaterial->SetUpForRendering();
+			m_LineVertexArray->Bind();
+			glDrawElementsBaseVertex(GL_LINES, m_LineIndexCount, GL_UNSIGNED_INT, nullptr, 0);
+			glEnable(GL_CULL_FACE);
+
+			if (!m_LineMaterial->HasFlag(MaterialFlag::DepthTest))
+				glEnable(GL_DEPTH_TEST);
+
+			m_Stats.DrawCalls++;
+		}
+
+#if RENDERER2D_DEBUG
+		Renderer::EndRenderPass(m_DebugRenderPass);
+#else
 		Renderer::EndRenderPass(m_TargetRenderPass);
+#endif
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& scale, const glm::vec4& color)
 	{
-		if (m_QuadIndexCount >= MaxIndices)
+		if (m_QuadIndexCount >= MaxQuadIndices)
 			FlushAndReset();
 
 		constexpr float whiteTexIndex = 0.0f; // White texture.
@@ -218,9 +307,7 @@ namespace Aurora {
 
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintcolor)
 	{
-		AR_SCOPE_PERF("Renderer2D::DrawQuad");
-
-		if (m_QuadIndexCount >= MaxIndices)
+		if (m_QuadIndexCount >= MaxQuadIndices)
 			FlushAndReset();
 
 		// textureIndex is the index that will be submitted in the VBO with everything and then passed on to the fragment shader so 
@@ -287,7 +374,7 @@ namespace Aurora {
 	{
 		AR_SCOPE_PERF("Renderer2D::DrawRotatedQuad");
 
-		if (m_QuadIndexCount >= MaxIndices)
+		if (m_QuadIndexCount >= MaxQuadIndices)
 			FlushAndReset();
 
 		constexpr float TilingFactor = 1.0f; // TilingFactor.
@@ -331,14 +418,12 @@ namespace Aurora {
 
 	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintColor)
 	{
-		AR_SCOPE_PERF("Renderer2D::DrawRotatedQuad");
-
-		if (m_QuadIndexCount >= MaxIndices)
+		if (m_QuadIndexCount >= MaxQuadIndices)
 			FlushAndReset();
 
 		// textureIndex is the index that will be submitted in the VBO with everything and then passed on to the fragment shader so 
 		// that the shader knows which index from the sampler to sample from.
-		
+
 		// So here we need to find the texture index of the passed index and check if it has already been used.
 		// If it the case where it has been used before, the index will be already found in the array and we just return the index
 		float textureIndex = 0.0f;
@@ -396,6 +481,98 @@ namespace Aurora {
 		m_Stats.QuadCount++;
 	}
 
+	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
+	{
+		if (m_LineIndexCount >= MaxLineIndices)
+			FlushAndReset();
+
+		m_LineVertexBufferPtr->Position = p0;
+		m_LineVertexBufferPtr->Color = color;
+		m_LineVertexBufferPtr++;
+
+		m_LineVertexBufferPtr->Position = p1;
+		m_LineVertexBufferPtr->Color = color;
+		m_LineVertexBufferPtr++;
+
+		m_LineIndexCount += 2;
+
+		m_Stats.LineCount++;
+	}
+
+	void Renderer2D::DrawRotatedRect(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const glm::vec4& color)
+	{
+		if (m_LineIndexCount >= MaxLineIndices)
+			FlushAndReset();
+
+		glm::mat4 Rotation = glm::toMat4(glm::quat(rotations));
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * Rotation * glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
+
+		glm::vec3 positions[4] =
+		{
+			transform * m_QuadVertexPositions[0],
+			transform * m_QuadVertexPositions[1],
+			transform * m_QuadVertexPositions[2],
+			transform * m_QuadVertexPositions[3]
+		};
+
+		for (uint32_t i = 0; i < 4; i++)
+		{
+			const glm::vec3& v0 = positions[i];
+			const glm::vec3& v1 = positions[(i + 1) % 4]; // wrap the array as in wrap the rectangle's vertices
+
+			m_LineVertexBufferPtr->Position = v0;
+			m_LineVertexBufferPtr->Color = color;
+			m_LineVertexBufferPtr++;
+
+			m_LineVertexBufferPtr->Position = v1;
+			m_LineVertexBufferPtr->Color = color;
+			m_LineVertexBufferPtr++;
+
+			m_LineIndexCount += 2;
+
+			m_Stats.LineCount++;
+		}
+	}
+
+	void Renderer2D::DrawAABB(Ref<StaticMesh> mesh, const glm::mat4& transform, const glm::vec4& color)
+	{
+		const std::vector<SubMesh>& meshSourceSubmeshes = mesh->GetMeshSource()->GetSubMeshes();
+		const std::vector<uint32_t>& submeshes = mesh->GetSubMeshes();
+
+		for (uint32_t subMeshIndex : submeshes)
+		{
+			const SubMesh& submesh = meshSourceSubmeshes[subMeshIndex];
+			const AABB& aabb = submesh.BoundingBox;
+			glm::mat4 aabbTransform = transform * submesh.Transform;
+			DrawAABB(aabb, aabbTransform);
+		}
+	}
+
+	void Renderer2D::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color)
+	{
+		glm::vec4 corners[8] =
+		{
+			transform * glm::vec4 { aabb.Min.x, aabb.Min.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Min.x, aabb.Max.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Min.y, aabb.Max.z, 1.0f },
+
+			transform * glm::vec4 { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Min.x, aabb.Max.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Max.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Min.y, aabb.Min.z, 1.0f }
+		};
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i], corners[(i + 1) % 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i], corners[i + 4], color);
+	}
+
 	void Renderer2D::SetLineWidth(float lineWidth)
 	{
 		m_LineWidth = lineWidth;
@@ -403,8 +580,7 @@ namespace Aurora {
 
 	void Renderer2D::ResetStats()
 	{
-		m_Stats.DrawCalls = 0;
-		m_Stats.QuadCount = 0;
+		memset(&m_Stats, 0, sizeof(Statistics));
 	}
 
 	const Renderer2D::Statistics& Renderer2D::GetStats()

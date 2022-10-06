@@ -8,6 +8,7 @@
 #include "Editor/EditorResources.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glad/glad.h>
 
 namespace Aurora {
 
@@ -183,12 +184,13 @@ namespace Aurora {
 			Ref<Renderer2D> renderer2D = renderer->GetRenderer2D();
 
 			// Render only text and debug renderer when that is a thing... and therefore we need to depth test
-			renderer2D->BeginScene(camera.GetViewProjection(), camera.GetViewMatrix(), true);
+			renderer2D->BeginScene(camera.GetViewProjection(), camera.GetViewMatrix());
 			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
-			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 0.8f, 0.3f, 0.8f, 1.0f });
-			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
-			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 2.0f, 2.0f }, { 0.0f, 1.0f, 0.0f, 1.0f });
+			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 1.0f, 0.0f, 0.0f, 1.0f });
+			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.0f, 0.0f, 1.0f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, -5.0f }, { 2.5f, 0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f });
 
 			renderer2D->EndScene();
 		}
@@ -274,9 +276,10 @@ namespace Aurora {
 			renderer2D->BeginScene(camera.GetProjection() * cameraViewMatrix, cameraViewMatrix, true);
 			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
-			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 0.8f, 0.3f, 0.8f, 1.0f });
-			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
-			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 5.0f, 10.0f }, { 0.2f, 0.3f, 0.8f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 2.0f, 2.0f }, { 0.0f, 1.0f, 0.0f, 1.0f });
+			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 1.0f, 0.0f, 0.0f, 1.0f });
+			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.0f, 0.0f, 1.0f, 1.0f });
+			renderer2D->DrawQuad({ 0.0f, 0.0f, -5.0f }, { 2.5f, 0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f });
 
 			renderer2D->EndScene();
 		}

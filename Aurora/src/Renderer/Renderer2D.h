@@ -8,25 +8,25 @@
 #include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Material.h"
+#include "Graphics/Mesh.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/UniformBuffer.h"
 
 /*
- * The way this batching works is that it batches all the elements in one VertexBuffer and submits it every frame. If the amount 
+ * The way this batching works is that it batches all the elements in one VertexBuffer and submits it every frame. If the amount
  * of elements exceeds the maximum amount specified by the capabilities of the gpu, we flush and start a new batch thus increasing
  * the draw calls if necessary. OR if the amount of used textures exceeds the maximum amount allowed (32 in my case) the renderer
  * also flushes and starts another batch. And to reuse the old textures they should be resubmitted!
  * And from the available 32 texture slots, slot 0 is reserved by the white texture in the case we want to draw just plain colors
  * we can submit texture index 0 and the sampler2D will sample from a white texture (1.0f) thus allowing for plain colors to appear.
- * 
- * TODO: REWORK FROM THE GROUND UP!!!
+ *
+ * TODO: Add rendering circles and text.
  */
 
 namespace Aurora {
 
 	struct Renderer2DSpecification
 	{
-		bool SwapChainTarget = false;
 	};
 
 	class Renderer2D : public RefCountedObject
@@ -35,12 +35,15 @@ namespace Aurora {
 		Renderer2D(const Renderer2DSpecification& spec = Renderer2DSpecification());
 		virtual ~Renderer2D();
 
-		static Ref<Renderer2D> Create();
+		static Ref<Renderer2D> Create(const Renderer2DSpecification& spec = Renderer2DSpecification());
 
 		void Init();
 		void ShutDown();
 
 		void SetTargetRenderPass(Ref<RenderPass> renderPass);
+
+		Ref<Texture2D> GetFinalImage();
+		Ref<RenderPass> GetRenderPass();
 
 		void BeginScene(const glm::mat4& viewProj, const glm::mat4& view, bool depthTest = true);
 		void EndScene();
@@ -52,10 +55,18 @@ namespace Aurora {
 		void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const glm::vec4& color);
 		void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const Ref<Texture2D>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 
+		void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
+
+		void DrawRotatedRect(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const glm::vec4& color = glm::vec4(1.0f));
+
+		void DrawAABB(Ref<StaticMesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+
 		struct Statistics
 		{
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
+			uint32_t LineCount = 0;
 
 			uint32_t GetTotalVertexCount() { return QuadCount * 4; }
 			uint32_t GetTotalIndexCount() { return QuadCount * 6; }
@@ -83,23 +94,40 @@ namespace Aurora {
 			float TilingFactor;
 		};
 
+		struct LineVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+		};
+
 		static const uint32_t MaxQuads = 10000;
-		static const uint32_t MaxVertices = MaxQuads * 4;
-		static const uint32_t MaxIndices = MaxQuads * 6;
-		static const uint32_t MaxTextureSlots = 32; // TODO: Use the RendererCaps for this
+		static const uint32_t MaxQuadVertices = MaxQuads * 4;
+		static const uint32_t MaxQuadIndices = MaxQuads * 6;
+		static const uint32_t MaxQuadTextureSlots = 32; // TODO: Use the RendererCaps for this
+
+		static const uint32_t MaxLines = 2000;
+		static const uint32_t MaxLineVertices = MaxLines * 2;
+		static const uint32_t MaxLineIndices = MaxLines * 6;
 
 		Ref<Texture2D> m_WhiteTexture = nullptr;
 
 		Ref<VertexArray> m_QuadVertexArray;
 		Ref<VertexBuffer> m_QuadVertexBuffer;
-		Ref<IndexBuffer> m_QuadIndexBuffer;
 		Ref<Material> m_QuadMaterial;
 
 		uint32_t m_QuadIndexCount = 0;
 		QuadVertex* m_QuadVertexBufferBase = nullptr;
 		QuadVertex* m_QuadVertexBufferPtr = nullptr;
 
-		std::array<Ref<Texture2D>, MaxTextureSlots> m_TextureSlots;
+		Ref<VertexArray> m_LineVertexArray;
+		Ref<VertexBuffer> m_LineVertexBuffer;
+		Ref<Material> m_LineMaterial;
+
+		uint32_t m_LineIndexCount = 0;
+		LineVertex* m_LineVertexBufferBase = nullptr;
+		LineVertex* m_LineVertexBufferPtr = nullptr;
+
+		std::array<Ref<Texture2D>, MaxQuadTextureSlots> m_TextureSlots;
 		uint32_t m_TextureSlotIndex = 1; // 0 is reserved for the white texture
 
 		glm::vec4 m_QuadVertexPositions[4];
@@ -120,6 +148,9 @@ namespace Aurora {
 		};
 
 		Ref<UniformBuffer> m_CamUniformBuffer;
+
+		// For debugging only for now...
+		Ref<RenderPass> m_DebugRenderPass;
 
 	};
 

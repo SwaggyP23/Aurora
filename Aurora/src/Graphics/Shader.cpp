@@ -22,14 +22,17 @@ namespace Aurora {
 
 	namespace Utils {
 
-		constexpr inline static const char* GetCacheDirectory()
+		constexpr inline static const char* GetCacheDirectory(bool vulkanApi)
 		{
-			return "Resources/cache/shaders/OpenGL";
+			if(vulkanApi)
+				return "Resources/cache/shaders/Vulkan";
+			else
+				return "Resources/cache/shaders/OpenGL";
 		}
 
-		inline static void CreateCacheDirIfNeeded()
+		inline static void CreateCacheDirIfNeeded(bool vulkanApi)
 		{
-			std::filesystem::path cacheDir = GetCacheDirectory();
+			std::filesystem::path cacheDir = GetCacheDirectory(vulkanApi);
 			if (!std::filesystem::exists(cacheDir))
 				std::filesystem::create_directories(cacheDir);
 		}
@@ -365,8 +368,6 @@ namespace Aurora {
 		std::string shaderFullSource = Utils::FileIO::ReadTextFile(m_AssetPath);
 		m_OpenGLShaderSource = SplitSource(shaderFullSource);
 
-		Utils::CreateCacheDirIfNeeded();
-
 		constexpr bool forceCompile = true;
 
 		CompileOrGetVulkanBinary(m_OpenGLShaderSource, forceCompile);
@@ -386,8 +387,6 @@ namespace Aurora {
 		// At this stage it contains split Vulkan source code
 		m_OpenGLShaderSource = SplitSource(source);
 
-		Utils::CreateCacheDirIfNeeded();
-	
 		bool forceCompile = GetLastTimeModified() < 5 ? true : false;
 
 		{
@@ -402,8 +401,6 @@ namespace Aurora {
 	void Shader::LoadCompute(const std::string& source)
 	{
 		m_OpenGLShaderSource[GL_COMPUTE_SHADER] = PreprocessComputeSource(source);
-
-		Utils::CreateCacheDirIfNeeded();
 
 		bool forceCompile = GetLastTimeModified() < 5 ? true : false;
 
@@ -420,7 +417,8 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
+		Utils::CreateCacheDirIfNeeded(true);
+		std::filesystem::path cacheDir = Utils::GetCacheDirectory(true);
 
 		for (const auto& [type, source] : shaderSources)
 		{
@@ -515,7 +513,8 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		std::filesystem::path cacheDir = Utils::GetCacheDirectory();
+		Utils::CreateCacheDirIfNeeded(false);
+		std::filesystem::path cacheDir = Utils::GetCacheDirectory(false);
 
 	 	uint16_t PushBinding = 0;
 		for (const auto& [type, spirv] : m_VulkanSPIRV)

@@ -28,8 +28,8 @@ namespace fmt {
 		auto format(const glm::vec2& vec, FormatContext& ctx) const -> decltype(ctx.out())
 		{
 			return presentation == 'f'
-				? fmt::format_to(ctx.out(), "({:.3f} - {:.3f})", vec.x, vec.y)
-				: fmt::format_to(ctx.out(), "({:.3e} - {:.3e})", vec.x, vec.y);
+				? fmt::format_to(ctx.out(), "[{:.3f}, {:.3f}]", vec.x, vec.y)
+				: fmt::format_to(ctx.out(), "[{:.3e}, {:.3e}]", vec.x, vec.y);
 		}
 	};
 
@@ -56,8 +56,8 @@ namespace fmt {
 		auto format(const glm::vec3& vec, FormatContext& ctx) const -> decltype(ctx.out())
 		{
 			return presentation == 'f'
-				? fmt::format_to(ctx.out(), "({:.3f} - {:.3f} - {:.3f})", vec.x, vec.y, vec.z)
-				: fmt::format_to(ctx.out(), "({:.3e} - {:.3e} - {:.3e})", vec.x, vec.y, vec.z);
+				? fmt::format_to(ctx.out(), "[{:.3f}, {:.3f}, {:.3f}]", vec.x, vec.y, vec.z)
+				: fmt::format_to(ctx.out(), "[{:.3e}, {:.3e}, {:.3e}]", vec.x, vec.y, vec.z);
 		}
 	};
 
@@ -84,8 +84,8 @@ namespace fmt {
 		auto format(const glm::vec4& vec, FormatContext& ctx) const -> decltype(ctx.out())
 		{
 			return presentation == 'f'
-				? fmt::format_to(ctx.out(), "({:.3f} - {:.3f} - {:.3f} - {:.3f})", vec.x, vec.y, vec.z, vec.w)
-				: fmt::format_to(ctx.out(), "({:.3e} - {:.3e} - {:.3e} - {:.3e})", vec.x, vec.y, vec.z, vec.w);
+				? fmt::format_to(ctx.out(), "[{:.3f}, {:.3f}, {:.3f}, {:.3f}]", vec.x, vec.y, vec.z, vec.w)
+				: fmt::format_to(ctx.out(), "[{:.3e}, {:.3e}, {:.3e}, {:.3e}]", vec.x, vec.y, vec.z, vec.w);
 		}
 	};
 

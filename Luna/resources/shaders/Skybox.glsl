@@ -49,6 +49,6 @@ void main()
 {	
 	// TODO: FIXME! The intensitiy multiplication kind of works however for now it does not register in renderdoc which i need
 	// for debugging, So when im happy with the stuff and dont need renderdoc as much ill uncomment it!
-    o_Color = textureLod(u_RadianceMap, v_TexCoords, u_Uniforms.TextureLOD);// * u_Uniforms.Intensity;
+    o_Color = textureLod(u_RadianceMap, v_TexCoords, u_Uniforms.TextureLOD) * u_Uniforms.Intensity;
 	o_Color.a = 1.0f; // Instead of disabling then enabling blending
 }

@@ -2051,11 +2051,13 @@ namespace Aurora {
 		m_EditorCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		m_ViewportRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
-		// TODO: SceneRenderer->GetFinalPassImage();
 		void* textureID = (void*)(uint64_t)m_ViewportRenderer->GetFinalPassImage()->GetTextureID();
 		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		// NOTE: FOR DEBUGGING!
 		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
 		// ImGui::Image((void*)(uint64_t)Renderer::GetBRDFLutTexture()->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		// ImGui::Image((void*)(uint64_t)m_Renderer2D->GetFinalImage()->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
 

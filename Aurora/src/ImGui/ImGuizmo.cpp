@@ -57,7 +57,7 @@ namespace ImGuizmo
    static const float ZPI = 3.14159265358979323846f;
    static const float RAD2DEG = (180.f / ZPI);
    static const float DEG2RAD = (ZPI / 180.f);
-   const float screenRotateSize = 0.06f;
+   constexpr float screenRotateSize = 0.06f;
 
    static OPERATION operator&(OPERATION lhs, OPERATION rhs)
    {
