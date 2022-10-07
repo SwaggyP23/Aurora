@@ -11,6 +11,8 @@ layout(std140, binding = 2) uniform Camera
 
 layout(location = 0) out vec4 v_Color;
 
+invariant gl_Position;
+
 void main()
 {
 	v_Color = a_Color;

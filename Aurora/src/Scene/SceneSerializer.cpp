@@ -194,6 +194,20 @@ namespace Aurora {
 			out << YAML::EndMap; // Sprite Renderer Component
 		}
 
+		if (entity.HasComponent<CircleRendererComponent>())
+		{
+			out << YAML::Key << "CircleRendererComponent";
+			out << YAML::BeginMap; // Circle Renderer Component
+
+			const CircleRendererComponent& crc = entity.GetComponent<CircleRendererComponent>();
+
+			out << YAML::Key << "Color" << YAML::Value << crc.Color;
+
+			out << YAML::Key << "Thickness" << YAML::Value << crc.Thickness;
+
+			out << YAML::EndMap; // Circle Renderer Component
+		}
+
 		out << YAML::EndMap; // Entity
 	}
 
@@ -319,6 +333,15 @@ namespace Aurora {
 					glm::vec4& color = deserializedEntity.AddComponent<SpriteRendererComponent>().Color;
 
 					color = spriteRendComp["Color"].as<glm::vec4>();
+				}
+
+				YAML::Node circleRendComp = entity["CircleRendererComponent"];
+				if (circleRendComp)
+				{
+					CircleRendererComponent& crc = deserializedEntity.AddComponent<CircleRendererComponent>();
+
+					crc.Color = circleRendComp["Color"].as<glm::vec4>();
+					crc.Thickness = circleRendComp["Thickness"].as<float>();
 				}
 			}
 		}

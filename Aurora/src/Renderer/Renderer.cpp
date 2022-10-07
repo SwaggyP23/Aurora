@@ -206,6 +206,11 @@ namespace Aurora {
 		preethamSkyProps.Type = ShaderType::Compute;
 		s_Data->ShaderLibrary->Load(preethamSkyProps);
 
+		ShaderProperties renderer2DCircleProps = {};
+		renderer2DCircleProps.Name = "Renderer2DCircle";
+		renderer2DCircleProps.AssetPath = "Resources/shaders/Renderer2D_Circle.glsl";
+		s_Data->ShaderLibrary->Load(renderer2DCircleProps);
+
 		ShaderProperties renderer2DLineShaderProps = {};
 		renderer2DLineShaderProps.Name = "Renderer2DLine";
 		renderer2DLineShaderProps.AssetPath = "Resources/shaders/Renderer2D_Line.glsl";

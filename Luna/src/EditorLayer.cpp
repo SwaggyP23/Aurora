@@ -421,6 +421,14 @@ namespace Aurora {
 			m_Renderer2D->DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
 		}
 
+		auto circleRendererView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
+		for (auto entity : circleRendererView)
+		{
+			auto [transform, circle] = circleRendererView.get<TransformComponent, CircleRendererComponent>(entity);
+
+			m_Renderer2D->FillCircle(transform.GetTransform(), circle.Color, circle.Thickness);
+		}
+
 		if (m_ShowIcons)
 		{
 			auto cameraView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
@@ -1071,6 +1079,7 @@ namespace Aurora {
 		{
 			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
+			DrawPopUpMenuItems<CircleRendererComponent>("Circle Renderer", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SkyLightComponent>("SkyLight", entity, m_SelectionContext);
 			DrawPopUpMenuItems<StaticMeshComponent>("StaticMesh", entity, m_SelectionContext);
 
@@ -1240,11 +1249,6 @@ namespace Aurora {
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
-			constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
-								      | ImGuiColorEditFlags_AlphaPreview
-								      | ImGuiColorEditFlags_HDR
-									  | ImGuiColorEditFlags_PickerHueWheel;
-
 			ImGuiUtils::ColorEdit4Control("Color", component.Color);
 
 			ImGui::Separator();
@@ -1253,6 +1257,29 @@ namespace Aurora {
 		{
 			glm::vec4& color = component.Color;
 			color = glm::vec4(1.0f);
+		});
+
+		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](CircleRendererComponent& component)
+		{
+			ImGuiUtils::ColorEdit4Control("Color", component.Color);
+
+			ImGui::Separator();
+
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, 100.0f);
+
+			ImGui::Text("Thickness:");
+
+			ImGui::NextColumn();
+
+			ImGui::DragFloat("##thickenssvf", &component.Thickness, 0.01f, 0.0f, 1.0f);
+
+			ImGui::Columns(1);
+		},
+		[](CircleRendererComponent& component)
+		{
+			component.Color = glm::vec4(1.0f);
+			component.Thickness = 1.0f;
 		});
 
 		DrawComponent<SkyLightComponent>("SkyLight", entity, [](SkyLightComponent& component)

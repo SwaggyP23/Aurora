@@ -53,27 +53,27 @@ namespace Aurora {
 		m_DebugRenderPass = RenderPass::Create(rspec);
 #endif
 
+		uint32_t* quadIndices = new uint32_t[MaxQuadIndices];
+
+		uint32_t offset = 0;
+		for (uint32_t i = 0; i < MaxQuadIndices; i += 6)
+		{
+			quadIndices[i + 0] = offset + 0;
+			quadIndices[i + 1] = offset + 1;
+			quadIndices[i + 2] = offset + 2;
+
+			quadIndices[i + 3] = offset + 2;
+			quadIndices[i + 4] = offset + 3;
+			quadIndices[i + 5] = offset + 0;
+
+			offset += 4;
+		}
+
+		Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, MaxQuadIndices);
+		delete[] quadIndices;
+
 		// Quads...
 		{
-			uint32_t* quadIndices = new uint32_t[MaxQuadIndices];
-
-			uint32_t offset = 0;
-			for (uint32_t i = 0; i < MaxQuadIndices; i += 6)
-			{
-				quadIndices[i + 0] = offset + 0;
-				quadIndices[i + 1] = offset + 1;
-				quadIndices[i + 2] = offset + 2;
-
-				quadIndices[i + 3] = offset + 2;
-				quadIndices[i + 4] = offset + 3;
-				quadIndices[i + 5] = offset + 0;
-
-				offset += 4;
-			}
-
-			Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, MaxQuadIndices);
-			delete[] quadIndices;
-
 			m_QuadVertexArray = VertexArray::Create();
 
 			m_QuadVertexBuffer = VertexBuffer::Create(MaxQuadVertices * sizeof(QuadVertex));
@@ -115,7 +115,26 @@ namespace Aurora {
 			m_LineVertexBufferBase = new LineVertex[MaxLineVertices];
 
 			m_LineMaterial = Material::Create("Renderer2D_Line", Renderer::GetShaderLibrary()->Get("Renderer2DLine"));
-			m_LineMaterial->SetFlag(MaterialFlag::DepthTest, false); // TODO: Make this optional...
+			//m_LineMaterial->SetFlag(MaterialFlag::DepthTest, false); // TODO: Make this optional...
+		}
+
+		// Circles...
+		{
+			m_CircleVertexArray = VertexArray::Create();
+
+			m_CircleVertexBuffer = VertexBuffer::Create(MaxQuadVertices * sizeof(CircleVertex));
+			m_CircleVertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_WorldPosition" },
+				{ ShaderDataType::Float,  "a_Thickness"     },
+				{ ShaderDataType::Float2, "a_LocalPosition" },
+				{ ShaderDataType::Float4, "a_Color"         }
+			});
+			m_CircleVertexArray->AddVertexBuffer(m_CircleVertexBuffer);
+			m_CircleVertexArray->SetIndexBuffer(quadIndexBuffer);
+
+			m_CircleVertexBufferBase = new CircleVertex[MaxQuadVertices];
+
+			m_CircleMaterial = Material::Create("Renderer2D_Circle", Renderer::GetShaderLibrary()->Get("Renderer2DCircle"));
 		}
 
 		m_WhiteTexture = Renderer::GetWhiteTexture();
@@ -143,6 +162,8 @@ namespace Aurora {
 		delete[] m_QuadVertexBufferBase;
 
 		delete[] m_LineVertexBufferBase;
+
+		delete[] m_CircleVertexBufferBase;
 	}
 
 	void Renderer2D::SetTargetRenderPass(Ref<RenderPass> renderPass)
@@ -177,6 +198,9 @@ namespace Aurora {
 		m_LineIndexCount = 0;
 		m_LineVertexBufferPtr = m_LineVertexBufferBase;
 
+		m_CircleIndexCount = 0;
+		m_CircleVertexBufferPtr = m_CircleVertexBufferBase;
+
 		m_TextureSlotIndex = 1;
 	}
 
@@ -190,6 +214,9 @@ namespace Aurora {
 		m_LineIndexCount = 0;
 		m_LineVertexBufferPtr = m_LineVertexBufferBase;
 
+		m_CircleIndexCount = 0;
+		m_CircleVertexBufferPtr = m_CircleVertexBufferBase;
+
 		m_TextureSlotIndex = 1;
 	}
 
@@ -202,6 +229,9 @@ namespace Aurora {
 #else
 		Renderer::BeginRenderPass(m_TargetRenderPass);
 #endif
+		
+		// Disable culling for the whole 2D Pass since we dont want everything to be visible from one side only!
+		glDisable(GL_CULL_FACE);
 
 		// Quads...
 		AR_CORE_ASSERT(m_QuadVertexBufferPtr >= m_QuadVertexBufferBase);
@@ -220,9 +250,7 @@ namespace Aurora {
 			if (!m_DepthTest)
 				glDisable(GL_DEPTH_TEST);
 
-			glDisable(GL_CULL_FACE);
 			Renderer::RenderGeometry(nullptr, nullptr, m_QuadMaterial, m_QuadVertexArray, m_QuadIndexCount);
-			glEnable(GL_CULL_FACE);
 
 			if (!m_DepthTest)
 				glEnable(GL_DEPTH_TEST);
@@ -242,17 +270,30 @@ namespace Aurora {
 			if (!m_LineMaterial->HasFlag(MaterialFlag::DepthTest))
 				glDisable(GL_DEPTH_TEST);
 
-			glDisable(GL_CULL_FACE);
 			m_LineMaterial->SetUpForRendering();
 			m_LineVertexArray->Bind();
 			glDrawElementsBaseVertex(GL_LINES, m_LineIndexCount, GL_UNSIGNED_INT, nullptr, 0);
-			glEnable(GL_CULL_FACE);
 
 			if (!m_LineMaterial->HasFlag(MaterialFlag::DepthTest))
 				glEnable(GL_DEPTH_TEST);
 
 			m_Stats.DrawCalls++;
 		}
+
+		// Circles...
+		AR_CORE_ASSERT(m_CircleVertexBufferPtr >= m_CircleVertexBufferBase);
+		uint32_t circleDataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase);
+		if (circleDataSize)
+		{
+			m_CircleVertexBuffer->SetData(m_CircleVertexBufferBase, circleDataSize);
+
+			Renderer::RenderGeometry(nullptr, nullptr, m_CircleMaterial, m_CircleVertexArray, m_CircleIndexCount);
+
+			m_Stats.DrawCalls++;
+		}
+
+		// Enable culling at the end of the 2D Pass so that everything is reset back to normal
+		glEnable(GL_CULL_FACE);
 
 #if RENDERER2D_DEBUG
 		Renderer::EndRenderPass(m_DebugRenderPass);
@@ -477,6 +518,108 @@ namespace Aurora {
 		m_QuadVertexBufferPtr++;
 
 		m_QuadIndexCount += 6;
+
+		m_Stats.QuadCount++;
+	}
+
+	void Renderer2D::DrawCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
+	{
+		glm::mat4 Rotation = glm::toMat4(glm::quat(rotation));
+
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * Rotation * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+
+		DrawCircle(transform, color);
+	}
+
+	void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& color)
+	{
+		uint32_t segments = 32;
+		for (uint32_t i = 0; i < segments; i++)
+		{
+			float angle = 2.0f * glm::pi<float>() * (float)i / (float)segments;
+			glm::vec4 startPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+			glm::vec3 p0 = transform * startPosition;
+
+			angle = 2.0f * glm::pi<float>() * (float)((i + 1) % segments) / (float)segments;
+			glm::vec4 endPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+			glm::vec3 p1 = transform * endPosition;
+
+			DrawLine(p0, p1, color);
+		}
+	}
+
+	// This allows for non uniform scaling of the circle
+	void Renderer2D::FillCircle(const glm::mat4& transform, const glm::vec4& color, float thickness)
+	{
+		if (m_CircleIndexCount >= MaxQuadIndices)
+			FlushAndReset();
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[0];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[0] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[1];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[1] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[2];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[2] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[3];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[3] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleIndexCount += 6;
+
+		m_Stats.QuadCount++;
+	}
+
+	void Renderer2D::FillCircle(const glm::vec2& position, float radius, const glm::vec4& color, float thickness)
+	{
+		FillCircle({ position.x, position.y, 0.0f }, radius, color, thickness);
+	}
+
+	void Renderer2D::FillCircle(const glm::vec3& position, float radius, const glm::vec4& color, float thickness)
+	{
+		if (m_CircleIndexCount >= MaxQuadIndices)
+			FlushAndReset();
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[0];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[0] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[1];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[1] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[2];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[2] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[3];
+		m_CircleVertexBufferPtr->Thickness = thickness;
+		m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[3] * 2.0f;
+		m_CircleVertexBufferPtr->Color = color;
+		m_CircleVertexBufferPtr++;
+
+		m_CircleIndexCount += 6;
 
 		m_Stats.QuadCount++;
 	}

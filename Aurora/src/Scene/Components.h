@@ -51,11 +51,17 @@ namespace Aurora {
 
 	};
 
-	// TODO: Rework...
+	// TODO: Need to add textures to it and serialize them...
 	struct SpriteRendererComponent
-	{// This should contain a Ref<Material/MaterialInstance> and a shader to that material...(Materials are capable of holding both the shader and data
+	{
 		glm::vec4 Color{ 1.0f };
-
+	};
+	
+	// TODO: This is kind of temporary, we'll see...
+	struct CircleRendererComponent
+	{
+		glm::vec4 Color{ 1.0f };
+		float Thickness = 1.0f;
 	};
 
 	struct CameraComponent

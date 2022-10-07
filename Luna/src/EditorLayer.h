@@ -161,8 +161,7 @@ namespace Aurora {
 
 		SceneState m_SceneState = SceneState::Edit;
 
-		// TODO: Change to be default true!
-		bool m_ShowIcons = false;
+		bool m_ShowIcons = true;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;

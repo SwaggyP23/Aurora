@@ -64,9 +64,10 @@ namespace Aurora {
 
 		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<StaticMeshComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CircleRendererComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
 
@@ -90,6 +91,7 @@ namespace Aurora {
 		return CreateEntityWithUUID(UUID(), name);
 	}
 
+	// TODO: Rework so that it is possible to deplicate an entity by copying components
 	Entity Scene::CopyEntity(Entity entity)
 	{
 		AR_CORE_ASSERT(false);
@@ -187,10 +189,14 @@ namespace Aurora {
 			renderer2D->BeginScene(camera.GetViewProjection(), camera.GetViewMatrix());
 			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
-			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 2.0f, 2.0f }, { 0.0f, 1.0f, 0.0f, 1.0f });
-			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 1.0f, 0.0f, 0.0f, 1.0f });
-			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.0f, 0.0f, 1.0f, 1.0f });
-			renderer2D->DrawQuad({ 0.0f, 0.0f, -5.0f }, { 2.5f, 0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f });
+			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.3f, 0.45f, 0.8f, 1.0f });
+
+			AABB aabb = { {-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f} };
+			renderer2D->DrawAABB(aabb, glm::mat4(1.0f), { 0.3f, 0.8f, 0.2f, 1.0f });
+			renderer2D->DrawRotatedRect({ 0.0f, -10.0f, 0.0f }, glm::vec3(0.0f), { 25.0f, 5.0f }, { 0.0f, 0.0f, 1.0f, 1.0f });
+
+			renderer2D->DrawCircle({ 0.0f, 0.0f, 0.0f }, glm::vec3(0.0f), 5.0f, { 1.0f, 0.0f, 1.0f, 1.0f });
+			renderer2D->FillCircle({ 0.0f, 0.0f, 10.0f }, 10.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, 1.0f);
 
 			renderer2D->EndScene();
 		}
@@ -276,10 +282,14 @@ namespace Aurora {
 			renderer2D->BeginScene(camera.GetProjection() * cameraViewMatrix, cameraViewMatrix, true);
 			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
-			renderer2D->DrawQuad({ 0.0f, 0.0f, 0.0f }, { 2.0f, 2.0f }, { 0.0f, 1.0f, 0.0f, 1.0f });
-			renderer2D->DrawQuad({ 5.0f, 5.0f, -5.0f }, { 10.0f, 5.0f }, { 1.0f, 0.0f, 0.0f, 1.0f });
-			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.0f, 0.0f, 1.0f, 1.0f });
-			renderer2D->DrawQuad({ 0.0f, 0.0f, -5.0f }, { 2.5f, 0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f });
+			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.3f, 0.45f, 0.8f, 1.0f });
+
+			AABB aabb = { {-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f} };
+			renderer2D->DrawAABB(aabb, glm::mat4(1.0f), { 0.3f, 0.8f, 0.2f, 1.0f });
+			renderer2D->DrawRotatedRect({ 0.0f, -10.0f, 0.0f }, glm::vec3(0.0f), { 25.0f, 5.0f }, { 0.0f, 0.0f, 1.0f, 1.0f });
+
+			renderer2D->DrawCircle({ 0.0f, 0.0f, 0.0f }, glm::vec3(0.0f), 5.0f, { 1.0f, 0.0f, 1.0f, 1.0f });
+			renderer2D->FillCircle({ 0.0f, 0.0f, 10.0f }, 10.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, 1.0f);
 
 			renderer2D->EndScene();
 		}

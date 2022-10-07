@@ -20,7 +20,7 @@
  * And from the available 32 texture slots, slot 0 is reserved by the white texture in the case we want to draw just plain colors
  * we can submit texture index 0 and the sampler2D will sample from a white texture (1.0f) thus allowing for plain colors to appear.
  *
- * TODO: Add rendering circles and text.
+ * TODO: Add Text Rendering.
  */
 
 namespace Aurora {
@@ -54,6 +54,13 @@ namespace Aurora {
 		// Rotated Quad function are given the rotation in radians directly since that is what is stored in the TransformComponent
 		void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const glm::vec4& color);
 		void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const Ref<Texture2D>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
+
+		// Thickness is between 0 and 1
+		void DrawCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color);
+		void DrawCircle(const glm::mat4& transform, const glm::vec4& color);
+		void FillCircle(const glm::mat4& transform, const glm::vec4& color, float thickness = 0.05f); // Allows for non uniform scaling
+		void FillCircle(const glm::vec2& position, float radius, const glm::vec4& color, float thickness = 0.05f);
+		void FillCircle(const glm::vec3& position, float radius, const glm::vec4& color, float thickness = 0.05f);
 
 		void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 
@@ -100,6 +107,14 @@ namespace Aurora {
 			glm::vec4 Color;
 		};
 
+		struct CircleVertex
+		{
+			glm::vec3 WorldPosition;
+			float Thickness; // To pad the WorldPosition into a vec4
+			glm::vec2 LocalPosition;
+			glm::vec4 Color;
+		};
+
 		static const uint32_t MaxQuads = 10000;
 		static const uint32_t MaxQuadVertices = MaxQuads * 4;
 		static const uint32_t MaxQuadIndices = MaxQuads * 6;
@@ -126,6 +141,14 @@ namespace Aurora {
 		uint32_t m_LineIndexCount = 0;
 		LineVertex* m_LineVertexBufferBase = nullptr;
 		LineVertex* m_LineVertexBufferPtr = nullptr;
+
+		Ref<VertexArray> m_CircleVertexArray;
+		Ref<VertexBuffer> m_CircleVertexBuffer;
+		Ref<Material> m_CircleMaterial;
+
+		uint32_t m_CircleIndexCount = 0;
+		CircleVertex* m_CircleVertexBufferBase = nullptr;
+		CircleVertex* m_CircleVertexBufferPtr = nullptr;
 
 		std::array<Ref<Texture2D>, MaxQuadTextureSlots> m_TextureSlots;
 		uint32_t m_TextureSlotIndex = 1; // 0 is reserved for the white texture

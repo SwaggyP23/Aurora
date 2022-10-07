@@ -1,3 +1,6 @@
+// Old shader and is currently useless
+// Keeping it around so that i can have a bit of a small reference for phong lighting when i try to implement lighting
+
 #pragma vertex
 #version 450 core
 
