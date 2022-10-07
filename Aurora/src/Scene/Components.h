@@ -38,32 +38,6 @@ namespace Aurora {
 
 	};
 
-	struct StaticMeshComponent
-	{
-		Ref<StaticMesh> StaticMesh;
-		Ref<MaterialTable> MaterialTable = MaterialTable::Create();
-
-		StaticMeshComponent() = default;
-		StaticMeshComponent(const StaticMeshComponent& other)
-			: StaticMesh(other.StaticMesh), MaterialTable(other.MaterialTable) {}
-		StaticMeshComponent(const Ref<Aurora::StaticMesh>& other)
-			: StaticMesh(other) {}
-
-	};
-
-	// TODO: Need to add textures to it and serialize them...
-	struct SpriteRendererComponent
-	{
-		glm::vec4 Color{ 1.0f };
-	};
-	
-	// TODO: This is kind of temporary, we'll see...
-	struct CircleRendererComponent
-	{
-		glm::vec4 Color{ 1.0f };
-		float Thickness = 1.0f;
-	};
-
 	struct CameraComponent
 	{
 		SceneCamera Camera;
@@ -74,6 +48,32 @@ namespace Aurora {
 
 		operator SceneCamera& () { return Camera; }
 		operator const SceneCamera& () const { return Camera; }
+
+	};
+
+	// TODO: Need to add textures to it and serialize them...
+	struct SpriteRendererComponent
+	{
+		glm::vec4 Color{ 1.0f };
+	};
+
+	// TODO: This is kind of temporary, we'll see...
+	struct CircleRendererComponent
+	{
+		glm::vec4 Color{ 1.0f };
+		float Thickness = 1.0f;
+	};
+
+	struct StaticMeshComponent
+	{
+		Ref<StaticMesh> StaticMesh;
+		Ref<MaterialTable> MaterialTable = MaterialTable::Create();
+
+		StaticMeshComponent() = default;
+		StaticMeshComponent(const StaticMeshComponent& other)
+			: StaticMesh(other.StaticMesh), MaterialTable(other.MaterialTable) {}
+		StaticMeshComponent(const Ref<Aurora::StaticMesh>& other)
+			: StaticMesh(other) {}
 
 	};
 

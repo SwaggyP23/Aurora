@@ -106,7 +106,7 @@ namespace Aurora {
 		void SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path);
 
 		void OnScenePlay();
-		//void OnSceneSimulate(); // TODO: Implement when we have physics
+		void OnSceneSimulate(); // TODO: Implement when we have physics
 		void OnSceneStop();
 
 		std::filesystem::path m_EditorScenePath;

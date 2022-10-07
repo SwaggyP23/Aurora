@@ -350,7 +350,7 @@ namespace Aurora {
 		}
 
 		Ref<Shader> envFilteringShader = s_Data->ShaderLibrary->TryGet("EnvironmentMipFilter");
-		Ref<CubeTexture> envFiltered = CubeTexture::Create(ImageFormat::RGBA32F, cubeMapSize, cubeMapSize, nullptr, cubeTextureProps);
+		Ref<CubeTexture> envFiltered = CubeTexture::Create(ImageFormat::RGBA32F, cubeMapSize, cubeMapSize, nullptr, cubeTextureProps, filePath);
 
 		// Copy the Unfiltered cubemap image to the filtered cubemap image which will later be filtered and returned as the radiance map
 		{
@@ -396,7 +396,7 @@ namespace Aurora {
 		}
 
 		Ref<Shader> envIrradianceShader = s_Data->ShaderLibrary->Get("EnvironmentIrradiance");
-		Ref<CubeTexture> irradianceMap = CubeTexture::Create(ImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize, nullptr, cubeTextureProps);
+		Ref<CubeTexture> irradianceMap = CubeTexture::Create(ImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize, nullptr, cubeTextureProps, filePath);
 
 		{
 			AR_SCOPED_TIMER("Generating IrradianceMap");

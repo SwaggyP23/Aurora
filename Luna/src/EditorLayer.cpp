@@ -46,7 +46,7 @@ namespace Aurora {
 		m_ViewportRenderer->SetLineWidth(m_LineWidth);
 
 		// Default open scene for now...!
-		OpenScene("Resources/scenes/TestingSearchBox.aurora");
+		OpenScene("Resources/scenes/EnvMapSerialize.aurora");
 
 		class CameraScript : public ScriptableEntity
 		{
@@ -1039,8 +1039,6 @@ namespace Aurora {
 		}
 	}
 
-	static std::string environmentMapName = "Aurora Default";
-
 	void EditorLayer::DrawComponents(Entity entity)
 	{
 		FontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
@@ -1272,7 +1270,9 @@ namespace Aurora {
 
 			ImGui::NextColumn();
 
+			ImGui::PushItemWidth(-1);
 			ImGui::DragFloat("##thickenssvf", &component.Thickness, 0.01f, 0.0f, 1.0f);
+			ImGui::PopItemWidth();
 
 			ImGui::Columns(1);
 		},
@@ -1281,6 +1281,8 @@ namespace Aurora {
 			component.Color = glm::vec4(1.0f);
 			component.Thickness = 1.0f;
 		});
+
+		static std::string environmentMapName = "Aurora Default";
 
 		DrawComponent<SkyLightComponent>("SkyLight", entity, [](SkyLightComponent& component)
 		{
@@ -1292,7 +1294,7 @@ namespace Aurora {
 			ImGui::NextColumn();
 
 			float width = ImGui::GetContentRegionAvail().x;
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
 			if (ImGui::Button(environmentMapName.c_str(), { width, 25.0f }))
 			{
 				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("HDR Image");
@@ -1432,8 +1434,6 @@ namespace Aurora {
 		if (serializer.DeSerializeFromText(path.string()))
 		{
 			m_EditorScene = newScene;
-			// TODO: Test when scene runtime is a thing...!
-			//m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			SetContextForSceneHeirarchyPanel(m_EditorScene);
 
 			m_ActiveScene = m_EditorScene;
@@ -1479,10 +1479,10 @@ namespace Aurora {
 		m_ActiveScene = m_RuntimeScene;
 	}
 
-	//void EditorLayer::OnSceneSimulate()
-	//{
+	void EditorLayer::OnSceneSimulate()
+	{
 
-	//}
+	}
 
 	void EditorLayer::OnSceneStop()
 	{
@@ -1521,11 +1521,6 @@ namespace Aurora {
 
 		m_Peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 
-		//std::string name = "None";
-		//if (m_HoveredEntity && ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, false))
-		//	name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
-
-		//ImGui::Text("Hovered Entity: %s", name.c_str());
 		// TODO: SceneRenderer::GetStats() + All the stats from Renderer2D
 		//ImGui::Text("Draw Calls: %d", Renderer3D::GetStats().DrawCalls);
 		//ImGui::Text("Quad Count: %d", Renderer3D::GetStats().QuadCount);
@@ -2153,15 +2148,25 @@ namespace Aurora {
 					else if (m_SceneState != SceneState::Simulate)
 						OnSceneStop();
 				}
-				if(ImGui::IsItemHovered())
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.5f);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1.0f, 1.0f });
 					ImGuiUtils::ToolTip(m_SceneState == SceneState::Edit ? "Play" : "Stop");
+					ImGui::PopStyleVar(2);
+				}
 
 				if (toolbarButton(EditorResources::SimulateButton, Theme::Text))
 				{
 					AR_CORE_WARN_TAG("EditorLayer", "Wassup Mate?");
 				}
 				if (ImGui::IsItemHovered())
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.5f);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1.0f, 1.0f });
 					ImGuiUtils::ToolTip("Simulate");
+					ImGui::PopStyleVar(2);
+				}
 
 				if (toolbarButton(EditorResources::PauseButton, Theme::Text))
 				{
@@ -2171,7 +2176,12 @@ namespace Aurora {
 						m_SceneState = SceneState::Play;
 				}
 				if (ImGui::IsItemHovered())
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.5f);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1.0f, 1.0f });
 					ImGuiUtils::ToolTip(m_SceneState == SceneState::Edit ? "Resume" : "Pause");
+					ImGui::PopStyleVar(2);
+				}
 
 				ImGui::PopStyleVar();
 			}

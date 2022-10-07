@@ -1,4 +1,4 @@
-Scene: TestingSearchBox
+Scene: EnvMapSerialize
 Entities:
   - Entity: 6349651113846878767
     TagComponent:
@@ -9,20 +9,13 @@ Entities:
       Scale: [31.5, 31.5, 31.5]
     CircleRendererComponent:
       Color: [0, 1, 0.246026516, 0.745762706]
-      Thickness: 1
-  - Entity: 1617079952309487928
-    TagComponent:
-      Tag: Empty Entity
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Thickness: 0.310000002
   - Entity: 3320733530621167797
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Translation: [3.72844768, 4.3412962, 15.5285912]
-      Rotation: [0, 0, 0]
+      Translation: [-24.3080673, 10.4764719, -49.2274704]
+      Rotation: [3.01824212, -0.475277483, -3.04763794]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
@@ -171,10 +164,25 @@ Entities:
       Color: [0.702702761, 1, 0, 1]
   - Entity: 7824501532982642528
     TagComponent:
-      Tag: Empty Entity
+      Tag: CandyCane
     TransformComponent:
       Translation: [-7.9692874, 3.1443491, 6.64536095]
       Rotation: [0, 0, 0]
       Scale: [3, 3, 3]
     SpriteRendererComponent:
       Color: [0.783783793, 0.127100095, 0.248802304, 1]
+  - Entity: 4729265568168505833
+    TagComponent:
+      Tag: Skylight
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SkyLightComponent:
+      EnvironmentMap: ""
+      LOD: 0.5
+      Intensity: 1
+      DynamicSky: true
+      Turbidity: 2.20000005
+      Azimuth: 0.730000019
+      Inclination: 1.5

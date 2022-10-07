@@ -3,121 +3,12 @@
 
 #include "Entity.h"
 #include "Components.h"
+#include "Renderer/Renderer.h"
 
 #include <yaml-cpp/yaml.h>
-
-namespace YAML {
-
-	// Provided on the yaml-cpp wiki
-	template<>
-	struct convert<glm::vec2>
-	{
-		static Node encode(const glm::vec2& right)
-		{
-			Node node;
-			node.push_back(right.x);
-			node.push_back(right.y);
-			node.SetStyle(EmitterStyle::Flow);
-
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec2& right)
-		{
-			if (!node.IsSequence() || node.size() != 2)
-				return false;
-
-			right.x = node[0].as<float>();
-			right.y = node[1].as<float>();
-
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<glm::vec3>
-	{
-		static Node encode(const glm::vec3& right)
-		{
-			Node node;
-			node.push_back(right.x);
-			node.push_back(right.y);
-			node.push_back(right.z);
-			node.SetStyle(EmitterStyle::Flow);
-
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec3& right)
-		{
-			if (!node.IsSequence() || node.size() != 3)
-				return false;
-
-			right.x = node[0].as<float>();
-			right.y = node[1].as<float>();
-			right.z = node[2].as<float>();
-
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<glm::vec4>
-	{
-		static Node encode(const glm::vec4& right)
-		{
-			Node node;
-			node.push_back(right.x);
-			node.push_back(right.y);
-			node.push_back(right.z);
-			node.push_back(right.w);
-			node.SetStyle(EmitterStyle::Flow);
-
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec4& right)
-		{
-			if (!node.IsSequence() || node.size() != 4)
-				return false;
-
-			right.x = node[0].as<float>();
-			right.y = node[1].as<float>();
-			right.z = node[2].as<float>();
-			right.w = node[3].as<float>();
-
-			return true;
-		}
-	};
-
-}
+#include "Utils/YAMLSerializationHelpers.h"
 
 namespace Aurora {
-
-	// Provided on the yaml-cpp wiki
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& vec)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vec.x << vec.y << YAML::EndSeq;
-
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& vec)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vec.x << vec.y << vec.z << YAML::EndSeq;
-
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& vec)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vec.x << vec.y << vec.z << vec.w << YAML::EndSeq;
-
-		return out;
-	}
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
@@ -126,10 +17,11 @@ namespace Aurora {
 
 		if (entity.HasComponent<TagComponent>())
 		{
+			const std::string& tag = entity.GetComponent<TagComponent>().Tag;
+
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap; // Tag Component
 
-			const std::string& tag = entity.GetComponent<TagComponent>().Tag;
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 
 			out << YAML::EndMap; // Tag Component
@@ -137,10 +29,10 @@ namespace Aurora {
 
 		if (entity.HasComponent<TransformComponent>())
 		{
+			const TransformComponent& transform = entity.GetComponent<TransformComponent>();
+
 			out << YAML::Key << "TransformComponent";
 			out << YAML::BeginMap; // Transform Component
-
-			auto& transform = entity.GetComponent<TransformComponent>();
 
 			out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
 			out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
@@ -151,14 +43,13 @@ namespace Aurora {
 
 		if (entity.HasComponent<CameraComponent>())
 		{
+			const CameraComponent& cameraComp = entity.GetComponent<CameraComponent>();
+
 			out << YAML::Key << "CameraComponent";
 			out << YAML::BeginMap; // Camera Component
 
-			auto& cameraComp = entity.GetComponent<CameraComponent>();
-
 			out << YAML::Key << "Camera";
 			out << YAML::BeginMap; // Camera!
-
 
 			switch ((int)cameraComp.Camera.GetProjectionType())
 			{
@@ -184,28 +75,53 @@ namespace Aurora {
 
 		if (entity.HasComponent<SpriteRendererComponent>())
 		{
+			const SpriteRendererComponent& src = entity.GetComponent<SpriteRendererComponent>();
+
 			out << YAML::Key << "SpriteRendererComponent";
 			out << YAML::BeginMap; // Sprite Renderer Component
 
-			auto& color = entity.GetComponent<SpriteRendererComponent>().Color;
-
-			out << YAML::Key << "Color" << YAML::Value << color;
+			out << YAML::Key << "Color" << YAML::Value << src.Color;
 
 			out << YAML::EndMap; // Sprite Renderer Component
 		}
 
 		if (entity.HasComponent<CircleRendererComponent>())
 		{
+			const CircleRendererComponent& crc = entity.GetComponent<CircleRendererComponent>();
+
 			out << YAML::Key << "CircleRendererComponent";
 			out << YAML::BeginMap; // Circle Renderer Component
 
-			const CircleRendererComponent& crc = entity.GetComponent<CircleRendererComponent>();
-
 			out << YAML::Key << "Color" << YAML::Value << crc.Color;
-
 			out << YAML::Key << "Thickness" << YAML::Value << crc.Thickness;
 
 			out << YAML::EndMap; // Circle Renderer Component
+		}
+
+		if (entity.HasComponent<SkyLightComponent>())
+		{
+			const SkyLightComponent& slc = entity.GetComponent<SkyLightComponent>();
+
+			out << YAML::Key << "SkyLightComponent";
+			out << YAML::BeginMap; // Sky Light Component
+
+			// TODO: Should store the UUID instead of the filepath once there is an asset manager
+			if (slc.SceneEnvironment)
+				out << YAML::Key << "EnvironmentMap" << YAML::Value << slc.SceneEnvironment->RadianceMap->GetAssetPath().string();
+			else
+				out << YAML::Key << "EnvironmentMap" << YAML::Value << "";
+
+			out << YAML::Key << "LOD" << YAML::Value << slc.Level;
+			out << YAML::Key << "Intensity" << YAML::Value << slc.Intensity;
+			out << YAML::Key << "DynamicSky" << YAML::Value << slc.DynamicSky;
+			if (slc.DynamicSky)
+			{
+				out << YAML::Key << "Turbidity" << YAML::Value << slc.TurbidityAzimuthInclination.x;
+				out << YAML::Key << "Azimuth" << YAML::Value << slc.TurbidityAzimuthInclination.y;
+				out << YAML::Key << "Inclination" << YAML::Value << slc.TurbidityAzimuthInclination.z;
+			}
+
+			out << YAML::EndMap; // Sky Light Component
 		}
 
 		out << YAML::EndMap; // Entity
@@ -253,7 +169,7 @@ namespace Aurora {
 
 	void SceneSerializer::SerializeToBinary(const std::string& filepath)
 	{
-		AR_CORE_ASSERT(false);
+		AR_CORE_ASSERT(false, "Not Implemented");
 	}
 
 	bool SceneSerializer::DeSerializeFromText(const std::string& filepath)
@@ -273,12 +189,13 @@ namespace Aurora {
 			AR_CORE_ERROR_TAG("SceneSerializer", "Failed to load scene file '{0}'\n\t{1}", filepath, e.what());
 		}
 
+		// If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
 		if (!data["Scene"])
-			return false; // If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
+			return false;
 
 		std::string& sceneName = m_Scene->GetName();
 		sceneName = data["Scene"].as<std::string>();
-		AR_CORE_TRACE_TAG("SceneSerializer", "Deserializing scene '{0}'", sceneName);
+		AR_CORE_TRACE_TAG("SceneSerializer", "Deserializing scene '{0}'", sceneName); // TODO: Display the UUID of the scene when that is a thing
 
 		YAML::Node entities = data["Entities"]; // This is the entities node that exists under the scene
 		if (entities)
@@ -343,6 +260,36 @@ namespace Aurora {
 					crc.Color = circleRendComp["Color"].as<glm::vec4>();
 					crc.Thickness = circleRendComp["Thickness"].as<float>();
 				}
+
+				YAML::Node skyLightComponent = entity["SkyLightComponent"];
+				if (skyLightComponent)
+				{
+					SkyLightComponent& slc = deserializedEntity.AddComponent<SkyLightComponent>();
+
+					const std::string envMapPath = skyLightComponent["EnvironmentMap"].as<std::string>();
+					if (!envMapPath.empty())
+					{
+						const auto& [radianceMap, irradianceMap] = Renderer::CreateEnvironmentMap(envMapPath);
+						slc.SceneEnvironment = Environment::Create(radianceMap, irradianceMap);
+					}
+					else
+					{
+						slc.SceneEnvironment = nullptr;
+					}
+
+					slc.Level = skyLightComponent["LOD"].as<float>();
+					slc.Intensity = skyLightComponent["Intensity"].as<float>();
+
+					slc.DynamicSky = skyLightComponent["DynamicSky"].as<bool>();
+					if (slc.DynamicSky)
+					{
+						float turbidity = skyLightComponent["Turbidity"].as<float>();
+						float azimuth = skyLightComponent["Azimuth"].as<float>();
+						float inclination = skyLightComponent["Inclination"].as<float>();
+
+						slc.TurbidityAzimuthInclination = glm::vec3{ turbidity, azimuth, inclination };
+					}
+				}
 			}
 		}
 
@@ -351,7 +298,7 @@ namespace Aurora {
 
 	bool SceneSerializer::DeSerializeFromBinary(const std::string& filepath)
 	{
-		AR_CORE_ASSERT(false);
+		AR_CORE_ASSERT(false, "Not Implemented");
 
 		return false;
 	}

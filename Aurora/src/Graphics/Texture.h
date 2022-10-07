@@ -106,14 +106,14 @@ namespace Aurora {
 	class Texture2D : public Texture
 	{
 	public:
-		Texture2D(uint32_t id, uint32_t width, uint32_t height, ImageFormat format);
+		Texture2D(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, const std::string& path = "");
 		Texture2D(const std::string& filePath, const TextureProperties& props = TextureProperties());
-		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
+		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties(), const std::string& path = "");
 		virtual ~Texture2D();
 
-		[[nodiscard]] static Ref<Texture2D> Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format);
+		[[nodiscard]] static Ref<Texture2D> Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, const std::string& path = "");
 		[[nodiscard]] static Ref<Texture2D> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
-		[[nodiscard]] static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
+		[[nodiscard]] static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties(), const std::string& path = "");
 
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void UnBind(uint32_t slot = 0) const override;
@@ -150,11 +150,11 @@ namespace Aurora {
 	class CubeTexture : public Texture
 	{
 	public:
-		CubeTexture(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
+		CubeTexture(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties(), const std::filesystem::path& filePath = "");
 		CubeTexture(const std::string& filePath, const TextureProperties& props = TextureProperties());
 		virtual ~CubeTexture();
 
-		static Ref<CubeTexture> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties());
+		static Ref<CubeTexture> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties(), const std::filesystem::path& filePath = "");
 		static Ref<CubeTexture> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
 
 		virtual void Bind(uint32_t slot = 0) const override;

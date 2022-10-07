@@ -123,14 +123,14 @@ namespace Aurora {
 
 	}
 
-	Ref<Texture2D> Texture2D::Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format)
+	Ref<Texture2D> Texture2D::Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, const std::string& path)
 	{
-		return CreateRef<Texture2D>(id, width, height, format);
+		return CreateRef<Texture2D>(id, width, height, format, path);
 	}
 
-	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
+	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props, const std::string& path)
 	{
-		return CreateRef<Texture2D>(format, width, height, data, props);
+		return CreateRef<Texture2D>(format, width, height, data, props, path);
 	}
 
 	Ref<Texture2D> Texture2D::Create(const std::string& filePath, const TextureProperties& props)
@@ -138,13 +138,13 @@ namespace Aurora {
 		return CreateRef<Texture2D>(filePath, props);
 	}
 
-	Texture2D::Texture2D(uint32_t id, uint32_t width, uint32_t height, ImageFormat format)
-		: m_TextureID(id), m_Width(width), m_Height(height), m_Format(format)
+	Texture2D::Texture2D(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, const std::string& path)
+		: m_TextureID(id), m_AssetPath(path), m_Width(width), m_Height(height), m_Format(format)
 	{
 	}
 
-	Texture2D::Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
-		: m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
+	Texture2D::Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props, const std::string& path)
+		: m_AssetPath(path), m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -260,9 +260,9 @@ namespace Aurora {
 	///////// CubeTexture
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Ref<CubeTexture> CubeTexture::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
+	Ref<CubeTexture> CubeTexture::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props, const std::filesystem::path& filePath)
 	{
-		return CreateRef<CubeTexture>(format, width, height, data, props);
+		return CreateRef<CubeTexture>(format, width, height, data, props, filePath);
 	}
 
 	Ref<CubeTexture> CubeTexture::Create(const std::string& filePath, const TextureProperties& props)
@@ -270,8 +270,8 @@ namespace Aurora {
 		return CreateRef<CubeTexture>(filePath, props);
 	}
 
-	CubeTexture::CubeTexture(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props)
-		: m_AssetPath("No Path Set!"), m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
+	CubeTexture::CubeTexture(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& props, const std::filesystem::path& filePath)
+		: m_AssetPath(filePath), m_Width(width), m_Height(height), m_Format(format), m_Properties(props)
 	{
 		// Since we have 6 layers we need memory for 6 * sizeof(one face)
 		m_ImageData = Buffer((Byte*)data, Utils::GetImageMemorySize(format, width, height) * 6);
