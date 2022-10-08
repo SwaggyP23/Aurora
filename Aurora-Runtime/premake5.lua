@@ -1,5 +1,5 @@
-project "SandBox"
-    kind "WindowedApp" -- SandBox is a windowed app always since it is a testing runtime testing environment
+project "Aurora-Runtime"
+    kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
@@ -18,7 +18,6 @@ project "SandBox"
         "%{wks.location}/Aurora/src",
         "%{wks.location}/Aurora/dependencies/spdlog/include",
         "%{wks.location}/Aurora/dependencies",
-        "%{IncludeDir.ImGui}", -- This is to be removed later when SandBox is cleaned
         "%{IncludeDir.glm}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Optick}"
@@ -108,3 +107,6 @@ project "SandBox"
         {
             ("{COPYFILE} %{Binaries.AssimpRelease} %{cfg.targetdir}")
         }
+
+    filter { "system:windows", "configurations:Dist" }
+        kind "WindowedApp"

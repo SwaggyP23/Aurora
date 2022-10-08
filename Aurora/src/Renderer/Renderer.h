@@ -43,8 +43,6 @@ namespace Aurora {
 		static std::pair<Ref<CubeTexture>, Ref<CubeTexture>> CreateEnvironmentMap(const std::string& filePath);
 		static Ref<CubeTexture> CreatePreethamSky(float turbidity, float azimuth, float inclination);
 
-		// TODO: Maybe have an s_Data struct and set all the uniform buffer and stuff like that there? temp untill
-		// scenerenderer is a thing
 		static void BeginScene(const Ref<EditorCamera>& camera);
 		static void EndScene();
 

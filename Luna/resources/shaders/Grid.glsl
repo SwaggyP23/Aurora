@@ -58,6 +58,8 @@ void main()
 	float x = grid(v_TexCoords * u_Settings.Scale, u_Settings.Size);
 	
 	o_Color = vec4(vec3(0.2f), 0.5f) * (1.0f - x);
+
+	// Avoid Depth write
 	if(o_Color.a == 0.0f)
 		discard;
 }

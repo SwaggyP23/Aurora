@@ -2,15 +2,6 @@
 bin/
 LogDump/
 Luna/Resources/cache/
-# SandBox/resources/textures/
-
-# specific models to ignore since they are not working or too big
-Luna/Resources/models/brz/
-Luna/Resources/models/gtr/
-Luna/Resources/models/mcl/
-Luna/Resources/models/rock/
-Luna/Resources/models/zeus/
-Luna/Resources/models/fenisCastle/
 
 Aurora.sln
 Aurora.vcxproj
@@ -21,9 +12,8 @@ Luna.vcxproj
 Luna.vcxproj.user
 Luna.vcxproj.filters
 
-SandBox.vcxproj
-SandBox.vcxproj.user
-SandBox.vcxproj.filters
+Aurora-Runtime.vcxproj
+Aurora-Runtime.vcxproj.user
 
 ImGui.vcxproj
 ImGui.vcxproj.user

@@ -271,9 +271,9 @@ namespace Aurora {
 					m_ColorAttachmentsSpecification.emplace_back(format);
 			}
 
-			Invalidate();
-
 			m_AttachExisting = false;
+
+			Invalidate();
 		}
 		else
 		{
@@ -306,6 +306,10 @@ namespace Aurora {
 
 	Framebuffer::~Framebuffer()
 	{
+		// Since the backbuffer already has a color and depth so it is useless to create all of the attachments for nothing
+		if (m_Specification.SwapChainTarget)
+			return;
+
 		// Delete FBO
 		glDeleteFramebuffers(1, &m_FrameBufferID);
 
@@ -328,6 +332,10 @@ namespace Aurora {
 
 	void Framebuffer::Invalidate()
 	{
+		// Since the backbuffer already has a color and depth so it is useless to create all of the attachments for nothing
+		if (m_Specification.SwapChainTarget)
+			return;
+
 		AR_CORE_ASSERT(!m_AttachExisting);
 
 		if (m_FrameBufferID)
@@ -430,6 +438,10 @@ namespace Aurora {
 
 	void Framebuffer::AttachExisting()
 	{
+		// Since the backbuffer already has a color and depth so it is useless to create all of the attachments for nothing
+		if (m_Specification.SwapChainTarget)
+			return;
+
 		AR_CORE_ASSERT(m_AttachExisting);
 
 		if (m_FrameBufferID)
@@ -549,16 +561,28 @@ namespace Aurora {
 	{
 		AR_PROFILE_FUNCTION();
 
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferID);
-		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+		if (!m_Specification.SwapChainTarget)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferID);
+			glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 
-		if (!m_Specification.ClearOnBind)
-			return;
+			if (!m_Specification.ClearOnBind)
+				return;
 
-		const glm::vec4& clearColor = m_Specification.ClearColor;
-		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-		bool colorBuffer = m_ColorAttachments.size() ? true : false;
-		glClear((colorBuffer ? GL_COLOR_BUFFER_BIT : 0) | (m_DepthAttachment ? GL_DEPTH_BUFFER_BIT : 0));
+			const glm::vec4& clearColor = m_Specification.ClearColor;
+			glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+			bool colorBuffer = m_ColorAttachments.size() ? true : false;
+			glClear((colorBuffer ? GL_COLOR_BUFFER_BIT : 0) | (m_DepthAttachment ? GL_DEPTH_BUFFER_BIT : 0));
+		}
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind default framebuffer
+			glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+
+			const glm::vec4& clearColor = m_Specification.ClearColor;
+			glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
 	}
 
 	void Framebuffer::UnBind() const

@@ -40,7 +40,7 @@ namespace Aurora {
 		// Controls whether imgui is enabled or not, this is useful for runtime applications
 		bool EnableImGui = true;
 
-		// TODO: Set working directory
+		// Set working directory
 		std::string WorkingDirectory;
 
 		// Sets the path for the application's icon

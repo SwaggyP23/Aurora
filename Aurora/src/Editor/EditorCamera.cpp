@@ -141,7 +141,7 @@ namespace Aurora {
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.dispatch<MouseScrolledEvent>(AR_SET_EVENT_FN(EditorCamera::OnMouseScroll));
+		dispatcher.Dispatch<MouseScrolledEvent>(AR_SET_EVENT_FN(EditorCamera::OnMouseScroll));
 	}
 
 	void EditorCamera::Focus(const glm::vec3& focusPoint)

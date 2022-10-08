@@ -7,14 +7,6 @@
 
 namespace Aurora {
 
-	enum class RenderFlags : uint8_t
-	{
-		None = 0,
-		Fill,
-		WireFrame,
-		Vertices
-	};
-
 	enum class Capability : uint8_t
 	{
 		None = 0,
@@ -67,12 +59,6 @@ namespace Aurora {
 	class RenderCommand
 	{
 	public:
-		static void Init();
-		static void ShutDown();
-
-		static void SetRenderFlag(RenderFlags flag);
-		[[nodiscard]] static RenderFlags GetRenderFlag() { return m_Flags; }
-
 		static void Enable(Capability feature); // TODO: Think of better naming for this api since its a disaster
 		static void Disable(Capability feature);
 		static void SetCapabilityFunction(Capability feature, Comparator function);
@@ -80,13 +66,6 @@ namespace Aurora {
 
 		static void SetClearColor(const glm::vec4& color);
 		static void Clear();
-
-		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-
-		static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0);
-
-	private:
-		static RenderFlags m_Flags;
 
 	};
 

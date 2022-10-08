@@ -171,12 +171,12 @@ namespace Aurora {
 		m_TargetRenderPass = renderPass;
 	}
 
-	Ref<Texture2D> Renderer2D::GetFinalImage()
+	Ref<Texture2D> Renderer2D::GetDebugFinalImage()
 	{
 		return m_DebugRenderPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0);
 	}
 
-	Ref<RenderPass> Renderer2D::GetRenderPass()
+	Ref<RenderPass> Renderer2D::GetDebugRenderPass()
 	{
 		return m_DebugRenderPass;
 	}

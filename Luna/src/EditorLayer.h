@@ -15,10 +15,10 @@ namespace Aurora {
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(Aurora::TimeStep ts) override;
+		virtual void OnUpdate(TimeStep ts) override;
 		virtual void OnTick() override;
 		virtual void OnImGuiRender() override;
-		virtual void OnEvent(Aurora::Event& e) override;
+		virtual void OnEvent(Event& e) override;
 
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);

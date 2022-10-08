@@ -42,8 +42,8 @@ namespace Aurora {
 
 		void SetTargetRenderPass(Ref<RenderPass> renderPass);
 
-		Ref<Texture2D> GetFinalImage();
-		Ref<RenderPass> GetRenderPass();
+		Ref<Texture2D> GetDebugFinalImage();
+		Ref<RenderPass> GetDebugRenderPass();
 
 		void BeginScene(const glm::mat4& viewProj, const glm::mat4& view, bool depthTest = true);
 		void EndScene();

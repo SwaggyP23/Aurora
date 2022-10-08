@@ -189,6 +189,7 @@ namespace Aurora {
 			renderer2D->BeginScene(camera.GetViewProjection(), camera.GetViewMatrix());
 			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
+			// TODO: These are only here for testing
 			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.3f, 0.45f, 0.8f, 1.0f });
 
 			AABB aabb = { {-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f} };
@@ -282,6 +283,7 @@ namespace Aurora {
 			renderer2D->BeginScene(camera.GetProjection() * cameraViewMatrix, cameraViewMatrix, true);
 			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
+			// TODO: These are only here for testing
 			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.3f, 0.45f, 0.8f, 1.0f });
 
 			AABB aabb = { {-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f} };

@@ -41,7 +41,7 @@ namespace Aurora {
 			compositeFBOSpec.AttachmentsSpecification = { ImageFormat::RGBA };
 			compositeFBOSpec.Width = 1280;
 			compositeFBOSpec.Height = 720;
-			compositeFBOSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+			compositeFBOSpec.ClearColor = { 0.1f, 0.5f, 0.1f, 1.0f };
 
 			RenderPassSpecification compositePassSpec = {};
 			compositePassSpec.DebugName = "CompositePass";
@@ -53,7 +53,7 @@ namespace Aurora {
 			externalCompositeFBO.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::DEPTH32F };
 			externalCompositeFBO.Width = 1280;
 			externalCompositeFBO.Height = 720;
-			externalCompositeFBO.ClearColor = { 0.0f, 0.1f, 0.5f, 1.0f };
+			externalCompositeFBO.ClearColor = { 0.1f, 0.1f, 0.5f, 1.0f };
 			externalCompositeFBO.ClearOnBind = false;
 			externalCompositeFBO.ExistingImages[0] = m_CompositeRenderPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0);
 			externalCompositeFBO.ExistingImages[1] = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetDepthAttachment();
@@ -78,7 +78,7 @@ namespace Aurora {
 			constexpr float gridScale = 50.025f;
 			m_GridMaterial->Set("u_Settings.Scale", gridScale);
 			m_GridMaterial->Set("u_Settings.Size", gridSize);
-			m_GridMaterial->SetFlag(MaterialFlag::TwoSided, true);
+			m_GridMaterial->SetFlag(MaterialFlag::TwoSided, true); // Has to be two sided since it is just a plane that is modified
 		}
 
 		m_Renderer2D = Renderer2D::Create();
@@ -224,9 +224,9 @@ namespace Aurora {
 
 	void SceneRenderer::PrePass()
 	{
-		// Clear default framebuffer
-		RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f });
-		RenderCommand::Clear();
+		// Clear default framebuffer, Not necessary in editor layer
+		//RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f });
+		//RenderCommand::Clear();
 	}
 
 	void SceneRenderer::GeometryPass()

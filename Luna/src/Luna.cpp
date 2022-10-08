@@ -29,9 +29,6 @@ namespace Aurora {
 		specification.WindowDecorated = true;
 		specification.StartMaximized = true;
 		specification.VSync = true;
-		specification.ApplicationWindowIconPath = "../Resources/Icons/AuroraIcon1.png";
-
-		//specification.WorkingDirectory // TODO: Needs to be handled...
 
 		specification.RendererConfiguration.EnvironmentMapResolution = 1024;
 		specification.RendererConfiguration.IrradianceMapComputeSamples = 1024;

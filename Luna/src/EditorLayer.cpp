@@ -153,9 +153,9 @@ namespace Aurora {
 			m_EditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
-		dispatcher.dispatch<KeyPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnKeyPressed));
-		dispatcher.dispatch<MouseButtonPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnMouseButtonPressed));
-		dispatcher.dispatch<WindowPathDropEvent>(AR_SET_EVENT_FN(EditorLayer::OnPathDrop));
+		dispatcher.Dispatch<KeyPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+		dispatcher.Dispatch<WindowPathDropEvent>(AR_SET_EVENT_FN(EditorLayer::OnPathDrop));
 	}
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
@@ -395,6 +395,7 @@ namespace Aurora {
 		//{
 		//	AR_WARN_TAG("Editor", "{0}", path.string());
 		//}
+
 		if (e.GetDroppedPathCount() == 1)
 		{
 			const std::filesystem::path& path = e.GetDroppedPaths().front();
@@ -869,7 +870,7 @@ namespace Aurora {
 		if (m_ShowPropertiesPanel)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 8, 8 });
-			ImGui::Begin("Properties");
+			ImGui::Begin("Properties", (bool*)0, ImGuiWindowFlags_NoMove);
 
 			if (m_SelectionContext)
 			{
@@ -1297,7 +1298,7 @@ namespace Aurora {
 			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
 			if (ImGui::Button(environmentMapName.c_str(), { width, 25.0f }))
 			{
-				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("HDR Image");
+				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("HDR Image (*.hdr)\0*.hdr\0");
 				environmentMapName = p.filename().string();
 
 				if (environmentMapName.size())
@@ -1423,7 +1424,7 @@ namespace Aurora {
 	{
 		if (path.extension().string() != ".aurora")
 		{
-			AR_WARN("Could not load '{0}' - not an Aurora scene file!", path.filename().string());
+			AR_WARN_TAG("EditorLayer", "Could not load '{0}' - not an Aurora scene file!", path.filename().string());
 			
 			return;
 		}
@@ -1517,7 +1518,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowRendererStatsUI()
 	{
-		ImGui::Begin("Renderer2D Stats");
+		ImGui::Begin("Renderer Stats", &m_ShowRenderStatsUI);
 
 		m_Peak = std::max(m_Peak, ImGui::GetIO().Framerate);
 
@@ -1528,22 +1529,7 @@ namespace Aurora {
 		//ImGui::Text("Index Count: %d", Renderer3D::GetStats().GetTotalIndexCount());
 		//ImGui::Text("Vertex Buffer Usage: %.3f Megabytes", Renderer3D::GetStats().GetTotalVertexBufferMemory() / (1024.0f * 1024.0f));
 
-		static bool wireFrame = false;
-		static bool vertices = false;
 		static bool VSyncState = true;
-		if (ImGui::Checkbox("WireFrame", &wireFrame))
-		{
-			RenderCommand::SetRenderFlag(RenderFlags::WireFrame);
-			vertices = false;
-		}
-
-		if (ImGui::Checkbox("Vertices", &vertices))
-		{
-			RenderCommand::SetRenderFlag(RenderFlags::Vertices);
-			wireFrame = false;
-		}
-		if (!wireFrame && !vertices)
-			RenderCommand::SetRenderFlag(RenderFlags::Fill);
 
 		if (ImGui::Checkbox("V-Sync", &VSyncState))
 		{
@@ -1619,7 +1605,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowMaterialsPanel()
 	{
-		ImGui::Begin("Materials");
+		ImGui::Begin("Materials", &m_ShowMaterialsPanel);
 
 		ImGui::Image((void*)(uint64_t)EditorResources::FIXME->GetTextureID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
 
@@ -1690,8 +1676,12 @@ namespace Aurora {
 	{
 		ImGui::Begin("Screenshot Panel", &m_ShowScreenshotPanel);
 
+		// Delay the screenshot taking until the frame has rendered
 		if (ImGui::Button("Take Screenshot"))
+		{
+			AR_CHECK(false, "Not Working! Maybe need to delay taking the screenshot until the frame is done?");
 			TakeScreenShotOfOpenScene();
+		}
 
 		ImGui::SameLine();
 
@@ -1733,7 +1723,7 @@ namespace Aurora {
 		// If stb writes the image correctly i know that everything is good and i create the texture
 		if (Utils::ImageLoader::WriteDataToPNGImage(finalName, buff.Data, m_ViewportWidth, m_ViewportHeight, 4, true))
 		{
-			AR_WARN("Wrote image to {0}", finalName);
+			AR_WARN_TAG("EditorLayer", "Wrote image to {0}", finalName);
 			m_DisplayImage = Texture2D::Create(finalName);
 		}
 	}
@@ -2158,7 +2148,7 @@ namespace Aurora {
 
 				if (toolbarButton(EditorResources::SimulateButton, Theme::Text))
 				{
-					AR_CORE_WARN_TAG("EditorLayer", "Wassup Mate?");
+					AR_WARN_TAG("EditorLayer", "Wassup Mate?");
 				}
 				if (ImGui::IsItemHovered())
 				{

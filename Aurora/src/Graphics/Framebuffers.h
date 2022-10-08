@@ -61,6 +61,9 @@ namespace Aurora {
 		// The index provided should map exactly with the layout provided to the spec
 		// And also the number of samples should also map exactly with the framebuffer it is being referenced from
 		std::map<uint32_t, Ref<Texture2D>> ExistingImages;
+
+		// Set this to true to render to the defualt framebuffer
+		bool SwapChainTarget = false;
 	};
 
 	class Framebuffer : public RefCountedObject

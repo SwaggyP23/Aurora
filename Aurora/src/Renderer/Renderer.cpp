@@ -157,7 +157,24 @@ namespace Aurora {
 	void Renderer::Init(const RendererConfig& configuration)
 	{
 		RendererCapabilities::Init();
-		RenderCommand::Init();
+
+		// Init OpenGL Global State variables
+		{
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LESS);
+
+			glEnable(GL_MULTISAMPLE);
+			glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+			// glEnable(GL_FRAMEBUFFER_SRGB);
+			// Different color space
+
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+			glFrontFace(GL_CCW);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
 
 		s_Data = new RendererData();
 
@@ -175,6 +192,11 @@ namespace Aurora {
 		BRDFLutShaderProps.AssetPath = "Resources/shaders/BRDFLutGen.glsl";
 		BRDFLutShaderProps.Type = ShaderType::Compute;
 		s_Data->ShaderLibrary->Load(BRDFLutShaderProps);
+
+		ShaderProperties texturePassShaderProps = {};
+		texturePassShaderProps.Name = "TexturePass";
+		texturePassShaderProps.AssetPath = "Resources/shaders/DefaultTextureShader.glsl";
+		s_Data->ShaderLibrary->Load(texturePassShaderProps);
 
 		ShaderProperties environmentIrradiance = {};
 		environmentIrradiance.Name = "EnvironmentIrradiance";
@@ -269,8 +291,8 @@ namespace Aurora {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
 		});
-		//uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-		uint32_t indices[6] = { 0, 2, 1, 2, 0, 3 };
+		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
+		//uint32_t indices[6] = { 0, 2, 1, 2, 0, 3 };
 		s_Data->FullScreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		s_Data->FullScreenQuadVertexArray->AddVertexBuffer(s_Data->FullScreenQuadVertexBuffer);
 		s_Data->FullScreenQuadVertexArray->SetIndexBuffer(s_Data->FullScreenQuadIndexBuffer);
@@ -280,7 +302,6 @@ namespace Aurora {
 
 	void Renderer::ShutDown()
 	{
-		 RenderCommand::ShutDown();
 		 RendererCapabilities::ShutDown();
 
 		 delete s_Data;
@@ -292,6 +313,8 @@ namespace Aurora {
 
 		if (!environment)
 			environment = s_Data->NullEnvironment;
+
+		// TODO: Does this need to bing the shader?
 
 		const Ref<Shader>& shader = s_Data->ShaderLibrary->Get("AuroraPBRStatic");
 
@@ -512,26 +535,56 @@ namespace Aurora {
 	void Renderer::SubmitFullScreenQuad(const Ref<Material>& material)
 	{
 		if (!material->HasFlag(MaterialFlag::DepthTest))
-			RenderCommand::Disable(Capability::DepthTesting);
+			glDisable(GL_DEPTH_TEST);
 
 		if (material->HasFlag(MaterialFlag::TwoSided))
-			RenderCommand::Disable(Capability::Culling);
+			glDisable(GL_CULL_FACE);
 
 		material->SetUpForRendering();
 
-		// Save whatever the current renderflag is so that the fullquad gets rendered separatly
-		RenderFlags flag = RenderCommand::GetRenderFlag();
-		RenderCommand::SetRenderFlag(RenderFlags::Fill);
-		//RenderCommand::DrawIndexed(s_Data->FullScreenQuadVertexArray);
-		glBindVertexArray(s_Data->m_Skybox.vao);
-		glDrawElementsBaseVertex(GL_TRIANGLES, s_Data->m_Skybox.numElements, GL_UNSIGNED_INT, 0, 0);
-		RenderCommand::SetRenderFlag(flag);
-
-		if (!material->HasFlag(MaterialFlag::DepthTest))
-			RenderCommand::Enable(Capability::DepthTesting);
+		s_Data->FullScreenQuadVertexArray->Bind();
+		uint32_t indexCount = s_Data->FullScreenQuadIndexBuffer->GetCount();
+		glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, 0);
 
 		if (material->HasFlag(MaterialFlag::TwoSided))
-			RenderCommand::Disable(Capability::Culling);
+			glEnable(GL_CULL_FACE);
+
+		if (!material->HasFlag(MaterialFlag::DepthTest))
+			glEnable(GL_DEPTH_TEST);
+	}
+
+	// This is mainly used for the grid shader, Works like SubmitFullScreenQuad however takes in a transform
+	void Renderer::RenderQuad(const Ref<Material>& material, const glm::mat4& transform)
+	{
+		if (!material->HasFlag(MaterialFlag::DepthTest))
+			glDisable(GL_DEPTH_TEST);
+
+		if (material->HasFlag(MaterialFlag::TwoSided))
+			glDisable(GL_CULL_FACE);
+
+		material->Set("u_Renderer.Transform", transform);
+		material->SetUpForRendering();
+
+		s_Data->FullScreenQuadVertexArray->Bind();
+		uint32_t indexCount = s_Data->FullScreenQuadIndexBuffer->GetCount();
+		glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, 0);
+
+		if (material->HasFlag(MaterialFlag::TwoSided))
+			glEnable(GL_CULL_FACE);
+
+		if (!material->HasFlag(MaterialFlag::DepthTest))
+			glEnable(GL_DEPTH_TEST);
+	}
+
+	// This is for rendering whatever the batch renderer wants
+	void Renderer::RenderGeometry(const Ref<UniformBuffer>& ubo, const Ref<StorageBuffer>& ssbo, const Ref<Material>& mat, const Ref<VertexArray>& vao, uint32_t indexCount)
+	{
+		if (indexCount == 0)
+			indexCount = vao->GetIndexBuffer()->GetCount();
+
+		mat->SetUpForRendering();
+		vao->Bind();
+		glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, 0);
 	}
 
 	// TODO: Work on rendering static meshes
@@ -539,8 +592,6 @@ namespace Aurora {
 	{
 		AR_CORE_CHECK(mesh);
 		AR_CORE_CHECK(material);
-
-		AR_PROFILE_FUNCTION();
 
 		Ref<MeshSource> meshSource = mesh->GetMeshSource();
 
@@ -580,39 +631,13 @@ namespace Aurora {
 			//meshSource->GetIndexBuffer()->Bind();
 			finalmaterial->SetUpForRendering();
 			glDrawElementsBaseVertex(GL_TRIANGLES, subMesh.IndexCount, GL_UNSIGNED_INT, (void*)(uint64_t)subMesh.BaseIndex, subMesh.BaseVertex);
-			//RenderCommand::DrawIndexed(meshSource->GetVertexArray());
 		}
 		glEnable(GL_CULL_FACE);
 	}
 
-	// TODO: This is for rendering whatever the batch renderer wants
-	void Renderer::RenderGeometry(const Ref<UniformBuffer>& ubo, const Ref<StorageBuffer>& ssbo, const Ref<Material>& mat, const Ref<VertexArray>& vao, uint32_t indexCount)
-	{
-		if (indexCount == 0)
-			indexCount = vao->GetIndexBuffer()->GetCount();
-
-		mat->SetUpForRendering();
-		RenderCommand::DrawIndexed(vao, indexCount);
-	}
-
-	// This is mainly used for the grid shader
-	void Renderer::RenderQuad(const Ref<Material>& material, const glm::mat4& transform)
-	{
-		material->Set("u_Renderer.Transform", transform);
-		material->SetUpForRendering();
-
-		if (material->HasFlag(MaterialFlag::TwoSided))
-			RenderCommand::Disable(Capability::Culling);
-
-		RenderCommand::DrawIndexed(s_Data->FullScreenQuadVertexArray, s_Data->FullScreenQuadIndexBuffer->GetCount());
-
-		if (material->HasFlag(MaterialFlag::TwoSided))
-			RenderCommand::Enable(Capability::Culling);
-	}
-
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		RenderCommand::SetViewport(0, 0, width, height);
+		glViewport(0, 0, width, height);
 	}
 
 	const Scope<ShaderLibrary>& Renderer::GetShaderLibrary()

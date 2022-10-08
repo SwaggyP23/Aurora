@@ -36,6 +36,7 @@ namespace Aurora {
 
 	private:
 		TimePoint<HighResClock> m_Start;
+
 	};
 
 	class ScopedTimer
@@ -54,6 +55,7 @@ namespace Aurora {
 	private:
 		const char* m_Name;
 		Timer m_Timer;
+
 	};
 
 	class PerformanceProfiler

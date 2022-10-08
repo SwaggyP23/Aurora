@@ -5,23 +5,7 @@
 
 namespace Aurora {
 
-	RenderFlags RenderCommand::m_Flags;
-
 	namespace Utils {
-
-		static GLenum GLTypeFromRenderFlags(RenderFlags flag)
-		{
-			switch (flag)
-			{
-			    case RenderFlags::None:            return GL_NONE;
-			    case RenderFlags::Fill:            return GL_FILL;
-			    case RenderFlags::WireFrame:       return GL_LINE;
-			    case RenderFlags::Vertices:        return GL_POINT;
-			}
-
-			AR_CORE_ASSERT(false, "Unknown Render Flag!");
-			return 0;
-		}
 
 		static GLenum GLFunctionFromEnum(Comparator func)
 		{
@@ -84,39 +68,6 @@ namespace Aurora {
 
 	}
 
-	void RenderCommand::Init()
-	{
-		// These are the defualt types of function and enables that the editor comes with right out of the box, things could be added or removed using the settings panel
-		AR_PROFILE_FUNCTION();
-
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-
-		glEnable(GL_MULTISAMPLE);
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-		// glEnable(GL_FRAMEBUFFER_SRGB);
-		// Different color space
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		m_Flags = RenderFlags::Fill;
-	}
-
-	void RenderCommand::ShutDown()
-	{
-	}
-
-	void RenderCommand::SetRenderFlag(RenderFlags flag)
-	{
-		m_Flags = flag;
-		glPolygonMode(GL_FRONT_AND_BACK, Utils::GLTypeFromRenderFlags(flag));
-	}
-
 	void RenderCommand::Enable(Capability feature)
 	{
 		glEnable(Utils::GLFeatureFromFeatureControl(feature));
@@ -151,20 +102,6 @@ namespace Aurora {
 	void RenderCommand::Clear()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-
-	void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-	{
-		glViewport(x, y, width, height);
-	}
-
-	void RenderCommand::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
-	{
-		AR_PROFILE_FUNCTION();
-
-		vertexArray->Bind();
-		uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 
 }

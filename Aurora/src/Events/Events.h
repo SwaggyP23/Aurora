@@ -66,7 +66,7 @@ namespace Aurora {
 			: m_Event(e) {}
 
 		template<typename T, typename F> // F is to be deduced by compiler, and it will be a function
-		bool dispatch(const F& func)
+		bool Dispatch(const F& func)
 		{
 			if (m_Event.GetEventType() == T::getStaticType())
 			{

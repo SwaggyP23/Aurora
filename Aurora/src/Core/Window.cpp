@@ -181,6 +181,11 @@ namespace Aurora {
 		glfwSetWindowPos(m_Window, (mode->width - m_Data.Width) / 2, (mode->height - m_Data.Height) / 2);
 	}
 
+	void Window::SetTitle(const std::string& newName)
+	{
+		glfwSetWindowTitle(m_Window, newName.c_str());
+	}
+
 	void Window::SetIconImage()
 	{
 		AR_PROFILE_FUNCTION();

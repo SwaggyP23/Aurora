@@ -9,12 +9,7 @@
 #include <map>
 
 /*
- * Currently all materials in Aurora will be PBR materials!
- * 
- * Still needs some looking and checking since i am not so sure of the architecture i made, and may(probably will)
- * rework most of the stuff
- * 
- * TODO: Actually use the material flags to get different rendering bahviour
+ * Material work just fine. What needs alot of checking and testing MaterialAssets and MaterialTables
  */
 
 namespace Aurora {
@@ -128,7 +123,6 @@ namespace Aurora {
 		std::string m_Name;
 		Ref<Shader> m_Shader;
 
-		// TODO: These flags are currently ignored when rendering...
 		uint32_t m_MaterialFlags = 0;
 
 		mutable Buffer m_UniformStorageBuffer;
@@ -217,6 +211,7 @@ namespace Aurora {
 	private:
 		std::map<uint32_t, Ref<MaterialAsset>> m_Materials;
 		uint32_t m_MaterialCount = 0; // Number of held materials/materials to hold
+
 	};
 
 }
