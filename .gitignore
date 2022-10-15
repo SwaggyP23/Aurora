@@ -30,6 +30,17 @@ Glad.vcxproj.filters
 Optick.vcxproj
 Optick.vcxproj.user
 
+msdf-atlas-gen.vcxproj
+msdf-atlas-gen.vcxproj.user
+
+msdfgen.vcxproj
+msdfgen.vcxproj.user
+msdfgen.vcxproj.filters
+
+FreeType.vcxproj
+FreeType.vcxproj.user
+FreeType.vcxproj.filters
+
 Premake.vcxproj
 Premake.vcxproj.user
 Premake.vcxproj.filters

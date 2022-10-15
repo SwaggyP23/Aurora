@@ -1,0 +1,23 @@
+Extensions Used by Aurora:
+
+// Internal
+- .ascene = Scene file
+- .glsl.cachedOpenGL.frag = cached opengl spirv format pixel shader
+- .glsl.cachedOpenGL.vert = cached opengl spirv format vertex shader
+- .glsl.cachedVulkan.frag = cached vulkan spirv format pixel shader
+- .glsl.cachedVulkan.vert = cached vulkan spirv format vertex shader
+- .Aglsl = shader file that will be fed to the preproccessor in #include<> statements
+- .afa = aurora generated font atlas
+- .asmesh = aurora generated static mesh file
+- .amaterial = arurora generated material file
+
+// Images...
+- .hdr = environment maps
+- .tga = Renderercache image
+- .png/.jpg/.jpeg/.bmp/ = texture images
+
+// Meshes...
+.fbx/.gltf/.glb/.dae/.obj = mesh files
+
+// Fonts...
+.ttf/.otf/.ttc = font files

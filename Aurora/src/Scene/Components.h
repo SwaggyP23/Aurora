@@ -22,6 +22,25 @@ namespace Aurora {
 		std::string Tag;
 	};
 
+	struct TextComponent
+	{
+		std::string TextString = "";
+		size_t TextHash;
+
+		// Font
+		//AssetHandle FontHandle;
+		Ref<Texture2D> FontHandle;
+		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float LineSpacing = 0.0f;
+		float Kerning = 0.0f;
+
+		// Layout
+		float MaxWidth = 10.0f;
+
+		TextComponent() = default;
+		TextComponent(const TextComponent&) = default;
+	};
+
 	// TODO: Use quaternions for rotation...
 	struct TransformComponent
 	{
@@ -35,7 +54,6 @@ namespace Aurora {
 
 			return glm::translate(glm::mat4(1.0f), Translation) * rotation * glm::scale(glm::mat4(1.0f), Scale);
 		}
-
 	};
 
 	struct CameraComponent
@@ -48,7 +66,6 @@ namespace Aurora {
 
 		operator SceneCamera& () { return Camera; }
 		operator const SceneCamera& () const { return Camera; }
-
 	};
 
 	// TODO: Need to add textures to it and serialize them...
@@ -74,7 +91,6 @@ namespace Aurora {
 			: StaticMesh(other.StaticMesh), MaterialTable(other.MaterialTable) {}
 		StaticMeshComponent(const Ref<Aurora::StaticMesh>& other)
 			: StaticMesh(other) {}
-
 	};
 
 	// Forward declaring the class so we dont include it
@@ -118,7 +134,6 @@ namespace Aurora {
 
 		bool DynamicSky = false;
 		glm::vec3 TurbidityAzimuthInclination{ 2.0f, 0.0f, 0.0f };
-
 	};
 
 }

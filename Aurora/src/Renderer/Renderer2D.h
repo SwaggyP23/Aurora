@@ -4,13 +4,14 @@
 #include "Editor/EditorCamera.h"
 #include "Scene/SceneCamera.h"
 #include "RenderCommand.h"
-#include "Graphics/VertexArray.h"
+#include "Graphics/Font.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/UniformBuffer.h"
+#include "Graphics/VertexArray.h"
 
 /*
  * The way this batching works is that it batches all the elements in one VertexBuffer and submits it every frame. If the amount
@@ -19,8 +20,6 @@
  * also flushes and starts another batch. And to reuse the old textures they should be resubmitted!
  * And from the available 32 texture slots, slot 0 is reserved by the white texture in the case we want to draw just plain colors
  * we can submit texture index 0 and the sampler2D will sample from a white texture (1.0f) thus allowing for plain colors to appear.
- *
- * TODO: Add Text Rendering.
  */
 
 namespace Aurora {
@@ -69,6 +68,10 @@ namespace Aurora {
 		void DrawAABB(Ref<StaticMesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 
+		void DrawString(const std::string& string, const glm::vec3& position, float maxWidth, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawString(const std::string& string, const Ref<Font>& font, const glm::vec3& position, float maxWidth, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawString(const std::string& string, const Ref<Font>& font, const glm::mat4& transform, float maxWidth, const glm::vec4& color = glm::vec4(1.0f), float lineHeightOffset = 0.0f, float kerningOffset = 0.0f);
+
 		struct Statistics
 		{
 			uint32_t DrawCalls = 0;
@@ -115,6 +118,14 @@ namespace Aurora {
 			glm::vec4 Color;
 		};
 
+		struct TextVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+			glm::vec2 TexCoord;
+			float TextureIndex;
+		};
+
 		static const uint32_t MaxQuads = 10000;
 		static const uint32_t MaxQuadVertices = MaxQuads * 4;
 		static const uint32_t MaxQuadIndices = MaxQuads * 6;
@@ -126,6 +137,7 @@ namespace Aurora {
 
 		Ref<Texture2D> m_WhiteTexture = nullptr;
 
+		// Quads...
 		Ref<VertexArray> m_QuadVertexArray;
 		Ref<VertexBuffer> m_QuadVertexBuffer;
 		Ref<Material> m_QuadMaterial;
@@ -134,6 +146,7 @@ namespace Aurora {
 		QuadVertex* m_QuadVertexBufferBase = nullptr;
 		QuadVertex* m_QuadVertexBufferPtr = nullptr;
 
+		// Lines...
 		Ref<VertexArray> m_LineVertexArray;
 		Ref<VertexBuffer> m_LineVertexBuffer;
 		Ref<Material> m_LineMaterial;
@@ -142,6 +155,7 @@ namespace Aurora {
 		LineVertex* m_LineVertexBufferBase = nullptr;
 		LineVertex* m_LineVertexBufferPtr = nullptr;
 
+		// Circles...
 		Ref<VertexArray> m_CircleVertexArray;
 		Ref<VertexBuffer> m_CircleVertexBuffer;
 		Ref<Material> m_CircleMaterial;
@@ -149,6 +163,17 @@ namespace Aurora {
 		uint32_t m_CircleIndexCount = 0;
 		CircleVertex* m_CircleVertexBufferBase = nullptr;
 		CircleVertex* m_CircleVertexBufferPtr = nullptr;
+
+		// Text...
+		Ref<VertexArray> m_TextVertexArray;
+		Ref<VertexBuffer> m_TextVertexBuffer;
+		Ref<Material> m_TextMaterial;
+		std::array<Ref<Texture2D>, MaxQuadTextureSlots> m_FontTextureSlots;
+		uint32_t m_FontTextureSlotIndex = 0;
+
+		uint32_t m_TextIndexCount = 0;
+		TextVertex* m_TextVertexBufferBase = nullptr;
+		TextVertex* m_TextVertexBufferPtr = nullptr;
 
 		std::array<Ref<Texture2D>, MaxQuadTextureSlots> m_TextureSlots;
 		uint32_t m_TextureSlotIndex = 1; // 0 is reserved for the white texture

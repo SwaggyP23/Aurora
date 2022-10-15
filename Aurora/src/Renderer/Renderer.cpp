@@ -239,6 +239,11 @@ namespace Aurora {
 		renderer2DQuadShaderProps.AssetPath = "Resources/shaders/Renderer2D_Quad.glsl";
 		s_Data->ShaderLibrary->Load(renderer2DQuadShaderProps);
 
+		ShaderProperties renderer2DTextShaderProps = {};
+		renderer2DTextShaderProps.Name = "Renderer2DText";
+		renderer2DTextShaderProps.AssetPath = "Resources/shaders/Renderer2D_Text.glsl";
+		s_Data->ShaderLibrary->Load(renderer2DTextShaderProps);
+
 		ShaderProperties sceneCompositeProps = {};
 		sceneCompositeProps.Name = "SceneComposite";
 		sceneCompositeProps.AssetPath = "Resources/shaders/SceneComposite.glsl";

@@ -3,7 +3,7 @@
 
 layout(location = 0) in vec3 a_Position; // Already in world space
 layout(location = 1) in vec4 a_Color;
-layout(location = 2) in vec2 a_TexCoords;
+layout(location = 2) in vec2 a_TexCoord;
 layout(location = 3) in float a_TexIndex;
 layout(location = 4) in float a_TilingFactor;
 
@@ -15,7 +15,7 @@ layout(std140, binding = 3) uniform Camera
 struct VertexOutput
 {
 	vec4 Color;
-	vec2 TexCoords;
+	vec2 TexCoord;
 	float TilingFactor;
 };
 
@@ -27,7 +27,7 @@ invariant gl_Position;
 void main()
 {
 	Output.Color = a_Color;
-	Output.TexCoords = a_TexCoords;
+	Output.TexCoord = a_TexCoord;
 	TexIndex = a_TexIndex;
 	Output.TilingFactor = a_TilingFactor;
 
@@ -44,7 +44,7 @@ layout(location = 0) out vec4 o_Color;
 struct VertexOutput
 {
 	vec4 Color;
-	vec2 TexCoords;
+	vec2 TexCoord;
 	float TilingFactor;
 };
 
@@ -55,7 +55,7 @@ layout(binding = 0) uniform sampler2D u_Textures[16]; // Consecutive textures wi
 
 void main()
 {
-	o_Color = texture(u_Textures[int(TexIndex)], Input.TexCoords * Input.TilingFactor) * Input.Color;
+	o_Color = texture(u_Textures[int(TexIndex)], Input.TexCoord * Input.TilingFactor) * Input.Color;
 
 	// Discard to avoid depth write
 	if(o_Color.a == 0.0f)

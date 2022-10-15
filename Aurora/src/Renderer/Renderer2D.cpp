@@ -3,6 +3,7 @@
 
 #include "Renderer.h"
 #include "Core/Application.h"
+#include "Graphics/MSDFData.h"
 #include "Graphics/UniformBuffer.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -10,6 +11,9 @@
 
 #include <ImGui/imgui.h>
 #include <glad/glad.h>
+
+// TODO: May be temporary untill i find a better way to convert to utf32
+#include <codecvt>
 
 /*
  * NOTE: Setting up the Vertex Attributes are unrolled on purpose!
@@ -19,6 +23,28 @@
 #define RENDERER2D_DEBUG 0
 
 namespace Aurora {
+
+	namespace Utils {
+
+		static std::u32string To_UTF32(const std::string& s)
+		{
+			std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+
+			return conv.from_bytes(s);
+		}
+
+		static bool NextLine(int index, const std::vector<int>& lines)
+		{
+			for (int line : lines)
+			{
+				if (line == index)
+					return true;
+			}
+
+			return false;
+		}
+
+	}
 
 	Ref<Renderer2D> Renderer2D::Create(const Renderer2DSpecification& spec)
 	{
@@ -137,6 +163,26 @@ namespace Aurora {
 			m_CircleMaterial = Material::Create("Renderer2D_Circle", Renderer::GetShaderLibrary()->Get("Renderer2DCircle"));
 		}
 
+		// Text...
+		{
+			m_TextVertexArray = VertexArray::Create();
+
+			m_TextVertexBuffer = VertexBuffer::Create(MaxQuadVertices * sizeof(TextVertex));
+			m_TextVertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float4, "a_Color"    },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+				{ ShaderDataType::Float, "a_TexIndex"  }
+			});
+			m_TextVertexArray->AddVertexBuffer(m_TextVertexBuffer);
+			m_TextVertexArray->SetIndexBuffer(quadIndexBuffer);
+
+			m_TextVertexBufferBase = new TextVertex[MaxQuadVertices];
+
+			m_TextMaterial = Material::Create("Renderer2D_Text", Renderer::GetShaderLibrary()->Get("Renderer2DText"));
+			m_TextMaterial->SetFlag(MaterialFlag::TwoSided, true);
+		}
+
 		m_WhiteTexture = Renderer::GetWhiteTexture();
 
 		// Set first texture slot to the white texture
@@ -164,6 +210,8 @@ namespace Aurora {
 		delete[] m_LineVertexBufferBase;
 
 		delete[] m_CircleVertexBufferBase;
+
+		delete[] m_TextVertexBufferBase;
 	}
 
 	void Renderer2D::SetTargetRenderPass(Ref<RenderPass> renderPass)
@@ -201,7 +249,11 @@ namespace Aurora {
 		m_CircleIndexCount = 0;
 		m_CircleVertexBufferPtr = m_CircleVertexBufferBase;
 
+		m_TextIndexCount = 0;
+		m_TextVertexBufferPtr = m_TextVertexBufferBase;
+
 		m_TextureSlotIndex = 1;
+		m_FontTextureSlotIndex = 0;
 	}
 
 	void Renderer2D::FlushAndReset()
@@ -217,7 +269,11 @@ namespace Aurora {
 		m_CircleIndexCount = 0;
 		m_CircleVertexBufferPtr = m_CircleVertexBufferBase;
 
+		m_TextIndexCount = 0;
+		m_TextVertexBufferPtr = m_TextVertexBufferBase;
+
 		m_TextureSlotIndex = 1;
+		m_FontTextureSlotIndex = 0;
 	}
 
 	void Renderer2D::EndScene()
@@ -235,17 +291,14 @@ namespace Aurora {
 
 		// Quads...
 		AR_CORE_ASSERT(m_QuadVertexBufferPtr >= m_QuadVertexBufferBase);
-		uint32_t quadDataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
-		if (quadDataSize)
+		uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
+		if (dataSize)
 		{
-			m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, quadDataSize);
+			m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, dataSize);
 
 			// TODO: Bind textures for now. This SHOULD/WILL change to be handled by the material when it supports texture arrays
 			for (uint32_t i = 0; i < m_TextureSlotIndex; i++)
 				m_TextureSlots[i]->Bind(i);
-
-			m_QuadMaterial->SetUpForRendering();
-			m_QuadVertexArray->Bind();
 
 			if (!m_DepthTest)
 				glDisable(GL_DEPTH_TEST);
@@ -258,12 +311,28 @@ namespace Aurora {
 			m_Stats.DrawCalls++;
 		}
 
+		// Text...
+		AR_CORE_ASSERT(m_TextVertexBufferPtr >= m_TextVertexBufferBase);
+		dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase);
+		if(dataSize)
+		{
+			m_TextVertexBuffer->SetData(m_TextVertexBufferBase, dataSize);
+
+			// TODO: Bind textures for now. This SHOULD/WILL change to be handled by the material when it supports texture arrays
+			for (uint32_t i = 0; i < m_FontTextureSlotIndex; i++)
+				m_FontTextureSlots[i]->Bind(i);
+
+			Renderer::RenderGeometry(nullptr, nullptr, m_TextMaterial, m_TextVertexArray, m_TextIndexCount);
+
+			m_Stats.DrawCalls++;
+		}
+
 		// Lines...
 		AR_CORE_ASSERT(m_LineVertexBufferPtr >= m_LineVertexBufferBase);
-		uint32_t lineDataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase);
-		if (lineDataSize)
+		dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase);
+		if (dataSize)
 		{
-			m_LineVertexBuffer->SetData(m_LineVertexBufferBase, lineDataSize);
+			m_LineVertexBuffer->SetData(m_LineVertexBufferBase, dataSize);
 
 			glLineWidth(m_LineWidth);
 
@@ -282,10 +351,10 @@ namespace Aurora {
 
 		// Circles...
 		AR_CORE_ASSERT(m_CircleVertexBufferPtr >= m_CircleVertexBufferBase);
-		uint32_t circleDataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase);
-		if (circleDataSize)
+		dataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase);
+		if (dataSize)
 		{
-			m_CircleVertexBuffer->SetData(m_CircleVertexBufferBase, circleDataSize);
+			m_CircleVertexBuffer->SetData(m_CircleVertexBufferBase, dataSize);
 
 			Renderer::RenderGeometry(nullptr, nullptr, m_CircleMaterial, m_CircleVertexArray, m_CircleIndexCount);
 
@@ -370,6 +439,9 @@ namespace Aurora {
 		// If the case happens that it has never been used before, here we just add that index to the array so that it can be used later.
 		if (textureIndex == 0.0f)
 		{
+			if (m_TextureSlotIndex >= MaxQuadTextureSlots)
+				FlushAndReset();
+
 			textureIndex = (float)m_TextureSlotIndex;
 			m_TextureSlots[m_TextureSlotIndex] = texture;
 			m_TextureSlotIndex++;
@@ -481,6 +553,9 @@ namespace Aurora {
 		// If the case happens that it has never been used before, here we just add that index to the array so that it can be used later.
 		if (textureIndex == 0.0f)
 		{
+			if (m_TextureSlotIndex >= MaxQuadTextureSlots)
+				FlushAndReset();
+
 			textureIndex = (float)m_TextureSlotIndex;
 			m_TextureSlots[m_TextureSlotIndex] = texture;
 			m_TextureSlotIndex++;
@@ -714,6 +789,203 @@ namespace Aurora {
 
 		for (uint32_t i = 0; i < 4; i++)
 			DrawLine(corners[i], corners[i + 4], color);
+	}
+
+	void Renderer2D::DrawString(const std::string& string, const glm::vec3& position, float maxWidth, const glm::vec4& color)
+	{
+		DrawString(string, Font::GetDefaultFont(), position, maxWidth, color);
+	}
+
+	void Renderer2D::DrawString(const std::string& string, const Ref<Font>& font, const glm::vec3& position, float maxWidth, const glm::vec4& color)
+	{
+		DrawString(string, font, glm::translate(glm::mat4(1.0f), position), maxWidth, color);
+	}
+
+	void Renderer2D::DrawString(const std::string& string, const Ref<Font>& font, const glm::mat4& transform, float maxWidth, const glm::vec4& color, float lineHeightOffset, float kerningOffset)
+	{
+		if (string.empty())
+			return;
+
+		if (m_TextIndexCount >= MaxQuadIndices)
+			FlushAndReset();
+
+		std::u32string utf32String = Utils::To_UTF32(string);
+
+		Ref<Texture2D> fontAtlas = font->GetFontAtlas();
+		AR_CORE_ASSERT(fontAtlas);
+
+		// textureIndex is the index that will be submitted in the VBO with everything and then passed on to the fragment shader so 
+		// that the shader knows which index from the sampler to sample from.
+		
+		// So here we need to find the texture index of the passed index and check if it has already been used.
+		// If it the case where it has been used before, the index will be already found in the array and we just return the index
+		float textureIndex = 0.0f;
+		for (uint32_t i = 0; i < m_FontTextureSlots.size(); i++)
+		{
+			if (m_FontTextureSlots[i] == fontAtlas)
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		// m_FontTextureSlotIndex is the next available index in the sampler
+		// If the case happens that it has never been used before, here we just add that index to the array so that it can be used later.
+		if (textureIndex == 0.0f)
+		{
+			if (m_FontTextureSlotIndex >= MaxQuadTextureSlots)
+				FlushAndReset();
+
+			textureIndex = (float)m_FontTextureSlotIndex;
+			m_FontTextureSlots[m_FontTextureSlotIndex] = fontAtlas;
+			m_FontTextureSlotIndex++;
+		}
+
+		const msdf_atlas::FontGeometry& fontGeometry = font->GetMSDFData()->FontGeometry;
+		const msdfgen::FontMetrics& metrics = fontGeometry.getMetrics();
+
+		std::vector<int> nextLines;
+		{
+			double x = 0.0;
+			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+			double y = -fsScale * metrics.ascenderY;
+			int lastSpace = -1;
+			for (int i = 0; i < utf32String.size(); i++)
+			{
+				char32_t character = utf32String[i];
+				if (character == '\n')
+				{
+					x = 0;
+					y -= fsScale * metrics.lineHeight + lineHeightOffset;
+					continue;
+				}
+
+				const msdf_atlas::GlyphGeometry* glyph = fontGeometry.getGlyph(character);
+				if (!glyph)
+					glyph = fontGeometry.getGlyph('?');
+				if (!glyph)
+					continue;
+
+				if (character != ' ')
+				{
+					// Calc geo
+					double pl;
+					double pb;
+					double pr;
+					double pt;
+
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+					glm::vec2 quadMin = glm::vec2((float)pl, (float)pb);
+					glm::vec2 quadMax = glm::vec2((float)pr, (float)pt);
+
+					quadMin *= fsScale;
+					quadMax *= fsScale;
+					quadMin += glm::vec2(x, y);
+					quadMax += glm::vec2(x, y);
+
+					if (quadMax.x > maxWidth && lastSpace != -1)
+					{
+						i = lastSpace;
+						nextLines.emplace_back(lastSpace);
+						lastSpace = -1;
+						x = 0;
+						y -= fsScale * metrics.lineHeight + lineHeightOffset;
+					}
+				}
+				else
+				{
+					lastSpace = i;
+				}
+
+				double advance = glyph->getAdvance();
+				fontGeometry.getAdvance(advance, character, utf32String[i + 1]);
+				x += fsScale * advance + kerningOffset;
+			}
+		}
+
+		{
+			double x = 0.0;
+			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+			double y = 0.0; // -fsScale * metrics.ascenderY;
+			for (int i = 0; i < utf32String.size(); i++)
+			{
+				char32_t character = utf32String[i];
+				if (character == '\n' || Utils::NextLine(i, nextLines))
+				{
+					x = 0;
+					y -= fsScale * metrics.lineHeight + lineHeightOffset;
+					continue;
+				}
+
+				const msdf_atlas::GlyphGeometry* glyph = fontGeometry.getGlyph(character);
+				if (!glyph)
+					glyph = fontGeometry.getGlyph('?');
+				if (!glyph)
+					continue;
+
+				double l;
+				double b;
+				double r;
+				double t;
+				glyph->getQuadAtlasBounds(l, b, r, t);
+				
+				double pl;
+				double pb;
+				double pr;
+				double pt;
+				glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+				pl *= fsScale;
+				pb *= fsScale;
+				pr *= fsScale;
+				pt *= fsScale;
+
+				pl += x;
+				pb += y;
+				pr += x;
+				pt += y;
+
+				double texelWidth = 1.0 / fontAtlas->GetWidth();
+				double texelHeight = 1.0 / fontAtlas->GetHeight();
+
+				l *= texelWidth;
+				b *= texelHeight;
+				r *= texelWidth;
+				t *= texelHeight;
+
+				m_TextVertexBufferPtr->Position = transform * glm::vec4(pl, pb, 0.0f, 1.0f);;
+				m_TextVertexBufferPtr->Color = color;
+				m_TextVertexBufferPtr->TexCoord = { l, b };
+				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				m_TextVertexBufferPtr++;
+
+				m_TextVertexBufferPtr->Position = transform * glm::vec4(pl, pt, 0.0f, 1.0f);;
+				m_TextVertexBufferPtr->Color = color;
+				m_TextVertexBufferPtr->TexCoord = { l, t };
+				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				m_TextVertexBufferPtr++;
+
+				m_TextVertexBufferPtr->Position = transform * glm::vec4(pr, pt, 0.0f, 1.0f);;
+				m_TextVertexBufferPtr->Color = color;
+				m_TextVertexBufferPtr->TexCoord = { r, t };
+				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				m_TextVertexBufferPtr++;
+
+				m_TextVertexBufferPtr->Position = transform * glm::vec4(pr, pb, 0.0f, 1.0f);;
+				m_TextVertexBufferPtr->Color = color;
+				m_TextVertexBufferPtr->TexCoord = { r, b };
+				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				m_TextVertexBufferPtr++;
+
+				m_TextIndexCount += 6;
+
+				double advance = glyph->getAdvance();
+				fontGeometry.getAdvance(advance, character, utf32String[i + 1]);
+				x += fsScale * advance + kerningOffset;
+
+				m_Stats.QuadCount++;
+			}
+		}
 	}
 
 	void Renderer2D::SetLineWidth(float lineWidth)

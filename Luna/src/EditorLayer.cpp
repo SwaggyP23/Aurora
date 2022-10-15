@@ -748,7 +748,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowSceneHierarchyPanel()
 	{
-		FontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
+		ImGuiFontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Scene Hierarchy", (bool*)0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
 
@@ -1110,7 +1110,7 @@ namespace Aurora {
 
 	void EditorLayer::DrawComponents(Entity entity)
 	{
-		FontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
+		ImGuiFontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
 		std::string& tag = entity.GetComponent<TagComponent>().Tag;
 
 		// Size of buffer is 128 because there should not be an entity called more than 128 letters like BRUH
@@ -1177,7 +1177,7 @@ namespace Aurora {
 
 			ImGui::Columns(2);
 
-			ImGui::SetColumnWidth(0, 100.0f);
+			ImGui::SetColumnWidth(0, 150.0f);
 			ImGui::Text("Primary");
 
 			ImGui::NextColumn();
@@ -1214,7 +1214,6 @@ namespace Aurora {
 			ImGui::PopItemWidth();
 
 			ImGui::NextColumn();
-			ImGui::Separator();
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
@@ -1231,7 +1230,6 @@ namespace Aurora {
 				ImGui::PopItemWidth();
 
 				ImGui::NextColumn();
-				ImGui::Separator();
 
 				ImGui::Text("Near");
 				ImGui::NextColumn();
@@ -1243,7 +1241,6 @@ namespace Aurora {
 				ImGui::PopItemWidth();
 
 				ImGui::NextColumn();
-				ImGui::Separator();
 
 				ImGui::Text("Far");
 				ImGui::NextColumn();
@@ -1272,7 +1269,6 @@ namespace Aurora {
 				ImGui::PopItemWidth();
 
 				ImGui::NextColumn();
-				ImGui::Separator();
 
 				ImGui::Text("Near");
 				ImGui::NextColumn();
@@ -1284,7 +1280,6 @@ namespace Aurora {
 				ImGui::PopItemWidth();
 
 				ImGui::NextColumn();
-				ImGui::Separator();
 
 				ImGui::Text("Far");
 				ImGui::NextColumn();
@@ -1318,8 +1313,6 @@ namespace Aurora {
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
 			ImGuiUtils::ColorEdit4Control("Color", component.Color);
-
-			ImGui::Separator();
 		},
 		[](SpriteRendererComponent& component) // Reset Function
 		{
@@ -1334,7 +1327,7 @@ namespace Aurora {
 			ImGui::Separator();
 
 			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 100.0f);
+			ImGui::SetColumnWidth(0, 150.0f);
 
 			ImGui::Text("Thickness:");
 
@@ -1456,7 +1449,6 @@ namespace Aurora {
 		},
 		[](StaticMeshComponent& component)
 		{
-
 		});
 
 		DrawComponent<DirectionalLightComponent>("DirectionalLight", entity, [](DirectionalLightComponent& component)
@@ -1464,13 +1456,17 @@ namespace Aurora {
 			ImGuiUtils::ColorEdit3Control("Radiance", component.Radiance);
 
 			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 100.0f);
+			ImGui::SetColumnWidth(0, 150.0f);
+
+			ImGui::Separator();
 
 			ImGui::Text("Intensity:");
 
 			ImGui::NextColumn();
 
+			ImGui::PushItemWidth(-1);
 			ImGui::DragFloat("##intensitywv", &component.Intensity, 0.01f, 0.0f, 10.0f);
+			ImGui::PopItemWidth();
 
 			ImGui::Columns(1);
 		},
@@ -1848,7 +1844,7 @@ namespace Aurora {
 
 	void EditorLayer::ShowFontPickerUI()
 	{
-		FontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
+		ImGuiFontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
 
 		std::vector<std::tuple<std::string, std::string, FontIdentifier>> sortedFontNames;
 		sortedFontNames.reserve(fontsLib.GetFontNamesAndIdentifier().size());

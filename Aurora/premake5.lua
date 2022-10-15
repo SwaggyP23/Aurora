@@ -40,6 +40,8 @@ project "Aurora"
         "%{IncludeDir.glm}",
         "%{IncludeDir.VulkanSDK}",
         "%{IncludeDir.stb}",
+        "%{IncludeDir.msdfAtlasGen}",
+        "%{IncludeDir.msdfGen}",
         "%{IncludeDir.Entt}",
         "%{IncludeDir.Yaml}",
         "%{IncludeDir.choc}",
@@ -54,6 +56,7 @@ project "Aurora"
         "Glad",
         "ImGui",
         "Optick",
+        "msdf-atlas-gen",
         "opengl32.lib",
         "%{Library.Vulkan}",
         "%{Library.VulkanUtils}"

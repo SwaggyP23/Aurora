@@ -35,6 +35,12 @@ namespace Aurora {
 			return *(T*)(Data + offset);
 		}
 
+		template<typename T>
+		T* As() const
+		{
+			return (T*)Data;
+		}
+
 		operator bool() const { return Data; }
 
 		[[nodiscard]] Byte& operator[](int index) { return ((Byte*)Data)[index]; }

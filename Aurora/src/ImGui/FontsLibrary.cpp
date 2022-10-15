@@ -5,7 +5,7 @@
 
 namespace Aurora {
 
-	void FontsLibrary::SetDefaultFont(const std::string& fontName, FontIdentifier type)
+	void ImGuiFontsLibrary::SetDefaultFont(const std::string& fontName, FontIdentifier type)
 	{
 #if AURORA_DEBUG
 		std::string FontType;
@@ -27,7 +27,7 @@ namespace Aurora {
 		io.FontDefault = io.Fonts->Fonts[m_FontIndices[{ fontName, type }]];
 	}
 
-	void FontsLibrary::PushTemporaryFont(const std::string& fontName, FontIdentifier type)
+	void ImGuiFontsLibrary::PushTemporaryFont(const std::string& fontName, FontIdentifier type)
 	{
 #if AURORA_DEBUG
 		std::string FontType;
@@ -55,7 +55,7 @@ namespace Aurora {
 		}
 	}
 
-	void FontsLibrary::PopTemporaryFont()
+	void ImGuiFontsLibrary::PopTemporaryFont()
 	{
 		AR_CORE_ASSERT(m_PushedTemporaryFont, "No temporary font has been pushed, so this function is called in the wrong place or should not be called!")
 
@@ -63,7 +63,7 @@ namespace Aurora {
 		m_PushedTemporaryFont = false;
 	}
 
-	void FontsLibrary::AddFont(const std::string& fontName, FontIdentifier type, float fontSize)
+	void ImGuiFontsLibrary::AddFont(const std::string& fontName, FontIdentifier type, float fontSize)
 	{
 #if AURORA_DEBUG
 		std::string FontType;
@@ -92,7 +92,7 @@ namespace Aurora {
 		}
 	}
 
-	void FontsLibrary::LoadFont(const std::string& fontName, const std::string& directory)
+	void ImGuiFontsLibrary::LoadFont(const std::string& fontName, const std::string& directory)
 	{
 		AR_CORE_ASSERT(m_Directories.find(fontName) == m_Directories.end(), "Font already added!");
 
@@ -178,7 +178,7 @@ namespace Aurora {
 		m_LightHandled = false;
 	}
 
-	FontTypes FontsLibrary::GetFont(const std::string& fontName)
+	FontTypes ImGuiFontsLibrary::GetFont(const std::string& fontName)
 	{
 		FontTypes res;
 		

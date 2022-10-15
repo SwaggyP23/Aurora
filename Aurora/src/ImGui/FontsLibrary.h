@@ -43,10 +43,10 @@ namespace Aurora {
 		None = 0, Bold, Italic, Regular, Medium, Light
 	};
 
-	class FontsLibrary
+	class ImGuiFontsLibrary
 	{
 	public:
-		FontsLibrary() = default;
+		ImGuiFontsLibrary() = default;
 
 		void SetDefaultFont(const std::string& fontName, FontIdentifier type = FontIdentifier::Regular);
 		void PushTemporaryFont(const std::string& fontName, FontIdentifier type);

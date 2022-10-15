@@ -26,6 +26,8 @@ group "Dependencies"
     include "Aurora/dependencies/ImGui/imgui"
     include "Aurora/dependencies/optick"
     include "Tools/BuildSystem"
+    group "Dependencies/msdf"
+        include "Aurora/dependencies/msdf-atlas-gen"
 group ""
 
 group "Core"

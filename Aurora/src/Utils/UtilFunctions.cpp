@@ -71,6 +71,29 @@ namespace Aurora {
 
 #endif
 
+		Buffer FileIO::ReadBytes(const std::filesystem::path& filePath)
+		{
+			Buffer buffer;
+
+			std::ifstream stream(filePath, std::ios::binary | std::ios::ate); // Goes directly to end
+
+			if (stream.is_open())
+			{
+				uint64_t end = stream.tellg();
+				stream.seekg(0, std::ios::beg);
+				uint64_t size = end - stream.tellg();
+				AR_CORE_ASSERT(size != 0);
+
+				buffer.Allocate((size_t)size);
+				stream.read((char*)buffer.Data, buffer.Size);
+				stream.close();
+
+				return buffer;
+			}
+
+			return {};
+		}
+
 		std::string FileIO::ReadTextFile(const std::filesystem::path& filePath)
 		{
 			std::string result;

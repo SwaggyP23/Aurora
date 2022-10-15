@@ -26,7 +26,7 @@ namespace Aurora {
 		void LoadAndAddFonts();
 
 	private:
-		FontsLibrary m_FontsLibrary;
+		ImGuiFontsLibrary m_FontsLibrary;
 
 		friend class EditorLayer; // The editor is build on ImGui so makes sense to be related to the ImGui layer
 

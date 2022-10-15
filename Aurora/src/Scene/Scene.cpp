@@ -4,6 +4,7 @@
 
 #include "Components.h"
 #include "ScriptableEntity.h"
+#include "Graphics/Font.h"
 #include "Renderer/Renderer.h"
 #include "Editor/EditorResources.h"
 
@@ -222,6 +223,20 @@ namespace Aurora {
 			renderer2D->DrawCircle({ 0.0f, 0.0f, 0.0f }, glm::vec3(0.0f), 5.0f, { 1.0f, 0.0f, 1.0f, 1.0f });
 			renderer2D->FillCircle({ 0.0f, 0.0f, 10.0f }, 10.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, 1.0f);
 
+			std::string text = "Hello my name is Reda, nicknamed SwaggyP!";
+			renderer2D->DrawString(text, glm::vec3(0.0f, 0.0f, -5.0f), 10.0f, glm::vec4(1.0f, 1.0f, 1.0f, 0.7f));
+
+			// Render text...
+			auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
+			for (auto entity : textGroup)
+			{
+				auto [transform, text] = textGroup.get<TransformComponent, TextComponent>(entity);
+
+				Entity e = Entity{ entity, this };
+				Ref<Font> font = Font::GetFontAssetForTextComponent(text);
+				renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning);
+			}
+
 			renderer2D->EndScene();
 		}
 	}
@@ -330,6 +345,17 @@ namespace Aurora {
 
 			renderer2D->DrawCircle({ 0.0f, 0.0f, 0.0f }, glm::vec3(0.0f), 5.0f, { 1.0f, 0.0f, 1.0f, 1.0f });
 			renderer2D->FillCircle({ 0.0f, 0.0f, 10.0f }, 10.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, 1.0f);
+
+			// Render text...
+			auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
+			for (auto entity : textGroup)
+			{
+				auto [transform, text] = textGroup.get<TransformComponent, TextComponent>(entity);
+
+				Entity e = Entity{ entity, this };
+				Ref<Font> font = Font::GetFontAssetForTextComponent(text);
+				renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning);
+			}
 
 			renderer2D->EndScene();
 		}

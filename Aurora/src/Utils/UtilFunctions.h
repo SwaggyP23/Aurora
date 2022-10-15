@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Base.h"
+#include "Core/Buffer.h"
 
 #include <string>
 #include <fstream>
@@ -23,7 +24,8 @@ namespace Aurora::Utils {
 	class FileIO
 	{
 	public:
-		[[nodiscard]] static std::string ReadTextFile(const std::filesystem::path& filePath);
+		static Buffer ReadBytes(const std::filesystem::path& filePath);
+		static std::string ReadTextFile(const std::filesystem::path& filePath);
 		static void WriteToFile(const std::filesystem::path& filePath, const void* buffer, size_t typeSize, size_t size);
 
 	};

@@ -2,6 +2,7 @@
 #include "Application.h"
 
 #include "Input/Input.h"
+#include "Graphics/Font.h"
 #include "Renderer/Renderer.h"
 #include "Utils/UtilFunctions.h"
 
@@ -50,6 +51,8 @@ namespace Aurora {
 			PushOverlay(m_ImGuiLayer);
 		}
 
+		Font::Init();
+
 		AR_PROFILE_END_SESSION("ApplicationStartup");
 	}
 
@@ -65,6 +68,8 @@ namespace Aurora {
 			layer->OnDetach();
 			delete layer;
 		}
+
+		Font::Shutdown();
 
 		Renderer::ShutDown();
 
