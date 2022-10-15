@@ -154,7 +154,7 @@ namespace Aurora {
 
 		m_TargetRenderPass = nullptr;
 
-		m_CamUniformBuffer = UniformBuffer::Create(sizeof(UBCamera), 2);
+		m_CamUniformBuffer = UniformBuffer::Create(sizeof(UBCamera), 3);
 	}
 
 	void Renderer2D::ShutDown()

@@ -70,18 +70,18 @@ float GaSchlickGGX_IBL(float cosLi, float cosLo, float roughness)
 }
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
 void main()
 {
 	// Get integration parameters.
-	ivec2 image_size = imageSize(u_Lut);
-	float cosLo = gl_GlobalInvocationID.x / float(image_size.x);
-	float roughness = gl_GlobalInvocationID.y / float(image_size.y);
+	float cosLo = gl_GlobalInvocationID.x / float(imageSize(u_Lut).x);
+	float roughness = gl_GlobalInvocationID.y / float(imageSize(u_Lut).y);
 
 	// Make sure viewing angle is non-zero to avoid divisions by zero (and subsequently NaNs).
 	cosLo = max(cosLo, Epsilon);
 
 	// Derive tangent-space viewing vector from angle to normal (pointing towards +Z in this reference frame).
-	vec3 Lo = vec3(sqrt(1.0f - cosLo*cosLo), 0.0f, cosLo);
+	vec3 Lo = vec3(sqrt(1.0f - cosLo * cosLo), 0.0f, cosLo);
 
 	// We will now pre-integrate Cook-Torrance BRDF for a solid white environment and save results into a 2D LUT.
 	// DFG1 & DFG2 are terms of split-sum approximation of the reflectance integral.
@@ -114,5 +114,5 @@ void main()
 		}
 	}
 
-	imageStore(u_Lut, ivec2(gl_GlobalInvocationID), vec4(DFG1, DFG2, 0, 0) * InvNumSamples);
+	imageStore(u_Lut, ivec2(gl_GlobalInvocationID), vec4(DFG1, DFG2, 0.0f, 0.0f) * InvNumSamples);
 }

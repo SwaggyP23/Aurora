@@ -30,6 +30,9 @@ namespace Aurora {
 
 		static RendererConfig& GetConfig();
 
+		// TODO: TEMPORARY
+		static void RenderCube(const glm::mat4& transform, Ref<Material> material);
+
 		[[nodiscard]] static const RendererProperties& GetRendererCapabilities();
 		[[nodiscard]] static const Scope<ShaderLibrary>& GetShaderLibrary();
 

@@ -64,14 +64,14 @@ namespace Aurora {
 			other.m_Ptr = nullptr;
 		}
 
-		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
+		template<typename T2>
 		Ref(const Ref<T2>& other)
 		{
 			m_Ptr = (T*)other.m_Ptr;
 			IncrementRef();
 		}
 
-		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
+		template<typename T2>
 		Ref(Ref<T2>&& other) noexcept
 		{
 			m_Ptr = (T*)other.m_Ptr;
@@ -109,7 +109,7 @@ namespace Aurora {
 			return *this;
 		}
 
-		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
+		template<typename T2>
 		Ref& operator=(const Ref<T2>& other)
 		{
 			other.IncrementRef();
@@ -119,15 +119,21 @@ namespace Aurora {
 			return *this;
 		}
 
-		template<typename T2, std::enable_if_t<std::_SP_pointer_compatible<T2, T>::value, int> = 0>
+		template<typename T2>
 		Ref& operator=(Ref<T2>&& other) noexcept
 		{
 			DecrementRef();
 
-			m_Ptr = (T*)other.m_Ptr;
+			m_Ptr = other.m_Ptr;
 			other.m_Ptr = nullptr;
 
 			return *this;
+		}
+
+		template<typename T2>
+		Ref<T2> As() const
+		{
+			return Ref<T2>(*this);
 		}
 
 		void Reset(T* ptr = nullptr)
@@ -257,6 +263,9 @@ namespace Aurora {
 
 	private:
 		T* m_Ptr = nullptr;
+
+		template<typename T2>
+		friend class ScopedPointer;
 
 	};
 

@@ -50,8 +50,8 @@ namespace Aurora {
 		void SetVSync(bool state);
 		[[nodiscard]] inline bool IsVSync() const { return m_Specification.VSync; }
 
-		void PollEvents() const;
-		void Update() const;
+		void ProcessEvents() const;
+		void SwapBuffers() const;
 
 		[[nodiscard]] inline uint32_t GetWidth() const { return m_Data.Width; }
 		[[nodiscard]] inline uint32_t GetHeight() const { return m_Data.Height; }

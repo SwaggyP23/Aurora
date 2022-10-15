@@ -62,8 +62,8 @@ vec3 GetCubeMapTexCoord(vec2 outputImageSize)
 
     vec3 ret;
 
-    if (gl_GlobalInvocationID.z == 0u)      ret = vec3(  1.0f, uv.y,  -uv.x);
-    else if (gl_GlobalInvocationID.z == 1u) ret = vec3( -1.0f, uv.y,   uv.x);
+    if (gl_GlobalInvocationID.z == 0u)      ret = vec3(  1.0f,  uv.y,  -uv.x);
+    else if (gl_GlobalInvocationID.z == 1u) ret = vec3( -1.0f,  uv.y,   uv.x);
     else if (gl_GlobalInvocationID.z == 2u) ret = vec3(  uv.x,  1.0f,  -uv.y);
     else if (gl_GlobalInvocationID.z == 3u) ret = vec3(  uv.x, -1.0f,   uv.y);
     else if (gl_GlobalInvocationID.z == 4u) ret = vec3(  uv.x,  uv.y,   1.0f);
@@ -110,7 +110,7 @@ void main()
 	for(uint i = 0; i < Samples; i++)
 	{
 		vec2 u = SampleHammersley(i, Samples);
-		vec3 Li = TangentToWorld(SampleHemisphere(u.y, u.y), N, S, T);
+		vec3 Li = TangentToWorld(SampleHemisphere(u.x, u.y), N, S, T);
 		float cosTheta = max(0.0f, dot(Li, N));
 
 		// PIs here cancel out because of division by pdf.

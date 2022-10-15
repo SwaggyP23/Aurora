@@ -11,6 +11,8 @@
 
 #include "ImGui/ImGuiLayer.h"
 
+#include <queue>
+
 namespace Aurora {
 
 	struct ApplicationSpecification
@@ -51,6 +53,10 @@ namespace Aurora {
 
 	class Application
 	{
+	private:
+		using EventQueueFuntion = void(*)();
+		using EventCallbackFunction = void(*)(Event&);
+
 	public:
 		Application(const ApplicationSpecification& specification);
 		virtual ~Application();
@@ -64,11 +70,36 @@ namespace Aurora {
 		virtual void OnShutdown();
 		virtual void OnEvent(Event& e);
 
+		void ProcessEvents();
+
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 		void PopLayer(Layer* layer);
 		void PopOverlay(Layer* layer);
-		void ProcessEvents();
+
+		void AddEventCallbackFuntion(const EventCallbackFunction& eventCallback) { m_EventCallbacks.push_back(eventCallback); }
+
+		void QueueEvent(EventQueueFuntion&& func)
+		{
+			m_EventQueue.push(func);
+		}
+
+		template<typename TEvent, bool dispatchImmediatly = true, typename... TArgs>
+		void DispatchEvent(TArgs&&... args)
+		{
+			static_assert(std::is_assignable_v<Event, TEvent>);
+
+			std::shared_ptr<TEvent> event = std::make_shared<TEvent>(std::forward<TArgs>(args)...);
+			if constexpr (dispatchImmediatly)
+			{
+				OnEvent(*event);
+			}
+			else
+			{
+				std::scoped_lock<std::mutex> lock(m_EventQueueMutex);
+				m_EventQueue.push([event]() { Application::GetApp().OnEvent(*event); });
+			}
+		}
 
 		[[nodiscard]] inline float GetCPUTime() const { return m_CPUTime; }
 		[[nodiscard]] inline float GetFrameTime() const { return m_FrameTime; }
@@ -102,7 +133,11 @@ namespace Aurora {
 		float m_CPUTime = 0.0f;
 		float m_TickDelta = 1.0f;
 		TimeStep m_Timestep;
-		PerformanceProfiler* m_Profiler = nullptr; // TODO: Should be null in Dist
+		PerformanceProfiler* m_Profiler = nullptr;
+
+		std::mutex m_EventQueueMutex;
+		std::queue<EventQueueFuntion> m_EventQueue;
+		std::vector<EventCallbackFunction> m_EventCallbacks; // This adds support for the user to set event callbacks for each an event occurs
 
 		bool m_Running = true;
 		bool m_Minimized = false;

@@ -44,6 +44,53 @@ namespace Aurora {
 		m_FinalCompositeMaterial->SetFlag(MaterialFlag::DepthTest, false); // No depth write
 		m_FinalCompositeMaterial->SetFlag(MaterialFlag::TwoSided, true); // No backface culling
 
+		// TODO: TEMPORARY...
+		class CameraScript : public ScriptableEntity
+		{
+			virtual void OnUpdate(TimeStep ts) override
+			{
+				const auto& [x, y] = Input::GetMousePosition();
+				const glm::vec2& mouse{ x, y };
+				const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.002f;
+
+				auto& translation = GetComponent<TransformComponent>().Translation;
+				float speed = 10.0f;
+
+				if (Input::IsKeyPressed(AR_KEY_LEFT_SHIFT))
+					speed *= 2.0f;
+				else if (Input::IsKeyPressed(AR_KEY_LEFT_CONTROL))
+					speed *= 0.5f;
+
+				if (Input::IsKeyPressed(AR_KEY_W))
+					translation.x += speed * ts;
+				else if (Input::IsKeyPressed(AR_KEY_S))
+					translation.x -= speed * ts;
+				if (Input::IsKeyPressed(AR_KEY_A))
+					translation.z -= speed * ts;
+				else if (Input::IsKeyPressed(AR_KEY_D))
+					translation.z += speed * ts;
+				if (Input::IsKeyPressed(AR_KEY_Q))
+					translation.y += speed * ts;
+				else if (Input::IsKeyPressed(AR_KEY_E))
+					translation.y -= speed * ts;
+
+				if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT))
+				{
+					TransformComponent& transform = GetComponent<TransformComponent>();
+					transform.Rotation.x += -delta.y;
+					transform.Rotation.y += delta.x;
+				}
+
+				m_InitialMousePosition = mouse;
+			}
+
+		private:
+			glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
+		};
+
+		Entity cameraEntity = m_RuntimeScene->GetEntityByName("Camera");
+		cameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraScript>();
+
 		OnScenePlay();
 	}
 
@@ -135,12 +182,12 @@ namespace Aurora {
 
 	void RuntimeLayer::OnScenePlay()
 	{
-		// m_RuntimeScene->OnRuntimStart(); // TODO: When we have physics and scripting...
+		m_RuntimeScene->OnRuntimeStart();
 	}
 
 	void RuntimeLayer::OnSceneStop()
 	{
-		// m_RuntimeScene->OnRuntimeStop(); // TODO: When we have physics and scripting...
+		m_RuntimeScene->OnRuntimeStop();
 	}
 
 	void RuntimeLayer::UpdateWindowTitle(const std::string& sceneName)

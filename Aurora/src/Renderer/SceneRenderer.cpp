@@ -5,6 +5,14 @@
 
 namespace Aurora {
 
+	// TODO: TEMPORARY
+	static glm::vec3 albedoColor = { 1.0f, 1.0f, 1.0f };
+	static float metalness;
+	static float roughness;
+	static float emission;
+	static Ref<Material> s_TestCubeMat = nullptr;
+	static Ref<Texture2D> s_TestTexture = nullptr;
+
 	Ref<SceneRenderer> SceneRenderer::Create(Ref<Scene> scene)
 	{
 		return CreateRef<SceneRenderer>(scene);
@@ -15,17 +23,22 @@ namespace Aurora {
 	{
 		AR_SCOPED_TIMER("SceneRenderer::SceneRenderer");
 
+		s_TestTexture = Texture2D::Create("SandboxProject/Assets/textures/Qiyana2.png");
+		s_TestCubeMat = Material::Create("TestCube", Renderer::GetShaderLibrary()->Get("AuroraPBRStatic"));
+		s_TestCubeMat->SetFlag(MaterialFlag::TwoSided, true);
+
 		// UniformBuffers
 		{
 			m_CameraDataUB = UniformBuffer::Create(sizeof(UBCameraData), 0); // Binding Point 0
 			m_ScreenDataUB = UniformBuffer::Create(sizeof(UBScreenData), 1); // Binding Point 1
+			m_SceneDirLightDataUB = UniformBuffer::Create(sizeof(UBScene), 2); // Binding Point 2
 		}
 
 		// Framebuffers/RenderPasses TODO: When we have HDR, Framebuffers should be FLOATING point framebuffers...
 		{
 			FramebufferSpecification geoFBOSpec = {};
 			geoFBOSpec.DebugName = "GeometryFBO";
-			geoFBOSpec.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::DEPTH32F };
+			geoFBOSpec.AttachmentsSpecification = { ImageFormat::RGBA32F, ImageFormat::RGBA16F, ImageFormat::RGBA, ImageFormat::DEPTH32F };
 			geoFBOSpec.Width = 1280;
 			geoFBOSpec.Height = 720;
 			geoFBOSpec.Samples = 1;
@@ -38,7 +51,7 @@ namespace Aurora {
 
 			FramebufferSpecification compositeFBOSpec = {};
 			compositeFBOSpec.DebugName = "CompositeFBO";
-			compositeFBOSpec.AttachmentsSpecification = { ImageFormat::RGBA };
+			compositeFBOSpec.AttachmentsSpecification = { ImageFormat::RGBA32F, ImageFormat::Depth };
 			compositeFBOSpec.Width = 1280;
 			compositeFBOSpec.Height = 720;
 			compositeFBOSpec.ClearColor = { 0.1f, 0.5f, 0.1f, 1.0f };
@@ -50,7 +63,7 @@ namespace Aurora {
 
 			FramebufferSpecification externalCompositeFBO = {};
 			externalCompositeFBO.DebugName = "ExternalCompositeFBO";
-			externalCompositeFBO.AttachmentsSpecification = { ImageFormat::RGBA, ImageFormat::DEPTH32F };
+			externalCompositeFBO.AttachmentsSpecification = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			externalCompositeFBO.Width = 1280;
 			externalCompositeFBO.Height = 720;
 			externalCompositeFBO.ClearColor = { 0.1f, 0.1f, 0.5f, 1.0f };
@@ -64,13 +77,19 @@ namespace Aurora {
 			m_ExternalCompositeRenderPass = RenderPass::Create(externalCompositingPass);
 		}
 
-		// Set up Skybox material
+		// SceneComposite material
+		{
+			m_SceneCompositeMaterial = Material::Create("SceneCompositeMat", Renderer::GetShaderLibrary()->Get("SceneComposite"));
+			m_SceneCompositeMaterial->SetFlag(MaterialFlag::TwoSided, true);
+		}
+
+		// Skybox material
 		{
 			m_SkyboxMaterial = Material::Create("Skybox", Renderer::GetShaderLibrary()->Get("Skybox"));
 			m_SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, false);
 		}
 
-		// Set up Grid material
+		// Grid material
 		{
 			m_GridShader = Renderer::GetShaderLibrary()->Get("Grid");
 			m_GridMaterial = Material::Create("Grid", m_GridShader);
@@ -108,7 +127,7 @@ namespace Aurora {
 		}
 	}
 
-	void SceneRenderer::BeginScene(const SceneRendererCamera& camera)
+	void SceneRenderer::BeginScene(const SceneRendererCamera& camera, glm::vec3& albedo, glm::vec3& controls)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -116,10 +135,16 @@ namespace Aurora {
 		AR_CORE_ASSERT(!m_Active, "Cant begin scene if rendering is already active");
 		m_Active = true;
 
+		albedoColor = albedo;
+		metalness = controls.x;
+		roughness = controls.y;
+		emission = controls.z;
+
 		m_SceneData.SceneCamera = camera;
 		m_SceneData.SceneEnvironment = m_Scene->m_Environment;
 		m_SceneData.SceneEnvironmentIntensity = m_Scene->m_EnvironmentIntensity;
 		m_SceneData.SkyboxLod = m_Scene->m_EnvironmentLOD;
+		m_SceneData.SceneLightEnvironment = m_Scene->m_LightEnvironment;
 
 		if (m_NeedsResize)
 		{
@@ -139,12 +164,13 @@ namespace Aurora {
 
 		// Update Uniform Buffers...
 		// Camera
+		glm::vec3 cameraPos;
 		{
 			UBCameraData& cameraData = m_CameraData;
 			glm::mat4 viewProj = std::move(m_SceneData.SceneCamera.Camera.GetProjection() * m_SceneData.SceneCamera.ViewMatrix);
 			glm::mat4 viewInverse = std::move(glm::inverse(m_SceneData.SceneCamera.ViewMatrix));
 			glm::mat4 projInverse = std::move(glm::inverse(m_SceneData.SceneCamera.Camera.GetProjection()));
-			glm::vec3 cameraPos = viewInverse[3];
+			cameraPos = viewInverse[3];
 
 			cameraData.ViewProjectionMatrix = std::move(viewProj);
 			cameraData.ProjectionMatrix = m_SceneData.SceneCamera.Camera.GetProjection();
@@ -168,7 +194,22 @@ namespace Aurora {
 			m_ScreenDataUB->SetData(&screenData, sizeof(screenData));
 		}
 
-		Renderer::SetSceneEnvironment(this, m_SceneData.SceneEnvironment);
+		// Scene
+		{
+			UBScene& sceneData = m_SceneDirLightData;
+
+			const DirectionalLight& directionalLight = m_SceneData.SceneLightEnvironment.DirectionalLights[0];
+			sceneData.Lights.Direction = directionalLight.Direction;
+			sceneData.Lights.Radiance = directionalLight.Radiance;
+			sceneData.Lights.Intensity = directionalLight.Intensity;
+
+			sceneData.CameraPosition = cameraPos;
+			sceneData.EnvironmentMapIntensity = m_SceneData.SceneEnvironmentIntensity;
+
+			m_SceneDirLightDataUB->SetData(&sceneData, sizeof(sceneData));
+		}
+
+		//Renderer::SetSceneEnvironment(this, m_SceneData.SceneEnvironment);
 	}
 
 	void SceneRenderer::EndScene()
@@ -196,16 +237,6 @@ namespace Aurora {
 	Ref<Texture2D> SceneRenderer::GetFinalPassImage()
 	{
 		return m_CompositeRenderPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0);
-	}
-
-	Ref<RenderPass> SceneRenderer::GetCompositeRenderPass()
-	{
-		return m_CompositeRenderPass;
-	}
-
-	Ref<RenderPass> SceneRenderer::GetExternalCompositeRenderPass()
-	{
-		return m_ExternalCompositeRenderPass;
 	}
 
 	void SceneRenderer::FlushDrawList()
@@ -241,17 +272,24 @@ namespace Aurora {
 		m_SkyboxMaterial->Set("u_RadianceMap", radianceMap);
 		Renderer::SubmitFullScreenQuad(m_SkyboxMaterial);
 
+		s_TestCubeMat->Set("u_AlbedoTexture", Renderer::GetWhiteTexture());
+		s_TestCubeMat->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { 2.0f, 0.0f, 2.0f }) * glm::scale(glm::mat4(1.0f), { 2.0f, 2.0f, 2.0f });
+		Renderer::RenderCube(transform, s_TestCubeMat);
+
 		// Render Entities...
 		for (auto& dc : m_StaticMeshDrawList)
 		{
-			Renderer::RenderStaticMesh(dc.StaticMesh, dc.MaterialTable ? dc.MaterialTable : dc.StaticMesh->GetMaterials(), dc.Transform);
-		}
-
-		if (GetOptions().ShowGrid)
-		{
-			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f))
-				* glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
-			Renderer::RenderQuad(m_GridMaterial, transform);
+			s_TestCubeMat->Set("u_AlbedoTexture", Renderer::GetWhiteTexture());
+			s_TestCubeMat->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
+			s_TestCubeMat->Set("u_Renderer.Transform", dc.Transform);
+			s_TestCubeMat->Set("u_MaterialUniforms.Metalness", metalness);
+			s_TestCubeMat->Set("u_MaterialUniforms.Roughness", roughness);
+			s_TestCubeMat->Set("u_RoughnessTexture", Renderer::GetWhiteTexture());
+			s_TestCubeMat->Set("u_MetalnessTexture", Renderer::GetWhiteTexture());
+			Renderer::SetSceneEnvironment(this, m_SceneData.SceneEnvironment);
+			Renderer::RenderGeometry(nullptr, nullptr, s_TestCubeMat, dc.StaticMesh->GetMeshSource()->GetVertexArray());
+			//Renderer::RenderStaticMesh(dc.StaticMesh, dc.MaterialTable ? dc.MaterialTable : dc.StaticMesh->GetMaterials(), dc.Transform);
 		}
 
 		Renderer::EndRenderPass(m_GeometryRenderPass);
@@ -275,6 +313,17 @@ namespace Aurora {
 				dst->GetSpecification().Height,
 				0);
 		}
+
+		if (GetOptions().ShowGrid)
+		{
+			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f))
+				* glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
+			Renderer::RenderQuad(m_GridMaterial, transform);
+		}
+
+		// Tonemap + gamma correct
+		//m_SceneCompositeMaterial->Set("u_Texture", m_CompositeRenderPass->GetSpecification().TargetFramebuffer->GetColorAttachment());
+		//Renderer::SubmitFullScreenQuad(m_SceneCompositeMaterial);
 
 		Renderer::EndRenderPass(m_CompositeRenderPass);
 	}

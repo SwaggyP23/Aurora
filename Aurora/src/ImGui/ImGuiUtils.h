@@ -156,6 +156,8 @@ namespace Aurora {
 
 		ImColor ColourWithMultipliedSaturation(const ImColor& color, float multiplier);
 
+		void ColorEdit3Control(const std::string& label, glm::vec3& color, bool showAsWheel = true);
+
 		void ColorEdit4Control(const std::string& label, glm::vec4& color, bool showAsWheel = true);
 
 	}

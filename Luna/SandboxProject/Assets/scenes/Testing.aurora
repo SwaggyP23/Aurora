@@ -1,0 +1,28 @@
+Scene: Testing
+Entities:
+  - Entity: 129861987
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [-3.52331257, -9.98750329e-06, 7.3117795]
+      Rotation: [0, 0, 0]
+      Scale: [1.10866785, 1.27337384, 1.38999999]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0  # Perspective
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+  - Entity: 129861987
+    TagComponent:
+      Tag: Test Cube
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0.935496449, 0.493928164]
+      Scale: [6.5, 1, 3.5]
+    SpriteRendererComponent:
+      Color: [1, 0.764478743, 0, 1]

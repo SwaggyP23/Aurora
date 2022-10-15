@@ -1,6 +1,7 @@
 #include "Aurorapch.h"
 #include "Application.h"
 
+#include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Utils/UtilFunctions.h"
 
@@ -33,8 +34,9 @@ namespace Aurora {
 		windowSpec.Resizable = specification.SetWindowResizable;
 		windowSpec.WindowIconPath = specification.ApplicationWindowIconPath;
 		m_Window = Window::Create(windowSpec);
+
 		m_Window->Init();
-		m_Window->SetEventCallback(AR_SET_EVENT_FN(Application::OnEvent));
+		m_Window->SetEventCallback([this](Event& e) {Application::OnEvent(e); });
 		if (specification.StartMaximized)
 			m_Window->Maximize();
 		else
@@ -65,6 +67,9 @@ namespace Aurora {
 		}
 
 		Renderer::ShutDown();
+
+		delete m_Profiler;
+		m_Profiler = nullptr;
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -161,8 +166,10 @@ namespace Aurora {
 					RenderImGui();
 
 				m_CPUTime = cpuTimer.ElapsedMillis();
-				m_Window->Update();
+				m_Window->SwapBuffers();
 			}
+
+			Input::ClearReleasedKeys();
 
 			float time = Utils::Time::GetTime();
 			m_FrameTime = time - m_LastFrameTime;
@@ -178,6 +185,7 @@ namespace Aurora {
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
+		// Since a window of 0, 0 width heigh is the same as if it minimized
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_Minimized = true;
@@ -189,14 +197,14 @@ namespace Aurora {
 
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 
-		return true;
+		return false;
 	}
 
 	bool Application::OnWindowMinimize(WindowMinimizeEvent& e)
 	{
 		m_Minimized = e.IsMinimized();
 
-		return true;
+		return false;
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
@@ -204,7 +212,7 @@ namespace Aurora {
 		m_Running = false;
 		g_ApplicationRunning = false;
 
-		return true;
+		return false;
 	}
 
 	void Application::Close()
@@ -214,12 +222,8 @@ namespace Aurora {
 
 	void Application::OnShutdown()
 	{
+		m_EventCallbacks.clear();
 		g_ApplicationRunning = false;
-	}
-
-	void Application::ProcessEvents()
-	{
-		m_Window->PollEvents(); // TODO: Add custom queue event handling...
 	}
 
 	void Application::OnEvent(Event& e)
@@ -227,15 +231,42 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(AR_SET_EVENT_FN(Application::OnWindowClose));
-		dispatcher.Dispatch<WindowMinimizeEvent>(AR_SET_EVENT_FN(Application::OnWindowMinimize));
-		dispatcher.Dispatch<WindowResizeEvent>(AR_SET_EVENT_FN(Application::OnWindowResize));
+		dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& e) { return Application::OnWindowClose(e); });
+		dispatcher.Dispatch<WindowMinimizeEvent>([this](WindowMinimizeEvent& e) {return Application::OnWindowMinimize(e); });
+		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) {return Application::OnWindowResize(e); });
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
 			(*it)->OnEvent(e);
 			if (e.Handled)
 				break;
+		}
+
+		if (e.Handled)
+			return;
+
+		for (auto& eventCallback : m_EventCallbacks)
+		{
+			eventCallback(e);
+
+			if (e.Handled)
+				break;
+		}
+	}
+
+	void Application::ProcessEvents()
+	{
+		Input::TransitionPressedKeys();
+
+		m_Window->ProcessEvents();
+
+		std::scoped_lock<std::mutex> lock(m_EventQueueMutex);
+
+		while (m_EventQueue.size())
+		{
+			auto& func = m_EventQueue.front();
+			func();
+			m_EventQueue.pop();
 		}
 	}
 

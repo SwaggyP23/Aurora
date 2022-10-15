@@ -25,6 +25,12 @@ namespace Aurora {
 
 #pragma region EditorLayerMainMethods
 
+	// TODO: TEMPORARY
+	static glm::vec3 albedoColor = { 1.0f, 1.0f, 1.0f };
+	static float metalness;
+	static float roughness;
+	static float emission;
+
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer"), m_EditorCamera(EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f))
 	{
@@ -46,25 +52,88 @@ namespace Aurora {
 		m_ViewportRenderer->SetLineWidth(m_LineWidth);
 
 		// Default open scene for now...!
-		OpenScene("Resources/scenes/EnvMapSerialize.aurora");
+		OpenScene("SandboxProject/Assets/scenes/StaticMeshTest.aurora");
 
+		// TODO: TEMPORARY
 		class CameraScript : public ScriptableEntity
 		{
 			virtual void OnUpdate(TimeStep ts) override
 			{
 				auto& translation = GetComponent<TransformComponent>().Translation;
-				constexpr float speed = 5.0f;
+				auto& rotation = GetComponent<TransformComponent>().Rotation;
 
-				if (Input::IsKeyPressed(AR_KEY_W))
-					translation.y += speed * ts;
-				else if (Input::IsKeyPressed(AR_KEY_S))
-					translation.y -= speed * ts;
-				if (Input::IsKeyPressed(AR_KEY_A))
-					translation.x -= speed * ts;
-				else if (Input::IsKeyPressed(AR_KEY_D))
-					translation.x += speed * ts;
+				float speed = 10.0f;
+
+				if (Input::GetControllers().empty())
+				{
+					const auto& [x, y] = Input::GetMousePosition();
+					const glm::vec2& mouse{ x, y };
+					const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.002f;
+
+					if (Input::IsKeyDown(AR_KEY_LEFT_SHIFT))
+						speed *= 2.0f;
+					else if (Input::IsKeyDown(AR_KEY_LEFT_CONTROL))
+						speed *= 0.5f;
+
+					if (Input::IsKeyDown(AR_KEY_W))
+						translation.x += speed * ts;
+					else if (Input::IsKeyDown(AR_KEY_S))
+						translation.x -= speed * ts;
+					if (Input::IsKeyDown(AR_KEY_A))
+						translation.z -= speed * ts;
+					else if (Input::IsKeyDown(AR_KEY_D))
+						translation.z += speed * ts;
+					if (Input::IsKeyDown(AR_KEY_Q))
+						translation.y += speed * ts;
+					else if (Input::IsKeyDown(AR_KEY_E))
+						translation.y -= speed * ts;
+
+					if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT))
+					{
+						rotation.x += -delta.y;
+						rotation.y += delta.x;
+					}
+
+					m_InitialMousePosition = mouse;
+				}
+				else
+				{
+					const Controller* controller = Input::GetController(0);
+					if (Input::IsControllerPresent(controller->ID))
+					{
+						if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_BUTTON_A))
+							speed *= 2.0f;
+						else if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_BUTTON_B))
+							speed *= 0.5f;
+
+						float threshold = Input::GetControllerAxis(controller->ID, 3);
+						if (threshold > 0.2f || threshold < -0.2f)
+							translation.x += speed * ts * glm::abs(threshold) * (threshold > 0.0f ? -1 : 1);
+						threshold = Input::GetControllerAxis(controller->ID, 2);
+						if (threshold > 0.2f || threshold < -0.2f)
+							translation.z += speed * ts * glm::abs(threshold) * (threshold > 0.0f ? 1 : -1);
+
+						if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_LEFT_BUMPER))
+							translation.y += speed * ts;
+						else if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_RIGHT_BUMPER))
+							translation.y -= speed * ts;
+
+						float delta = Input::GetControllerAxis(controller->ID, 0);
+						if (delta > 0.15f || delta < -0.15f)
+							rotation.y += delta * ts;
+
+						delta = Input::GetControllerAxis(controller->ID, 1);
+						if (delta > 0.15f || delta < -0.15f)
+							rotation.z += -delta * ts;
+					}
+				}
 			}
+		private:
+			glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
 		};
+
+		Entity cameraEntity = m_ActiveScene->GetEntityByName("Camera");
+		cameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraScript>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -85,7 +154,7 @@ namespace Aurora {
 		    {
 				m_EditorCamera.SetActive(m_AllowViewportCameraEvents);
 				m_EditorCamera.OnUpdate(ts);
-				m_EditorScene->OnRenderEditor(m_ViewportRenderer, ts, m_EditorCamera);
+				m_EditorScene->OnRenderEditor(m_ViewportRenderer, ts, m_EditorCamera, albedoColor, glm::vec3{ metalness, roughness, emission });
 
 				OnRender2D();
 
@@ -97,7 +166,7 @@ namespace Aurora {
 				{
 					m_EditorCamera.SetActive(m_ViewportHovered || m_AllowViewportCameraEvents);
 					m_EditorCamera.OnUpdate(ts);
-					m_RuntimeScene->OnRenderEditor(m_ViewportRenderer, ts, m_EditorCamera);
+					m_RuntimeScene->OnRenderEditor(m_ViewportRenderer, ts, m_EditorCamera, glm::vec3(1.0f), glm::vec3(1.0f));
 
 					OnRender2D();
 				}
@@ -153,18 +222,18 @@ namespace Aurora {
 			m_EditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(AR_SET_EVENT_FN(EditorLayer::OnMouseButtonPressed));
-		dispatcher.Dispatch<WindowPathDropEvent>(AR_SET_EVENT_FN(EditorLayer::OnPathDrop));
+		dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent& e) { return OnKeyPressed(e); });
+		dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent& e) { return OnMouseButtonPressed(e); });
+		dispatcher.Dispatch<WindowPathDropEvent>([this](WindowPathDropEvent& e) { return OnPathDrop(e); });
 	}
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		if (GImGui->ActiveId == 0)
 		{
-			bool control = Input::IsKeyPressed(AR_KEY_LEFT_CONTROL) || Input::IsKeyPressed(AR_KEY_RIGHT_CONTROL);
-			bool shift = Input::IsKeyPressed(AR_KEY_LEFT_SHIFT) || Input::IsKeyPressed(AR_KEY_RIGHT_SHIFT);
-			bool alt = Input::IsKeyPressed(AR_KEY_LEFT_ALT) || Input::IsKeyPressed(AR_KEY_RIGHT_ALT);
+			bool control = Input::IsKeyDown(AR_KEY_LEFT_CONTROL) || Input::IsKeyDown(AR_KEY_RIGHT_CONTROL);
+			bool shift = Input::IsKeyDown(AR_KEY_LEFT_SHIFT) || Input::IsKeyDown(AR_KEY_RIGHT_SHIFT);
+			bool alt = Input::IsKeyDown(AR_KEY_LEFT_ALT) || Input::IsKeyDown(AR_KEY_RIGHT_ALT);
 			bool mousePressed = Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_MIDDLE);
 			bool inRuntime = m_ActiveScene == m_RuntimeScene;
 
@@ -173,7 +242,7 @@ namespace Aurora {
 			switch (e.GetKeyCode())
 			{
 				// New Scene
-			    case AR_KEY_N:
+				case KeyCode::N:
 			    {
 			    	if (control)
 			    		NewScene();
@@ -182,7 +251,7 @@ namespace Aurora {
 			    }
 			    
 				// Open Scene
-			    case AR_KEY_O:
+				case KeyCode::O:
 			    {
 			    	if (control)
 			    		OpenScene();
@@ -191,7 +260,7 @@ namespace Aurora {
 			    }
 			    
 				// Save Scene
-			    case AR_KEY_S:
+				case KeyCode::S:
 			    {
 			    	if (control)
 			    	{
@@ -205,9 +274,8 @@ namespace Aurora {
 			    }
 			    
 				// Duplicate entity
-			    case AR_KEY_D:
+				case KeyCode::D:
 			    {
-			    	// TODO: Needs rework...
 			    	if (control && isSomethingSelected && !mousePressed)
 			    	{
 			    		m_SelectionContext = m_ActiveScene->CopyEntity(m_SelectionContext);
@@ -217,7 +285,7 @@ namespace Aurora {
 			    }
 			    
 				// Delete entity
-			    case AR_KEY_DELETE:
+				case KeyCode::Delete:
 			    {
 			    	if (isSomethingSelected)
 			    	{
@@ -229,7 +297,7 @@ namespace Aurora {
 			    }
 			    
 			    // Gizmos
-			    case AR_KEY_Q:
+				case KeyCode::Q:
 			    {
 					if (inRuntime)
 						break;
@@ -240,7 +308,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case AR_KEY_W:
+				case KeyCode::W:
 			    {
 					if (inRuntime)
 						break;
@@ -251,7 +319,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case AR_KEY_E:
+				case KeyCode::E:
 			    {
 					if (inRuntime)
 						break;
@@ -262,7 +330,7 @@ namespace Aurora {
 			    	break;
 			    }
 			    
-			    case AR_KEY_R:
+				case KeyCode::R:
 			    {
 					if (inRuntime)
 						break;
@@ -274,7 +342,7 @@ namespace Aurora {
 			    }
 
 				// Reset Editor Camera
-				case AR_KEY_C:
+				case KeyCode::C:
 				{
 					if (alt)
 					{
@@ -285,7 +353,7 @@ namespace Aurora {
 				}
 
 				// Reset focal point
-				case AR_KEY_F:
+				case KeyCode::F:
 				{
 					if (alt)
 					{
@@ -311,7 +379,7 @@ namespace Aurora {
 		if (!m_ViewportHovered)
 			return false;
 
-		if (Input::IsKeyPressed(KeyCode::LeftAlt) || Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+		if (Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsMouseButtonPressed(MouseButton::ButtonRight))
 			return false;
 
 		if (ImGuizmo::IsOver())
@@ -369,8 +437,8 @@ namespace Aurora {
 
 			std::sort(selectionData.begin(), selectionData.end(), [](SelectionData& a, SelectionData& b) {return a.Distance < b.Distance; });
 
-			bool ctrlDown = Input::IsKeyPressed(KeyCode::LeftControl) || Input::IsKeyPressed(KeyCode::RightControl);
-			bool shiftDown = Input::IsKeyPressed(KeyCode::LeftShift) || Input::IsKeyPressed(KeyCode::RightShift);
+			bool ctrlDown = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
+			bool shiftDown = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
 
 			if (!ctrlDown)
 				m_SelectionContext = {};
@@ -605,7 +673,7 @@ namespace Aurora {
 		}
 
 		bool mouseClicked = (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::TableGetRowIndex())
-			|| (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && Input::IsKeyPressed(AR_KEY_LEFT_SHIFT) 
+			|| (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && Input::IsKeyDown(KeyCode::LeftShift) 
 			&& inSceneHierarchyTable);
 		if (mouseClicked)
 			m_SelectionContext = {};
@@ -1079,8 +1147,9 @@ namespace Aurora {
 			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
 			DrawPopUpMenuItems<CircleRendererComponent>("Circle Renderer", entity, m_SelectionContext);
-			DrawPopUpMenuItems<SkyLightComponent>("SkyLight", entity, m_SelectionContext);
 			DrawPopUpMenuItems<StaticMeshComponent>("StaticMesh", entity, m_SelectionContext);
+			DrawPopUpMenuItems<DirectionalLightComponent>("DirectionalLight", entity, m_SelectionContext);
+			DrawPopUpMenuItems<SkyLightComponent>("SkyLight", entity, m_SelectionContext);
 
 			ImGui::EndPopup();
 		}
@@ -1389,6 +1458,27 @@ namespace Aurora {
 		{
 
 		});
+
+		DrawComponent<DirectionalLightComponent>("DirectionalLight", entity, [](DirectionalLightComponent& component)
+		{
+			ImGuiUtils::ColorEdit3Control("Radiance", component.Radiance);
+
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, 100.0f);
+
+			ImGui::Text("Intensity:");
+
+			ImGui::NextColumn();
+
+			ImGui::DragFloat("##intensitywv", &component.Intensity, 0.01f, 0.0f, 10.0f);
+
+			ImGui::Columns(1);
+		},
+		[](DirectionalLightComponent& component)
+		{
+			component.Radiance = { 1.0f, 1.0f, 1.0f };
+			component.Intensity = 1.0f;
+		});
 	}
 
 #pragma endregion
@@ -1476,7 +1566,7 @@ namespace Aurora {
 
 		m_RuntimeScene = Scene::Create();
 		m_EditorScene->CopyTo(m_RuntimeScene);
-		//m_RuntimeScene->OnRuntimeStart(); // TODO: When we have physics and scripting...
+		m_RuntimeScene->OnRuntimeStart();
 		m_ActiveScene = m_RuntimeScene;
 	}
 
@@ -1489,7 +1579,7 @@ namespace Aurora {
 	{
 		m_SelectionContext = {};
 
-		//m_RuntimeScene->OnRuntimeStop(); // TODO: When we have physics and scripting...
+		m_RuntimeScene->OnRuntimeStop();
 
 		m_SceneState = SceneState::Edit;
 		Input::SetCursorMode(CursorMode::Normal);
@@ -1534,6 +1624,21 @@ namespace Aurora {
 		if (ImGui::Checkbox("V-Sync", &VSyncState))
 		{
 			Application::GetApp().GetWindow().SetVSync(VSyncState);
+		}
+
+		ImGui::Text("Controllers:");
+
+		std::vector<int> contIds = Input::GetConnectedControllerIDs();
+
+		std::vector<std::string> contNames;
+		for (int id : contIds)
+		{
+			contNames.push_back(std::string(Input::GetControllerName(id)));
+		}
+
+		for (std::string name : contNames)
+		{
+			ImGui::Text("%s", name.c_str());
 		}
 
 		ImGui::End();
@@ -1607,7 +1712,16 @@ namespace Aurora {
 	{
 		ImGui::Begin("Materials", &m_ShowMaterialsPanel);
 
-		ImGui::Image((void*)(uint64_t)EditorResources::FIXME->GetTextureID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
+		ImGuiUtils::ColorEdit3Control("Color", albedoColor);
+		ImGui::DragFloat("Metalness", &metalness, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Emission", &emission, 0.01f, 0.0f, 1.0f);
+
+		ImVec2 ramainingSize = ImGui::GetContentRegionAvail();
+		void* textureID = (void*)(uint64_t)m_ViewportRenderer->GetGeometryRenderPass()->GetSpecification().TargetFramebuffer->GetColorAttachment(1)->GetTextureID();
+		ImGui::Image(textureID, { ramainingSize.x, ramainingSize.y / 2 }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		textureID = (void*)(uint64_t)m_ViewportRenderer->GetGeometryRenderPass()->GetSpecification().TargetFramebuffer->GetColorAttachment(2)->GetTextureID();
+		ImGui::Image(textureID, ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		ImGui::End();
 	}
@@ -2008,7 +2122,7 @@ namespace Aurora {
 		glm::mat4 transform = tc.GetTransform();
 
 		// Snapping
-		bool snap = Input::IsKeyPressed(AR_KEY_LEFT_CONTROL);
+		bool snap = Input::IsKeyDown(KeyCode::LeftControl);
 
 		const float snapValue = GetSnapValue();
 
@@ -2016,7 +2130,7 @@ namespace Aurora {
 
 		if(ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-			nullptr, snap ? snapValues : nullptr) && !Input::IsKeyPressed(AR_KEY_LEFT_ALT))
+			nullptr, snap ? snapValues : nullptr) && !Input::IsKeyDown(KeyCode::LeftAlt))
 		{
 			glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
 			Math::DecomposeTransform(transform, translation, rotation, scale);

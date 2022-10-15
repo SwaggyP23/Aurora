@@ -1,7 +1,7 @@
 #include "Aurorapch.h"
 #include "EditorCamera.h"
 
-#include "Core/Input.h"
+#include "Core/Input/Input.h"
 #include "ImGui/ImGuiUtils.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -56,74 +56,74 @@ namespace Aurora {
 		const glm::vec2& mouse{ x, y };
 		const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.002f;
 
-		if (m_IsActive)
-		{
-			if (Input::IsKeyPressed(KeyCode::LeftAlt))
-			{
-				m_CameraType = CameraType::BlenderCam;
-
-				if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
-				{
-					Utils::DisableMouse();
-					MouseRotate(delta);
-				}
-				else if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
-				{
-					Utils::DisableMouse();
-					MousePan(delta);
-				}
-				else if (Input::IsMouseButtonPressed(MouseButton::ButtonMiddle))
-				{
-					Utils::DisableMouse();
-					MouseZoom(delta.x + delta.y);
-				}
-				else
-					Utils::EnableMouse();
-			}
-			else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) && !Input::IsKeyPressed(KeyCode::LeftAlt))
-			{
-				m_CameraType = CameraType::FirstPerson;
-				Utils::DisableMouse();
-				const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
-				const glm::vec3 upDirection = { 0.0f, yawSign, 0.0f };
-
-				float speed = GetCameraSpeed();
-
-				if (Input::IsKeyPressed(KeyCode::W))
-					m_PositionDelta += m_Direction * speed * ts.GetMilliSeconds();
-				else if (Input::IsKeyPressed(KeyCode::S))
-					m_PositionDelta -= m_Direction * speed * ts.GetMilliSeconds();
-				if (Input::IsKeyPressed(KeyCode::A))
-					m_PositionDelta -= m_RightDirection * speed * ts.GetMilliSeconds();
-				else if (Input::IsKeyPressed(KeyCode::D))
-					m_PositionDelta += m_RightDirection * speed * ts.GetMilliSeconds();
-				if (Input::IsKeyPressed(KeyCode::Q))
-					m_PositionDelta -= upDirection * speed * ts.GetMilliSeconds();
-				else if (Input::IsKeyPressed(KeyCode::E))
-					m_PositionDelta += upDirection * speed * ts.GetMilliSeconds();
-
-				constexpr float maxRate = 0.12f;
-				m_YawDelta += glm::clamp(yawSign * delta.x * RotationSpeed(), -maxRate, maxRate);
-				m_PitchDelta += glm::clamp(delta.y * RotationSpeed(), -maxRate, maxRate);
-
-				m_RightDirection = glm::cross(m_Direction, upDirection);
-
-				m_Direction = glm::rotate(glm::normalize(glm::cross(glm::angleAxis(-m_PitchDelta, m_RightDirection),
-					glm::angleAxis(-m_YawDelta, upDirection))), m_Direction);
-
-				float distance = glm::distance(m_FocalPoint, m_Position);
-				m_FocalPoint = m_Position + GetForwardDirection() * distance;
-				m_Distance = distance;
-			}
-			else
-			{
-				Utils::EnableMouse();
-			}
-		}
-		else
+		if (!m_IsActive)
 		{
 			if (!ImGuiUtils::IsInputEnabled())
 				ImGuiUtils::SetInputEnabled(true);
+
+			return;
+		}
+
+		if (Input::IsKeyDown(KeyCode::LeftAlt))
+		{
+			m_CameraType = CameraType::BlenderCam;
+
+			if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+			{
+				Utils::DisableMouse();
+				MouseRotate(delta);
+			}
+			else if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft))
+			{
+				Utils::DisableMouse();
+				MousePan(delta);
+			}
+			else if (Input::IsMouseButtonPressed(MouseButton::ButtonMiddle))
+			{
+				Utils::DisableMouse();
+				MouseZoom(delta.x + delta.y);
+			}
+			else
+				Utils::EnableMouse();
+		}
+		else if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) && !Input::IsKeyDown(KeyCode::LeftAlt))
+		{
+			m_CameraType = CameraType::FirstPerson;
+			Utils::DisableMouse();
+			const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+			const glm::vec3 upDirection = { 0.0f, yawSign, 0.0f };
+
+			float speed = GetCameraSpeed();
+
+			if (Input::IsKeyDown(KeyCode::W))
+				m_PositionDelta += m_Direction * speed * ts.GetMilliSeconds();
+			else if (Input::IsKeyDown(KeyCode::S))
+				m_PositionDelta -= m_Direction * speed * ts.GetMilliSeconds();
+			if (Input::IsKeyDown(KeyCode::A))
+				m_PositionDelta -= m_RightDirection * speed * ts.GetMilliSeconds();
+			else if (Input::IsKeyDown(KeyCode::D))
+				m_PositionDelta += m_RightDirection * speed * ts.GetMilliSeconds();
+			if (Input::IsKeyDown(KeyCode::Q))
+				m_PositionDelta -= upDirection * speed * ts.GetMilliSeconds();
+			else if (Input::IsKeyDown(KeyCode::E))
+				m_PositionDelta += upDirection * speed * ts.GetMilliSeconds();
+
+			constexpr float maxRate = 0.12f;
+			m_YawDelta += glm::clamp(yawSign * delta.x * RotationSpeed(), -maxRate, maxRate);
+			m_PitchDelta += glm::clamp(delta.y * RotationSpeed(), -maxRate, maxRate);
+
+			m_RightDirection = glm::cross(m_Direction, upDirection);
+
+			m_Direction = glm::rotate(glm::normalize(glm::cross(glm::angleAxis(-m_PitchDelta, m_RightDirection),
+				glm::angleAxis(-m_YawDelta, upDirection))), m_Direction);
+
+			float distance = glm::distance(m_FocalPoint, m_Position);
+			m_FocalPoint = m_Position + GetForwardDirection() * distance;
+			m_Distance = distance;
+		}
+		else
+		{
+			Utils::EnableMouse();
 		}
 
 		m_InitialMousePosition = mouse;
@@ -261,10 +261,10 @@ namespace Aurora {
 	float EditorCamera::GetCameraSpeed() const
 	{
 		float speed = m_NormalSpeed;
-		if (Input::IsKeyPressed(KeyCode::LeftControl))
+		if (Input::IsKeyDown(KeyCode::LeftControl))
 			speed /= 2 - glm::log(m_NormalSpeed);
 
-		if (Input::IsKeyPressed(KeyCode::LeftShift))
+		if (Input::IsKeyDown(KeyCode::LeftShift))
 			speed *= 2 - glm::log(m_NormalSpeed);
 
 		return glm::clamp(speed, MIN_SPEED, MAX_SPEED);

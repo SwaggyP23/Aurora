@@ -19,8 +19,6 @@ namespace Aurora {
 
 	void Context::Init()
 	{
-		AR_PROFILE_FUNCTION();
-
 		glfwMakeContextCurrent(m_WindowHandle);
 
 		int gladSuccess = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -36,15 +34,11 @@ namespace Aurora {
 
 	void Context::SwapBuffers() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glfwSwapBuffers(m_WindowHandle);
 	}
 
 	void Context::PollEvents() const
 	{
-		AR_PROFILE_FUNCTION();
-
 		glfwPollEvents();
 	}
 

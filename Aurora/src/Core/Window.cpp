@@ -1,6 +1,7 @@
 #include "Aurorapch.h"
 #include "Window.h"
 
+#include "Core/Input/Input.h"
 #include "Utils/ImageLoader.h"
 
 #include <glad/glad.h>
@@ -50,6 +51,8 @@ namespace Aurora {
 		m_Data.Title = m_Specification.Title;
 		m_Data.Width = m_Specification.Width;
 		m_Data.Height = m_Specification.Height;
+
+		glfwInitHint(GLFW_JOYSTICK_HAT_BUTTONS, GLFW_FALSE);
 
 		int success = glfwInit();
 		AR_CORE_ASSERT(success, "Failed to initialize glfw!");
@@ -143,12 +146,13 @@ namespace Aurora {
 		m_Specification.VSync = state;
 	}
 
-	void Window::PollEvents() const
+	void Window::ProcessEvents() const
 	{
 		m_Context->PollEvents();
+		Input::Update();
 	}
 
-	void Window::Update() const
+	void Window::SwapBuffers() const
 	{
 #ifdef AURORA_DEBUG
 		GLenum error = glGetError();
@@ -240,18 +244,21 @@ namespace Aurora {
 			{
 			    case GLFW_PRESS:
 			    {
+					Input::UpdateKeyState((KeyCode)key, KeyState::Pressed);
 			    	KeyPressedEvent event((KeyCode)key, 0);
 			    	data.EventCallback(event);
 			    	break;
 			    }
 			    case GLFW_RELEASE:
 			    {
+					Input::UpdateKeyState((KeyCode)key, KeyState::Released);
 			    	KeyReleasedEvent event((KeyCode)key);
 			    	data.EventCallback(event);
 			    	break;
 			    }
 			    case GLFW_REPEAT:
 			    {
+					Input::UpdateKeyState((KeyCode)key, KeyState::Held);
 			    	KeyPressedEvent event((KeyCode)key, true);
 			    	data.EventCallback(event);
 			    	break;

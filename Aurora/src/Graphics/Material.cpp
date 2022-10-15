@@ -15,7 +15,7 @@ namespace Aurora {
 	}
 
 	Material::Material(const std::string& name, const Ref<Shader>& shader)
-		: m_Shader(shader)
+		: m_Name(name), m_Shader(shader)
 	{
 		AllocateStorage();
 

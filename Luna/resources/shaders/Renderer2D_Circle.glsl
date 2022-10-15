@@ -6,7 +6,7 @@ layout(location = 1) in float a_Thickness;
 layout(location = 2) in vec2 a_LocalPosition;
 layout(location = 3) in vec4 a_Color;
 
-layout(std140, binding = 2) uniform Camera
+layout(std140, binding = 3) uniform Camera
 {
 	mat4 u_ViewProjMatrix;
 };

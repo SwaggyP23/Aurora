@@ -45,7 +45,7 @@ namespace Aurora {
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
-		void BeginScene(const SceneRendererCamera& camera);
+		void BeginScene(const SceneRendererCamera& camera, glm::vec3& albedo, glm::vec3& controls);
 		void EndScene();
 
 		void SubmitStaticMesh(Ref<StaticMesh> staticMesh, Ref<MaterialTable> matTable, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> overrideMat = nullptr);
@@ -63,8 +63,9 @@ namespace Aurora {
 		// externalCompositing framebuffer as an existing image and so it is kind of a shared attachment between two framebuffers
 		Ref<Texture2D> GetFinalPassImage();
 		void GetFinalPassImageData(void* outPixels);
-		Ref<RenderPass> GetCompositeRenderPass();
-		Ref<RenderPass> GetExternalCompositeRenderPass();
+		Ref<RenderPass> GetCompositeRenderPass() { return m_CompositeRenderPass; }
+		Ref<RenderPass> GetExternalCompositeRenderPass() { return m_ExternalCompositeRenderPass; }
+		Ref<RenderPass> GetGeometryRenderPass() { return m_GeometryRenderPass; }
 
 		bool IsActive() const { return m_Active; }
 
@@ -94,6 +95,8 @@ namespace Aurora {
 			Ref<Environment> SceneEnvironment;
 			float SkyboxLod = 0.0f;
 			float SceneEnvironmentIntensity;
+
+			LightEnvironment SceneLightEnvironment;
 		} m_SceneData;
 
 		struct UBScreenData
@@ -122,11 +125,28 @@ namespace Aurora {
 
 		Ref<UniformBuffer> m_CameraDataUB;
 
+		struct DirLight
+		{
+			glm::vec3 Direction;
+			glm::vec3 Radiance;
+			float Intensity;
+		};
+
+		struct UBScene
+		{
+			DirLight Lights;
+			glm::vec3 CameraPosition;
+			float EnvironmentMapIntensity = 1.0f;
+		} m_SceneDirLightData;
+		
+		Ref<UniformBuffer> m_SceneDirLightDataUB;
+
 		Ref<RenderPass> m_GeometryRenderPass;
 		Ref<RenderPass> m_CompositeRenderPass;
 		Ref<RenderPass> m_ExternalCompositeRenderPass;
 
 		Ref<Material> m_SkyboxMaterial;
+		Ref<Material> m_SceneCompositeMaterial;
 
 		struct DrawCommand
 		{

@@ -37,9 +37,8 @@
 #include <imgui/imgui_internal.h>
 #include "ImGuizmo.h"
 
-#include "Core/Input.h"
-#include "Core/KeyCodes.h"
-#include "Core/MouseCodes.h"
+#include "Core/Input/Input.h"
+#include "Core/Input/GamePadCodes.h"
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <malloc.h>

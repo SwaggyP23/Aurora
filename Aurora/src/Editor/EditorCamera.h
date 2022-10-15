@@ -2,8 +2,8 @@
 
 #include "Graphics/Camera.h"
 #include "Core/TimeStep.h"
-#include "Events/Events.h"
-#include "Events/MouseEvents.h"
+#include "Core/Events/Events.h"
+#include "Core/Events/MouseEvents.h"
 
 #include <glm/glm.hpp>
 

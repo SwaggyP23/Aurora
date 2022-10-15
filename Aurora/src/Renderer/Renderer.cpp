@@ -51,14 +51,15 @@ namespace Aurora {
 		const std::vector<Face>& faces() const { return m_faces; }
 
 	private:
-		PBRMesh(const struct aiMesh* mesh);
+		PBRMesh(const struct aiScene* scene);
 
 		std::vector<Vertex> m_vertices;
 		std::vector<Face> m_faces;
 	};
 
-	PBRMesh::PBRMesh(const aiMesh* mesh)
+	PBRMesh::PBRMesh(const aiScene* scene)
 	{
+		aiMesh* mesh = scene->mMeshes[0];
 		assert(mesh->HasPositions());
 		assert(mesh->HasNormals());
 
@@ -95,7 +96,7 @@ namespace Aurora {
 
 		const aiScene* scene = importer.ReadFile(filename, PBRImportFlags);
 		if (scene && scene->HasMeshes()) {
-			mesh = std::shared_ptr<PBRMesh>(new PBRMesh{ scene->mMeshes[0] });
+			mesh = std::shared_ptr<PBRMesh>(new PBRMesh{ scene });
 		}
 		else {
 			throw std::runtime_error("Failed to load mesh file: " + filename);
@@ -193,11 +194,6 @@ namespace Aurora {
 		BRDFLutShaderProps.Type = ShaderType::Compute;
 		s_Data->ShaderLibrary->Load(BRDFLutShaderProps);
 
-		ShaderProperties texturePassShaderProps = {};
-		texturePassShaderProps.Name = "TexturePass";
-		texturePassShaderProps.AssetPath = "Resources/shaders/DefaultTextureShader.glsl";
-		s_Data->ShaderLibrary->Load(texturePassShaderProps);
-
 		ShaderProperties environmentIrradiance = {};
 		environmentIrradiance.Name = "EnvironmentIrradiance";
 		environmentIrradiance.AssetPath = "Resources/shaders/EnvironmentIrradiance.glsl";
@@ -243,10 +239,20 @@ namespace Aurora {
 		renderer2DQuadShaderProps.AssetPath = "Resources/shaders/Renderer2D_Quad.glsl";
 		s_Data->ShaderLibrary->Load(renderer2DQuadShaderProps);
 
+		ShaderProperties sceneCompositeProps = {};
+		sceneCompositeProps.Name = "SceneComposite";
+		sceneCompositeProps.AssetPath = "Resources/shaders/SceneComposite.glsl";
+		s_Data->ShaderLibrary->Load(sceneCompositeProps);
+
 		ShaderProperties skyBoxProps = {};
 		skyBoxProps.Name = "Skybox";
 		skyBoxProps.AssetPath = "Resources/shaders/Skybox.glsl";
 		s_Data->ShaderLibrary->Load(skyBoxProps);
+
+		ShaderProperties texturePassShaderProps = {};
+		texturePassShaderProps.Name = "TexturePass";
+		texturePassShaderProps.AssetPath = "Resources/shaders/DefaultTextureShader.glsl";
+		s_Data->ShaderLibrary->Load(texturePassShaderProps);
 
 		// 0xABGR
 		constexpr uint32_t whiteTextureData = 0xffffffff;
@@ -291,13 +297,16 @@ namespace Aurora {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
 		});
+
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 		//uint32_t indices[6] = { 0, 2, 1, 2, 0, 3 };
 		s_Data->FullScreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		s_Data->FullScreenQuadVertexArray->AddVertexBuffer(s_Data->FullScreenQuadVertexBuffer);
 		s_Data->FullScreenQuadVertexArray->SetIndexBuffer(s_Data->FullScreenQuadIndexBuffer);
 
-		s_Data->m_Skybox = createMeshBuffer(PBRMesh::fromFile("Resources/meshes/Default/skybox.obj"));
+		//s_Data->m_Skybox = createMeshBuffer(PBRMesh::fromFile("SandboxProject/Assets/meshes/Default/skybox.obj"));
+		s_Data->m_Skybox = createMeshBuffer(PBRMesh::fromFile("SandboxProject/Assets/meshes/Default/Torus.fbx"));
+		//s_Data->m_Skybox = createMeshBuffer(PBRMesh::fromFile("SandboxProject/Assets/meshes/Source/dragon/dragon future.dae"));
 	}
 
 	void Renderer::ShutDown()
@@ -314,7 +323,7 @@ namespace Aurora {
 		if (!environment)
 			environment = s_Data->NullEnvironment;
 
-		// TODO: Does this need to bing the shader?
+		// TODO: Does this need to bind the shader?
 
 		const Ref<Shader>& shader = s_Data->ShaderLibrary->Get("AuroraPBRStatic");
 
@@ -587,6 +596,28 @@ namespace Aurora {
 		glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, 0);
 	}
 
+	// TODO: TEMPORARY
+	void Renderer::RenderCube(const glm::mat4& transform, Ref<Material> material)
+	{
+		if (!material->HasFlag(MaterialFlag::DepthTest))
+			glDisable(GL_DEPTH_TEST);
+
+		if (material->HasFlag(MaterialFlag::TwoSided))
+			glDisable(GL_CULL_FACE);
+
+		material->Set("u_Renderer.Transform", transform);
+		material->SetUpForRendering();
+
+		glBindVertexArray(s_Data->m_Skybox.vao);
+		glDrawElementsBaseVertex(GL_TRIANGLES, s_Data->m_Skybox.numElements, GL_UNSIGNED_INT, nullptr, 0);
+
+		if (material->HasFlag(MaterialFlag::TwoSided))
+			glEnable(GL_CULL_FACE);
+
+		if (!material->HasFlag(MaterialFlag::DepthTest))
+			glEnable(GL_DEPTH_TEST);
+	}
+
 	// TODO: Work on rendering static meshes
 	void Renderer::RenderStaticMesh(const Ref<StaticMesh>& mesh, const Ref<MaterialTable>& material, const glm::mat4& tranform)
 	{
@@ -594,12 +625,6 @@ namespace Aurora {
 		AR_CORE_CHECK(material);
 
 		Ref<MeshSource> meshSource = mesh->GetMeshSource();
-
-		//Ref<VertexBuffer> vertexBuffer = meshSource->GetVertexBuffer();
-		//vertexBuffer->Bind();
-
-		//Ref<IndexBuffer> indexBuffer = meshSource->GetIndexBuffer();
-		//indexBuffer->Bind();
 
 		Ref<VertexArray> vertexArray = meshSource->GetVertexArray();
 		vertexArray->Bind();
@@ -621,8 +646,8 @@ namespace Aurora {
 
 		glDisable(GL_CULL_FACE);
 		const auto& meshSourceSubmeshes = meshSource->GetSubMeshes();
-		const auto& subMeshes = mesh->GetSubMeshes();
-		for (uint32_t subMeshIndex : subMeshes)
+		const auto& subMeshesIndices = mesh->GetSubMeshes();
+		for (uint32_t subMeshIndex : subMeshesIndices)
 		{
 			const SubMesh& subMesh = meshSourceSubmeshes[subMeshIndex];
 			auto& finalmaterial = renderMaterials[subMesh.MaterialIndex]->GetMaterial();

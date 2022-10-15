@@ -479,7 +479,7 @@ namespace Aurora {
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, Utils::GLShaderTypeToShaderC(type), m_AssetPath.string().c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					AR_CORE_ERROR_TAG("Shaderc Compiler", result.GetErrorMessage());
+					AR_CORE_ERROR_TAG("Shaderc Compiler", "Compilation Error in stage: {0}\n{1}", Utils::GLShaderTypeToString(type), result.GetErrorMessage());
 					AR_CORE_ASSERT(false);
 				}
 
@@ -582,7 +582,7 @@ namespace Aurora {
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(m_OpenGLShaderSource[type], Utils::GLShaderTypeToShaderC(type), m_AssetPath.string().c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					AR_CORE_ERROR_TAG("ShaderC Compilation", result.GetErrorMessage());
+					AR_CORE_ERROR_TAG("Shaderc Compiler", "Compilation Error in stage: {0}\n{1}", Utils::GLShaderTypeToString(type), result.GetErrorMessage());
 					AR_CORE_ASSERT(false);
 				}
 

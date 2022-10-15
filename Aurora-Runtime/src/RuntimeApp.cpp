@@ -24,7 +24,7 @@ private:
 
 Aurora::Application* Aurora::CreateApplication(int argc, char** argv)
 {
-	std::string scenePath = "Resources/scenes/EnvMapSerialize.aurora"; // Default scene, TODO: Set scene in SandboxProject Directory!
+	std::string scenePath = "Resources/scenes/StaticMeshTest.aurora"; // Default scene, TODO: Set scene in SandboxProject Directory!
 
 	ApplicationSpecification specification;
 	specification.Name = "Aurora Runtime";

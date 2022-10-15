@@ -29,7 +29,7 @@ namespace std {
 
 namespace Aurora {
 
-	struct  FontTypes
+	struct FontTypes
 	{
 		std::string Bold = "Empty";
 		std::string Italic = "Empty";

@@ -98,6 +98,19 @@ namespace Aurora {
 			out << YAML::EndMap; // Circle Renderer Component
 		}
 
+		if (entity.HasComponent<DirectionalLightComponent>())
+		{
+			const DirectionalLightComponent& dlc = entity.GetComponent<DirectionalLightComponent>();
+
+			out << YAML::Key << "DirectionalLightComponent";
+			out << YAML::BeginMap; // Directional Light Component
+
+			out << YAML::Key << "Radiance" << YAML::Value << dlc.Radiance;
+			out << YAML::Key << "Intensity" << YAML::Value << dlc.Intensity;
+
+			out << YAML::EndMap; // Directional Light Component
+		}
+
 		if (entity.HasComponent<SkyLightComponent>())
 		{
 			const SkyLightComponent& slc = entity.GetComponent<SkyLightComponent>();
@@ -259,6 +272,15 @@ namespace Aurora {
 
 					crc.Color = circleRendComp["Color"].as<glm::vec4>();
 					crc.Thickness = circleRendComp["Thickness"].as<float>();
+				}
+
+				YAML::Node dirLightComponent = entity["DirectionalLightComponent"];
+				if (dirLightComponent)
+				{
+					DirectionalLightComponent& dlc = deserializedEntity.AddComponent<DirectionalLightComponent>();
+
+					dlc.Radiance = dirLightComponent["Radiance"].as<glm::vec3>();
+					dlc.Intensity = dirLightComponent["Intensity"].as<float>();
 				}
 
 				YAML::Node skyLightComponent = entity["SkyLightComponent"];

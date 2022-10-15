@@ -7,7 +7,7 @@ layout(location = 2) in vec2 a_TexCoords;
 layout(location = 3) in float a_TexIndex;
 layout(location = 4) in float a_TilingFactor;
 
-layout(std140, binding = 2) uniform Camera
+layout(std140, binding = 3) uniform Camera
 {
 	mat4 u_ViewProjMatrix;
 };	

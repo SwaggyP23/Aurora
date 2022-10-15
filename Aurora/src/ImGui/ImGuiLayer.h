@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Core/Layer.h"
-#include "Events/ApplicationEvents.h"
-#include "Events/MouseEvents.h"
-#include "Events/KeyEvents.h"
+#include "Core/Events/ApplicationEvents.h"
+#include "Core/Events/MouseEvents.h"
+#include "Core/Events/KeyEvents.h"
 #include "FontsLibrary.h"
 
 namespace Aurora {

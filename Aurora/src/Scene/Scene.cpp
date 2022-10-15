@@ -12,6 +12,34 @@
 
 namespace Aurora {
 
+	namespace Utils {
+
+		template<typename T>
+		static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
+		{
+			auto srcEntites = srcRegistry.view<T>();
+			for (auto srcEntity : srcEntites)
+			{
+				entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponent>(srcEntity).ID);
+
+				T& srcComponent = srcRegistry.get<T>(srcEntity);
+				T& destComponent = dstRegistry.emplace_or_replace<T>(destEntity, srcComponent);
+			}
+		}
+
+		template<typename T>
+		static void CopyComponent(Entity dstEntity, Entity srcEntity)
+		{
+			if (srcEntity.HasComponent<T>())
+			{
+				T& srcComponent = srcEntity.GetComponent<T>();
+				T& dstComponent = dstEntity.AddComponent<T>();
+				dstComponent = srcComponent;
+			}
+		}
+
+	}
+
 	Ref<Scene> Scene::Create(const std::string& debugName)
 	{
 		return CreateRef<Scene>(debugName);
@@ -24,20 +52,6 @@ namespace Aurora {
 
 	Scene::~Scene()
 	{
-	}
-
-	template<typename T>
-	static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
-	{
-		auto srcEntites = srcRegistry.view<T>();
-		for (auto srcEntity : srcEntites)
-		{
-
-			entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponent>(srcEntity).ID);
-
-			auto& srcComponent = srcRegistry.get<T>(srcEntity);
-			auto& destComponent = dstRegistry.emplace_or_replace<T>(destEntity, srcComponent);
-		}
 	}
 
 	void Scene::CopyTo(Ref<Scene> target)
@@ -62,14 +76,14 @@ namespace Aurora {
 			enttMap[uuid] = (entt::entity)newEntity;
 		}
 
-		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<StaticMeshComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<CircleRendererComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<StaticMeshComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<CircleRendererComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
+		Utils::CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
 
 		target->m_ViewportWidth = m_ViewportWidth;
 		target->m_ViewportHeight = m_ViewportHeight;
@@ -86,40 +100,26 @@ namespace Aurora {
 		return entity;
 	}
 
-	Entity Scene::CreateEntity(const char* name)
+	Entity Scene::CreateEntity(const std::string& name)
 	{
 		return CreateEntityWithUUID(UUID(), name);
 	}
 
-	// TODO: Rework so that it is possible to deplicate an entity by copying components
 	Entity Scene::CopyEntity(Entity entity)
 	{
-		AR_CORE_ASSERT(false);
-		AR_CORE_CHECK(false, "This is still not working and needs ALOT of rework!");
-
-		static uint32_t nameIncremet = 1;
-		std::string name = entity.GetComponent<TagComponent>().Tag;
+		const std::string& name = entity.GetComponent<TagComponent>().Tag;
 		Entity result = CreateEntity(name.c_str());
 
-		glm::vec3 translation, rotation, scale;
-		translation = entity.GetComponent<TransformComponent>().Translation;
-		rotation = entity.GetComponent<TransformComponent>().Rotation;
-		scale = entity.GetComponent<TransformComponent>().Scale;
-		result.GetComponent<TransformComponent>().Translation = translation;
-		result.GetComponent<TransformComponent>().Rotation = rotation;
-		result.GetComponent<TransformComponent>().Scale = scale;
+		const TransformComponent& srcTc = entity.GetComponent<TransformComponent>();
+		TransformComponent& dstTc = result.Transform();
+		dstTc = srcTc;
 
-		if (entity.HasComponent<SpriteRendererComponent>())
-		{
-			glm::vec4 color = entity.GetComponent<SpriteRendererComponent>().Color;
-			result.AddComponent<SpriteRendererComponent>(color);
-		}
-
-		if (entity.HasComponent<CameraComponent>())
-		{
-			CameraComponent cc = entity.GetComponent<CameraComponent>();
-			result.AddComponent<CameraComponent>(cc);
-		}
+		Utils::CopyComponent<CameraComponent>(result, entity);
+		Utils::CopyComponent<StaticMeshComponent>(result, entity);
+		Utils::CopyComponent<SpriteRendererComponent>(result, entity);
+		Utils::CopyComponent<CircleRendererComponent>(result, entity);
+		Utils::CopyComponent<NativeScriptComponent>(result, entity);
+		Utils::CopyComponent<SkyLightComponent>(result, entity);
 
 		return result;
 	}
@@ -134,8 +134,31 @@ namespace Aurora {
 		m_Registry.clear();
 	}
 
-	void Scene::OnRenderEditor(Ref<SceneRenderer> renderer, TimeStep ts, const EditorCamera& camera)
+	void Scene::OnRenderEditor(Ref<SceneRenderer> renderer, TimeStep ts, const EditorCamera& camera, glm::vec3& albedo, glm::vec3& controls)
 	{
+		// Lights...
+		{
+			m_LightEnvironment = LightEnvironment();
+
+			// Directional Lights...
+			{
+				auto dirLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
+				uint32_t directionalLightIndex = 0;
+				for (auto entity : dirLightView)
+				{
+					auto [transform, dirLight] = dirLightView.get<TransformComponent, DirectionalLightComponent>(entity);
+
+					glm::vec3 direction = -glm::normalize(glm::mat3(transform.GetTransform()) * glm::vec3(1.0f));
+					m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+					{
+						direction,
+						dirLight.Radiance,
+						dirLight.Intensity
+					};
+				}
+			}
+		}
+
 		{
 			auto skyLightView = m_Registry.view<TransformComponent, SkyLightComponent>();
 			if (skyLightView.empty())
@@ -159,7 +182,7 @@ namespace Aurora {
 		}
 		
 		renderer->SetScene(this);
-		renderer->BeginScene({ camera, camera.GetViewMatrix(), camera.GetNearClip(), camera.GetFarClip(), camera.GetFOV() });
+		renderer->BeginScene({ camera, camera.GetViewMatrix(), camera.GetNearClip(), camera.GetFarClip(), camera.GetFOV() }, albedo, controls);
 
 		// Static meshes
 		{
@@ -205,21 +228,13 @@ namespace Aurora {
 
 	void Scene::OnRenderRuntime(Ref<SceneRenderer> renderer, TimeStep ts)
 	{
-		////Update Scripts...
-		//{
-		//	m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc)
-		//	{
-		//		// TODO: Move to OnScenePlay()... and OnSceneStop() we need to call the OnDestroy for the scripts
-		//		if(!nsc.Instance)
-		//		{
-		//			nsc.Instance = nsc.InstantiateScript();
-		//			nsc.Instance->m_Entity = Entity{ entity, this };
-		//			nsc.Instance->OnCreate();					
-		//		}
-
-		//		nsc.Instance->OnUpdate(ts);
-		//	});
-		//}
+		// Update scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc)
+			{
+				nsc.Instance->OnUpdate(ts);
+			});
+		}
 
 		Entity cameraEntity = GetPrimaryCameraEntity();
 		if (!cameraEntity)
@@ -229,6 +244,29 @@ namespace Aurora {
 		AR_CORE_CHECK(cameraEntity != Entity::nullEntity, "Scene does not contain any cameras!");
 		SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>();
 		camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
+		// Lights...
+		{
+			m_LightEnvironment = LightEnvironment();
+
+			// Directional Lights...
+			{
+				auto dirLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
+				uint32_t directionalLightIndex = 0;
+				for (auto entity : dirLightView)
+				{
+					auto [transform, dirLight] = dirLightView.get<TransformComponent, DirectionalLightComponent>(entity);
+
+					glm::vec3 direction = -glm::normalize(glm::mat3(transform.GetTransform()) * glm::vec3(1.0f));
+					m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+					{
+						direction,
+						dirLight.Radiance,
+						dirLight.Intensity
+					};
+				}
+			}
+		}
 
 		{
 			auto skyLightView = m_Registry.view<TransformComponent, SkyLightComponent>();
@@ -253,7 +291,7 @@ namespace Aurora {
 		}
 
 		renderer->SetScene(this);
-		renderer->BeginScene({ camera, cameraViewMatrix, camera.GetPerspectiveNearClip(), camera.GetPerspectiveFarClip(), camera.GetDegPerspectiveVerticalFOV() });
+		renderer->BeginScene({ camera, cameraViewMatrix, camera.GetPerspectiveNearClip(), camera.GetPerspectiveFarClip(), camera.GetDegPerspectiveVerticalFOV() }, glm::vec3(1.0f), glm::vec3(1.0f));
 
 		// Static meshes
 		{
@@ -283,7 +321,7 @@ namespace Aurora {
 			renderer2D->BeginScene(camera.GetProjection() * cameraViewMatrix, cameraViewMatrix, true);
 			renderer2D->SetTargetRenderPass(renderer->GetExternalCompositeRenderPass());
 
-			// TODO: These are only here for testing
+			//// TODO: These are only here for testing
 			renderer2D->DrawQuad({ 10.0f, -5.0f, 2.0f }, { 5.0f, 10.0f }, { 0.3f, 0.45f, 0.8f, 1.0f });
 
 			AABB aabb = { {-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f} };
@@ -294,6 +332,34 @@ namespace Aurora {
 			renderer2D->FillCircle({ 0.0f, 0.0f, 10.0f }, 10.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, 1.0f);
 
 			renderer2D->EndScene();
+		}
+	}
+
+	void Scene::OnRuntimeStart()
+	{
+		// Instantiate scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc)
+			{
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
+			});
+		}
+	}
+
+	void Scene::OnRuntimeStop()
+	{
+		// Destroy scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc)
+			{
+				if (nsc.Instance)
+					nsc.Instance->OnDestroy();
+			});
 		}
 	}
 
@@ -335,6 +401,21 @@ namespace Aurora {
 		glm::mat4 transform = glm::mat4(1.0f);
 
 		return transform * entity.Transform().GetTransform();
+	}
+
+	Entity Scene::GetEntityByName(const std::string& name)
+	{
+		auto view = m_Registry.view<TagComponent>();
+		for (auto entity : view)
+		{
+			if (m_Registry.get<TagComponent>(entity).Tag == name)
+			{
+				return Entity{ entity, this };
+			}
+		}
+
+		AR_CORE_ASSERT(false);
+		return {};
 	}
 
 }
