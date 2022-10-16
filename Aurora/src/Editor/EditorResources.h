@@ -19,8 +19,8 @@ namespace Aurora {
 		inline static Ref<Texture2D> PauseButton = nullptr;
 		inline static Ref<Texture2D> StopButton = nullptr;
 
-		// Components...
-		inline static Ref<Texture2D> TransformCompIcon = nullptr;
+		// Icons...
+		inline static Ref<Texture2D> ComponentIcon = nullptr;
 		inline static Ref<Texture2D> CameraIcon = nullptr;
 
 		// TODO: TEMP...

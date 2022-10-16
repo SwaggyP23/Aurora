@@ -16,7 +16,7 @@ namespace Aurora {
 		PauseButton = LoadTexture("Viewport/Pause.png");
 		StopButton = LoadTexture("Viewport/Stop.png");
 
-		//TransformCompIcon = LoadTexture("Icons/transformComponentIcon.png");
+		ComponentIcon = LoadTexture("Icons/Settings.png");
 		TextureProperties cameraProps;
 		cameraProps.FlipOnLoad = true;
 		CameraIcon = LoadTexture("Icons/Camera.png", cameraProps);
@@ -38,7 +38,7 @@ namespace Aurora {
 		PauseButton.Reset();
 		StopButton.Reset();
 
-		//TransformCompIcon.Reset(); // TODO: Add icons to components...
+		ComponentIcon.Reset(); // TODO: Add icons to components...
 		CameraIcon.Reset();
 
 		// TODO: TEMP...

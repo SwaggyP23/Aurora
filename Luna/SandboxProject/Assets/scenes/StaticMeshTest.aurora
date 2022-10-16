@@ -1,22 +1,5 @@
 Scene: StaticMeshTest
 Entities:
-  - Entity: 16779024522981357195
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [-31.7033501, 7.82654381, -3.88571119]
-      Rotation: [-3.14159226, -1.39465189, 3.14159226]
-      Scale: [1.5, 1.5, 1.5]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0  # Perspective
-        PerspectiveFOV: 45
-        PerspectiveNear: 0.100000001
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
   - Entity: 14366245240961605469
     TagComponent:
       Tag: DirLight
@@ -26,4 +9,21 @@ Entities:
       Scale: [1, 1, 1]
     DirectionalLightComponent:
       Radiance: [1, 0.999899983, 0.99992907]
-      Intensity: 1.02999997
+      Intensity: 1
+  - Entity: 16779024522981357195
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [-31.7033501, 7.82654381, -3.88571119]
+      Rotation: [-3.14159226, -1.39465189, 3.14159226]
+      Scale: [1.5, 1.5, 1.5]
+    CameraComponent:
+      Camera:
+        ProjectionType: Perspective
+        PerspectiveFOV: 45
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true

@@ -39,8 +39,8 @@ namespace Aurora::Utils {
 	class StringUtils
 	{
 	public:
-		[[nodiscard]] static std::string& ToLower(std::string& string);
-		[[nodiscard]] static std::string& ToUpper(std::string& string);
+		[[nodiscard]] static std::string ToLower(const std::string_view& string);
+		[[nodiscard]] static std::string ToUpper(const std::string_view& string);
 
 	};
 

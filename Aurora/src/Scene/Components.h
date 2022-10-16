@@ -73,9 +73,9 @@ namespace Aurora {
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color{ 1.0f };
+		float TilingFactor = 1.0f;
 	};
 
-	// TODO: This is kind of temporary, we'll see...
 	struct CircleRendererComponent
 	{
 		glm::vec4 Color{ 1.0f };

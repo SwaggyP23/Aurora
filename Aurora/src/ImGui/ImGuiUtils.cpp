@@ -15,6 +15,9 @@ namespace Aurora {
 		static uint32_t s_Counter = 0;
 		static char s_IDBuffer[16] = "##";
 
+		static char* s_MultiLineBuffer = nullptr;
+		static uint32_t s_MultiLineBufferSize = 1024 * 1024; // 1KB
+
 		// Taken from Hazel-dev
 		const char* GenerateID()
 		{
@@ -34,6 +37,7 @@ namespace Aurora {
 			s_UIContextID--;
 		}
 
+		// Prefer using this over the ToolTip
 		void ShowHelpMarker(const char* description)
 		{
 			ImGui::TextDisabled("(?)");
@@ -173,6 +177,11 @@ namespace Aurora {
 			return res;
 		}
 
+		bool IsItemDisabled()
+		{
+			return ImGui::GetItemFlags() & ImGuiItemFlags_Disabled;
+		}
+
 		void DrawItemActivityOutline(float rounding, bool drawWhenNotActive, ImColor colorWhenActive)
 		{
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -203,6 +212,29 @@ namespace Aurora {
 				drawlist->AddImage(textureID, rect.Min, rect.Max, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }, tintHovered);
 			else
 				drawlist->AddImage(textureID, rect.Min, rect.Max, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }, tintNormal);
+		}
+
+		void UnderLine(bool fullWidt, float offsetX, float offsetY)
+		{
+			if (fullWidt)
+			{
+				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
+					ImGui::PushColumnsBackground();
+				else if (ImGui::GetCurrentTable() != nullptr)
+					ImGui::TablePushBackgroundChannel();
+			}
+
+			const float width = fullWidt ? ImGui::GetWindowWidth() : ImGui::GetContentRegionAvail().x;
+			const ImVec2 cursor = ImGui::GetCursorScreenPos();
+			ImGui::GetWindowDrawList()->AddLine(ImVec2{ cursor.x + offsetX, cursor.y + offsetY }, ImVec2{cursor.x + width, cursor.y + offsetY}, Theme::BackgroundDark, 1.0f);
+
+			if (fullWidt)
+			{
+				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
+					ImGui::PopColumnsBackground();
+				else if (ImGui::GetCurrentTable() != nullptr)
+					ImGui::TablePopBackgroundChannel();
+			}
 		}
 
 		bool IsMatchingSearch(const std::string& name, std::string_view searchQuery, bool caseSensitive, bool noWhiteSpaces, bool noUnderScores)
@@ -269,48 +301,285 @@ namespace Aurora {
 			return ImColor::HSV(hue, std::min(sat * multiplier, 1.0f), val);
 		}
 
-		void ColorEdit3Control(const std::string& label, glm::vec3& color, bool showAsWheel, float columnwidth)
+		bool ColorEdit3Control(const char* label, glm::vec3& color, bool showAsWheel)
 		{
 			ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
 				| ImGuiColorEditFlags_AlphaPreview
 				| ImGuiColorEditFlags_HDR
 				| (showAsWheel ? ImGuiColorEditFlags_PickerHueWheel : ImGuiColorEditFlags_PickerHueBar);
 
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, columnwidth);
-
-			ImGui::Text(label.c_str());
-
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
 			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
 
 			ImGui::PushItemWidth(-1);
-			ImGui::ColorEdit3(GenerateID(), glm::value_ptr(color), flags);
+			bool modified = ImGui::ColorEdit3(fmt::format("##{0}", label).c_str(), glm::value_ptr(color), flags);
 			ImGui::PopItemWidth();
 
-			ImGui::Columns(1);
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
 		}
 
-		void ColorEdit4Control(const std::string& label, glm::vec4& color, bool showAsWheel, float columnwidth)
+		bool ColorEdit4Control(const char* label, glm::vec4& color, bool showAsWheel)
 		{
 			ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaBar
 									  | ImGuiColorEditFlags_AlphaPreview
 									  | ImGuiColorEditFlags_HDR
 									  | (showAsWheel ? ImGuiColorEditFlags_PickerHueWheel : ImGuiColorEditFlags_PickerHueBar);
 
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, columnwidth);
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
 
-			ImGui::Text(label.c_str());
+			ImGui::PushItemWidth(-1);
+			bool modified = ImGui::ColorEdit4(fmt::format("##{0}", label).c_str(), glm::value_ptr(color), flags);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
+		}
+
+		// UI...
+		bool PropertyGridHeader(const std::string& name, bool openByDefault)
+		{
+			ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
+				| ImGuiTreeNodeFlags_SpanAvailWidth
+				| ImGuiTreeNodeFlags_AllowItemOverlap
+				| ImGuiTreeNodeFlags_FramePadding;
+
+			if (openByDefault)
+				treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+			
+			constexpr float framePaddingX = 6.0f;
+			constexpr float framePaddingY = 6.0f;
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
+			ImGui::PushID(name.c_str());
+			bool open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, Utils::StringUtils::ToUpper(name).c_str());
+			ImGui::PopID();
+			ImGui::PopStyleVar(2);
+
+			return open;
+		}
+
+		void BeginPropertyGrid(uint32_t columns, bool defaultWidth)
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 8.0f, 8.0f });
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
+			PushID();
+			ImGui::Columns(columns);
+			if(defaultWidth)
+				ImGui::SetColumnWidth(0, 140.0f);
+		}
+
+		void EndPropertyGrid()
+		{
+			ImGui::Columns(1);
+			ImGui::PopStyleVar(2);
+			ShiftCursorY(8.0f);
+			PopID();
+		}
+
+		void Separator(ImVec2 size, ImVec4 color)
+		{
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, color);
+			ImGui::BeginChild("sep", size);
+			ImGui::EndChild();
+			ImGui::PopStyleColor();
+		}
+
+		bool PropertyFloat(const char* label, float& value, float delta, float min, float max, const char* helpText)
+		{
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+
+			if (std::strlen(helpText) != 0)
+			{
+				ImGui::SameLine();
+				ShowHelpMarker(helpText);
+			}
+
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
+
+			ImGui::PushItemWidth(-1);
+			bool modified = ImGui::DragFloat(fmt::format("##{0}", label).c_str(), &value, delta, min, max);
+
+			if (!IsItemDisabled())
+				DrawItemActivityOutline(2.0f, true, Theme::Accent);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
+		}
+
+		bool PropertyBool(const char* label, bool& value, const char* helpText)
+		{
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+
+			if (std::strlen(helpText) != 0)
+			{
+				ImGui::SameLine();
+				ShowHelpMarker(helpText);
+			}
+
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
+
+			bool modified = ImGui::Checkbox(fmt::format("##{0}", label).c_str(), &value);
+
+			// TODO: Maybe useless for the checkbox
+			if (!IsItemDisabled())
+				DrawItemActivityOutline(2.0f, true, Theme::Accent);
+
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
+		}
+
+		bool PropertyDropdown(const char* label, const char** options, int optionCount, int* selected, const char* helpText)
+		{
+			bool modified = false;
+			const char* current = options[*selected];
+
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+
+			if (std::strlen(helpText) != 0)
+			{
+				ImGui::SameLine();
+				ShowHelpMarker(helpText);
+			}
+
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
+
+			ImGui::PushItemWidth(-1);
+			const std::string id = fmt::format("##{0}", label);
+			if (ImGui::BeginCombo(id.c_str(), current))
+			{
+				for (int i = 0; i < optionCount; i++)
+				{
+					bool isSelected = (current == options[i]);
+					if (ImGui::Selectable(options[i], isSelected))
+					{
+						current = options[i];
+						*selected = i;
+						modified = true;
+					}
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+
+			if (!IsItemDisabled())
+				DrawItemActivityOutline(2.0f, true, Theme::Accent);
+
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
+		}
+
+		bool PropertySliderFloat(const char* label, float& value, float min, float max, const char* helpText)
+		{
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+
+			if (std::strlen(helpText) != 0)
+			{
+				ImGui::SameLine();
+				ShowHelpMarker(helpText);
+			}
+
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
+
+			ImGui::PushItemWidth(-1);
+			bool modified = ImGui::SliderFloat(fmt::format("##{0}", label).c_str(), &value, min, max);
+
+			if (!IsItemDisabled())
+				DrawItemActivityOutline(2.0f, true, Theme::Accent);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
+		}
+
+		bool MultiLineText(const char* label, std::string& value)
+		{
+			bool modified = false;
+
+			ImGui::Text(label);
+			ImGui::NextColumn();
+
+			if (!s_MultiLineBuffer)
+			{
+				s_MultiLineBuffer = new char[s_MultiLineBufferSize];
+				memset(s_MultiLineBuffer, 0, s_MultiLineBufferSize);
+			}
+
+			strcpy_s(s_MultiLineBuffer, s_MultiLineBufferSize, value.c_str());
+
+			ImGui::PushItemWidth(-1);
+			if (ImGui::InputTextMultiline(fmt::format("##{0}", label).c_str(), s_MultiLineBuffer, s_MultiLineBufferSize))
+			{
+				value = s_MultiLineBuffer;
+				modified = true;
+			}
+			ImGui::PopItemWidth();
 
 			ImGui::NextColumn();
 
-			ImGui::PushItemWidth(-1);
-			ImGui::ColorEdit4(GenerateID(), glm::value_ptr(color), flags);
-			ImGui::PopItemWidth();
-
-			ImGui::Columns(1);
+			return modified;
 		}
 
+		// Custom TreeNodes...
+		bool TreeNodeWithIcon(const char* label, Ref<Texture2D> icon, const ImVec2& size, bool openByDefault)
+		{
+			ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
+				| ImGuiTreeNodeFlags_SpanAvailWidth
+				| ImGuiTreeNodeFlags_AllowItemOverlap
+				| ImGuiTreeNodeFlags_FramePadding;
+
+			if (openByDefault)
+				treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+			constexpr float framePaddingX = 6.0f;
+			constexpr float framePaddingY = 6.0f; // affects height of the header
+
+			ImGui::PushID(label);
+			bool open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, label);
+
+			float lineHeight = ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y;
+			ImGui::SameLine();
+
+			ShiftCursorY(size.y / 4.0f);
+			ImGui::Image((void*)(uint64_t)icon->GetTextureID(), size, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
+			ShiftCursorY(-(size.y / 4.0f));
+
+			ImGui::PopID();
+			
+			return open;
+		}
+		
 	}
 
 }

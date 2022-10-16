@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include "ImGui/ImGuiUtils.h"
+#include "ImGui/TreeNode.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
@@ -10,16 +11,6 @@
 #include <glm/gtx/compatibility.hpp>
 
 #include <math.h>
-
-/*
- * The way mouse picking works in Luna currently is that in the main framebuffer we have an extra render target
- * which is cleared to -1 and in place of sprites it has their IDs, when mousebutton is pressed, we read the id
- * back from the texture to the cpu (Which is demonically slow :( ) and then we compare with the entity ID to
- * determine if we have to select it. we have to read the pixel every frame and can not make it only when the 
- * mouse is pressed that we read the pixel since we are actually reading the pixel of the frame that has already
- * been rendered and therefore if we try to read only when mouse if pressed we will be one frame behind on the
- * mouse clicks
- */
 
 namespace Aurora {
 
@@ -955,19 +946,20 @@ namespace Aurora {
 	template<typename T, typename UIFunction, typename ResetFunction>
 	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction, ResetFunction resetFunction, int texID = -1)
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+		constexpr ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		if (entity.HasComponent<T>())
 		{
+			ImGui::PushID((void*)typeid(T).hash_code());
+
 			T& component = entity.GetComponent<T>();
 			ImVec2 contentRegionAvail = ImGui::GetContentRegionAvail();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
 			const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
-			ImGui::Separator();
 
 			// TODO: Add component frame icons
-			//bool open = ImGui::TreeNodeWithIcon(EditorResources::TransformCompIcon, (void*)typeid(T).hash_code(), treeNodeFlags, ImColor(255, 255, 255, 255), name.c_str());
+			//bool open = ImGui::TreeNodeWithIcon(EditorResources::ComponentIcon, (void*)typeid(T).hash_code(), treeNodeFlags, ImColor(255, 255, 255, 255), name.c_str());
 			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
 
@@ -976,7 +968,6 @@ namespace Aurora {
 				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
 				void* textureID = (void*)(uint64_t)EditorResources::CloseIcon->GetTextureID();
 				if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 9.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
-				//if (ImGui::Button("X", ImVec2{ lineHeight, lineHeight }))
 				{
 					ImGui::OpenPopup("ComponentSettings"); // This is also just an id and not a tag that will be rendered
 				}
@@ -1025,6 +1016,8 @@ namespace Aurora {
 
 			if (removeComponent)
 				entity.RemoveComponent<T>();
+
+			ImGui::PopID();
 		}
 	}
 
@@ -1094,8 +1087,8 @@ namespace Aurora {
 		ImGui::PopID();
 	}
 
-	template<typename Component>
-	static void DrawPopUpMenuItems(std::string_view compName, Entity entity, Entity& selectionContext)
+	template<typename Component, bool TAddSeparator = false>
+	static void DrawPopUpMenuEntry(std::string_view compName, Entity entity, Entity& selectionContext)
 	{
 		if (!entity.HasComponent<Component>())
 		{
@@ -1103,6 +1096,11 @@ namespace Aurora {
 			{
 				selectionContext.AddComponent<Component>();
 				ImGui::CloseCurrentPopup();
+			}
+
+			if constexpr (TAddSeparator)
+			{
+				ImGui::Separator();
 			}
 		}
 	}
@@ -1133,25 +1131,22 @@ namespace Aurora {
 			ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "ID: %#010x", entity.GetUUID());
 
 		ImGui::SameLine();
-		ImGui::PushItemWidth(-1);
 
-		if (ImGui::Button("Add Component"))
+		float lineHeight = ImGui::GetItemRectSize().y; // Get Height of last item
+
+		ImGuiUtils::ShiftCursorX(-5);
+		if (ImGui::Button("Add Component", ImVec2{ ImGui::GetContentRegionAvail().x + 5, lineHeight }))
 			ImGui::OpenPopup("AddComponentsPopUp"); // AddComponentPopUp here acts as an ID for imgui to be used in the next step
-
-		ImGui::PopItemWidth();
 
 		if (ImGui::BeginPopup("AddComponentsPopUp"))
 		{
-			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
-			ImGui::Separator();
-			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
-			DrawPopUpMenuItems<CircleRendererComponent>("Circle Renderer", entity, m_SelectionContext);
-			DrawPopUpMenuItems<StaticMeshComponent>("StaticMesh", entity, m_SelectionContext);
-			ImGui::Separator();
-			DrawPopUpMenuItems<DirectionalLightComponent>("DirectionalLight", entity, m_SelectionContext);
-			DrawPopUpMenuItems<SkyLightComponent>("SkyLight", entity, m_SelectionContext);
-			ImGui::Separator();
-			DrawPopUpMenuItems<TextComponent>("Text", entity, m_SelectionContext);
+			DrawPopUpMenuEntry<CameraComponent, true>("Camera", entity, m_SelectionContext);
+			DrawPopUpMenuEntry<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
+			DrawPopUpMenuEntry<CircleRendererComponent>("Circle Renderer", entity, m_SelectionContext);
+			DrawPopUpMenuEntry<StaticMeshComponent, true>("StaticMesh", entity, m_SelectionContext);
+			DrawPopUpMenuEntry<DirectionalLightComponent>("DirectionalLight", entity, m_SelectionContext);
+			DrawPopUpMenuEntry<SkyLightComponent, true>("SkyLight", entity, m_SelectionContext);
+			DrawPopUpMenuEntry<TextComponent>("Text", entity, m_SelectionContext);
 
 			ImGui::EndPopup();
 		}
@@ -1167,133 +1162,55 @@ namespace Aurora {
 		[](TransformComponent& component) // Reset function
 		{
 			component.Translation = glm::vec3(0.0f);
-
 			component.Rotation = glm::vec3(0.0f);
-
 			component.Scale = glm::vec3(1.0f);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](CameraComponent& component)
 		{
-			auto& camera = component.Camera;
+			SceneCamera& camera = component.Camera;
 
-			ImGui::Columns(2);
+			ImGuiUtils::BeginPropertyGrid();
 
-			ImGui::SetColumnWidth(0, 150.0f);
-			ImGui::Text("Primary");
-
-			ImGui::NextColumn();
-
-			ImGui::Checkbox("##Primary", &component.Primary);
+			ImGuiUtils::PropertyBool("Primary", component.Primary, "Sets whether this is the primary camera to render with if there are multiple of them");
 
 			static const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-			static const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
-
-			ImGui::NextColumn();
-			ImGui::Separator();
-
-			ImGui::Text("Projection");
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			if (ImGui::BeginCombo("##Projection", currentProjectionTypeString))
+			int currentProjectionType = (int)camera.GetProjectionType();
+			if (ImGuiUtils::PropertyDropdown("Projection", projectionTypeString, 2, &currentProjectionType, "Set the type of projection for camera"))
 			{
-				for (int type = 0; type < 2; type++)
-				{
-					bool isSelected = currentProjectionTypeString == projectionTypeString[type];
-					if (ImGui::Selectable(projectionTypeString[type], &isSelected))
-					{
-						currentProjectionTypeString = projectionTypeString[type];
-						camera.SetProjectionType((SceneCamera::ProjectionType)type);
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-
-				ImGui::EndCombo();
+				camera.SetProjectionType((SceneCamera::ProjectionType)currentProjectionType);
 			}
-			ImGui::PopItemWidth();
-
-			ImGui::NextColumn();
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				ImGui::Text("FOV");
-				if (ImGui::IsItemHovered())
-					ImGuiUtils::ToolTip("Filed Of View");
-
-				ImGui::NextColumn();
-
-				ImGui::PushItemWidth(-1);
 				float verticalFOV = camera.GetDegPerspectiveVerticalFOV();
-				if (ImGui::DragFloat("##Vertical FOV", &verticalFOV, 0.1f))
+				if (ImGuiUtils::PropertyFloat("FOV", verticalFOV, 0.1f, 0.0f, 120.0f, "Field of view"))
 					camera.SetDegPerspectiveVerticalFOV(verticalFOV);
-				ImGui::PopItemWidth();
 
-				ImGui::NextColumn();
-
-				ImGui::Text("Near");
-				ImGui::NextColumn();
-
-				ImGui::PushItemWidth(-1);
 				float persNear = camera.GetPerspectiveNearClip();
-				if (ImGui::DragFloat("##Near", &persNear, 0.1f))
+				if (ImGuiUtils::PropertyFloat("Near", persNear, 0.1f, 0.0f, 0.0f, "Set near clip of camera"))
 					camera.SetPerspectiveNearClip(persNear);
-				ImGui::PopItemWidth();
 
-				ImGui::NextColumn();
-
-				ImGui::Text("Far");
-				ImGui::NextColumn();
-
-				ImGui::PushItemWidth(-1);
 				float persFar = camera.GetPerspectiveFarClip();
-				if (ImGui::DragFloat("##Far", &persFar, 0.1f))
+				if (ImGuiUtils::PropertyFloat("Far", persFar, 0.1f, 0.0f, 0.0f, "Set far clip of camera"))
 					camera.SetPerspectiveFarClip(persFar);
-				ImGui::PopItemWidth();
-
-				ImGui::Columns(1);
 			}
-
 			else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 			{
-				ImGui::Text("Size");
-				if (ImGui::IsItemHovered())
-					ImGuiUtils::ToolTip("Controls the top, bottom, left and right\nboundaries of the camera.");
-
-				ImGui::NextColumn();
-
-				ImGui::PushItemWidth(-1);
 				float orthoSize = camera.GetOrthographicSize();
-				if (ImGui::DragFloat("##Size", &orthoSize, 0.1f))
+				if (ImGuiUtils::PropertyFloat("Size", orthoSize, 0.1f, 0.0f, 1000.0f, "Set size of camera"))
 					camera.SetOrthographicSize(orthoSize);
-				ImGui::PopItemWidth();
 
-				ImGui::NextColumn();
-
-				ImGui::Text("Near");
-				ImGui::NextColumn();
-
-				ImGui::PushItemWidth(-1);
 				float orthoNear = camera.GetOrthographicNearClip();
-				if (ImGui::DragFloat("##Near", &orthoNear, 0.1f))
+				if (ImGuiUtils::PropertyFloat("Near", orthoNear, 0.1f, 0.0f, 0.0f, "Set near clip of camera"))
 					camera.SetOrthographicNearClip(orthoNear);
-				ImGui::PopItemWidth();
 
-				ImGui::NextColumn();
-
-				ImGui::Text("Far");
-				ImGui::NextColumn();
-
-				ImGui::PushItemWidth(-1);
 				float orthoFar = camera.GetOrthographicFarClip();
-				if (ImGui::DragFloat("##Far", &orthoFar, 0.1f))
+				if (ImGuiUtils::PropertyFloat("Far", orthoFar, 0.1f, 0.0f, 0.0f, "Set far clip of camera"))
 					camera.SetOrthographicFarClip(orthoFar);
-				ImGui::PopItemWidth();
-
-				ImGui::Columns(1);
 			}
+
+			ImGuiUtils::EndPropertyGrid();
 		},
 		[](CameraComponent& component) // Reset Function
 		{
@@ -1314,32 +1231,27 @@ namespace Aurora {
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
 		{
+			ImGuiUtils::BeginPropertyGrid();
+
 			ImGuiUtils::ColorEdit4Control("Color", component.Color);
+			ImGuiUtils::PropertyFloat("Tiling Factor", component.TilingFactor, 0.1f, 1.0f, 10.0f);
+
+			ImGuiUtils::EndPropertyGrid();
 		},
 		[](SpriteRendererComponent& component) // Reset Function
 		{
-			glm::vec4& color = component.Color;
-			color = glm::vec4(1.0f);
+			component.Color = glm::vec4(1.0f);
+			component.TilingFactor = 1.0f;
 		});
 
 		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](CircleRendererComponent& component)
 		{
+			ImGuiUtils::BeginPropertyGrid();
+
 			ImGuiUtils::ColorEdit4Control("Color", component.Color);
+			ImGuiUtils::PropertyFloat("Thickness", component.Thickness, 0.01f, 0.0f, 1.0f);
 
-			ImGui::Separator();
-
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 150.0f);
-
-			ImGui::Text("Thickness:");
-
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##thickenssvf", &component.Thickness, 0.01f, 0.0f, 1.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::Columns(1);
+			ImGuiUtils::EndPropertyGrid();
 		},
 		[](CircleRendererComponent& component)
 		{
@@ -1351,10 +1263,9 @@ namespace Aurora {
 
 		DrawComponent<SkyLightComponent>("SkyLight", entity, [](SkyLightComponent& component)
 		{
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 150.0f);
+			ImGuiUtils::BeginPropertyGrid();
 
-			ImGui::Text("Environment:");
+			ImGui::Text("Environment");
 
 			ImGui::NextColumn();
 
@@ -1373,67 +1284,24 @@ namespace Aurora {
 				else
 					environmentMapName = "Aurora Default";
 			}
+			
 			ImGui::PopStyleColor();
 
 			ImGui::NextColumn();
 
-			ImGui::Text("LOD:");
+			ImGuiUtils::PropertyFloat("LOD", component.Level, 0.05f, 0.0f, 10.0f);
+			ImGuiUtils::PropertyFloat("Intensity", component.Intensity, 0.05f, 0.01f, 10.0f);
+			ImGuiUtils::PropertyBool("Dynamic Sky", component.DynamicSky, "Generates a gpu generated skybox");
+			ImGuiUtils::PropertyFloat("Turbidity", component.TurbidityAzimuthInclination.x, 0.05f, 2.0f, 20.0f, "How turbid the sky is");
+			ImGuiUtils::PropertyFloat("Azimuth", component.TurbidityAzimuthInclination.y, 0.05f, 0.0f, 20.0f);
+			ImGuiUtils::PropertyFloat("Inclination", component.TurbidityAzimuthInclination.z, 0.05f, 0.0f, 20.0f, "How inclined the sun is");
 
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##lod", &component.Level, 0.05f, 0.0f, 10.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::NextColumn();
-
-			ImGui::Text("Intensity:");
-
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##intensity", &component.Intensity, 0.05f, 0.01f, 10.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::Separator();
-			ImGui::NextColumn();
-
-			ImGui::Text("Dynamic Sky:");
-
-			ImGui::NextColumn();
-
-			ImGui::Checkbox("##dynamic", &component.DynamicSky);
-			
-			ImGui::NextColumn();
-
-			ImGui::Text("Turbidity:");
-			ImGui::NextColumn();
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##turbidity", &component.TurbidityAzimuthInclination.x, 0.05f, 2.0f, 20.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::NextColumn();
-
-			ImGui::Text("Azimuth:");
-			ImGui::NextColumn();
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##azimuth", &component.TurbidityAzimuthInclination.y, 0.05f, 0.0f, 20.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::NextColumn();
-
-			ImGui::Text("Inclination:");
-			ImGui::NextColumn();
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##inclincation", &component.TurbidityAzimuthInclination.z, 0.05f, 0.0f, 20.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::Columns(1);
+			ImGuiUtils::EndPropertyGrid();
 		},
 		[](SkyLightComponent& component) // Reset Function
 		{
 			environmentMapName = "Aurora Default";
-			component.SceneEnvironment = nullptr;
+			component.SceneEnvironment = nullptr; // TDDO: Revisit this once asset manager is up and running
 			component.Level = 0.5f;
 			component.Intensity = 1.0f;
 			component.DynamicSky = false;
@@ -1455,22 +1323,12 @@ namespace Aurora {
 
 		DrawComponent<DirectionalLightComponent>("DirectionalLight", entity, [](DirectionalLightComponent& component)
 		{
+			ImGuiUtils::BeginPropertyGrid();
+
 			ImGuiUtils::ColorEdit3Control("Radiance", component.Radiance);
+			ImGuiUtils::PropertyFloat("Intensity", component.Intensity, 0.01f, 0.0f, 10.0f);
 
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 150.0f);
-
-			ImGui::Separator();
-
-			ImGui::Text("Intensity:");
-
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##intensitywv", &component.Intensity, 0.01f, 0.0f, 10.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::Columns(1);
+			ImGuiUtils::EndPropertyGrid();
 		},
 		[](DirectionalLightComponent& component)
 		{
@@ -1481,61 +1339,23 @@ namespace Aurora {
 		// TODO: Rework the text Input field!
 		DrawComponent<TextComponent>("Text", entity, [](TextComponent& component)
 		{
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 150.0f);
+			ImGuiUtils::BeginPropertyGrid();
 
-			ImGui::Text("Text:");
-
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			char buffer[256];
-			strcpy_s(buffer, sizeof(buffer), component.TextString.c_str());
-			if(ImGui::InputText("##textInputbar", buffer, sizeof(buffer)))
-				component.TextString = buffer;
-			ImGui::PopItemWidth();
+			if (ImGuiUtils::MultiLineText("Text", component.TextString))
+			{
+				component.TextHash = std::hash<std::string>()(component.TextString);
+			}
 			
-			ImGui::NextColumn();
+			ImGui::Separator();
 
-			ImGui::Text("Color:");
+			// TODO: Add a custom font API
 
-			ImGui::NextColumn();
+			ImGuiUtils::ColorEdit4Control("Color", component.Color);
+			ImGuiUtils::PropertyFloat("Line Spacing", component.LineSpacing, 0.05f, 0.0f, 30.0f);
+			ImGuiUtils::PropertyFloat("Max Width", component.MaxWidth, 0.01f, 0.0f, 30.0f);
+			ImGuiUtils::PropertyFloat("Kerning", component.Kerning, 0.01f, 0.0f, 30.0f);
 
-			ImGui::PushItemWidth(-1);
-			ImGui::ColorEdit4("##textColorField", glm::value_ptr(component.Color));
-			ImGui::PopItemWidth();
-
-			ImGui::NextColumn();
-
-			ImGui::Text("Line Spacing:");
-
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##lineSpacingField", &component.LineSpacing, 0.05f, 0.0f, 30.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::NextColumn();
-
-			ImGui::Text("Max Width:");
-
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##maxWidthField", &component.MaxWidth, 0.01f, 0.0f, 30.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::NextColumn();
-
-			ImGui::Text("Kerning:");
-
-			ImGui::NextColumn();
-
-			ImGui::PushItemWidth(-1);
-			ImGui::DragFloat("##kerningField", &component.Kerning, 0.01f, 0.0f, 30.0f);
-			ImGui::PopItemWidth();
-
-			ImGui::Columns(1);
+			ImGuiUtils::EndPropertyGrid();
 		},
 		[](TextComponent& component)
 		{
@@ -1781,10 +1601,14 @@ namespace Aurora {
 	{
 		ImGui::Begin("Materials", &m_ShowMaterialsPanel);
 
+		ImGuiUtils::BeginPropertyGrid();
+
 		ImGuiUtils::ColorEdit3Control("Color", albedoColor);
-		ImGui::DragFloat("Metalness", &metalness, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat("Emission", &emission, 0.01f, 0.0f, 1.0f);
+		ImGuiUtils::PropertyFloat("Metalness", metalness, 0.01f, 0.0f, 1.0f);
+		ImGuiUtils::PropertyFloat("Roughness", roughness, 0.01f, 0.0f, 1.0f);
+		ImGuiUtils::PropertyFloat("Emission", emission, 0.01f, 0.0f, 1.0f);
+
+		ImGuiUtils::EndPropertyGrid();
 
 		ImVec2 ramainingSize = ImGui::GetContentRegionAvail();
 		void* textureID = (void*)(uint64_t)m_ViewportRenderer->GetGeometryRenderPass()->GetSpecification().TargetFramebuffer->GetColorAttachment(1)->GetTextureID();
@@ -2374,364 +2198,95 @@ namespace Aurora {
 		ImGui::End(); // Docking window
 	}
 
-	// TODO: Probably needs to be changed lol
-	template<typename UIFunction>
-	static void DrawSettingsFeatureCheckbox(const std::string& name, const std::string& description, bool* controller, Capability feature, UIFunction func)
-	{
-		ImGui::Text((name + ":").c_str());
-		ImGui::SameLine();
-		ImGuiUtils::ShowHelpMarker(description.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, 200.0f);
-		
-		ImGui::Text("Enabled: ");
-		ImGui::NextColumn();
-		ImGui::Checkbox(("##" + name).c_str(), controller);
-
-		ImGui::Columns(1);
-
-		if (!(*controller))
-			RenderCommand::Disable(feature);
-		else
-			RenderCommand::Enable(feature);
-
-		func();
-	}
-
-	// TODO: Probably needs to be changed lol hard work for nothing xD
 	void EditorLayer::ShowSettingsUI()
 	{
-		// TODO: Make it so when someone changes the global settings of the editor they are saved in an auroraeditor.ini file and loaded when reopened
-		// Control settings such as enable back face culling, depth testing, blending, blend function...
-		// TODO: Add explanation in the HelpMarker for each setting in each combo!
 		static bool enableCulling = true;
 		static bool enableBlending = true;
 		static bool enableDepthTesting = true;
 		static bool allowGizmoAxisFlip = true;
 
 		static std::string cullOption = "Back";
-		static std::string blendOption = "One Minus Source Alpha";
 		static std::string depthOption = "Less";
-		static std::string blendEquation = "Add";
 		static float TickDelta = 1.0f;
+
+		static const char* blendDesc = "Blending is the technique that allows and implements the \"Transparency\" within objects.";
+		static const char* cullingDesc = "Culling is used to specify to the renderer what face is not to be processed thus reducing processing time.";
+		static const char* depthDesc = "Depth testing is what allows for 3D objects to appear on the screen via a depth buffer.";
+		static const char* comparatorOptions[] =
+		{
+			// For padding
+			"None",
+			// Depth
+			"Never", "Equal", "NotEqual", "Less", "LessOrEqual", "Greater", "GreaterOrEqual", "Always",
+			// Blend
+			"OneZero", "SrcAlphaOneMinusSrcAlpha", "ZeroSrcAlpha",
+			// Cull
+			"Front", "Back", "FrontAndBack"
+		};
 
 		ImGui::Begin("Settings", &m_ShowSettingsUI);
 
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, 200.0f);
+		ImGuiUtils::BeginPropertyGrid(2, false);
 
-		ImGui::Text("App Tick Delta: ");
-
-		ImGui::NextColumn();
-
-		ImGui::SetNextItemWidth(-1);
-		if (ImGui::SliderFloat("##AppTickingDelta", &TickDelta, 0.0f, 5.0f))
+		if(ImGuiUtils::PropertySliderFloat("App Tick Delta", TickDelta, 0.0f, 5.0f, "Controls the delta that it takes to call the OnTick function"))
 			Application::GetApp().SetTickDeltaTime(TickDelta);
 
-		ImGui::NextColumn();
-
-		ImGui::Text("Show Grid");
-
-		ImGui::NextColumn();
-
-		ImGui::Checkbox("##showGrid", &m_ViewportRenderer->GetOptions().ShowGrid);
-
-		ImGui::NextColumn();
-
-		ImGui::Text("Show Icons");
-
-		ImGui::NextColumn();
-
-		ImGui::Checkbox("##showIcons", &m_ShowIcons);
-
-		ImGui::NextColumn();
-
-		ImGui::Text("Allow gizmo flip:");
-
-		ImGui::NextColumn();
-
-		if (ImGui::Checkbox("##ImGuizmoGizmoFlip", &allowGizmoAxisFlip))
+		ImGuiUtils::PropertyBool("Show Grid", m_ViewportRenderer->GetOptions().ShowGrid);
+		ImGuiUtils::PropertyBool("Show Icons", m_ShowIcons);
+		if (ImGuiUtils::PropertyBool("Allow gizmo flip", allowGizmoAxisFlip))
 			ImGuizmo::AllowAxisFlip(allowGizmoAxisFlip);
+		
+		ImGuiUtils::EndPropertyGrid();
 
-		ImGui::NextColumn();
-
-		ImGui::Text("Environment Map Size:");
-
-		ImGui::NextColumn();
-
-		RendererConfig& rendererConfig = Renderer::GetConfig();
-
+		ImGui::PushID("RendererSettingsUI");
+		if (ImGuiUtils::PropertyGridHeader("Renderer", false))
 		{
-			const char* environmentMapSizes[] = { "128", "256", "512", "1024", "2048", "4096" };
+			ImGuiUtils::BeginPropertyGrid(2, false);
+
+			static const char* environmentMapSizesAndSamples[] = { "128", "256", "512", "1024", "2048", "4096" };
+			RendererConfig& rendererConfig = Renderer::GetConfig();
 			uint32_t currentSize = (uint32_t)glm::log2((float)rendererConfig.EnvironmentMapResolution) - 7;
-			const char* current = environmentMapSizes[currentSize];
-
-			ImGui::PushItemWidth(-1);
-			if (ImGui::BeginCombo("##envMap_size", current))
+			if (ImGuiUtils::PropertyDropdown("EnvironmentMap Size", environmentMapSizesAndSamples, 6, (int*)&currentSize))
 			{
-				for (uint32_t i = 0; i < 6; i++)
-				{
-					const bool selected = (current == environmentMapSizes[i]);
-					if (ImGui::Selectable(environmentMapSizes[i], selected))
-					{
-						current = environmentMapSizes[i];
-						currentSize = i;
-					}
-
-					if (selected)
-						ImGui::SetItemDefaultFocus();
-				}
-
 				rendererConfig.EnvironmentMapResolution = (uint32_t)glm::pow(2, currentSize + 7);
-
-				ImGui::EndCombo();
 			}
-			ImGui::PopItemWidth();
-		}
 
-		ImGui::NextColumn();
-
-		ImGui::Text("Irradiance Map Samples:");
-
-		ImGui::NextColumn();
-
-		{
-			const char* irradianceComputeSamples[] = { "128", "256", "512", "1024", "2048", "4096" };
 			uint32_t currentSamples = (uint32_t)glm::log2((float)rendererConfig.IrradianceMapComputeSamples) - 7;
-			const char* current = irradianceComputeSamples[currentSamples];
-
-			ImGui::PushItemWidth(-1);
-			if (ImGui::BeginCombo("##irradianceMap_samples", current))
+			if (ImGuiUtils::PropertyDropdown("IrradianceMap Compute Samples", environmentMapSizesAndSamples, 6, (int*)&currentSamples))
 			{
-				for (uint32_t i = 0; i < 6; i++)
-				{
-					const bool selected = (current == irradianceComputeSamples[i]);
-					if (ImGui::Selectable(irradianceComputeSamples[i], selected))
-					{
-						current = irradianceComputeSamples[i];
-						currentSamples = i;
-					}
-
-					if (selected)
-						ImGui::SetItemDefaultFocus();
-				}
-
 				rendererConfig.IrradianceMapComputeSamples = (uint32_t)glm::pow(2, currentSamples + 7);
-
-				ImGui::EndCombo();
 			}
-			ImGui::PopItemWidth();
+
+			ImGuiUtils::PropertyBool("Enable Blending", enableBlending, blendDesc);
+
+			int currentOption = (int)Comparator::SrcAlphaOnceMinusSrcAlpha;
+			if (ImGuiUtils::PropertyDropdown("Blending Function", comparatorOptions, 3, &currentOption, blendDesc))
+			{
+				RenderCommand::SetCapabilityFunction(Capability::Blending, (Comparator)currentOption);
+			}
+
+			ImGuiUtils::PropertyBool("Enable Culling", enableCulling, cullingDesc);
+
+			currentOption = (int)Comparator::Back;
+			if (ImGuiUtils::PropertyDropdown("Culling Function", comparatorOptions, 3, &currentOption))
+			{
+				RenderCommand::SetCapabilityFunction(Capability::Culling, (Comparator)currentOption);
+			}
+
+			ImGuiUtils::PropertyBool("Enable Depth Testing", enableDepthTesting, depthDesc);
+
+			currentOption = (int)Comparator::Less;
+			if (ImGuiUtils::PropertyDropdown("Depth Function", comparatorOptions, 8, &currentOption))
+			{
+				RenderCommand::SetCapabilityFunction(Capability::DepthTesting, (Comparator)currentOption);
+			}
+
+			ImGuiUtils::EndPropertyGrid();
+			ImGui::TreePop();
 		}
-
-		ImGui::Columns(1);
-
-		ImGui::Separator();
-
-		std::string blendDesc = "Blending is the technique that allows and implements the \"Transparency\" within objects.";
-		DrawSettingsFeatureCheckbox("Blending", blendDesc, &enableBlending, Capability::Blending, []()
-		{
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 200.0f);
-
-			ImGui::Text("Blending Function");
-			ImGui::NextColumn();
-			if (ImGui::BeginCombo("##BlendingFunction", blendOption.c_str()))
-			{
-				if (ImGui::Selectable("Zero"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::Zero);
-					blendOption = "Zero";
-				}
-
-				else if (ImGui::Selectable("One"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::One);
-					blendOption = "One";
-				}
-
-				else if (ImGui::Selectable("Source Color"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::SrcColor);
-					blendOption = "Source Color";
-				}
-
-				else if (ImGui::Selectable("Source Alpha"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::SrcAlpha);
-					blendOption = "Source Alpha";
-				}
-
-				else if (ImGui::Selectable("Destination Color"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::DstColor);
-					blendOption = "Destination Color";
-				}
-
-				else if (ImGui::Selectable("One Minus Source Color"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::OneMinusSrcColor);
-					blendOption = "One Minus Source Color";
-				}
-
-				else if (ImGui::Selectable("One Minus Source Alpha"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::OneMinusSrcAlpha);
-					blendOption = "One Minus Source Alpha";
-				}
-
-				else if (ImGui::Selectable("One Minus Destination Color"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Blending, Comparator::OneMinusDstColor);
-					blendOption = "One Minus Destination Color";
-				}
-
-				ImGui::Columns(1);
-				ImGui::EndCombo();
-			}
-		});
-
-		// Blend equation
-		ImGui::NextColumn();
-		ImGui::Text("Blending Equation");
-		ImGui::NextColumn();
-		if (ImGui::BeginCombo("##BlendingEquation", blendEquation.c_str())) // TODO: Fix the naming to display in the combo label
-		{
-			if (ImGui::Selectable("Add"))
-			{
-				RenderCommand::SetBlendFunctionEquation(BlendEquation::Add);
-				blendEquation = "Add";
-			}
-
-			else if (ImGui::Selectable("Subtract"))
-			{
-				RenderCommand::SetBlendFunctionEquation(BlendEquation::Subtract);
-				blendEquation = "Subtract";
-			}
-
-			else if (ImGui::Selectable("Reverse Subtract"))
-			{
-				RenderCommand::SetBlendFunctionEquation(BlendEquation::ReverseSubtract);
-				blendEquation = "Reverse Subtract";
-			}
-
-			else if (ImGui::Selectable("Minimum"))
-			{
-				RenderCommand::SetBlendFunctionEquation(BlendEquation::Minimum);
-				blendEquation = "Minimum";
-			}
-
-			else if (ImGui::Selectable("Maximum"))
-			{
-				RenderCommand::SetBlendFunctionEquation(BlendEquation::Maximum);
-				blendEquation = "Maximum";
-			}
-
-			ImGui::Columns(1);
-			ImGui::EndCombo();
-		}
-
-		ImGui::Separator();
-
-		ImGui::Columns(1);
-		std::string cullingDesc = "Culling is used to specify to the renderer what face is not to be processed thus reducing processing time.";
-		DrawSettingsFeatureCheckbox("Culling", cullingDesc, &enableCulling, Capability::Culling, []()
-		{
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 200.0f);
-
-			ImGui::Text("Culling Function");
-			ImGui::NextColumn();
-			if (ImGui::BeginCombo("##CullingFunction", cullOption.c_str())) // TODO: Fix the naming to display in the combo label
-			{
-				if (ImGui::Selectable("Back"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Culling, Comparator::Back);
-					cullOption = "Back";
-				}
-
-				else if (ImGui::Selectable("Front"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Culling, Comparator::Front);
-					cullOption = "Front";
-				}
-
-				else if (ImGui::Selectable("Front and Back"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::Culling, Comparator::FrontAndBack);
-					cullOption = "FronAndBack";
-				}
-
-				ImGui::EndCombo();
-			}
-			ImGui::Columns(1);
-
-		});
-
-		ImGui::Separator();
-
-		std::string depthDesc = "Depth testing is what allows for 3D objects to appear on the screen via a depth buffer.";
-		DrawSettingsFeatureCheckbox("DepthTesting", depthDesc, &enableDepthTesting, Capability::DepthTesting, []()
-		{
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 200.0f);
-
-			ImGui::Text("Depth Function");
-			ImGui::NextColumn();
-			if (ImGui::BeginCombo("##DepthFunction", depthOption.c_str()))
-			{
-				if (ImGui::Selectable("Never"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Never);
-					depthOption = "Never";
-				}
-
-				else if (ImGui::Selectable("Equal"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Equal);
-					depthOption = "Equal";
-				}
-
-				else if (ImGui::Selectable("Not Equal"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::NotEqual);
-					depthOption = "Not Equal";
-				}
-
-				else if (ImGui::Selectable("Less"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Less);
-					depthOption = "Less";
-				}
-
-				if (ImGui::Selectable("Less Or Equal"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::LessOrEqual);
-					depthOption = "Less Or Equal";
-				}
-
-				else if (ImGui::Selectable("Greater"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Greater);
-					depthOption = "Greater";
-				}
-
-				else if (ImGui::Selectable("Greater Or Equal"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::GreaterOrEqual);
-					depthOption = "Greater Or Equal";
-				}
-
-				else if (ImGui::Selectable("Always"))
-				{
-					RenderCommand::SetCapabilityFunction(Capability::DepthTesting, Comparator::Always);
-					depthOption = "Always";
-				}
-
-				ImGui::EndCombo();
-			}
-			ImGui::Columns(1);
-		});
+		else
+			ImGuiUtils::ShiftCursorY(-(ImGui::GetStyle().ItemSpacing.y + 1.0f));
+		ImGui::PopID();
 
 		ImGui::End();
 	}

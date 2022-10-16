@@ -3,7 +3,6 @@
 #include <imgui/imgui_internal.h>
 
 #include "Editor/EditorResources.h"
-#include "ImGui/TreeNode.h"
 
 namespace Aurora {
 

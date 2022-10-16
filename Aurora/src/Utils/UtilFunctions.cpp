@@ -139,16 +139,28 @@ namespace Aurora {
 		}
 
 		// String stuff...
-		std::string& StringUtils::ToLower(std::string& string)
+		std::string StringUtils::ToLower(const std::string_view& string)
 		{
-			std::transform(string.begin(), string.end(), string.begin(), [](const unsigned char c) { return std::tolower(c); });
-			return string;
+			std::string result;
+			result.resize(string.size());
+			for (int i = 0; i < string.size(); i++)
+			{
+				result[i] = std::tolower(string[i]);
+			}
+
+			return result;
 		}
 
-		std::string& StringUtils::ToUpper(std::string& string)
+		std::string StringUtils::ToUpper(const std::string_view& string)
 		{
-			std::transform(string.begin(), string.end(), string.begin(), [](const unsigned char c) { return std::toupper(c); });
-			return string;
+			std::string result;
+			result.resize(string.size());
+			for (int i = 0; i < string.size(); i++)
+			{
+				result[i] = std::toupper(string[i]);
+			}
+
+			return result;
 		}
 
 	}

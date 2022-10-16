@@ -15,15 +15,6 @@ namespace Aurora {
 		DepthTesting
 	};
 
-	enum class BlendEquation : uint8_t
-	{
-		Add,
-		Subtract,
-		ReverseSubtract,
-		Minimum,
-		Maximum
-	};
-
 	enum class Comparator : uint8_t
 	{
 		None = 0,
@@ -39,21 +30,14 @@ namespace Aurora {
 		Always,
 
 		// Blending
-		Zero,
-		One,
-		SrcColor,
-		OneMinusSrcColor,
-		DstColor,
-		OneMinusDstColor,
-		SrcAlpha,
-		OneMinusSrcAlpha,
+		OneZero,
+		SrcAlphaOnceMinusSrcAlpha,
+		ZeroSrcColor,
 
 		// Culling
 		Front,
 		Back,
 		FrontAndBack
-
-		// Stencil has the same function types as depth testing so it is not necessary to specify more enums for it
 	};
 
 	class RenderCommand
@@ -62,7 +46,6 @@ namespace Aurora {
 		static void Enable(Capability feature); // TODO: Think of better naming for this api since its a disaster
 		static void Disable(Capability feature);
 		static void SetCapabilityFunction(Capability feature, Comparator function);
-		static void SetBlendFunctionEquation(BlendEquation equation);
 
 		static void SetClearColor(const glm::vec4& color);
 		static void Clear();

@@ -20,35 +20,12 @@ namespace Aurora {
 			    case Comparator::GreaterOrEqual:               return GL_GEQUAL;
 			    case Comparator::NotEqual:                     return GL_NOTEQUAL;
 			    case Comparator::Always:                       return GL_ALWAYS;
-				case Comparator::Zero:                         return GL_ZERO;
-				case Comparator::One:                          return GL_ONE;
-				case Comparator::SrcColor:                     return GL_SRC_COLOR;
-				case Comparator::OneMinusSrcColor:             return GL_ONE_MINUS_SRC_COLOR;
-				case Comparator::DstColor:                     return GL_DST_COLOR;
-				case Comparator::OneMinusDstColor:             return GL_ONE_MINUS_DST_COLOR;
-				case Comparator::SrcAlpha:                     return GL_SRC_ALPHA;
-				case Comparator::OneMinusSrcAlpha:             return GL_ONE_MINUS_SRC_ALPHA;
 				case Comparator::Front:                        return GL_FRONT;
 				case Comparator::Back:                         return GL_BACK;
 				case Comparator::FrontAndBack:                 return GL_FRONT_AND_BACK;
 			}
 
 			AR_CORE_ASSERT(false, "Unknown Function!");
-			return 0;
-		}
-
-		static GLenum GLEquationfromOpenGLEquation(BlendEquation eq)
-		{
-			switch (eq)
-			{
-			    case BlendEquation::Add:                 return GL_FUNC_ADD;
-			    case BlendEquation::Subtract:            return GL_FUNC_SUBTRACT;
-			    case BlendEquation::ReverseSubtract:     return GL_FUNC_REVERSE_SUBTRACT;
-			    case BlendEquation::Minimum:             return GL_MIN;
-			    case BlendEquation::Maximum:             return GL_MAX;
-			}
-
-			AR_CORE_ASSERT(false, "Unknown Function Equation!");
 			return 0;
 		}
 
@@ -66,6 +43,18 @@ namespace Aurora {
 			return 0;
 		}
 
+		static void SetBlendFunction(Comparator function)
+		{
+			switch (function)
+			{
+				case Comparator::OneZero:						glBlendFunc(GL_ONE, GL_ZERO); return;
+				case Comparator::SrcAlphaOnceMinusSrcAlpha:		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); return;
+				case Comparator::ZeroSrcColor:					glBlendFunc(GL_ZERO, GL_SRC_COLOR); return;
+			}
+
+			AR_CORE_ASSERT(false, "Unknown type!");
+		}
+
 	}
 
 	void RenderCommand::Enable(Capability feature)
@@ -78,11 +67,6 @@ namespace Aurora {
 		glDisable(Utils::GLFeatureFromFeatureControl(feature));
 	}
 
-	void RenderCommand::SetBlendFunctionEquation(BlendEquation equation)
-	{
-		glBlendEquation(Utils::GLEquationfromOpenGLEquation(equation));
-	}
-
 	void RenderCommand::SetCapabilityFunction(Capability feature, Comparator function)
 	{
 		switch (feature)
@@ -90,7 +74,7 @@ namespace Aurora {
 		    case Capability::None:                  break;
 		    case Capability::DepthTesting:          glDepthFunc(Utils::GLFunctionFromEnum(function)); break;
 		    case Capability::Culling:               glCullFace(Utils::GLFunctionFromEnum(function)); break;
-		    case Capability::Blending:              glBlendFunc(GL_SRC_ALPHA, Utils::GLFunctionFromEnum(function)); break;
+			case Capability::Blending:              Utils::SetBlendFunction(function); break;
 		}
 	}
 

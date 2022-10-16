@@ -3,12 +3,38 @@
 
 #include "Entity.h"
 #include "Components.h"
+#include "AssetManager/AssetManager.h"
 #include "Renderer/Renderer.h"
 
 #include <yaml-cpp/yaml.h>
 #include "Utils/YAMLSerializationHelpers.h"
 
 namespace Aurora {
+
+	namespace Utils {
+
+		SceneCamera::ProjectionType ProjectionTypeFromString(std::string_view type)
+		{
+			if (type == "Perspective") return SceneCamera::ProjectionType::Perspective;
+			if (type == "Orthographic") return SceneCamera::ProjectionType::Orthographic;
+
+			AR_CORE_ASSERT(false, "Unknown type!");
+			return (SceneCamera::ProjectionType)0;
+		}
+
+		std::string ProjectionTypeToString(SceneCamera::ProjectionType type)
+		{
+			switch (type)
+			{
+				case SceneCamera::ProjectionType::Perspective:  return "Perspective";
+				case SceneCamera::ProjectionType::Orthographic: return "Orthographic";
+			}
+
+			AR_CORE_ASSERT(false, "Unknown type!");
+			return "";
+		}
+
+	}
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
@@ -51,11 +77,7 @@ namespace Aurora {
 			out << YAML::Key << "Camera";
 			out << YAML::BeginMap; // Camera!
 
-			switch ((int)cameraComp.Camera.GetProjectionType())
-			{
-			    case 0: out << YAML::Key << "ProjectionType" << YAML::Value << 0; out << YAML::Comment("Perspective"); break;
-			    case 1: out << YAML::Key << "ProjectionType" << YAML::Value << 1; out << YAML::Comment("Orthographic"); break;
-			}
+			out << YAML::Key << "ProjectionType" << YAML::Value << Utils::ProjectionTypeToString(cameraComp.Camera.GetProjectionType());
 
 			// Degrees
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << cameraComp.Camera.GetDegPerspectiveVerticalFOV();
@@ -81,6 +103,7 @@ namespace Aurora {
 			out << YAML::BeginMap; // Sprite Renderer Component
 
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			out << YAML::Key << "TilingFactor" << YAML::Value << src.TilingFactor;
 
 			out << YAML::EndMap; // Sprite Renderer Component
 		}
@@ -135,6 +158,24 @@ namespace Aurora {
 			}
 
 			out << YAML::EndMap; // Sky Light Component
+		}
+
+		if (entity.HasComponent<TextComponent>())
+		{
+			const TextComponent& tc = entity.GetComponent<TextComponent>();
+
+			out << YAML::Key << "TextComponent";
+			out << YAML::BeginMap; // Text Component
+
+			out << YAML::Key << "TextString" << YAML::Value << tc.TextString;
+			//out << YAML::Key << "FontHandle" << YAML::Value << tc.FontHandle; // TODO: When Asset Manager exists
+			out << YAML::Key << "FontHandle" << YAML::Value << 0;
+			out << YAML::Key << "Color" << YAML::Value << tc.Color;
+			out << YAML::Key << "LineSpacing" << YAML::Value << tc.LineSpacing;
+			out << YAML::Key << "Kerning" << YAML::Value << tc.Kerning;
+			out << YAML::Key << "MaxWidth" << YAML::Value << tc.MaxWidth;
+
+			out << YAML::EndMap; // Text Component
 		}
 
 		out << YAML::EndMap; // Entity
@@ -244,7 +285,7 @@ namespace Aurora {
 					CameraComponent& cc = deserializedEntity.AddComponent<CameraComponent>();
 
 					auto& cameraProps = cameraComp["Camera"];
-					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)(cameraProps["ProjectionType"].as<int>()));
+					cc.Camera.SetProjectionType(Utils::ProjectionTypeFromString(cameraProps["ProjectionType"].as<std::string>()));
 
 					cc.Camera.SetDegPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
@@ -260,9 +301,10 @@ namespace Aurora {
 				YAML::Node spriteRendComp = entity["SpriteRendererComponent"];
 				if (spriteRendComp)
 				{
-					glm::vec4& color = deserializedEntity.AddComponent<SpriteRendererComponent>().Color;
+					SpriteRendererComponent& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 
-					color = spriteRendComp["Color"].as<glm::vec4>();
+					src.Color = spriteRendComp["Color"].as<glm::vec4>();
+					src.TilingFactor = spriteRendComp["TilingFactor"].as<float>();
 				}
 
 				YAML::Node circleRendComp = entity["CircleRendererComponent"];
@@ -288,6 +330,7 @@ namespace Aurora {
 				{
 					SkyLightComponent& slc = deserializedEntity.AddComponent<SkyLightComponent>();
 
+					// TODO: Should change from storing the path to actually just getting the uuid
 					const std::string envMapPath = skyLightComponent["EnvironmentMap"].as<std::string>();
 					if (!envMapPath.empty())
 					{
@@ -311,6 +354,27 @@ namespace Aurora {
 
 						slc.TurbidityAzimuthInclination = glm::vec3{ turbidity, azimuth, inclination };
 					}
+				}
+
+				YAML::Node textComponent = entities["TextComponent"];
+				if (textComponent)
+				{
+					TextComponent& tc = deserializedEntity.AddComponent<TextComponent>();
+
+					tc.TextString = textComponent["TextString"].as<std::string>();
+					tc.TextHash = std::hash<std::string>()(tc.TextString);
+
+					// TODO:
+					//AssetHandle fontHandle = textComponent["FontHandle"].as<uint64_t>();
+					//if (AssetManager::IsAssetHandleValid(fontHandle))
+					//	tc.FontHandle = fontHandle;
+					//else
+					//	tc.FontHandle = Font::GetDefaultFont()->Handle;
+					tc.FontHandle = 0;
+					tc.Color = textComponent["Color"].as<glm::vec4>();
+					tc.LineSpacing = textComponent["LineSpacing"].as<float>();
+					tc.Kerning = textComponent["Kerning"].as<float>();
+					tc.MaxWidth = textComponent["MaxWidth"].as<float>();
 				}
 			}
 		}

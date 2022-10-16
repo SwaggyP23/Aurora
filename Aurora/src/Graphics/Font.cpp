@@ -122,6 +122,8 @@ namespace Aurora {
             std::string fileName = fmt::format("{0}-{1}.afa", fontName, fontSize);
             std::filesystem::path filePath = Utils::GetCacheDirectory() / fileName;
 
+            AR_CORE_TRACE_TAG("Renderer", "Found font atlas cached at {0}", filePath);
+
             if (std::filesystem::exists(filePath))
             {
                 storageBuffer = Utils::FileIO::ReadBytes(filePath);
@@ -365,6 +367,7 @@ namespace Aurora {
         }
         else
         {
+            AR_CORE_TRACE_TAG("Renderer", "Did not find any font atlas cached!");
             bool floatingPointFormat = true;
             Ref<Texture2D> texture;
 
