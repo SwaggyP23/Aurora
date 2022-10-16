@@ -26,12 +26,21 @@ namespace Aurora {
 
 	namespace Utils {
 
+// warning C4996: 'std::codecvt_utf8<char32_t,1114111,(std::codecvt_mode)0>': warning STL4017: std::wbuffer_convert, std::wstring_convert, and the <codecvt> header
+// (containing std::codecvt_mode, std::codecvt_utf8, std::codecvt_utf16, and std::codecvt_utf8_utf16) are deprecated in C++17. (The std::codecvt class template is NOT deprecated.)
+// The C++ Standard doesn't provide equivalent non-deprecated functionality; consider using MultiByteToWideChar() and WideCharToMultiByte() from <Windows.h> instead.
+// You can define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.
+#pragma warning(disable : 4996)
+
 		static std::u32string To_UTF32(const std::string& s)
 		{
+			// From https://stackoverflow.com/questions/31302506/stdu32string-conversion-to-from-stdstring-and-stdu16string
 			std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
 
 			return conv.from_bytes(s);
 		}
+
+#pragma warning(default: 4996)
 
 		static bool NextLine(int index, const std::vector<int>& lines)
 		{
@@ -311,22 +320,6 @@ namespace Aurora {
 			m_Stats.DrawCalls++;
 		}
 
-		// Text...
-		AR_CORE_ASSERT(m_TextVertexBufferPtr >= m_TextVertexBufferBase);
-		dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase);
-		if(dataSize)
-		{
-			m_TextVertexBuffer->SetData(m_TextVertexBufferBase, dataSize);
-
-			// TODO: Bind textures for now. This SHOULD/WILL change to be handled by the material when it supports texture arrays
-			for (uint32_t i = 0; i < m_FontTextureSlotIndex; i++)
-				m_FontTextureSlots[i]->Bind(i);
-
-			Renderer::RenderGeometry(nullptr, nullptr, m_TextMaterial, m_TextVertexArray, m_TextIndexCount);
-
-			m_Stats.DrawCalls++;
-		}
-
 		// Lines...
 		AR_CORE_ASSERT(m_LineVertexBufferPtr >= m_LineVertexBufferBase);
 		dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase);
@@ -345,6 +338,22 @@ namespace Aurora {
 
 			if (!m_LineMaterial->HasFlag(MaterialFlag::DepthTest))
 				glEnable(GL_DEPTH_TEST);
+
+			m_Stats.DrawCalls++;
+		}
+
+		// Text...
+		AR_CORE_ASSERT(m_TextVertexBufferPtr >= m_TextVertexBufferBase);
+		dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase);
+		if (dataSize)
+		{
+			m_TextVertexBuffer->SetData(m_TextVertexBufferBase, dataSize);
+
+			// TODO: Bind textures for now. This SHOULD/WILL change to be handled by the material when it supports texture arrays
+			for (uint32_t i = 0; i < m_FontTextureSlotIndex; i++)
+				m_FontTextureSlots[i]->Bind(i);
+
+			Renderer::RenderGeometry(nullptr, nullptr, m_TextMaterial, m_TextVertexArray, m_TextIndexCount);
 
 			m_Stats.DrawCalls++;
 		}
@@ -485,8 +494,6 @@ namespace Aurora {
 
 	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const glm::vec4& color)
 	{
-		AR_SCOPE_PERF("Renderer2D::DrawRotatedQuad");
-
 		if (m_QuadIndexCount >= MaxQuadIndices)
 			FlushAndReset();
 
@@ -586,6 +593,118 @@ namespace Aurora {
 		m_QuadVertexBufferPtr++;
 
 		m_QuadVertexBufferPtr->Position = transform * m_QuadVertexPositions[3];
+		m_QuadVertexBufferPtr->Color = tintColor;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[3];
+		m_QuadVertexBufferPtr->TextureIndex = textureIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tiling;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadIndexCount += 6;
+
+		m_Stats.QuadCount++;
+	}
+
+	void Renderer2D::DrawQuadBillboard(const glm::vec3& position, const glm::vec2& scale, const glm::vec4& color)
+	{
+		if (m_QuadIndexCount >= MaxQuadIndices)
+			FlushAndReset();
+
+		constexpr float whiteTexIndex = 0.0f; // White texture.
+		constexpr float tilingFactor = 1.0f; // TilingFactor.
+
+		glm::vec3 camRightWS = { m_CameraView[0][0], m_CameraView[1][0], m_CameraView[2][0] };
+		glm::vec3 camUpWS = { m_CameraView[0][1], m_CameraView[1][1], m_CameraView[2][1] };
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[0].x * scale.x + camUpWS * m_QuadVertexPositions[0].y * scale.y;
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[0];
+		m_QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[1].x * scale.x + camUpWS * m_QuadVertexPositions[1].y * scale.y;
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[1];
+		m_QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[2].x * scale.x + camUpWS * m_QuadVertexPositions[2].y * scale.y;
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[2];
+		m_QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[3].x * scale.x + camUpWS * m_QuadVertexPositions[3].y * scale.y;
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[3];
+		m_QuadVertexBufferPtr->TextureIndex = whiteTexIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadIndexCount += 6;
+
+		m_Stats.QuadCount++;
+	}
+
+	void Renderer2D::DrawQuadBillboard(const glm::vec3& position, const glm::vec2& scale, const Ref<Texture2D>& texture, float tiling, const glm::vec4& tintColor)
+	{
+		if (m_QuadIndexCount >= MaxQuadIndices)
+			FlushAndReset();
+
+		// textureIndex is the index that will be submitted in the VBO with everything and then passed on to the fragment shader so 
+		// that the shader knows which index from the sampler to sample from.
+		
+		// So here we need to find the texture index of the passed index and check if it has already been used.
+		// If it the case where it has been used before, the index will be already found in the array and we just return the index
+		float textureIndex = 0.0f;
+		for (uint32_t i = 1; i < m_TextureSlotIndex; i++)
+		{
+			if (m_TextureSlots[i] == texture)
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		// m_TextureSlotIndex is the next available index in the sampler
+		// If the case happens that it has never been used before, here we just add that index to the array so that it can be used later.
+		if (textureIndex == 0.0f)
+		{
+			if (m_TextureSlotIndex >= MaxQuadTextureSlots)
+				FlushAndReset();
+
+			textureIndex = (float)m_TextureSlotIndex;
+			m_TextureSlots[m_TextureSlotIndex] = texture;
+			m_TextureSlotIndex++;
+		}
+
+		glm::vec3 camRightWS = { m_CameraView[0][0], m_CameraView[1][0], m_CameraView[2][0] };
+		glm::vec3 camUpWS = { m_CameraView[0][1], m_CameraView[1][1], m_CameraView[2][1] };
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[0].x * scale.x + camUpWS * m_QuadVertexPositions[0].y * scale.y;
+		m_QuadVertexBufferPtr->Color = tintColor;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[0];
+		m_QuadVertexBufferPtr->TextureIndex = textureIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tiling;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[1].x * scale.x + camUpWS * m_QuadVertexPositions[1].y * scale.y;
+		m_QuadVertexBufferPtr->Color = tintColor;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[1];
+		m_QuadVertexBufferPtr->TextureIndex = textureIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tiling;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[2].x * scale.x + camUpWS * m_QuadVertexPositions[2].y * scale.y;
+		m_QuadVertexBufferPtr->Color = tintColor;
+		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[2];
+		m_QuadVertexBufferPtr->TextureIndex = textureIndex;
+		m_QuadVertexBufferPtr->TilingFactor = tiling;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = position + camRightWS * m_QuadVertexPositions[3].x * scale.x + camUpWS * m_QuadVertexPositions[3].y * scale.y;
 		m_QuadVertexBufferPtr->Color = tintColor;
 		m_QuadVertexBufferPtr->TexCoord = m_TextureCoords[3];
 		m_QuadVertexBufferPtr->TextureIndex = textureIndex;

@@ -768,7 +768,6 @@ namespace Aurora {
 		std::string& sceneName = m_EditorScene->GetName();
 		// There should not be a scene name that is more than 128 characters long LOL
 		char buffer[128];
-		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), sceneName.c_str());
 		ImGuiUtils::ShiftCursorY(-2.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -1115,7 +1114,6 @@ namespace Aurora {
 
 		// Size of buffer is 128 because there should not be an entity called more than 128 letters like BRUH
 		char buffer[128];
-		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -1145,11 +1143,15 @@ namespace Aurora {
 		if (ImGui::BeginPopup("AddComponentsPopUp"))
 		{
 			DrawPopUpMenuItems<CameraComponent>("Camera", entity, m_SelectionContext);
+			ImGui::Separator();
 			DrawPopUpMenuItems<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
 			DrawPopUpMenuItems<CircleRendererComponent>("Circle Renderer", entity, m_SelectionContext);
 			DrawPopUpMenuItems<StaticMeshComponent>("StaticMesh", entity, m_SelectionContext);
+			ImGui::Separator();
 			DrawPopUpMenuItems<DirectionalLightComponent>("DirectionalLight", entity, m_SelectionContext);
 			DrawPopUpMenuItems<SkyLightComponent>("SkyLight", entity, m_SelectionContext);
+			ImGui::Separator();
+			DrawPopUpMenuItems<TextComponent>("Text", entity, m_SelectionContext);
 
 			ImGui::EndPopup();
 		}
@@ -1474,6 +1476,77 @@ namespace Aurora {
 		{
 			component.Radiance = { 1.0f, 1.0f, 1.0f };
 			component.Intensity = 1.0f;
+		});
+
+		// TODO: Rework the text Input field!
+		DrawComponent<TextComponent>("Text", entity, [](TextComponent& component)
+		{
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, 150.0f);
+
+			ImGui::Text("Text:");
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			char buffer[256];
+			strcpy_s(buffer, sizeof(buffer), component.TextString.c_str());
+			if(ImGui::InputText("##textInputbar", buffer, sizeof(buffer)))
+				component.TextString = buffer;
+			ImGui::PopItemWidth();
+			
+			ImGui::NextColumn();
+
+			ImGui::Text("Color:");
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::ColorEdit4("##textColorField", glm::value_ptr(component.Color));
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+
+			ImGui::Text("Line Spacing:");
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##lineSpacingField", &component.LineSpacing, 0.05f, 0.0f, 30.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+
+			ImGui::Text("Max Width:");
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##maxWidthField", &component.MaxWidth, 0.01f, 0.0f, 30.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+
+			ImGui::Text("Kerning:");
+
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::DragFloat("##kerningField", &component.Kerning, 0.01f, 0.0f, 30.0f);
+			ImGui::PopItemWidth();
+
+			ImGui::Columns(1);
+		},
+		[](TextComponent& component)
+		{
+			component.TextString = "";
+			component.TextHash = 0;
+			//component.FontHandle = Font::GetDefaultFont();
+			component.FontHandle = nullptr;
+			component.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+			component.LineSpacing = 0.0f;
+			component.Kerning = 0.0f;
+			component.MaxWidth = 10.0f;
 		});
 	}
 

@@ -54,6 +54,10 @@ namespace Aurora {
 		void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const glm::vec4& color);
 		void DrawRotatedQuad(const glm::vec3& position, const glm::vec3& rotations, const glm::vec2& scale, const Ref<Texture2D>& texture, float tiling = 10.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 
+		// Billboard Quads that always face the camera's view
+		void DrawQuadBillboard(const glm::vec3& position, const glm::vec2& scale, const glm::vec4& color);
+		void DrawQuadBillboard(const glm::vec3& position, const glm::vec2& scale, const Ref<Texture2D>& texture, float tiling = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
+
 		// Thickness is between 0 and 1
 		void DrawCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color);
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& color);
@@ -84,6 +88,7 @@ namespace Aurora {
 		};
 
 		void SetLineWidth(float lineWidth);
+		float GetLineWidth() const { return m_LineWidth; }
 
 		void ResetStats();
 		const Statistics& GetStats();

@@ -102,6 +102,7 @@ namespace Aurora {
 
 		m_Renderer2D = Renderer2D::Create();
 		m_Renderer2D->SetLineWidth(m_LineWidth);
+		m_DebugRenderer = DebugRenderer::Create();
 	}
 
 	SceneRenderer::~SceneRenderer()

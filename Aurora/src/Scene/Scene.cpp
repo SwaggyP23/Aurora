@@ -6,6 +6,9 @@
 #include "ScriptableEntity.h"
 #include "Graphics/Font.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/SceneRenderer.h"
+#include "Renderer/Renderer2D.h"
+#include "Renderer/DebugRenderer.h"
 #include "Editor/EditorResources.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -222,22 +225,38 @@ namespace Aurora {
 
 			renderer2D->DrawCircle({ 0.0f, 0.0f, 0.0f }, glm::vec3(0.0f), 5.0f, { 1.0f, 0.0f, 1.0f, 1.0f });
 			renderer2D->FillCircle({ 0.0f, 0.0f, 10.0f }, 10.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, 1.0f);
-
-			std::string text = "Hello my name is Reda, nicknamed SwaggyP!";
-			renderer2D->DrawString(text, glm::vec3(0.0f, 0.0f, -5.0f), 10.0f, glm::vec4(1.0f, 1.0f, 1.0f, 0.7f));
-
+			
 			// Render text...
-			auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
-			for (auto entity : textGroup)
 			{
-				auto [transform, text] = textGroup.get<TransformComponent, TextComponent>(entity);
+				auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
+				for (auto entity : textGroup)
+				{
+					auto [transform, text] = textGroup.get<TransformComponent, TextComponent>(entity);
 
-				Entity e = Entity{ entity, this };
-				Ref<Font> font = Font::GetFontAssetForTextComponent(text);
-				renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning);
+					Entity e = Entity{ entity, this };
+					Ref<Font> font = Font::GetFontAssetForTextComponent(text);
+					renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning);
+				}
+			}
+
+			// Save the lineWidth in case debug renderer changed it
+			float lineWidth = renderer2D->GetLineWidth();
+
+			// Debug Renderer...
+			{
+				Ref<DebugRenderer> debugRenderer = renderer->GetDebugRenderer();
+
+				DebugRenderer::RenderQueue& renderQueue = debugRenderer->GetRenderQueue();
+				for (DebugRenderer::RenderQueueFunction& func : renderQueue)
+					func(renderer2D);
+
+				debugRenderer->ClearRenderQueue();
 			}
 
 			renderer2D->EndScene();
+
+			// Restore the lineWidth in case debug renderer changed it
+			renderer2D->SetLineWidth(lineWidth);
 		}
 	}
 
@@ -347,17 +366,36 @@ namespace Aurora {
 			renderer2D->FillCircle({ 0.0f, 0.0f, 10.0f }, 10.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, 1.0f);
 
 			// Render text...
-			auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
-			for (auto entity : textGroup)
 			{
-				auto [transform, text] = textGroup.get<TransformComponent, TextComponent>(entity);
+				auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
+				for (auto entity : textGroup)
+				{
+					auto [transform, text] = textGroup.get<TransformComponent, TextComponent>(entity);
 
-				Entity e = Entity{ entity, this };
-				Ref<Font> font = Font::GetFontAssetForTextComponent(text);
-				renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning);
+					Entity e = Entity{ entity, this };
+					Ref<Font> font = Font::GetFontAssetForTextComponent(text);
+					renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning);
+				}
+			}
+
+			// Save the lineWidth in case debug renderer changed it
+			float lineWidth = renderer2D->GetLineWidth();
+
+			// Debug Renderer...
+			{
+				Ref<DebugRenderer> debugRenderer = renderer->GetDebugRenderer();
+
+				DebugRenderer::RenderQueue& renderQueue = debugRenderer->GetRenderQueue();
+				for (DebugRenderer::RenderQueueFunction& func : renderQueue)
+					func(renderer2D);
+
+				debugRenderer->ClearRenderQueue();
 			}
 
 			renderer2D->EndScene();
+
+			// Restore the lineWidth in case debug renderer changed it
+			renderer2D->SetLineWidth(lineWidth);
 		}
 	}
 

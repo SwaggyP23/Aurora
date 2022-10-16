@@ -3,6 +3,7 @@
 #include "Core/Base.h"
 #include "Scene/Scene.h"
 #include "Renderer2D.h"
+#include "DebugRenderer.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/Camera.h"
 #include "Graphics/Material.h"
@@ -51,6 +52,7 @@ namespace Aurora {
 		void SubmitStaticMesh(Ref<StaticMesh> staticMesh, Ref<MaterialTable> matTable, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> overrideMat = nullptr);
 
 		Ref<Renderer2D> GetRenderer2D() { return m_Renderer2D; }
+		Ref<DebugRenderer> GetDebugRenderer() { return m_DebugRenderer; }
 
 		SceneRendererOptions& GetOptions() { return m_Options; }
 
@@ -86,6 +88,7 @@ namespace Aurora {
 		Ref<Scene> m_Scene = nullptr;
 
 		Ref<Renderer2D> m_Renderer2D = nullptr;
+		Ref<DebugRenderer> m_DebugRenderer = nullptr;
 
 		struct SceneInfo
 		{

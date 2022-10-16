@@ -22,6 +22,7 @@ namespace Aurora {
 		std::string Tag;
 	};
 
+	// TODO: Edge coloring maybe??
 	struct TextComponent
 	{
 		std::string TextString = "";
