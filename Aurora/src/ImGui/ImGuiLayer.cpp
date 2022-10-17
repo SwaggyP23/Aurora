@@ -189,31 +189,38 @@ namespace Aurora {
 		AR_PROFILE_FUNCTION();
 
 		// Loading default fonts
-		m_FontsLibrary.LoadFont("BebasNeue", "Resources/EditorInternal/Fonts/BebasNeue");
-		m_FontsLibrary.LoadFont("Chewy", "Resources/EditorInternal/Fonts/Chewy");
-		m_FontsLibrary.LoadFont("Edu NSW ACT", "Resources/EditorInternal/Fonts/Edu NSW ACT Foundation");
-		m_FontsLibrary.LoadFont("FredokaOne", "Resources/EditorInternal/Fonts/Fredoka_One");
-		m_FontsLibrary.LoadFont("MochiyPopOne", "Resources/EditorInternal/Fonts/MochiyPopOne");
-		m_FontsLibrary.LoadFont("OpenSans", "Resources/EditorInternal/Fonts/OpenSans");
+		FontSpecification robotoLarge = {};
+		robotoLarge.FontName = "RobotoLarge";
+		robotoLarge.FontFilePath = "Resources/EditorInternal/Fonts/Roboto/Roboto-Regular.ttf";
+		robotoLarge.Size = 24.0f;
+		m_FontsLibrary.LoadFont(robotoLarge);
 
-		m_FontsLibrary.AddFont("BebasNeue", FontIdentifier::Regular, 22.0f);
+		FontSpecification robotoBold = {};
+		robotoBold.FontName = "RobotoBold";
+		robotoBold.FontFilePath = "Resources/EditorInternal/Fonts/Roboto/Roboto-Bold.ttf";
+		robotoBold.Size = 18.0f;
+		m_FontsLibrary.LoadFont(robotoBold);
 
-		m_FontsLibrary.AddFont("Chewy", FontIdentifier::Regular, 20.0f);
+		FontSpecification robotoDefault = {};
+		robotoDefault.FontName = "RobotoDefault";
+		robotoDefault.FontFilePath = "Resources/EditorInternal/Fonts/Roboto/Roboto-SemiMedium.ttf";
+		robotoDefault.Size = 15.0f;
+		m_FontsLibrary.LoadFont(robotoDefault, true);
 
-		m_FontsLibrary.AddFont("Edu NSW ACT", FontIdentifier::Bold, 19.5f);
-		m_FontsLibrary.AddFont("Edu NSW ACT", FontIdentifier::Medium, 19.5f);
+		static const ImWchar s_FontAwesomeGlyphRanges[] = { 0xf000, 0xf307, 0 };
+		FontSpecification fontAwesome = {};
+		fontAwesome.FontName = "FontAwesome";
+		fontAwesome.FontFilePath = "Resources/EditorInternal/Fonts/FontAwesome/fontawesome-webfont.ttf";
+		fontAwesome.Size = 16.0f;
+		fontAwesome.GlyphRanges = s_FontAwesomeGlyphRanges;
+		fontAwesome.MergeWithLast = true;
+		m_FontsLibrary.LoadFont(fontAwesome);
 
-		m_FontsLibrary.AddFont("FredokaOne", FontIdentifier::Regular, 16.5f);
-
-		m_FontsLibrary.AddFont("MochiyPopOne", FontIdentifier::Regular, 18.0f);
-
-		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Bold, 19.0f);
-		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Italic, 19.0f);
-		m_FontsLibrary.AddFont("OpenSans", FontIdentifier::Medium, 18.5f);
-
-		// More fonts are to be added
-
-		m_FontsLibrary.SetDefaultFont("OpenSans", FontIdentifier::Medium);
+		FontSpecification mochiyPop = {};
+		mochiyPop.FontName = "MochiyPopOne";
+		mochiyPop.FontFilePath = "Resources/EditorInternal/Fonts/MochiyPopOne/MochiyPopOne-Regular.ttf";
+		mochiyPop.Size = 18.0f;
+		m_FontsLibrary.LoadFont(mochiyPop);
 	}
 
 }

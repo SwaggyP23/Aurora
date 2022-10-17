@@ -5,6 +5,10 @@
 
 #include <glm/glm.hpp>
 
+/*
+ * This will be removed once the switch to vulkan API happens since vulkan has no shitty ass global state like OpenGL does
+ */
+
 namespace Aurora {
 
 	enum class Capability : uint8_t

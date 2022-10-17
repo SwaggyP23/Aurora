@@ -9,6 +9,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.46000004]
     SpriteRendererComponent:
       Color: [0.285714269, 1, 0, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: A3
@@ -18,6 +19,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.46000004]
     SpriteRendererComponent:
       Color: [1, 0, 0, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: A2
@@ -27,6 +29,7 @@ Entities:
       Scale: [0.330000013, 0.399944961, 2.98955965]
     SpriteRendererComponent:
       Color: [0, 0.548262835, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: R1
@@ -36,6 +39,7 @@ Entities:
       Scale: [0.327765495, 0.440669924, 3.32971668]
     SpriteRendererComponent:
       Color: [0.888030529, 0, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: R2
@@ -45,6 +49,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.4623481]
     SpriteRendererComponent:
       Color: [0.775047302, 1, 0, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: R3
@@ -54,6 +59,7 @@ Entities:
       Scale: [0.312715054, 0.96342212, 0.282677919]
     SpriteRendererComponent:
       Color: [0, 1, 0.084941864, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: R4
@@ -63,6 +69,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.46000004]
     SpriteRendererComponent:
       Color: [0, 1, 0.594594479, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: R5
@@ -72,6 +79,7 @@ Entities:
       Scale: [0.330000013, 0.399999857, 1.94671381]
     SpriteRendererComponent:
       Color: [0, 0.455598593, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: E1
@@ -81,6 +89,7 @@ Entities:
       Scale: [0.330000013, 0.399986237, 3.11330724]
     SpriteRendererComponent:
       Color: [1, 0, 0.306238174, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: E2
@@ -90,6 +99,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.46000004]
     SpriteRendererComponent:
       Color: [0.239382267, 0, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: E3
@@ -99,6 +109,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.07143927]
     SpriteRendererComponent:
       Color: [0.725868702, 0, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: E4
@@ -108,6 +119,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.46000004]
     SpriteRendererComponent:
       Color: [0.514177799, 0, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: D1
@@ -117,6 +129,7 @@ Entities:
       Scale: [0.330000013, 0.399981469, 2.98999286]
     SpriteRendererComponent:
       Color: [0.142305568, 0.329848588, 0.33204633, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: D2
@@ -126,6 +139,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.46000004]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: D3
@@ -135,6 +149,7 @@ Entities:
       Scale: [0.330000013, 0.400000006, 1.46000004]
     SpriteRendererComponent:
       Color: [0.308880329, 1, 0, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: D4
@@ -144,6 +159,7 @@ Entities:
       Scale: [0.330000013, 0.399986297, 2.98989034]
     SpriteRendererComponent:
       Color: [0, 0.965251207, 1, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: A1
@@ -153,3 +169,4 @@ Entities:
       Scale: [0.330000013, 0.399986774, 2.98989415]
     SpriteRendererComponent:
       Color: [1, 0.880308867, 0, 1]
+      TilingFactor: 1

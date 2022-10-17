@@ -496,7 +496,7 @@ namespace Aurora {
 			return modified;
 		}
 
-		bool PropertySliderFloat(const char* label, float& value, float min, float max, const char* helpText)
+		bool PropertySliderFloat(const char* label, float& value, float min, float max, const char* format, const char* helpText)
 		{
 			ShiftCursor(10.0f, 9.0f);
 			ImGui::Text(label);
@@ -511,7 +511,34 @@ namespace Aurora {
 			ShiftCursorY(4.0f);
 
 			ImGui::PushItemWidth(-1);
-			bool modified = ImGui::SliderFloat(fmt::format("##{0}", label).c_str(), &value, min, max);
+			bool modified = ImGui::SliderFloat(fmt::format("##{0}", label).c_str(), &value, min, max, format);
+
+			if (!IsItemDisabled())
+				DrawItemActivityOutline(2.0f, true, Theme::Accent);
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
+		}
+
+		bool PropertySliderFloat2(const char* label, ImVec2& value, float min, float max, const char* format, const char* helpText)
+		{
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+
+			if (std::strlen(helpText) != 0)
+			{
+				ImGui::SameLine();
+				ShowHelpMarker(helpText);
+			}
+
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
+
+			ImGui::PushItemWidth(-1);
+			bool modified = ImGui::SliderFloat2(fmt::format("##{0}", label).c_str(), (float*)&value, min, max, format);
 
 			if (!IsItemDisabled())
 				DrawItemActivityOutline(2.0f, true, Theme::Accent);
@@ -550,6 +577,42 @@ namespace Aurora {
 
 			return modified;
 		}
+
+		//static int s_CheckBoxCount = 0;
+
+		//void BeginPropertyCheckBoxGroup(const char* label)
+		//{
+		//	ShiftCursor(10.0f, 9.0f);
+		//	ImGui::Text(label);
+		//	ImGui::NextColumn();
+		//}
+
+		//bool PropertyCheckBoxGroup(const char* label, bool& value)
+		//{
+		//	bool modified = false;
+
+		//	if (++s_CheckBoxCount > 1)
+		//		ImGui::SameLine();
+		//	else
+		//		ShiftCursor(10.0f, 9.0f);
+
+		//	ImGui::Text(label);
+		//	ImGui::SameLine();
+
+		//	if (ImGui::Checkbox(GenerateID(), &value))
+		//		modified = true;
+
+		//	if (!IsItemDisabled())
+		//		DrawItemActivityOutline(2.0f, true, Theme::Accent);
+
+		//	return modified;
+		//}
+
+		//void EndPropertyCheckBoxGroup()
+		//{
+		//	ImGui::NextColumn();
+		//	s_CheckBoxCount = 0;
+		//}
 
 		// Custom TreeNodes...
 		bool TreeNodeWithIcon(const char* label, Ref<Texture2D> icon, const ImVec2& size, bool openByDefault)

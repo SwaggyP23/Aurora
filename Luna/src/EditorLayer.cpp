@@ -749,7 +749,7 @@ namespace Aurora {
 		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
 		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
 
-		fontsLib.PushTemporaryFont("OpenSans", FontIdentifier::Bold);
+		fontsLib.PushTemporaryFont("RobotoBold");
 		ImGui::TextColored(ImVec4{ 0.925f, 0.619f, 0.141f, 0.888f }, "Scene:");
 
 		ImGui::SameLine();
@@ -1044,7 +1044,7 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne");
 		if (ImGui::Button("X", buttonSize))
 			values.x = resetValue;
 		layer->m_FontsLibrary.PopTemporaryFont();
@@ -1058,7 +1058,7 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne");
 		if (ImGui::Button("Y", buttonSize))
 			values.y = resetValue;
 		layer->m_FontsLibrary.PopTemporaryFont();
@@ -1072,7 +1072,7 @@ namespace Aurora {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne", FontIdentifier::Regular);
+		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne");
 		if (ImGui::Button("Z", buttonSize))
 			values.z = resetValue;
 		layer->m_FontsLibrary.PopTemporaryFont();
@@ -1116,7 +1116,7 @@ namespace Aurora {
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
-		fontLib.PushTemporaryFont("OpenSans", FontIdentifier::Bold);
+		fontLib.PushTemporaryFont("RobotoBold");
 		if (ImGui::InputTextWithHint("##Tag", "Change entity name...", buffer, sizeof(buffer)))
 		{
 			tag = std::string(buffer);
@@ -1658,18 +1658,16 @@ namespace Aurora {
 
 	void EditorLayer::ShowEditPanelUI()
 	{
-		constexpr ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
-
 		ImGui::Begin("Editor Style", &m_ShowEditingPanel);
 
-		if (ImGui::TreeNodeEx("Font", flags))
+		if (ImGuiUtils::PropertyGridHeader("Fonts"))
 		{
 			ShowFontPickerUI();
 
 			ImGui::TreePop();
 		}
 
-		if (ImGui::TreeNodeEx("Editor Style", flags))
+		if (ImGuiUtils::PropertyGridHeader("Editor Style"))
 		{
 			ImGui::ShowStyleEditor();
 
@@ -1677,6 +1675,24 @@ namespace Aurora {
 		}
 
 		ImGui::End();
+	}
+
+	void EditorLayer::ShowFontPickerUI()
+	{
+
+		ImGuiFontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
+
+		ImGuiUtils::BeginPropertyGrid();
+
+		static const char* fonts[] = { "RobotoLarge", "RobotoBold", "RobotoDefault", "MochiyPopOne" };
+		static int selected = 2;
+		if (ImGuiUtils::PropertyDropdown("Available Fonts", fonts, 4, &selected))
+		{
+			fontsLib.SetDefaultFont(fonts[selected]);
+			AR_DEBUG("Selected int: {0}", selected);
+		}
+
+		ImGuiUtils::EndPropertyGrid();
 	}
 
 	void EditorLayer::ShowScreenshotPanel()
@@ -1733,66 +1749,6 @@ namespace Aurora {
 			AR_WARN_TAG("EditorLayer", "Wrote image to {0}", finalName);
 			m_DisplayImage = Texture2D::Create(finalName);
 		}
-	}
-
-#pragma endregion
-
-#pragma region FontPickerUI
-
-	void EditorLayer::ShowFontPickerUI()
-	{
-		ImGuiFontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
-
-		std::vector<std::tuple<std::string, std::string, FontIdentifier>> sortedFontNames;
-		sortedFontNames.reserve(fontsLib.GetFontNamesAndIdentifier().size());
-
-		const char* idenType;
-		std::string displayName;
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, 100.0f);
-
-		ImGui::Text("Editor Font:");
-
-		ImGui::NextColumn();
-
-		static std::string selectedFontName = "OpenSans, Medium";
-		ImGui::PushItemWidth(-1);
-		if (ImGui::BeginCombo("##FontPicker", selectedFontName.c_str()))
-		{
-			for (const auto&[pair, second] : fontsLib.GetFontNamesAndIdentifier())
-			{
-				switch (pair.second)
-				{
-				    case FontIdentifier::Bold:       idenType = ", Bold"; break;
-				    case FontIdentifier::Italic:     idenType = ", Italic"; break;
-				    case FontIdentifier::Regular:    idenType = ", Regular"; break;
-				    case FontIdentifier::Medium:     idenType = ", Medium"; break;
-				    case FontIdentifier::Light:      idenType = ", Light"; break;
-				}
-
-				displayName = pair.first;
-				displayName.append(idenType);
-				sortedFontNames.emplace_back(displayName, pair.first, pair.second);
-			}
-
-			std::sort(sortedFontNames.begin(), sortedFontNames.end());
-			for (const auto& [displayName, fontName, type] : sortedFontNames)
-			{
-				fontsLib.PushTemporaryFont(fontName, type);
-				if (ImGui::Selectable(displayName.c_str()))
-				{
-					fontsLib.SetDefaultFont(fontName, type);
-					selectedFontName = displayName;
-				}
-				fontsLib.PopTemporaryFont();
-			}
-
-			ImGui::EndCombo();
-		}
-		ImGui::PopItemWidth();
-
-		ImGui::Columns(1);
 	}
 
 #pragma endregion
@@ -1878,8 +1834,6 @@ namespace Aurora {
 				if (ImGui::MenuItem("New", "Ctrl+N"))
 					NewScene();
 
-				ImGui::Separator();
-
 				if (ImGui::MenuItem("Open...", "Ctrl+O"))
 					OpenScene();
 
@@ -1887,8 +1841,6 @@ namespace Aurora {
 
 				if (ImGui::MenuItem("Save", "Ctrl+S"))
 					SaveScene();
-
-				ImGui::Separator();
 
 				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
 					SaveSceneAs();
@@ -1921,8 +1873,6 @@ namespace Aurora {
 				if (ImGui::MenuItem("Renderer Stats", nullptr, m_ShowRenderStatsUI))
 					m_ShowRenderStatsUI = !m_ShowRenderStatsUI;
 
-				ImGui::Separator();
-
 				if (ImGui::MenuItem("Renderer Info", nullptr, m_ShowRendererVendorInfo))
 					m_ShowRendererVendorInfo = !m_ShowRendererVendorInfo;
 
@@ -1952,18 +1902,12 @@ namespace Aurora {
 				if (ImGui::MenuItem("Editor Style", nullptr, m_ShowEditingPanel))
 					m_ShowEditingPanel = !m_ShowEditingPanel;
 
-				ImGui::Separator();
-
 				if (ImGui::MenuItem("ImGui StackTool", nullptr, m_ShowDearImGuiStackToolWindow))
 					m_ShowDearImGuiStackToolWindow = !m_ShowDearImGuiStackToolWindow;
-
-				ImGui::Separator();
 
 #ifdef AURORA_DEBUG
 				if (ImGui::MenuItem("ImGui DebugLog", nullptr, m_ShowDearImGuiDebugLogWindow))
 					m_ShowDearImGuiDebugLogWindow = !m_ShowDearImGuiDebugLogWindow;
-
-				ImGui::Separator();
 #endif
 
 				if (ImGui::MenuItem("ImGui Metrics", nullptr, m_ShowDearImGuiMetricsWindow))

@@ -9,6 +9,7 @@ Entities:
       Scale: [5.54495525, 2.76080108, 5.85002422]
     SpriteRendererComponent:
       Color: [0.324383944, 0.980725586, 0.98841697, 1]
+      TilingFactor: 1
   - Entity: 129861987
     TagComponent:
       Tag: Camera

@@ -36,6 +36,7 @@ Entities:
       Scale: [10.5, 10.5, 10.5]
     SpriteRendererComponent:
       Color: [0.517374516, 0, 1, 1]
+      TilingFactor: 1
   - Entity: 3495422947713230440
     TagComponent:
       Tag: Plane
@@ -45,6 +46,7 @@ Entities:
       Scale: [62.7273483, 55.0433578, 199.999924]
     SpriteRendererComponent:
       Color: [0.595339954, 0.601427734, 0.602316618, 1]
+      TilingFactor: 1
   - Entity: 862575065449540416
     TagComponent:
       Tag: Swag Jack
@@ -54,6 +56,7 @@ Entities:
       Scale: [5.5, 5.5, 5.5]
     SpriteRendererComponent:
       Color: [0.899613917, 0.339804351, 0.0416809656, 1]
+      TilingFactor: 1
   - Entity: 3069317999880110862
     TagComponent:
       Tag: PSwaggy
@@ -63,6 +66,7 @@ Entities:
       Scale: [5, 5, 5]
     SpriteRendererComponent:
       Color: [0.895752907, 0.0587945804, 0.310851634, 1]
+      TilingFactor: 1
   - Entity: 9514977202622487335
     TagComponent:
       Tag: Cube blue
@@ -72,6 +76,7 @@ Entities:
       Scale: [5.5, 5.5, 5.5]
     SpriteRendererComponent:
       Color: [0.0797841176, 0.381413281, 0.861003876, 1]
+      TilingFactor: 1
   - Entity: 1863360261817783949
     TagComponent:
       Tag: Wassup
@@ -81,6 +86,7 @@ Entities:
       Scale: [5.5, 5.5, 5.5]
     SpriteRendererComponent:
       Color: [0.0212876759, 0.918918908, 0.388657808, 1]
+      TilingFactor: 1
   - Entity: 735966618364739082
     TagComponent:
       Tag: SwaggyPPP
@@ -90,6 +96,7 @@ Entities:
       Scale: [3.5, 3.5, 3.5]
     SpriteRendererComponent:
       Color: [0.718146682, 0.0332732163, 0.588576198, 1]
+      TilingFactor: 1
   - Entity: 912140027862531166
     TagComponent:
       Tag: Blue Cube
@@ -99,6 +106,7 @@ Entities:
       Scale: [10.5, 10.5, 10.5]
     SpriteRendererComponent:
       Color: [0.0233449098, 0.438966423, 0.67181468, 1]
+      TilingFactor: 1
   - Entity: 2053672906000853931
     TagComponent:
       Tag: Red
@@ -108,6 +116,7 @@ Entities:
       Scale: [3.5, 3.5, 3.5]
     SpriteRendererComponent:
       Color: [1, 0, 0, 1]
+      TilingFactor: 1
   - Entity: 12483526948165903634
     TagComponent:
       Tag: Bluesss
@@ -117,6 +126,7 @@ Entities:
       Scale: [9, 9, 9]
     SpriteRendererComponent:
       Color: [0.0614630058, 0.837837815, 0.720931888, 1]
+      TilingFactor: 1
   - Entity: 6883800287487856184
     TagComponent:
       Tag: Greeens
@@ -126,6 +136,7 @@ Entities:
       Scale: [9.5, 9.5, 9.5]
     SpriteRendererComponent:
       Color: [0.339441419, 0.586872578, 0.228857636, 1]
+      TilingFactor: 1
   - Entity: 15803929990730866155
     TagComponent:
       Tag: Greens Sprite
@@ -135,6 +146,7 @@ Entities:
       Scale: [10.5, 10.5, 10.5]
     SpriteRendererComponent:
       Color: [0, 1, 0.084941864, 1]
+      TilingFactor: 1
   - Entity: 11163957119498069740
     TagComponent:
       Tag: Sprite Blue
@@ -144,6 +156,7 @@ Entities:
       Scale: [7, 7, 7]
     SpriteRendererComponent:
       Color: [0, 0.131273985, 1, 1]
+      TilingFactor: 1
   - Entity: 10616426777603464786
     TagComponent:
       Tag: Another empty
@@ -153,6 +166,7 @@ Entities:
       Scale: [10.5, 10.5, 10.5]
     SpriteRendererComponent:
       Color: [0.586872101, 0, 1, 1]
+      TilingFactor: 1
   - Entity: 6999884359358616769
     TagComponent:
       Tag: Aioyboi
@@ -162,6 +176,7 @@ Entities:
       Scale: [3.5, 3.5, 3.5]
     SpriteRendererComponent:
       Color: [0.702702761, 1, 0, 1]
+      TilingFactor: 1
   - Entity: 7824501532982642528
     TagComponent:
       Tag: CandyCane
@@ -171,6 +186,7 @@ Entities:
       Scale: [3, 3, 3]
     SpriteRendererComponent:
       Color: [0.783783793, 0.127100095, 0.248802304, 1]
+      TilingFactor: 1
   - Entity: 4729265568168505833
     TagComponent:
       Tag: Skylight

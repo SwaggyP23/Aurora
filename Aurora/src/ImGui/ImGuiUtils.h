@@ -230,9 +230,17 @@ namespace Aurora {
 
 		bool PropertyDropdown(const char* label, const char** options, int optionCount, int* selected, const char* helpText = "");
 
-		bool PropertySliderFloat(const char* label, float& value, float min = 0.0f, float max = 0.0f, const char* helpText = "");
+		bool PropertySliderFloat(const char* label, float& value, float min = 0.0f, float max = 0.0f, const char* format = "%.3f", const char* helpText = "");
+
+		bool PropertySliderFloat2(const char* label, ImVec2& value, float min = 0.0f, float max = 0.0f, const char* format = "%.3f", const char* helpText = "");
 
 		bool MultiLineText(const char* label, std::string& value);
+
+		//void BeginPropertyCheckBoxGroup(const char* label);
+
+		//bool PropertyCheckBoxGroup(const char* label, bool& value);
+
+		//void EndPropertyCheckBoxGroup();
 
 		// Custom TreeNodes...
 		bool TreeNodeWithIcon(const char* label, Ref<Texture2D> icon, const ImVec2& size, bool openByDefault = true);

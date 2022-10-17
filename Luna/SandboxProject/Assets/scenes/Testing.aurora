@@ -26,3 +26,4 @@ Entities:
       Scale: [6.5, 1, 3.5]
     SpriteRendererComponent:
       Color: [1, 0.764478743, 0, 1]
+      TilingFactor: 1

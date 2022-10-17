@@ -195,9 +195,9 @@ namespace Aurora {
 		outPut << YAML::BeginMap;
 
 		outPut << YAML::Key << "Scene" << YAML::Value << m_Scene->GetName();
-		outPut << YAML::Key << "Entities" << YAML::Value;
+		outPut << YAML::Key << "Entities";
 
-		outPut << YAML::BeginSeq;
+		outPut << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
 			Entity entity = { entityID, m_Scene.raw() };
