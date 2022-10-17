@@ -185,7 +185,7 @@ namespace Aurora {
                 Ref<Material> mat = Material::Create(aiMaterialName.data, Renderer::GetShaderLibrary()->Get("AuroraPBRStatic"));
                 m_Materials[i] = mat;
             
-                AR_CORE_TRACE_TAG("Mesh", "\t{0} (Index = {1})", aiMaterialName.data, i);
+                AR_CORE_TRACE_TAG("Mesh", "{0} (Index = {1})", aiMaterialName.data, i);
                 aiString aiTexturePath;
                 uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
                 AR_CORE_TRACE_TAG("Mesh", "\tTexture Count: {0}", textureCount);
@@ -208,7 +208,7 @@ namespace Aurora {
 
                 roughness = 1.0f - glm::sqrt(shininess / 100.0f);
 
-                AR_CORE_TRACE_TAG("Mesh", "\tColor: {0} - {1} - {2}", albedoColor.r, albedoColor.g, albedoColor.b);
+                AR_CORE_TRACE_TAG("Mesh", "\tColor: {0}", albedoColor);
                 AR_CORE_TRACE_TAG("Mesh", "\tRoughness: {0}", roughness);
                 AR_CORE_TRACE_TAG("Mesh", "\tMetalness: {0}", metalness);
 

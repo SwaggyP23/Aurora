@@ -2,6 +2,7 @@
 #include "Application.h"
 
 #include "Input/Input.h"
+#include "AssetManager/AssetManager.h"
 #include "Graphics/Font.h"
 #include "Renderer/Renderer.h"
 #include "Utils/UtilFunctions.h"
@@ -69,6 +70,8 @@ namespace Aurora {
 			delete layer;
 		}
 
+		// TODO: Temporary untill projects are a thing!
+		AssetManager::Shutdown();
 		Font::Shutdown();
 
 		Renderer::ShutDown();

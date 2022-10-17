@@ -1,5 +1,7 @@
 #include "EditorLayer.h"
 
+#include "AssetManager/AssetManager.h"
+
 #include "ImGui/ImGuiUtils.h"
 #include "ImGui/TreeNode.h"
 
@@ -42,6 +44,8 @@ namespace Aurora {
 
 		m_ViewportRenderer->SetLineWidth(m_LineWidth);
 
+		// TODO: Temporary untill Projects are a thing!
+		AssetManager::Init();
 		// Default open scene for now...!
 		OpenScene("SandboxProject/Assets/scenes/StaticMeshTest.aurora");
 
@@ -473,20 +477,24 @@ namespace Aurora {
 		m_Renderer2D->BeginScene(m_EditorCamera.GetViewProjection(), m_EditorCamera.GetViewMatrix());
 		m_Renderer2D->SetTargetRenderPass(m_ViewportRenderer->GetExternalCompositeRenderPass());
 
-		auto spriteRendererView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
-		for (auto entity : spriteRendererView)
+		// Render sprites...
 		{
-			auto[transform, sprite] = spriteRendererView.get<TransformComponent, SpriteRendererComponent>(entity);
+			// TODO: Handle in case sprite has a texture!
+			auto spriteRendererView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
+			for (auto entity : spriteRendererView)
+			{
+				auto [transform, sprite] = spriteRendererView.get<TransformComponent, SpriteRendererComponent>(entity);
 
-			m_Renderer2D->DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
-		}
+				m_Renderer2D->DrawRotatedQuad(transform.Translation, transform.Rotation, transform.Scale, sprite.Color);
+			}
 
-		auto circleRendererView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
-		for (auto entity : circleRendererView)
-		{
-			auto [transform, circle] = circleRendererView.get<TransformComponent, CircleRendererComponent>(entity);
+			auto circleRendererView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
+			for (auto entity : circleRendererView)
+			{
+				auto [transform, circle] = circleRendererView.get<TransformComponent, CircleRendererComponent>(entity);
 
-			m_Renderer2D->FillCircle(transform.GetTransform(), circle.Color, circle.Thickness);
+				m_Renderer2D->FillCircle(transform.GetTransform(), circle.Color, circle.Thickness);
+			}
 		}
 
 		if (m_ShowIcons)
@@ -1134,8 +1142,8 @@ namespace Aurora {
 
 		float lineHeight = ImGui::GetItemRectSize().y; // Get Height of last item
 
-		ImGuiUtils::ShiftCursorX(-5);
-		if (ImGui::Button("Add Component", ImVec2{ ImGui::GetContentRegionAvail().x + 5, lineHeight }))
+		//ImGuiUtils::ShiftCursorX(-5);
+		if (ImGui::Button("Add Component", ImVec2{ ImGui::GetContentRegionAvail().x, lineHeight }))
 			ImGui::OpenPopup("AddComponentsPopUp"); // AddComponentPopUp here acts as an ID for imgui to be used in the next step
 
 		if (ImGui::BeginPopup("AddComponentsPopUp"))
@@ -1234,6 +1242,7 @@ namespace Aurora {
 			ImGuiUtils::BeginPropertyGrid();
 
 			ImGuiUtils::ColorEdit4Control("Color", component.Color);
+			// TODO: Add textue selection drag drop API
 			ImGuiUtils::PropertyFloat("Tiling Factor", component.TilingFactor, 0.1f, 1.0f, 10.0f);
 
 			ImGuiUtils::EndPropertyGrid();
@@ -1269,6 +1278,7 @@ namespace Aurora {
 
 			ImGui::NextColumn();
 
+			// TODO: Change to accept drag drop
 			float width = ImGui::GetContentRegionAvail().x;
 			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
 			if (ImGui::Button(environmentMapName.c_str(), { width, 25.0f }))
@@ -1278,14 +1288,14 @@ namespace Aurora {
 
 				if (environmentMapName.size())
 				{
-					const auto& [radianceMap, irradianceMap] = Renderer::CreateEnvironmentMap(p.string());
-					component.SceneEnvironment = Environment::Create(radianceMap, irradianceMap);
+					Ref<Asset> asset = AssetManager::GetAsset<Environment>(p);
+					if (asset->IsValid())
+						component.SceneEnvironment = asset->Handle;
 				}
 				else
 					environmentMapName = "Aurora Default";
 			}
-			
-			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();			
 
 			ImGui::NextColumn();
 
@@ -1301,7 +1311,7 @@ namespace Aurora {
 		[](SkyLightComponent& component) // Reset Function
 		{
 			environmentMapName = "Aurora Default";
-			component.SceneEnvironment = nullptr; // TDDO: Revisit this once asset manager is up and running
+			component.SceneEnvironment = 0;
 			component.Level = 0.5f;
 			component.Intensity = 1.0f;
 			component.DynamicSky = false;
@@ -1335,11 +1345,37 @@ namespace Aurora {
 			component.Radiance = { 1.0f, 1.0f, 1.0f };
 			component.Intensity = 1.0f;
 		});
+		
+		static std::string textFileName = "Aurora Default";
 
-		// TODO: Rework the text Input field!
 		DrawComponent<TextComponent>("Text", entity, [](TextComponent& component)
 		{
 			ImGuiUtils::BeginPropertyGrid();
+
+			ImGui::Text("Font");
+
+			ImGui::NextColumn();
+
+			// TODO: Change to accept drag drop
+			float width = ImGui::GetContentRegionAvail().x;
+			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
+			if (ImGui::Button(textFileName.c_str(), { width, 25.0f }))
+			{
+				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("Font File (*.ttf)\0*.ttf\0");
+				textFileName = p.filename().string();
+
+				if (textFileName.size())
+				{
+					Ref<Asset> asset = AssetManager::GetAsset<Font>(p);
+					if (asset->IsValid())
+						component.FontHandle = asset->Handle;
+				}
+				else
+					textFileName = "Aurora Default";
+			}
+			ImGui::PopStyleColor();
+
+			ImGui::NextColumn();
 
 			if (ImGuiUtils::MultiLineText("Text", component.TextString))
 			{
@@ -1347,8 +1383,6 @@ namespace Aurora {
 			}
 			
 			ImGui::Separator();
-
-			// TODO: Add a custom font API
 
 			ImGuiUtils::ColorEdit4Control("Color", component.Color);
 			ImGuiUtils::PropertyFloat("Line Spacing", component.LineSpacing, 0.05f, 0.0f, 30.0f);
@@ -1361,12 +1395,12 @@ namespace Aurora {
 		{
 			component.TextString = "";
 			component.TextHash = 0;
-			//component.FontHandle = Font::GetDefaultFont();
-			component.FontHandle = nullptr;
+			component.FontHandle = Font::GetDefaultFont()->Handle;
 			component.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 			component.LineSpacing = 0.0f;
 			component.Kerning = 0.0f;
 			component.MaxWidth = 10.0f;
+			textFileName = "Aurora Default";
 		});
 	}
 
@@ -2172,7 +2206,7 @@ namespace Aurora {
 
 		ImGuiUtils::BeginPropertyGrid(2, false);
 
-		if(ImGuiUtils::PropertySliderFloat("App Tick Delta", TickDelta, 0.0f, 5.0f, "Controls the delta that it takes to call the OnTick function"))
+		if(ImGuiUtils::PropertySliderFloat("App Tick Delta", TickDelta, 0.0f, 5.0f, "%.3f", "Controls the delta that it takes to call the OnTick function"))
 			Application::GetApp().SetTickDeltaTime(TickDelta);
 
 		ImGuiUtils::PropertyBool("Show Grid", m_ViewportRenderer->GetOptions().ShowGrid);

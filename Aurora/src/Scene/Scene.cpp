@@ -4,6 +4,7 @@
 
 #include "Components.h"
 #include "ScriptableEntity.h"
+#include "AssetManager/AssetManager.h"
 #include "Graphics/Font.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/SceneRenderer.h"
@@ -172,14 +173,14 @@ namespace Aurora {
 			{
 				auto [tranform, skyLight] = skyLightView.get<TransformComponent, SkyLightComponent>(entity);
 
-				if (!skyLight.SceneEnvironment && skyLight.DynamicSky)
+				if (!AssetManager::IsAssetHandleValid(skyLight.SceneEnvironment) && skyLight.DynamicSky)
 				{
 					const glm::vec3& TAI = skyLight.TurbidityAzimuthInclination;
 					Ref<CubeTexture> preethamEnv = Renderer::CreatePreethamSky(TAI.x, TAI.y, TAI.z);
-					skyLight.SceneEnvironment = Environment::Create(preethamEnv, preethamEnv);
+					skyLight.SceneEnvironment = AssetManager::CreateMemoryOnlyAsset<Environment>(preethamEnv, preethamEnv);
 				}
 
-				m_Environment = skyLight.SceneEnvironment;
+				m_Environment = AssetManager::GetAsset<Environment>(skyLight.SceneEnvironment);
 				m_EnvironmentIntensity = skyLight.Intensity;
 				m_EnvironmentLOD = skyLight.Level;
 			}
@@ -311,14 +312,14 @@ namespace Aurora {
 			{
 				auto [tranform, skyLight] = skyLightView.get<TransformComponent, SkyLightComponent>(entity);
 
-				if (!skyLight.SceneEnvironment && skyLight.DynamicSky)
+				if (!AssetManager::IsAssetHandleValid(skyLight.SceneEnvironment) && skyLight.DynamicSky)
 				{
 					const glm::vec3& TAI = skyLight.TurbidityAzimuthInclination;
 					Ref<CubeTexture> preethamEnv = Renderer::CreatePreethamSky(TAI.x, TAI.y, TAI.z);
-					skyLight.SceneEnvironment = Environment::Create(preethamEnv, preethamEnv);
+					skyLight.SceneEnvironment = AssetManager::CreateMemoryOnlyAsset<Environment>(preethamEnv, preethamEnv);
 				}
 
-				m_Environment = skyLight.SceneEnvironment;
+				m_Environment = AssetManager::GetAsset<Environment>(skyLight.SceneEnvironment);
 				m_EnvironmentIntensity = skyLight.Intensity;
 				m_EnvironmentLOD = skyLight.Level;
 			}

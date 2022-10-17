@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AssetManager/Asset.h"
 #include "Core/Base.h"
 #include "Core/Buffer.h"
 #include "Shader.h"
@@ -132,7 +133,7 @@ namespace Aurora {
 
 	};
 
-	class MaterialAsset : public RefCountedObject
+	class MaterialAsset : public Asset
 	{
 	public:
 		MaterialAsset();
@@ -171,6 +172,10 @@ namespace Aurora {
 
 		void SetMaterial(Ref<Material> material) { m_Material = material; }
 		[[nodiscard]] Ref<Material> GetMaterial() const { return m_Material; }
+
+		static AssetType GetStaticType() { return AssetType::Material; }
+
+		virtual AssetType GetAssetType() const override { return GetStaticType(); }
 
 	private:
 		void ResetToDefault();

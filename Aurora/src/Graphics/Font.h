@@ -9,8 +9,7 @@ namespace Aurora {
 	
 	struct MSDFData;
 
-	// TODO: Change to inherit from Asset and not from RefCountedObject!
-	class Font : public RefCountedObject
+	class Font : public Asset
 	{
 	public:
 		Font(const std::filesystem::path& filepath);

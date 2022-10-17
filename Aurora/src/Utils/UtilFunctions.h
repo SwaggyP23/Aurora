@@ -39,8 +39,9 @@ namespace Aurora::Utils {
 	class StringUtils
 	{
 	public:
-		[[nodiscard]] static std::string ToLower(const std::string_view& string);
-		[[nodiscard]] static std::string ToUpper(const std::string_view& string);
+		static std::string ToLower(const std::string_view& string);
+		static std::string ToUpper(const std::string_view& string);
+		static std::vector<std::string> SplitString(const std::string_view string, const std::string_view& delimiters);
 
 	};
 

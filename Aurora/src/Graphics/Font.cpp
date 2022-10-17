@@ -411,16 +411,14 @@ namespace Aurora {
         return s_DefaultFont;
     }
 
-    // TODO: FIXME!
     Ref<Font> Font::GetFontAssetForTextComponent(const TextComponent& textComponent)
     {
-        //if (textComponent.FontHandle == s_DefaultFont->Handle || !AssetManager::IsAssetHandleValid(textComponent.FontHandle))
-        //{
-        //    return s_DefaultFont;
-        //}
+        if (textComponent.FontHandle == s_DefaultFont->Handle || !AssetManager::IsAssetHandleValid(textComponent.FontHandle))
+        {
+            return s_DefaultFont;
+        }
 
-        //return AssetManager::GetAsset<Font>(textComponent.FontHandle);
-        return s_DefaultFont;
+        return AssetManager::GetAsset<Font>(textComponent.FontHandle);
     }
 
     Ref<Font> Font::s_DefaultFont;

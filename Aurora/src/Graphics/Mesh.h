@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AssetManager/Asset.h"
 #include "Core/Base.h"
 #include "Core/AABB.h"
 #include "VertexBuffer.h"
@@ -73,7 +74,7 @@ namespace Aurora {
         bool IsRigged = false;
     };
 
-    class MeshSource : public RefCountedObject
+    class MeshSource : public Asset
     {
     public:
         MeshSource(const std::filesystem::path& filePath);
@@ -106,6 +107,9 @@ namespace Aurora {
         [[nodiscard]] Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 
         [[nodiscard]] const AABB& GetBoundingBox() const { return m_BoundingBox; }
+
+        static AssetType GetStaticType() { return AssetType::MeshSource; }
+        virtual AssetType GetAssetType() const override { return GetStaticType(); }
 
     private:
         void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
@@ -142,7 +146,7 @@ namespace Aurora {
 
     };
 
-    class StaticMesh : public RefCountedObject
+    class StaticMesh : public Asset
     {
     public:
         StaticMesh(Ref<MeshSource> meshSource);
@@ -165,6 +169,9 @@ namespace Aurora {
         [[nodiscard]] Ref<MeshSource> GetMeshSource() const { return m_MeshSource; }
 
         [[nodiscard]] const Ref<MaterialTable>& GetMaterials() const { return m_MaterialsTable; }
+
+        static AssetType GetStaticType() { return AssetType::StaticMesh; }
+        virtual AssetType GetAssetType() const override { return GetStaticType(); }
 
     private:
         Ref<MeshSource> m_MeshSource;

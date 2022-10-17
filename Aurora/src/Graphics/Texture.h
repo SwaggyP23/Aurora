@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AssetManager/Asset.h"
 #include "Core/Base.h"
 #include "Core/Buffer.h"
 
@@ -83,7 +84,7 @@ namespace Aurora {
 		bool SRGB = false;
 	};
 
-	class Texture : public RefCountedObject
+	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -129,6 +130,9 @@ namespace Aurora {
 
 		bool operator==(const Ref<Texture2D>& other) const { return m_TextureID == other->m_TextureID; }
 
+		static AssetType GetStaticType() { return AssetType::Texture; }
+		virtual AssetType GetAssetType() const override { return GetStaticType(); }
+
 	private:
 		virtual void Invalidate() override;
 
@@ -169,6 +173,9 @@ namespace Aurora {
 		[[nodiscard]] virtual bool IsLoaded() const override { return m_IsLoaded; }
 
 		bool operator==(const Ref<CubeTexture>& other) const { return m_TextureID == other->m_TextureID; }
+
+		static AssetType GetStaticType() { return AssetType::EnvironmentMap; }
+		virtual AssetType GetAssetType() const override { return GetStaticType(); }
 
 	private:
 		virtual void Invalidate() override;

@@ -10,6 +10,7 @@ Extensions Used by Aurora:
 - .afa = aurora generated font atlas
 - .asmesh = aurora generated static mesh file
 - .amaterial = arurora generated material file
+- .azr = aurora generated asset registry file
 
 // Images...
 - .hdr = environment maps

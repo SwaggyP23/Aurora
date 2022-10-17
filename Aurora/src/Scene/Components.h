@@ -29,8 +29,7 @@ namespace Aurora {
 		size_t TextHash;
 
 		// Font
-		//AssetHandle FontHandle;
-		Ref<Texture2D> FontHandle;
+		AssetHandle FontHandle;
 		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float LineSpacing = 0.0f;
 		float Kerning = 0.0f;
@@ -73,6 +72,7 @@ namespace Aurora {
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color{ 1.0f };
+		AssetHandle Texture;
 		float TilingFactor = 1.0f;
 	};
 
@@ -129,7 +129,7 @@ namespace Aurora {
 
 	struct SkyLightComponent
 	{
-		Ref<Environment> SceneEnvironment;
+		AssetHandle SceneEnvironment;
 		float Level = 0.5f;
 		float Intensity = 1.0f;
 

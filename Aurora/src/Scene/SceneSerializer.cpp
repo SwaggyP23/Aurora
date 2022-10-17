@@ -95,6 +95,7 @@ namespace Aurora {
 			out << YAML::EndMap; // Camera Component
 		}
 
+		// TODO: Texture...
 		if (entity.HasComponent<SpriteRendererComponent>())
 		{
 			const SpriteRendererComponent& src = entity.GetComponent<SpriteRendererComponent>();
@@ -103,6 +104,7 @@ namespace Aurora {
 			out << YAML::BeginMap; // Sprite Renderer Component
 
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			out << YAML::Key << "Texture" << YAML::Value << src.Texture;
 			out << YAML::Key << "TilingFactor" << YAML::Value << src.TilingFactor;
 
 			out << YAML::EndMap; // Sprite Renderer Component
@@ -141,12 +143,7 @@ namespace Aurora {
 			out << YAML::Key << "SkyLightComponent";
 			out << YAML::BeginMap; // Sky Light Component
 
-			// TODO: Should store the UUID instead of the filepath once there is an asset manager
-			if (slc.SceneEnvironment)
-				out << YAML::Key << "EnvironmentMap" << YAML::Value << slc.SceneEnvironment->RadianceMap->GetAssetPath().string();
-			else
-				out << YAML::Key << "EnvironmentMap" << YAML::Value << "";
-
+			out << YAML::Key << "EnvironmentMap" << YAML::Value << (AssetManager::IsMemoryAsset(slc.SceneEnvironment) ? (AssetHandle)0 : slc.SceneEnvironment);
 			out << YAML::Key << "LOD" << YAML::Value << slc.Level;
 			out << YAML::Key << "Intensity" << YAML::Value << slc.Intensity;
 			out << YAML::Key << "DynamicSky" << YAML::Value << slc.DynamicSky;
@@ -168,8 +165,7 @@ namespace Aurora {
 			out << YAML::BeginMap; // Text Component
 
 			out << YAML::Key << "TextString" << YAML::Value << tc.TextString;
-			//out << YAML::Key << "FontHandle" << YAML::Value << tc.FontHandle; // TODO: When Asset Manager exists
-			out << YAML::Key << "FontHandle" << YAML::Value << 0;
+			out << YAML::Key << "FontHandle" << YAML::Value << tc.FontHandle;
 			out << YAML::Key << "Color" << YAML::Value << tc.Color;
 			out << YAML::Key << "LineSpacing" << YAML::Value << tc.LineSpacing;
 			out << YAML::Key << "Kerning" << YAML::Value << tc.Kerning;
@@ -234,14 +230,12 @@ namespace Aurora {
 
 		YAML::Node data;
 
-		try
-		{
-			data = YAML::LoadFile(filepath);
-		}
-		catch (YAML::ParserException e)
-		{
-			AR_CORE_ERROR_TAG("SceneSerializer", "Failed to load scene file '{0}'\n\t{1}", filepath, e.what());
-		}
+		std::ifstream ifStream(filepath); // Closes with RAII
+		AR_CORE_ASSERT(ifStream);
+		std::stringstream strStream;
+		
+		strStream << ifStream.rdbuf();
+		data = YAML::Load(strStream.str());
 
 		// If the file we are loading does not contain the Scene tag in the beginning we return since every serialized file should start with Scene
 		if (!data["Scene"])
@@ -304,6 +298,11 @@ namespace Aurora {
 					SpriteRendererComponent& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 
 					src.Color = spriteRendComp["Color"].as<glm::vec4>();
+					AssetHandle textureHandle = spriteRendComp["Texture"].as<uint64_t>();
+					if (AssetManager::IsAssetHandleValid(textureHandle))
+					{
+						src.Texture = textureHandle;
+					}
 					src.TilingFactor = spriteRendComp["TilingFactor"].as<float>();
 				}
 
@@ -330,16 +329,12 @@ namespace Aurora {
 				{
 					SkyLightComponent& slc = deserializedEntity.AddComponent<SkyLightComponent>();
 
-					// TODO: Should change from storing the path to actually just getting the uuid
-					const std::string envMapPath = skyLightComponent["EnvironmentMap"].as<std::string>();
-					if (!envMapPath.empty())
+					YAML::Node map = skyLightComponent["EnvironmentMap"];
+					if (map)
 					{
-						const auto& [radianceMap, irradianceMap] = Renderer::CreateEnvironmentMap(envMapPath);
-						slc.SceneEnvironment = Environment::Create(radianceMap, irradianceMap);
-					}
-					else
-					{
-						slc.SceneEnvironment = nullptr;
+						AssetHandle	assetHandle = map.as<uint64_t>();
+						if (AssetManager::IsAssetHandleValid(assetHandle))
+							slc.SceneEnvironment = assetHandle;
 					}
 
 					slc.Level = skyLightComponent["LOD"].as<float>();
@@ -356,7 +351,7 @@ namespace Aurora {
 					}
 				}
 
-				YAML::Node textComponent = entities["TextComponent"];
+				YAML::Node textComponent = entity["TextComponent"];
 				if (textComponent)
 				{
 					TextComponent& tc = deserializedEntity.AddComponent<TextComponent>();
@@ -364,13 +359,12 @@ namespace Aurora {
 					tc.TextString = textComponent["TextString"].as<std::string>();
 					tc.TextHash = std::hash<std::string>()(tc.TextString);
 
-					// TODO:
-					//AssetHandle fontHandle = textComponent["FontHandle"].as<uint64_t>();
-					//if (AssetManager::IsAssetHandleValid(fontHandle))
-					//	tc.FontHandle = fontHandle;
-					//else
-					//	tc.FontHandle = Font::GetDefaultFont()->Handle;
-					tc.FontHandle = 0;
+					AssetHandle fontHandle = textComponent["FontHandle"].as<uint64_t>();
+					if (AssetManager::IsAssetHandleValid(fontHandle))
+						tc.FontHandle = fontHandle;
+					else
+						tc.FontHandle = Font::GetDefaultFont()->Handle;
+
 					tc.Color = textComponent["Color"].as<glm::vec4>();
 					tc.LineSpacing = textComponent["LineSpacing"].as<float>();
 					tc.Kerning = textComponent["Kerning"].as<float>();
