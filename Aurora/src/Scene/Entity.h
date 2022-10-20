@@ -35,6 +35,14 @@ namespace Aurora {
 			return component;
 		}
 
+		template<typename T, typename... Args>
+		T& AddOrReplaceComponent(Args&&... args)
+		{
+			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+
+			return component;
+		}
+
 		template<typename T>
 		[[nodiscard]]
 		T& GetComponent()
@@ -58,7 +66,7 @@ namespace Aurora {
 
 		[[nodiscard]] UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 		[[nodiscard]] TransformComponent& Transform() { return GetComponent<TransformComponent>(); }
-		[[nodiscard]] const std::string& GetName() {  return GetComponent<TagComponent>().Tag; }
+		[[nodiscard]] std::string& GetName() {  return GetComponent<TagComponent>().Tag; }
 
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
@@ -71,6 +79,8 @@ namespace Aurora {
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;
+
+		friend class Scene;
 
 	};
 

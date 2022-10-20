@@ -167,9 +167,11 @@ namespace Aurora {
 			out << YAML::Key << "TextString" << YAML::Value << tc.TextString;
 			out << YAML::Key << "FontHandle" << YAML::Value << tc.FontHandle;
 			out << YAML::Key << "Color" << YAML::Value << tc.Color;
+			//out << YAML::Key << "OutLineColor" << YAML::Value << tc.OutLineColor;
 			out << YAML::Key << "LineSpacing" << YAML::Value << tc.LineSpacing;
 			out << YAML::Key << "Kerning" << YAML::Value << tc.Kerning;
 			out << YAML::Key << "MaxWidth" << YAML::Value << tc.MaxWidth;
+			//out << YAML::Key << "OutLineWidth" << YAML::Value << tc.OutLineWidth;
 
 			out << YAML::EndMap; // Text Component
 		}
@@ -366,9 +368,11 @@ namespace Aurora {
 						tc.FontHandle = Font::GetDefaultFont()->Handle;
 
 					tc.Color = textComponent["Color"].as<glm::vec4>();
+					//tc.OutLineColor = textComponent["OutLineColor"].as<glm::vec4>();
 					tc.LineSpacing = textComponent["LineSpacing"].as<float>();
 					tc.Kerning = textComponent["Kerning"].as<float>();
 					tc.MaxWidth = textComponent["MaxWidth"].as<float>();
+					//tc.OutLineWidth = textComponent["OutLineWidth"].as<float>();
 				}
 			}
 		}

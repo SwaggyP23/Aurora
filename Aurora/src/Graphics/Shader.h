@@ -150,13 +150,13 @@ namespace Aurora {
 		[[nodiscard]] inline const std::filesystem::path& GetFilePath() const { return m_AssetPath; }
 		[[nodiscard]] const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
 		[[nodiscard]] std::string GetTypeString() const;
-		[[nodiscard]] uint32_t GetCompileTimeThreshold() const { return s_CompileTimeThreshold; }
+		[[nodiscard]] inline static constexpr uint32_t GetCompileTimeThreshold() { return s_CompileTimeThreshold; }
 		
 		[[nodiscard]] inline const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
 		[[nodiscard]] inline const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
 
 		// This is temporary untill i have an asset manager. It kind of acts as an asset manager lol having all the shaders
-		static std::vector<Ref<Shader>> s_AllShaders;
+		static std::vector<Ref<Shader>> AllShaders;
 
 	private:
 		void Load2Stage(const std::string& source);

@@ -22,7 +22,7 @@ namespace Aurora {
 		std::string Tag;
 	};
 
-	// TODO: Edge coloring maybe??
+	// TODO: Rework Outlines
 	struct TextComponent
 	{
 		std::string TextString = "";
@@ -31,8 +31,10 @@ namespace Aurora {
 		// Font
 		AssetHandle FontHandle;
 		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		//glm::vec4 OutLineColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float LineSpacing = 0.0f;
 		float Kerning = 0.0f;
+		//float OutLineWidth = 0.0f;
 
 		// Layout
 		float MaxWidth = 10.0f;
@@ -82,9 +84,11 @@ namespace Aurora {
 		float Thickness = 1.0f;
 	};
 
+	// TODO: Change to use the assetHandle
 	struct StaticMeshComponent
 	{
 		Ref<StaticMesh> StaticMesh;
+		//AssetHandle StaticMesh; // TODO:
 		Ref<MaterialTable> MaterialTable = MaterialTable::Create();
 
 		StaticMeshComponent() = default;
@@ -136,5 +140,13 @@ namespace Aurora {
 		bool DynamicSky = false;
 		glm::vec3 TurbidityAzimuthInclination{ 2.0f, 0.0f, 0.0f };
 	};
+
+	template<typename... Components>
+	struct ComponentGroup
+	{
+	};
+
+	using AllComponents = ComponentGroup<TransformComponent, CameraComponent, SpriteRendererComponent, CircleRendererComponent,
+		StaticMeshComponent, NativeScriptComponent, DirectionalLightComponent, SkyLightComponent, TextComponent>;
 
 }

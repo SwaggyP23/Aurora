@@ -178,10 +178,12 @@ namespace Aurora {
 
 			m_TextVertexBuffer = VertexBuffer::Create(MaxQuadVertices * sizeof(TextVertex));
 			m_TextVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float4, "a_Color"    },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-				{ ShaderDataType::Float, "a_TexIndex"  }
+				{ ShaderDataType::Float3, "a_Position"      },
+				{ ShaderDataType::Float4, "a_Color"         },
+				//{ ShaderDataType::Float4, "a_OutLineColor"  },
+				{ ShaderDataType::Float2, "a_TexCoord"      },
+				{ ShaderDataType::Float, "a_TexIndex"       },
+				//{ ShaderDataType::Float, "a_OutLineWidth"   }
 			});
 			m_TextVertexArray->AddVertexBuffer(m_TextVertexBuffer);
 			m_TextVertexArray->SetIndexBuffer(quadIndexBuffer);
@@ -920,7 +922,7 @@ namespace Aurora {
 		DrawString(string, font, glm::translate(glm::mat4(1.0f), position), maxWidth, color);
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const Ref<Font>& font, const glm::mat4& transform, float maxWidth, const glm::vec4& color, float lineHeightOffset, float kerningOffset)
+	void Renderer2D::DrawString(const std::string& string, const Ref<Font>& font, const glm::mat4& transform, float maxWidth, const glm::vec4& color, float lineHeightOffset, float kerningOffset, float outLineWdith, const glm::vec4& outLineColor)
 	{
 		if (string.empty())
 			return;
@@ -1074,26 +1076,34 @@ namespace Aurora {
 
 				m_TextVertexBufferPtr->Position = transform * glm::vec4(pl, pb, 0.0f, 1.0f);;
 				m_TextVertexBufferPtr->Color = color;
+				//m_TextVertexBufferPtr->OutLineColor = outLineColor;
 				m_TextVertexBufferPtr->TexCoord = { l, b };
 				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				//m_TextVertexBufferPtr->OutLineWidth = outLineWdith;
 				m_TextVertexBufferPtr++;
 
 				m_TextVertexBufferPtr->Position = transform * glm::vec4(pl, pt, 0.0f, 1.0f);;
 				m_TextVertexBufferPtr->Color = color;
+				//m_TextVertexBufferPtr->OutLineColor = outLineColor;
 				m_TextVertexBufferPtr->TexCoord = { l, t };
 				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				//m_TextVertexBufferPtr->OutLineWidth = outLineWdith;
 				m_TextVertexBufferPtr++;
 
 				m_TextVertexBufferPtr->Position = transform * glm::vec4(pr, pt, 0.0f, 1.0f);;
 				m_TextVertexBufferPtr->Color = color;
+				//m_TextVertexBufferPtr->OutLineColor = outLineColor;
 				m_TextVertexBufferPtr->TexCoord = { r, t };
 				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				//m_TextVertexBufferPtr->OutLineWidth = outLineWdith;
 				m_TextVertexBufferPtr++;
 
 				m_TextVertexBufferPtr->Position = transform * glm::vec4(pr, pb, 0.0f, 1.0f);;
 				m_TextVertexBufferPtr->Color = color;
+				//m_TextVertexBufferPtr->OutLineColor = outLineColor;
 				m_TextVertexBufferPtr->TexCoord = { r, b };
 				m_TextVertexBufferPtr->TextureIndex = textureIndex;
+				//m_TextVertexBufferPtr->OutLineWidth = outLineWdith;
 				m_TextVertexBufferPtr++;
 
 				m_TextIndexCount += 6;

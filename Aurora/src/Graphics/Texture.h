@@ -5,6 +5,7 @@
 #include "Core/Buffer.h"
 
 #include <string>
+#include <filesystem>
 
 /*
  * With the new OpenGL version 4.5, the texture workflow is no longer Gen -> Bind -> Allocate -> Upload. 

@@ -9,7 +9,7 @@
 namespace Aurora::Utils {
 
 #ifdef AURORA_PLATFORM_WINDOWS
-	// TODO: Add other platform support
+	// TODO: Move into a fileSystem class
 	class WindowsFileDialogs
 	{
 	public:

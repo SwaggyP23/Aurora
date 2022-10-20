@@ -7,13 +7,13 @@ struct GLFWwindow;
 
 namespace Aurora {
 
-	class Context : public RefCountedObject
+	class RenderContext : public RefCountedObject
 	{
 	public:
-		Context(GLFWwindow* windowHandle);
-		virtual ~Context() = default;
+		RenderContext(GLFWwindow* windowHandle);
+		virtual ~RenderContext() = default;
 
-		static Ref<Context> Create(GLFWwindow* handle);
+		static Ref<RenderContext> Create(GLFWwindow* handle);
 
 		void Init();
 		void Shutdown();

@@ -58,7 +58,7 @@ namespace Aurora {
 		[[nodiscard]] inline std::pair<uint32_t, uint32_t> GetSize() const { return { m_Data.Width, m_Data.Height }; }
 		[[nodiscard]] inline GLFWwindow* GetWindowPointer() const { return m_Window; }
 
-		[[nodiscard]] inline Ref<Context> GetRenderContext() const { return m_Context; }
+		[[nodiscard]] inline Ref<RenderContext> GetRenderContext() const { return m_Context; }
 
 	private:
 		void SetIconImage();
@@ -81,7 +81,7 @@ namespace Aurora {
 
 		WindowData m_Data;
 
-		Ref<Context> m_Context;
+		Ref<RenderContext> m_Context;
 		float m_LastFrameTime = 0.0f;
 	};
 

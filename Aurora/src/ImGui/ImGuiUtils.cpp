@@ -126,6 +126,24 @@ namespace Aurora {
 			return GImGui->NavJustMovedToId == GImGui->LastItemData.ID;
 		}
 
+		bool IsWindowFocused(const char* windowName, bool checkRootWindow)
+		{
+			ImGuiWindow* currentWindow = GImGui->NavWindow;
+
+			if (checkRootWindow)
+			{
+				// Keep going through the windows untill they are equal then they it means that we got the root window and not some child one
+				ImGuiWindow* lastWindow = nullptr;
+				while (lastWindow != currentWindow)
+				{
+					lastWindow = currentWindow;
+					currentWindow = currentWindow->RootWindow;
+				}
+			}
+
+			return currentWindow == ImGui::FindWindowByName(windowName);
+		}
+
 		//////// DrawList Utils /////////
 
 		// This get the last items rect!
@@ -393,6 +411,70 @@ namespace Aurora {
 			ImGui::BeginChild("sep", size);
 			ImGui::EndChild();
 			ImGui::PopStyleColor();
+		}
+
+		bool PropertyString(const char* label, const char* value, bool isError)
+		{
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
+
+			bool modified = false;
+			char buffer[256];
+			strcpy_s(buffer, sizeof(buffer), value);
+
+			s_IDBuffer[0] = '#';
+			s_IDBuffer[1] = '#';
+			memset(s_IDBuffer + 2, 0, 14);
+			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+
+			ImGui::PushItemWidth(-1);
+			if (isError)
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(204, 51, 76.5, 255));
+			if (ImGui::InputText(s_IDBuffer, (char*)value, strlen(value)))
+			{
+				value = buffer;
+				modified = true;
+			}
+			if (isError)
+				ImGui::PopStyleColor();
+
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
+		}
+
+		bool PropertyStringReadOnly(const char* label, const char* value, bool isErorr)
+		{
+			ShiftCursor(10.0f, 9.0f);
+			ImGui::Text(label);
+
+			ImGui::NextColumn();
+			ShiftCursorY(4.0f);
+
+			s_IDBuffer[0] = '#';
+			s_IDBuffer[1] = '#';
+			memset(s_IDBuffer + 2, 0, 14);
+			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+
+			ImGui::PushItemWidth(-1);
+			if (isErorr)
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(204, 51, 76.5, 255));
+			bool modified = ImGui::InputText(s_IDBuffer, (char*)value, strlen(value), ImGuiInputTextFlags_ReadOnly);
+			if (isErorr)
+				ImGui::PopStyleColor();
+
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
+			UnderLine();
+
+			return modified;
 		}
 
 		bool PropertyFloat(const char* label, float& value, float delta, float min, float max, const char* helpText)

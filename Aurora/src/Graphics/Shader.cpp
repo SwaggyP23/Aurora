@@ -18,7 +18,7 @@
 
 namespace Aurora {
 
-	std::vector<Ref<Shader>> Shader::s_AllShaders;
+	std::vector<Ref<Shader>> Shader::AllShaders;
 
 	namespace Utils {
 
@@ -267,8 +267,8 @@ namespace Aurora {
 
 		result = CreateRef<Shader>(filepath, type);
 
-		if(std::find(s_AllShaders.begin(), s_AllShaders.end(), result) == s_AllShaders.end())
-			s_AllShaders.push_back(result);
+		if(std::find(AllShaders.begin(), AllShaders.end(), result) == AllShaders.end())
+			AllShaders.push_back(result);
 
 		return result;
 	}
@@ -279,8 +279,8 @@ namespace Aurora {
 
 		result = CreateRef<Shader>(props);
 
-		if (std::find(s_AllShaders.begin(), s_AllShaders.end(), result) == s_AllShaders.end())
-			s_AllShaders.push_back(result);
+		if (std::find(AllShaders.begin(), AllShaders.end(), result) == AllShaders.end())
+			AllShaders.push_back(result);
 
 		return result;
 	}

@@ -2,6 +2,7 @@
 bin/
 LogDump/
 Luna/Resources/cache/
+Luna/Config/EditorSettings.aeditor
 
 Aurora.sln
 Aurora.vcxproj

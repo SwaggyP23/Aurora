@@ -19,8 +19,39 @@ namespace Aurora {
 
 	namespace Utils {
 
+		// For duplicate Entity
 		template<typename T>
-		static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
+		static void CopyComponentIfExists(Entity dstEntity, Entity srcEntity)
+		{
+			if (srcEntity.HasComponent<T>())
+			{
+				T& srcComponent = srcEntity.GetComponent<T>();
+				T& dstComponent = dstEntity.AddComponent<T>();
+				dstComponent = srcComponent;
+			}
+		}
+
+		template<typename... TComponent>
+		static void CopyComponentIfExists(Entity dst, Entity src)
+		{
+			([&]()
+			{
+				if (src.HasComponent<TComponent>())
+				{
+					dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+				}
+			}(), ...);
+		}
+
+		template<typename... TComponent>
+		static void CopyComponentIfExists(ComponentGroup<TComponent...>, Entity dst, Entity src)
+		{
+			CopyComponentIfExists<TComponent...>(dst, src);
+		}
+
+		// For copying scene
+		template<typename T>
+		static void CopyComponentScene(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
 		{
 			auto srcEntites = srcRegistry.view<T>();
 			for (auto srcEntity : srcEntites)
@@ -32,15 +63,26 @@ namespace Aurora {
 			}
 		}
 
-		template<typename T>
-		static void CopyComponent(Entity dstEntity, Entity srcEntity)
+		template<typename... TComponent>
+		static void CopyComponentVariadicScene(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 		{
-			if (srcEntity.HasComponent<T>())
+			([&]()
 			{
-				T& srcComponent = srcEntity.GetComponent<T>();
-				T& dstComponent = dstEntity.AddComponent<T>();
-				dstComponent = srcComponent;
-			}
+				auto view = src.view<TComponent>();
+				for (auto srcEntity : view)
+				{
+					entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
+
+					auto& srcComponent = src.get<TComponent>(srcEntity);
+					dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
+				}
+			}(), ...);
+		}
+
+		template<typename... TComponent>
+		static void CopyComponentVariadicScene(ComponentGroup<TComponent...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
+		{
+			CopyComponentVariadicScene<TComponent...>(dst, src, enttMap);
 		}
 
 	}
@@ -81,14 +123,19 @@ namespace Aurora {
 			enttMap[uuid] = (entt::entity)newEntity;
 		}
 
-		Utils::CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
-		Utils::CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
-		Utils::CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
-		Utils::CopyComponent<StaticMeshComponent>(target->m_Registry, m_Registry, enttMap);
-		Utils::CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
-		Utils::CopyComponent<CircleRendererComponent>(target->m_Registry, m_Registry, enttMap);
-		Utils::CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
-		Utils::CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<StaticMeshComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<CircleRendererComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
+		//Utils::CopyComponent<TextComponent>(target->m_Registry, m_Registry, enttMap);
+
+		Utils::CopyComponentVariadicScene(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		target->SortEntites();
 
 		target->m_ViewportWidth = m_ViewportWidth;
 		target->m_ViewportHeight = m_ViewportHeight;
@@ -102,6 +149,12 @@ namespace Aurora {
 		TagComponent& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name == "" ? "AuroraDefault" : std::move(name);
 
+		// The ID should not exist inside the map!
+		AR_CORE_ASSERT(m_EntityIDMap.find(id) == m_EntityIDMap.end());
+		m_EntityIDMap[id] = entity;
+
+		SortEntites();
+
 		return entity;
 	}
 
@@ -113,25 +166,33 @@ namespace Aurora {
 	Entity Scene::CopyEntity(Entity entity)
 	{
 		const std::string& name = entity.GetComponent<TagComponent>().Tag;
-		Entity result = CreateEntity(name.c_str());
+		Entity dstEntity = CreateEntity(name.c_str());
 
-		const TransformComponent& srcTc = entity.GetComponent<TransformComponent>();
-		TransformComponent& dstTc = result.Transform();
-		dstTc = srcTc;
+		//Utils::CopyComponentIfExists<TransformComponent>(result, entity);
+		//Utils::CopyComponentIfExists<CameraComponent>(result, entity);
+		//Utils::CopyComponentIfExists<SpriteRendererComponent>(result, entity);
+		//Utils::CopyComponentIfExists<CircleRendererComponent>(result, entity);
+		//Utils::CopyComponentIfExists<StaticMeshComponent>(result, entity);
+		//Utils::CopyComponentIfExists<NativeScriptComponent>(result, entity);
+		//Utils::CopyComponentIfExists<DirectionalLightComponent>(result, entity);
+		//Utils::CopyComponentIfExists<SkyLightComponent>(result, entity);
+		//Utils::CopyComponentIfExists<TextComponent>(result, entity);
 
-		Utils::CopyComponent<CameraComponent>(result, entity);
-		Utils::CopyComponent<StaticMeshComponent>(result, entity);
-		Utils::CopyComponent<SpriteRendererComponent>(result, entity);
-		Utils::CopyComponent<CircleRendererComponent>(result, entity);
-		Utils::CopyComponent<NativeScriptComponent>(result, entity);
-		Utils::CopyComponent<SkyLightComponent>(result, entity);
+		Utils::CopyComponentIfExists(AllComponents{}, dstEntity, entity);
 
-		return result;
+		return dstEntity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		m_Registry.destroy(entity);
+		if (m_OnEntityDestroyedCallback)
+			m_OnEntityDestroyedCallback(entity);
+
+		UUID id = entity.GetUUID();
+		m_Registry.destroy(entity.m_EntityHandle);
+		m_EntityIDMap.erase(id);
+
+		SortEntites();
 	}
 
 	void Scene::Clear()
@@ -236,7 +297,7 @@ namespace Aurora {
 
 					Entity e = Entity{ entity, this };
 					Ref<Font> font = Font::GetFontAssetForTextComponent(text);
-					renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning);
+					renderer2D->DrawString(text.TextString, font, GetWorldSpaceTransformMatrix(e), text.MaxWidth, text.Color, text.LineSpacing, text.Kerning/*, text.OutLineWidth, text.OutLineColor*/);
 				}
 			}
 
@@ -449,7 +510,7 @@ namespace Aurora {
 		auto view = m_Registry.view<CameraComponent>();
 		for (auto entity : view)
 		{
-			const auto& camera = view.get<CameraComponent>(entity);
+			const CameraComponent& camera = view.get<CameraComponent>(entity);
 
 			if (camera.Primary)
 			{
@@ -461,7 +522,7 @@ namespace Aurora {
 		return Entity::nullEntity;
 	}
 
-	glm::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity)
+	glm::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity) const
 	{
 		glm::mat4 transform = glm::mat4(1.0f);
 
@@ -480,7 +541,51 @@ namespace Aurora {
 		}
 
 		AR_CORE_ASSERT(false);
-		return {};
+		return Entity{};
+	}
+
+	Entity Scene::TryGetEntityByName(const std::string& name)
+	{
+		auto view = m_Registry.view<TagComponent>();
+		for (auto entity : view)
+		{
+			if (m_Registry.get<TagComponent>(entity).Tag == name)
+			{
+				return Entity{ entity, this };
+			}
+		}
+
+		return Entity{};
+	}
+
+	Entity Scene::GetEntityWithUUID(UUID id) const
+	{
+		AR_PROFILE_FUNCTION();
+
+		AR_CORE_CHECK(m_EntityIDMap.find(id) != m_EntityIDMap.end(), "Entity does not exist in this scene!");
+		return m_EntityIDMap.at(id);
+	}
+
+	Entity Scene::TryGetEntityWithUUID(UUID id) const
+	{
+		AR_PROFILE_FUNCTION();
+
+		const auto itr = m_EntityIDMap.find(id);
+		if (itr != m_EntityIDMap.end())
+			return itr->second;
+
+		return Entity{};
+	}
+
+	void Scene::SortEntites()
+	{
+		m_Registry.sort<IDComponent>([&](const IDComponent first, const IDComponent second)
+		{
+			auto firstEntityItr = m_EntityIDMap.find(first.ID);
+			auto secondEntityItr = m_EntityIDMap.find(second.ID);
+
+			return (uint32_t)(firstEntityItr->second) < (uint32_t)(secondEntityItr->second);
+		});
 	}
 
 }

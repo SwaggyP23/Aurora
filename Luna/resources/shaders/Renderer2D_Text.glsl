@@ -3,8 +3,10 @@
 
 layout(location = 0) in vec3 a_Position; // Already in world space
 layout(location = 1) in vec4 a_Color;
+//layout(location = 2) in vec4 a_OutLineColor;
 layout(location = 2) in vec2 a_TexCoord;
 layout(location = 3) in float a_TexIndex;
+//layout(location = 5) in float a_OutLineWidth;
 
 layout(std140, binding = 3) uniform Camera
 {
@@ -14,7 +16,9 @@ layout(std140, binding = 3) uniform Camera
 struct VertexOutput
 {
 	vec4 Color;
+//	vec4 OutLineColor;
 	vec2 TexCoord;
+//	float OutLineWidth;
 };
 
 layout(location = 0) out VertexOutput Output;
@@ -26,6 +30,8 @@ void main()
 {
 	Output.Color = a_Color;
 	Output.TexCoord = a_TexCoord;
+//	Output.OutLineColor = a_OutLineColor;
+//	Output.OutLineWidth = a_OutLineWidth;
 	TexIndex = a_TexIndex;
 
 	gl_Position = u_ViewProjMatrix * vec4(a_Position, 1.0f);
@@ -39,7 +45,9 @@ layout(location = 0) out vec4 o_Color;
 struct VertexOutput
 {
 	vec4 Color;
+//	vec4 OutLineColor;
 	vec2 TexCoord;
+//	float OutLineWidth;
 };
 
 layout(location = 0) in VertexOutput Input;
@@ -70,18 +78,25 @@ float ScreenPxRange()
 	return max(0.5f * dot(unitRange, screenTexSize), 1.0f);
 }
 
+// TODO: Rework the outlines
 void main()
 {
-	// TODO: Outlines...
 	vec4 bgColor = vec4(Input.Color.rgb, 0.0f);
-	vec4 fgColor = Input.Color;
-		
+	vec4 fgColor = Input.Color;		
 	
-	vec3 msd = texture(u_FontAtlases[int(TexIndex)], Input.TexCoord).rgb;
-	float sd = median(msd.r, msd.g, msd.b);
-	float screenPxDistance = ScreenPxRange() * (sd - 0.5f);
+	vec4 textureData = texture(u_FontAtlases[int(TexIndex)], Input.TexCoord);
+	vec3 msd = textureData.rgb; // This is the pure msd data
+
+	float sd = median(msd.r, msd.g, msd.b); // This include some extra blurrinness and gives a kind of blurry outline.
+	float screenPxDistance = ScreenPxRange() * (sd - 0.5f); // This is 1.0f for pixels inside the letter otherwise 0.0f
 	float opacity = clamp(screenPxDistance + 0.5f, 0.0f, 1.0f);
+
 	o_Color = mix(bgColor, fgColor, opacity);
+
+	// A very hacky way to get outlines
+//	if(sd + Input.OutLineWidth * 2.0f > screenPxDistance)
+//		o_Color = vec4(Input.OutLineColor.rgb, opacity);
+//	o_Color = vec4(vec3(sd), 1.0f);
 
 	// Discard to avoid depth write
 	if(o_Color.a == 0.0f)

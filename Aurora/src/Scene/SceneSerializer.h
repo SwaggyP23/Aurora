@@ -15,6 +15,9 @@ namespace Aurora {
 		bool DeSerializeFromText(const std::string& filepath);
 		bool DeSerializeFromBinary(const std::string& filepath);
 
+	public:
+		inline static std::string_view SceneExtension = ".aurora"; // TODO: Change to .ascene
+
 	private:
 		Ref<Scene> m_Scene;
 

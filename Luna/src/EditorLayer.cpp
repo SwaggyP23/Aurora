@@ -2,6 +2,10 @@
 
 #include "AssetManager/AssetManager.h"
 
+#include "Editor/SceneHierarchyPanel.h"
+#include "Editor/ShadersPanel.h"
+#include "Editor/EditorSelectionManager.h"
+
 #include "ImGui/ImGuiUtils.h"
 #include "ImGui/TreeNode.h"
 
@@ -36,16 +40,25 @@ namespace Aurora {
 		EditorResources::Init();
 		m_DisplayImage = Renderer::GetBlackTexture();
 
+		m_PanelsLibrary = EditorPanelsLibrary::Create();
+
+		// TODO: Maybe provide the active scene??
+		Ref<SceneHierarchyPanel> sceneHierarchyPanel = m_PanelsLibrary->AddPanel<SceneHierarchyPanel>(PanelCategory::View, "SceneHierarchyPanel", "Scene Hierarchy", true, m_EditorScene, SelectionContext::Scene);
+		sceneHierarchyPanel->SetEntityDeletedCallback([this](Entity entity) { OnEntityDeleted(entity); });
+
 		m_EditorScene = Scene::Create("Editor Scene");
 		m_ActiveScene = m_EditorScene;
 		m_ViewportRenderer = SceneRenderer::Create(m_ActiveScene);
-		SetContextForSceneHeirarchyPanel(m_ActiveScene);
 		m_Renderer2D = m_ViewportRenderer->GetRenderer2D();
 
 		m_ViewportRenderer->SetLineWidth(m_LineWidth);
 
+		// TODO: Add the other panels...
+		m_PanelsLibrary->AddPanel<ShadersPanel>(PanelCategory::View, "ShadersPanel", "Shaders", false); // Not open by default
+
 		// TODO: Temporary untill Projects are a thing!
 		AssetManager::Init();
+		m_PanelsLibrary->Deserialize();
 		// Default open scene for now...!
 		OpenScene("SandboxProject/Assets/scenes/StaticMeshTest.aurora");
 
@@ -213,8 +226,18 @@ namespace Aurora {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		if(m_AllowViewportCameraEvents)
-			m_EditorCamera.OnEvent(e);
+		m_PanelsLibrary->OnEvent(e);
+
+		if (m_SceneState == SceneState::Edit)
+		{
+			if (m_AllowViewportCameraEvents)
+				m_EditorCamera.OnEvent(e);
+		}
+		else if (m_SceneState == SceneState::Simulate)
+		{
+			if (m_AllowViewportCameraEvents)
+				m_EditorCamera.OnEvent(e);
+		}
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent& e) { return OnKeyPressed(e); });
@@ -224,143 +247,151 @@ namespace Aurora {
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if (GImGui->ActiveId == 0)
+		if (ImGuiUtils::IsWindowFocused("Viewport") || ImGuiUtils::IsWindowFocused("Scene Hierarchy"))
 		{
-			bool control = Input::IsKeyDown(AR_KEY_LEFT_CONTROL) || Input::IsKeyDown(AR_KEY_RIGHT_CONTROL);
-			bool shift = Input::IsKeyDown(AR_KEY_LEFT_SHIFT) || Input::IsKeyDown(AR_KEY_RIGHT_SHIFT);
-			bool alt = Input::IsKeyDown(AR_KEY_LEFT_ALT) || Input::IsKeyDown(AR_KEY_RIGHT_ALT);
-			bool mousePressed = Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_LEFT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT) || Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_MIDDLE);
-			bool inRuntime = m_ActiveScene == m_RuntimeScene;
+			if (m_ViewportHovered && !Input::IsMouseButtonPressed(MouseButton::ButtonRight) && m_ActiveScene != m_RuntimeScene)
+			{
+				switch (e.GetKeyCode())
+				{
+				    case KeyCode::Q:
+				    {
+				    	m_GizmoType = -1;
+				    	break;
+				    }
+				    case KeyCode::W:
+				    {
+				    	m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				    	break;
+				    }
+				    case KeyCode::E:
+				    {
+				    	m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+				    	break;
+				    }
+				    case KeyCode::R:
+				    {
+				    	m_GizmoType = ImGuizmo::OPERATION::SCALE;
+				    	break;
+				    }
+					case KeyCode::Space:
+					{
+						if (SelectionManager::GetSelectionCount(SelectionContext::Scene) == 0)
+							return false;
 
-			bool isSomethingSelected = m_SelectionContext ? true : false;
+						UUID selectedEntityID = SelectionManager::GetSelections(SelectionContext::Scene).front();
+						Entity selectedEntity = m_ActiveScene->GetEntityWithUUID(selectedEntityID);
+						m_EditorCamera.Focus(selectedEntity.Transform().Translation);
+					}
+				}
+			}
 
 			switch (e.GetKeyCode())
 			{
-				// New Scene
-				case KeyCode::N:
-			    {
-			    	if (control)
-			    		NewScene();
-			    
-			    	break;
-			    }
-			    
-				// Open Scene
-				case KeyCode::O:
-			    {
-			    	if (control)
-			    		OpenScene();
-			    
-			    	break;
-			    }
-			    
-				// Save Scene
-				case KeyCode::S:
-			    {
-			    	if (control)
-			    	{
-			    		if (shift)
-			    			SaveSceneAs();
-			    		else
-			    			SaveScene();
-			    	}
-			    
-			    	break;
-			    }
-			    
-				// Duplicate entity
-				case KeyCode::D:
-			    {
-			    	if (control && isSomethingSelected && !mousePressed)
-			    	{
-			    		m_SelectionContext = m_ActiveScene->CopyEntity(m_SelectionContext);
-			    	}
-			    
-			    	break;
-			    }
-			    
-				// Delete entity
-				case KeyCode::Delete:
-			    {
-			    	if (isSomethingSelected)
-			    	{
-			    		m_ActiveScene->DestroyEntity(m_SelectionContext);
-			    		m_SelectionContext = {};
-			    	}
-			    
-			    	break;
-			    }
-			    
-			    // Gizmos
-				case KeyCode::Q:
-			    {
-					if (inRuntime)
-						break;
-
-			    	if (!ImGuizmo::IsUsing())
-			    		m_GizmoType = -1;
-			    
-			    	break;
-			    }
-			    
-				case KeyCode::W:
-			    {
-					if (inRuntime)
-						break;
-
-			    	if (!ImGuizmo::IsUsing())
-			    		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-			    
-			    	break;
-			    }
-			    
-				case KeyCode::E:
-			    {
-					if (inRuntime)
-						break;
-
-			    	if (!ImGuizmo::IsUsing())
-			    		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-			    
-			    	break;
-			    }
-			    
-				case KeyCode::R:
-			    {
-					if (inRuntime)
-						break;
-
-			    	if (!ImGuizmo::IsUsing())
-			    		m_GizmoType = ImGuizmo::OPERATION::SCALE;
-			    
-			    	break;
-			    }
-
-				// Reset Editor Camera
-				case KeyCode::C:
+				case KeyCode::Escape:
 				{
-					if (alt)
+					SelectionManager::DeselectAll();
+					break;
+				}
+				case KeyCode::P:
+				{
+					if (Input::IsKeyDown(KeyCode::LeftAlt))
 					{
-						m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
+						if (m_SceneState == SceneState::Edit)
+							OnScenePlay();
+						else
+							OnSceneStop();
 					}
 
 					break;
 				}
-
-				// Reset focal point
-				case KeyCode::F:
+				case KeyCode::Delete:
 				{
-					if (alt)
+					// Intentional copy since deleting modifies the selectionMap
+					std::vector<UUID> selectedEntities = SelectionManager::GetSelections(SelectionContext::Scene);
+					for (UUID entityID : selectedEntities)
 					{
-						m_EditorCamera.Focus({ 0.0f, 0.0f, 0.0f });
+						Entity entityToBeDeleted = m_ActiveScene->GetEntityWithUUID(entityID);
+						// TODO: Maybe i dont need to get the uuid from the entity and pass it since the uuid should be the same in the selectionMap and the scene
+						SelectionManager::Deselect(SelectionContext::Scene, entityToBeDeleted.GetUUID());
+						m_EditorScene->DestroyEntity(entityToBeDeleted);
 					}
 
 					break;
 				}
 			}
+
+			if (Input::IsKeyDown(KeyCode::LeftControl) && !Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+			{
+				switch (e.GetKeyCode())
+				{
+				    case KeyCode::D:
+				    {
+						std::vector<UUID> selectedEntities = SelectionManager::GetSelections(SelectionContext::Scene);
+						for (const UUID& entityID : selectedEntities)
+						{
+							Entity entity = m_ActiveScene->GetEntityWithUUID(entityID);
+							Entity duplicate = m_ActiveScene->CopyEntity(entity);
+							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+							SelectionManager::Select(SelectionContext::Scene, duplicate.GetUUID());
+						}
+				    
+				    	break;
+				    }
+				    case KeyCode::G:
+				    {
+				    	m_ViewportRenderer->GetOptions().ShowGrid = !m_ViewportRenderer->GetOptions().ShowGrid;
+				    	break;
+				    }
+				    case KeyCode::N:
+				    {
+				    	NewScene();
+				    	break;
+				    }
+				    case KeyCode::O:
+				    {
+				    	OpenScene();
+				    	break;
+				    }
+				    case KeyCode::S:
+				    {
+				    	SaveScene();
+				    	break;
+				    }
+				}
+				
+				if (Input::IsKeyDown(KeyCode::LeftShift))
+				{
+					switch (e.GetKeyCode())
+					{
+					    case KeyCode::S:
+					    {
+					    	SaveSceneAs();
+					    	break;
+					    }
+					}
+				}
+			}
+
+			if (m_SceneState == SceneState::Play && Input::IsKeyDown(KeyCode::Escape))
+				Input::SetCursorMode(CursorMode::Normal);
+
+			if (m_SceneState == SceneState::Play && Input::IsKeyDown(KeyCode::LeftAlt))
+			{
+				if (e.GetRepeatCount() == 0)
+				{
+					switch (e.GetKeyCode())
+					{
+					    case KeyCode::C:
+					    {
+					    	m_EditorCameraInRuntime = !m_EditorCameraInRuntime;
+					    	break;
+					    }
+					}
+				}
+			}
 		}
 
-		return true;
+		return false;
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
@@ -436,18 +467,23 @@ namespace Aurora {
 			bool shiftDown = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
 
 			if (!ctrlDown)
-				m_SelectionContext = {};
+				SelectionManager::DeselectAll();
 
 			if (!selectionData.empty())
 			{
 				Entity entityy = selectionData.front().Entity;
-				m_SelectionContext = entityy;
+
+				if (SelectionManager::IsSelected(SelectionContext::Scene, entityy.GetUUID()) && ctrlDown)
+					SelectionManager::Deselect(SelectionContext::Scene, entityy.GetUUID());
+				else
+					SelectionManager::Select(SelectionContext::Scene, entityy.GetUUID());
 			}
 		}
 
 		return false;
 	}
 
+	// TODO: Handle meshes/textures/skybox and whatever being dropped
 	bool EditorLayer::OnPathDrop(WindowPathDropEvent& e)
 	{
 		// We can retrieve more than one path at a time however that needs special handling. For opening
@@ -497,6 +533,23 @@ namespace Aurora {
 			}
 		}
 
+		// TODO: Maybe only the selected mesh???
+		if (m_ShowBoundingBoxes)
+		{
+			//auto staticMeshEntities = m_ActiveScene->GetAllEntitiesWith<StaticMeshComponent>();
+			//for (auto e : staticMeshEntities)
+			//{
+			//	Entity entity{ e, m_ActiveScene.raw() };
+			//	glm::mat4 transform = entity.GetComponent<TransformComponent>().GetTransform();
+			//	Ref<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>(entity.GetComponent<StaticMeshComponent>().StaticMesh);
+			//	if (mesh)
+			//	{
+			//		const AABB& aabb = mesh->GetMeshSource()->GetBoundingBox();
+			//		m_Renderer2D->DrawAABB(aabb, transform);
+			//	}
+			//}
+		}
+
 		if (m_ShowIcons)
 		{
 			auto cameraView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
@@ -539,890 +592,27 @@ namespace Aurora {
 
 #pragma endregion
 
-#pragma region SceneHierarchyPanel
-
-	void EditorLayer::SetContextForSceneHeirarchyPanel(const Ref<Scene>& context)
-	{
-		m_Context = context;
-		m_SelectionContext = {};
-		// This is to prevent a bug from appearing and that is when an entity is selected and then we try to create a new scene
-		// however this might lead to bugs later if, IF we ever get to the point were we have multiple scene panels open at the same time and we want
-		// the selection context to go with every scene it is in
-	}
-
-	void EditorLayer::DrawEntityCreatePopupMenu(Entity entiy)
-	{
-		if (!ImGui::BeginMenu("Create"))
-			return;
-
-		Entity newEntity;
-
-		if (ImGui::MenuItem("Empty Entity"))
-		{
-			newEntity = m_Context->CreateEntity("Empty Entity");
-			m_SelectionContext = newEntity;
-		}
-
-		if (ImGui::MenuItem("Camera"))
-		{
-			newEntity = m_Context->CreateEntity("Camera");
-			newEntity.AddComponent<CameraComponent>();
-			m_SelectionContext = newEntity;
-		}
-
-		ImGui::EndMenu();
-	}
-
-	void EditorLayer::DrawEntityNode(Entity entity, const std::string& searchedString)
-	{
-		// All entities have a tag component by default
-		const std::string& tag = entity.GetComponent<TagComponent>().Tag;
-
-		if (!ImGuiUtils::IsMatchingSearch(tag, searchedString, false, true))
-			return;
-
-		std::string strID = fmt::format("{}{}", tag, entity.GetUUID());
-
-		constexpr float edgeOffset = 4.0f;
-		constexpr float rowHeight = 21.0f;
-
-		static bool isHovered = false;
-		static bool isHeld = false;
-		static bool isSelected = false;
-
-		ImGuiWindow* window = ImGui::GetCurrentWindow();
-		window->DC.CurrLineSize.y = rowHeight;
-		ImGui::TableNextRow(0, rowHeight);
-		window->DC.CurrLineTextBaseOffset = 3.0f;
-		ImGui::TableNextColumn();
-
-		// This is the min and max of the rect of the WHOLE row with all its columns and not just the row min/max of the first column!
-		const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
-		const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x, rowAreaMin.y + rowHeight + 4.0f };
-		
-		// This creates a rect that spans the area of the whole row and thus allows the detection of mouse hovered actions in
-		// consecutive rows which is not exactly possible if I dont push and pop a clip rect
-		ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
-
-		constexpr ImGuiButtonFlags buttonFlags = ImGuiButtonFlags_AllowItemOverlap
-			| ImGuiButtonFlags_PressedOnClickRelease
-			| ImGuiButtonFlags_MouseButtonLeft
-			| ImGuiButtonFlags_MouseButtonRight;
-		bool isRowClicked = ImGui::ButtonBehavior(ImRect{ rowAreaMin, rowAreaMax }, ImGui::GetID(strID.c_str()), &isHovered, &isHeld, buttonFlags);
-		bool wasRowRightClicked = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
-
-		ImGui::SetItemAllowOverlap();
-
-		ImGui::PopClipRect();
-
-		// Row Coloring...
-		auto fillRowWithColour = [](const ImColor& color)
-		{
-			for (int column = 0; column < ImGui::TableGetColumnCount(); column++)
-				ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, color, column);
-		};
-
-		isSelected = m_SelectionContext == entity;
-		ImGuiTreeNodeFlags treeFlags = (isSelected ? ImGuiTreeNodeFlags_Selected : 0);
-		treeFlags |= ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnArrow;
-
-		if (isSelected)
-		{
-			fillRowWithColour(ImColor(236, 158, 36, 150));
-			ImGui::PushStyleColor(ImGuiCol_Text, Theme::TextBrighter);
-		}
-		else if (isHovered)
-		{
-			fillRowWithColour(IM_COL32(236, 158, 36, 200));
-			ImGui::PushStyleColor(ImGuiCol_Text, Theme::Background);
-		}
-
-		// Taken from ImGui TreeNodeBehavior arrow hit calculations and slightly modified!
-		ImGuiStyle& style = ImGui::GetStyle();
-		const ImVec2 labelSize = ImGui::CalcTextSize(strID.c_str());
-		const ImVec2 padding = (treeFlags & ImGuiTreeNodeFlags_FramePadding) ? style.FramePadding 
-			: ImVec2{ style.FramePadding.x, ImMin(window->DC.CurrLineTextBaseOffset, style.FramePadding.y)};
-
-		const float text_offset_x = GImGui->FontSize + padding.x; // Collapser arrow width + Spacing
-		const float text_offset_y = ImMax(padding.y, window->DC.CurrLineTextBaseOffset); // Latch before ItemSize changes it
-		const float textWidth = GImGui->FontSize + (labelSize.x > 0.0f ? labelSize.x + padding.x * 2 : 0.0f); // Include collapser
-		
-		ImVec2 text_pos = { window->DC.CursorPos.x + text_offset_x, window->DC.CursorPos.y + text_offset_y };
-		const float arrow_hit_x1 = (text_pos.x - text_offset_x) - style.TouchExtraPadding.x;
-		const float arrow_hit_x2 = (text_pos.x - text_offset_x) + (GImGui->FontSize + padding.x * 2.0f) + style.TouchExtraPadding.x;
-		const bool is_mouse_x_over_arrow = (GImGui->IO.MousePos.x >= arrow_hit_x1 && GImGui->IO.MousePos.x < arrow_hit_x2);
-
-		bool previousState = ImGui::TreeNodeBehaviorIsOpen(ImGui::GetID(strID.c_str()));
-
-		if (is_mouse_x_over_arrow && isRowClicked)
-			ImGui::SetNextItemOpen(!previousState);
-
-		ImGui::PushStyleColor(ImGuiCol_Header, 0);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, 0);
-		ImGui::PushStyleColor(ImGuiCol_HeaderActive, 0);
-		const bool opened = ImGui::TreeNodeEx(strID.c_str(), treeFlags, tag.c_str());
-		ImGui::PopStyleColor(isSelected || isHovered ? 4 : 3);
-
-		bool inSceneHierarchyTable = ImGuiUtils::IsMouseInRectRegion(m_SceneHierarchyTableRect, false);
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
-			&& ImGuiUtils::IsMouseInRectRegion({ rowAreaMin, rowAreaMax }, false)
-			&& inSceneHierarchyTable)
-		{
-			m_SelectionContext = entity;
-		}
-
-		bool mouseClicked = (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::TableGetRowIndex())
-			|| (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && Input::IsKeyDown(KeyCode::LeftShift) 
-			&& inSceneHierarchyTable);
-		if (mouseClicked)
-			m_SelectionContext = {};
-		
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, Theme::AccentDimmed);
-		ImGui::PushStyleColor(ImGuiCol_Text, Theme::Text);
-		ImGui::PushStyleColor(ImGuiCol_Header, Theme::GroupHeader);
-		ImGui::PushStyleColor(ImGuiCol_HeaderActive, Theme::GroupHeader);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, Theme::GroupHeader);
-		ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 8, 8 });
-
-		std::string rightClickPopupID = fmt::format("{0}-ContextPopupMenu", strID);
-
-		bool deleteEntity = false;
-		if (ImGui::BeginPopupContextItem(rightClickPopupID.c_str()))
-		{
-			DrawEntityCreatePopupMenu(entity);
-
-			if (ImGui::MenuItem("Delete"))
-				deleteEntity = true;
-
-			ImGui::EndPopup();
-		}
-
-		ImGui::PopStyleVar(2);
-		ImGui::PopStyleColor(5);
-
-		// TODO: Add other identifiers when there actually are other identifiers such as prefabs when these are a thing
-		ImGui::TableNextColumn();
-		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
-		if (isSelected)
-			ImGui::PushStyleColor(ImGuiCol_Text, Theme::TextBrighter);
-		else if(isHovered)
-			ImGui::PushStyleColor(ImGuiCol_Text, Theme::Background);
-		ImGui::Text("Entity");
-		if (isHovered || isSelected)
-			ImGui::PopStyleColor();
-
-		// Mouse Click events also for this column
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
-			&& ImGuiUtils::IsMouseInRectRegion({ rowAreaMin, rowAreaMax }, false)
-			&& inSceneHierarchyTable)
-		{
-			m_SelectionContext = entity;
-		}
-
-		if (isRowClicked && wasRowRightClicked)
-		{
-			ImGui::OpenPopup(rightClickPopupID.c_str());
-		}
-
-		if (opened)
-		{
-			// TODO: here we should display the child entites of a parent entity once parenting entites is a thing!
-			ImGui::TableNextRow(0, rowHeight);
-			ImGui::TableNextColumn();
-
-			ImGuiUtils::ShiftCursorX(10.0f);
-			ImGui::TextColored(ImVec4{ 0.4f, 0.8f, 0.4f, 1.0f }, "WIP! Until parenting entities is a thing!");
-
-			ImGui::TreePop();
-		}
-
-		if(deleteEntity)
-		{
-			m_Context->DestroyEntity(entity);
-			if (m_SelectionContext == entity)
-				m_SelectionContext = {};
-		}
-	}
-
-	void EditorLayer::ShowSceneHierarchyPanel()
-	{
-		ImGuiFontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin("Scene Hierarchy", (bool*)0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
-
-		static bool enableSorting = false;
-		constexpr float edgeOffset = 4.0f;
-
-		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
-		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
-
-		fontsLib.PushTemporaryFont("RobotoBold");
-		ImGui::TextColored(ImVec4{ 0.925f, 0.619f, 0.141f, 0.888f }, "Scene:");
-
-		ImGui::SameLine();
-
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 30.0f);
-
-		std::string& sceneName = m_EditorScene->GetName();
-		// There should not be a scene name that is more than 128 characters long LOL
-		char buffer[128];
-		strcpy_s(buffer, sizeof(buffer), sceneName.c_str());
-		ImGuiUtils::ShiftCursorY(-2.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-		ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
-		if(ImGui::InputTextWithHint(ImGuiUtils::GenerateID(), "Enter scene name...", buffer, sizeof(buffer)))
-		{
-			sceneName = std::string(buffer);
-		}
-		ImGui::PopStyleColor();
-		ImGui::PopStyleVar();
-		fontsLib.PopTemporaryFont();
-
-		ImGuiUtils::DrawItemActivityOutline(3.0f, false, Theme::Accent);
-
-		ImGui::SameLine();
-
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
-		ImGuiUtils::ShiftCursorX(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f - 26.0f);
-		void* textureID = (void*)(uint64_t)EditorResources::GearIcon->GetTextureID();
-		if (ImGui::ImageButton(textureID, ImVec2{ lineHeight * 0.75f, lineHeight * 0.75f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
-			ImGui::OpenPopup("SceneHierarchySettings");
-
-		ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 5.0f, 2.5f });
-		if (ImGui::BeginPopup("SceneHierarchySettings"))
-		{
-			ImGui::TextColored(ImVec4{ 0.3f, 0.9f, 0.3f, 1.0f }, "Scene Panel Settings");
-
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, 150.0f);
-
-			ImGui::Text("Show Properties: ");
-
-			ImGui::NextColumn();
-
-			if (ImGui::Checkbox("##ShowProperties", &m_ShowPropertiesPanel))
-				ImGui::CloseCurrentPopup();
-
-			ImGui::NextColumn();
-
-			ImGui::Text("Enable Sorting: ");
-
-			ImGui::NextColumn();
-
-			if (ImGui::Checkbox("##EnableSorting", &enableSorting))
-				ImGui::CloseCurrentPopup();
-
-			ImGui::Columns(1);
-
-			ImGui::Separator();
-
-			ImGui::TextColored(ImVec4{ 0.3f, 0.9f, 0.3f, 1.0f }, "Scene Info:");
-			ImGui::Text("Number of entites in scene: %d", m_Context->GetAllEntitiesWith<IDComponent>().size());
-
-			ImGui::Separator();
-
-			ImGui::TextColored(ImVec4{ 0.3f, 0.9f, 0.3f, 1.0f }, "Help");
-			ImGui::Text("To deselect an entity: Shift + LeftClick");
-
-			ImGui::EndPopup();
-		}
-		ImGui::PopStyleVar(2);
-
-		ImGuiUtils::ShiftCursorY(-edgeOffset * 2.0f);
-		// X shifting resets by itself via imgui internally when going to a new line!
-
-		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
-		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
-
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f);
-
-		static std::string searchString;
-		ImGuiUtils::SearchBox(searchString);
-
-		ImGui::Spacing();
-		ImGui::Spacing();
-
-		// Table
-		{
-			const ImU32 colRowAlt = ImGuiUtils::ColorWithMultiplierValue(Theme::BackgroundDark, 1.3f);
-			ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, colRowAlt);
-
-			// This sets the background of the table since a table is considered as a child window
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, Theme::BackgroundDark);
-
-			constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_NoPadInnerX
-				| ImGuiTableFlags_Resizable
-				//| ImGuiTableFlags_Reorderable
-				| ImGuiTableFlags_ScrollY
-				| ImGuiTableFlags_RowBg;
-
-			if (ImGui::BeginTable("SceneHierarchy-EntityListTable", 2, tableFlags, ImGui::GetContentRegionAvail()))
-			{
-				ImGui::TableSetupColumn("Label");
-				ImGui::TableSetupColumn("Type");
-
-				m_SceneHierarchyTableRect = ImGui::GetCurrentTable()->InnerRect;
-
-				// Setup the header for the table...
-				ImU32 headerColor = ImGuiUtils::ColorWithMultiplierValue(Theme::AccentDimmed, 1.2f);
-				ImGui::PushStyleColor(ImGuiCol_HeaderHovered, headerColor);
-				ImGui::PushStyleColor(ImGuiCol_HeaderActive, headerColor);
-				ImGui::TableSetupScrollFreeze(ImGui::TableGetColumnCount(), 1);
-
-				ImGui::TableNextRow(ImGuiTableRowFlags_Headers, 22.0f);
-				for (int i = 0; i < ImGui::TableGetColumnCount(); i++)
-				{
-					ImGui::TableSetColumnIndex(i);
-					const char* columnName = ImGui::TableGetColumnName();
-
-					ImGui::PushID(i);
-
-					ImGuiUtils::ShiftCursor(edgeOffset * 3.0f, 0.0f);
-
-					ImGui::TableHeader(columnName, 0, Theme::Background);
-
-					ImGuiUtils::ShiftCursor(-edgeOffset * 3.0f, 0.0f);
-
-					ImGui::PopID();
-				}
-				ImGui::SetCursorPosX(ImGui::GetCurrentTable()->OuterRect.Min.x);
-
-				if(enableSorting)
-				{
-					for (auto entity : m_Context->GetAllEntitiesWith<IDComponent>())
-					{
-						m_SortedEntities.emplace_back(Entity{ entity, m_Context.raw() });
-					}
-
-					std::sort(m_SortedEntities.begin(), m_SortedEntities.end(), [](Entity a, Entity b)
-					{
-						return a.GetComponent<TagComponent>().Tag < b.GetComponent<TagComponent>().Tag;
-					});
-
-					for (Entity ent : m_SortedEntities)
-					{
-						DrawEntityNode(ent, searchString);
-					}
-
-					m_SortedEntities.clear();
-				}
-				else
-				{
-					for (auto entity : m_Context->GetAllEntitiesWith<IDComponent>())
-					{
-						DrawEntityNode({ entity, m_Context.raw() }, searchString);
-					}
-				}
-
-				ImGui::PopStyleColor(2);
-
-				ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 0.0f);
-				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 8, 8 });
-				if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
-				{
-					DrawEntityCreatePopupMenu({});
-					ImGui::EndPopup();
-				}
-				ImGui::PopStyleVar(2);
-
-				ImGui::EndTable();
-			}
-
-			ImGui::PopStyleColor(2);
-		}
-
-		if (m_ShowPropertiesPanel)
-		{
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 8, 8 });
-			ImGui::Begin("Properties", (bool*)0, ImGuiWindowFlags_NoMove);
-
-			if (m_SelectionContext)
-			{
-				DrawComponents(m_SelectionContext);
-			}
-
-			ImGui::End();
-			ImGui::PopStyleVar();
-		}
-
-		ImGui::End();
-		ImGui::PopStyleVar();
-	}
-
-	template<typename T, typename UIFunction, typename ResetFunction>
-	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction, ResetFunction resetFunction, int texID = -1)
-	{
-		constexpr ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
-		if (entity.HasComponent<T>())
-		{
-			ImGui::PushID((void*)typeid(T).hash_code());
-
-			T& component = entity.GetComponent<T>();
-			ImVec2 contentRegionAvail = ImGui::GetContentRegionAvail();
-
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
-			const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // From ImGui source
-
-			// TODO: Add component frame icons
-			//bool open = ImGui::TreeNodeWithIcon(EditorResources::ComponentIcon, (void*)typeid(T).hash_code(), treeNodeFlags, ImColor(255, 255, 255, 255), name.c_str());
-			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
-			ImGui::PopStyleVar();
-
-			if (typeid(T) != typeid(TransformComponent))
-			{
-				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
-				void* textureID = (void*)(uint64_t)EditorResources::CloseIcon->GetTextureID();
-				if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 9.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
-				{
-					ImGui::OpenPopup("ComponentSettings"); // This is also just an id and not a tag that will be rendered
-				}
-
-				ImGui::SameLine(contentRegionAvail.x - 1.5f * lineHeight);
-				
-				textureID = (void*)(uint64_t)EditorResources::ResetIcon->GetTextureID();
-				if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 8.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
-				{
-					resetFunction(component);
-				}
-
-				if (ImGui::IsItemHovered())
-					ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "Reset");
-			}
-			else
-			{
-				ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
-
-				void* textureID = (void*)(uint64_t)EditorResources::ResetIcon->GetTextureID();
-				if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 8.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
-				{
-					resetFunction(component);
-				}
-
-				if (ImGui::IsItemHovered())
-					ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "Reset");
-			}
-
-			bool removeComponent = false;
-			if (ImGui::BeginPopup("ComponentSettings"))
-			{
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f });
-				if (ImGui::MenuItem("Remove Component"))
-					removeComponent = true;
-				ImGui::PopStyleColor();
-
-				ImGui::EndPopup();
-			}
-
-			if (open)
-			{
-				uiFunction(component);
-				ImGui::TreePop();
-			}
-
-			if (removeComponent)
-				entity.RemoveComponent<T>();
-
-			ImGui::PopID();
-		}
-	}
-
-	void EditorLayer::DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float colomnWidth, float min, float max, float stepValue)
-	{
-		ImGuiLayer* layer = Application::GetApp().GetImGuiLayer();
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-
-		ImGui::SetColumnWidth(0, colomnWidth);
-		ImGui::Text(label.c_str());
-
-		ImGui::NextColumn();
-
-		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-
-		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		const ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne");
-		if (ImGui::Button("X", buttonSize))
-			values.x = resetValue;
-		layer->m_FontsLibrary.PopTemporaryFont();
-		ImGui::PopStyleColor(3);
-
-		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, stepValue, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne");
-		if (ImGui::Button("Y", buttonSize))
-			values.y = resetValue;
-		layer->m_FontsLibrary.PopTemporaryFont();
-		ImGui::PopStyleColor(3);
-
-		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, stepValue, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		layer->m_FontsLibrary.PushTemporaryFont("MochiyPopOne");
-		if (ImGui::Button("Z", buttonSize))
-			values.z = resetValue;
-		layer->m_FontsLibrary.PopTemporaryFont();
-		ImGui::PopStyleColor(3);
-
-		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, stepValue, min, max, "%.2f");// I am setting the format to only display 2 decimal places however viable to change
-		ImGui::PopItemWidth();
-
-		ImGui::PopStyleVar(2);
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-
-	template<typename Component, bool TAddSeparator = false>
-	static void DrawPopUpMenuEntry(std::string_view compName, Entity entity, Entity& selectionContext)
-	{
-		if (!entity.HasComponent<Component>())
-		{
-			if (ImGui::MenuItem(compName.data()))
-			{
-				selectionContext.AddComponent<Component>();
-				ImGui::CloseCurrentPopup();
-			}
-
-			if constexpr (TAddSeparator)
-			{
-				ImGui::Separator();
-			}
-		}
-	}
-
-	void EditorLayer::DrawComponents(Entity entity)
-	{
-		ImGuiFontsLibrary& fontLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
-		std::string& tag = entity.GetComponent<TagComponent>().Tag;
-
-		// Size of buffer is 128 because there should not be an entity called more than 128 letters like BRUH
-		char buffer[128];
-		strcpy_s(buffer, sizeof(buffer), tag.c_str());
-
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-		ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
-		fontLib.PushTemporaryFont("RobotoBold");
-		if (ImGui::InputTextWithHint("##Tag", "Change entity name...", buffer, sizeof(buffer)))
-		{
-			tag = std::string(buffer);
-		}
-		fontLib.PopTemporaryFont();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleVar();
-
-		ImGuiUtils::DrawItemActivityOutline(3.0f, false, Theme::Accent);
-
-		if (ImGui::IsItemHovered())
-			ImGuiUtils::ToolTipWithVariableArgs(ImVec4{ 1.0f, 1.0f, 0.529f, 0.7f }, "ID: %#010x", entity.GetUUID());
-
-		ImGui::SameLine();
-
-		float lineHeight = ImGui::GetItemRectSize().y; // Get Height of last item
-
-		//ImGuiUtils::ShiftCursorX(-5);
-		if (ImGui::Button("Add Component", ImVec2{ ImGui::GetContentRegionAvail().x, lineHeight }))
-			ImGui::OpenPopup("AddComponentsPopUp"); // AddComponentPopUp here acts as an ID for imgui to be used in the next step
-
-		if (ImGui::BeginPopup("AddComponentsPopUp"))
-		{
-			DrawPopUpMenuEntry<CameraComponent, true>("Camera", entity, m_SelectionContext);
-			DrawPopUpMenuEntry<SpriteRendererComponent>("Sprite Renderer", entity, m_SelectionContext);
-			DrawPopUpMenuEntry<CircleRendererComponent>("Circle Renderer", entity, m_SelectionContext);
-			DrawPopUpMenuEntry<StaticMeshComponent, true>("StaticMesh", entity, m_SelectionContext);
-			DrawPopUpMenuEntry<DirectionalLightComponent>("DirectionalLight", entity, m_SelectionContext);
-			DrawPopUpMenuEntry<SkyLightComponent, true>("SkyLight", entity, m_SelectionContext);
-			DrawPopUpMenuEntry<TextComponent>("Text", entity, m_SelectionContext);
-
-			ImGui::EndPopup();
-		}
-
-		DrawComponent<TransformComponent>("Transform", entity, [this](TransformComponent& component)
-		{
-			DrawVec3Control("Translation", component.Translation);
-			glm::vec3 rotation = glm::degrees(component.Rotation);
-			DrawVec3Control("Rotation", rotation);
-			component.Rotation = glm::radians(rotation);
-			DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f, 0.0f, 1000.0f, 0.025f);
-		},
-		[](TransformComponent& component) // Reset function
-		{
-			component.Translation = glm::vec3(0.0f);
-			component.Rotation = glm::vec3(0.0f);
-			component.Scale = glm::vec3(1.0f);
-		});
-
-		DrawComponent<CameraComponent>("Camera", entity, [](CameraComponent& component)
-		{
-			SceneCamera& camera = component.Camera;
-
-			ImGuiUtils::BeginPropertyGrid();
-
-			ImGuiUtils::PropertyBool("Primary", component.Primary, "Sets whether this is the primary camera to render with if there are multiple of them");
-
-			static const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-			int currentProjectionType = (int)camera.GetProjectionType();
-			if (ImGuiUtils::PropertyDropdown("Projection", projectionTypeString, 2, &currentProjectionType, "Set the type of projection for camera"))
-			{
-				camera.SetProjectionType((SceneCamera::ProjectionType)currentProjectionType);
-			}
-
-			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
-			{
-				float verticalFOV = camera.GetDegPerspectiveVerticalFOV();
-				if (ImGuiUtils::PropertyFloat("FOV", verticalFOV, 0.1f, 0.0f, 120.0f, "Field of view"))
-					camera.SetDegPerspectiveVerticalFOV(verticalFOV);
-
-				float persNear = camera.GetPerspectiveNearClip();
-				if (ImGuiUtils::PropertyFloat("Near", persNear, 0.1f, 0.0f, 0.0f, "Set near clip of camera"))
-					camera.SetPerspectiveNearClip(persNear);
-
-				float persFar = camera.GetPerspectiveFarClip();
-				if (ImGuiUtils::PropertyFloat("Far", persFar, 0.1f, 0.0f, 0.0f, "Set far clip of camera"))
-					camera.SetPerspectiveFarClip(persFar);
-			}
-			else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
-			{
-				float orthoSize = camera.GetOrthographicSize();
-				if (ImGuiUtils::PropertyFloat("Size", orthoSize, 0.1f, 0.0f, 1000.0f, "Set size of camera"))
-					camera.SetOrthographicSize(orthoSize);
-
-				float orthoNear = camera.GetOrthographicNearClip();
-				if (ImGuiUtils::PropertyFloat("Near", orthoNear, 0.1f, 0.0f, 0.0f, "Set near clip of camera"))
-					camera.SetOrthographicNearClip(orthoNear);
-
-				float orthoFar = camera.GetOrthographicFarClip();
-				if (ImGuiUtils::PropertyFloat("Far", orthoFar, 0.1f, 0.0f, 0.0f, "Set far clip of camera"))
-					camera.SetOrthographicFarClip(orthoFar);
-			}
-
-			ImGuiUtils::EndPropertyGrid();
-		},
-		[](CameraComponent& component) // Reset Function
-		{
-			auto& camera = component.Camera;
-			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
-			{
-				camera.SetDegPerspectiveVerticalFOV(45.0f);
-				camera.SetPerspectiveNearClip(0.01f);
-				camera.SetPerspectiveFarClip(1000.0f);
-			}
-			else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
-			{
-				camera.SetOrthographicSize(10.0f);
-				camera.SetOrthographicNearClip(-1.0f);
-				camera.SetOrthographicFarClip(1.0f);
-			}
-		});
-
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& component)
-		{
-			ImGuiUtils::BeginPropertyGrid();
-
-			ImGuiUtils::ColorEdit4Control("Color", component.Color);
-			// TODO: Add textue selection drag drop API
-			ImGuiUtils::PropertyFloat("Tiling Factor", component.TilingFactor, 0.1f, 1.0f, 10.0f);
-
-			ImGuiUtils::EndPropertyGrid();
-		},
-		[](SpriteRendererComponent& component) // Reset Function
-		{
-			component.Color = glm::vec4(1.0f);
-			component.TilingFactor = 1.0f;
-		});
-
-		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](CircleRendererComponent& component)
-		{
-			ImGuiUtils::BeginPropertyGrid();
-
-			ImGuiUtils::ColorEdit4Control("Color", component.Color);
-			ImGuiUtils::PropertyFloat("Thickness", component.Thickness, 0.01f, 0.0f, 1.0f);
-
-			ImGuiUtils::EndPropertyGrid();
-		},
-		[](CircleRendererComponent& component)
-		{
-			component.Color = glm::vec4(1.0f);
-			component.Thickness = 1.0f;
-		});
-
-		static std::string environmentMapName = "Aurora Default";
-
-		DrawComponent<SkyLightComponent>("SkyLight", entity, [](SkyLightComponent& component)
-		{
-			ImGuiUtils::BeginPropertyGrid();
-
-			ImGui::Text("Environment");
-
-			ImGui::NextColumn();
-
-			// TODO: Change to accept drag drop
-			float width = ImGui::GetContentRegionAvail().x;
-			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
-			if (ImGui::Button(environmentMapName.c_str(), { width, 25.0f }))
-			{
-				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("HDR Image (*.hdr)\0*.hdr\0");
-				environmentMapName = p.filename().string();
-
-				if (environmentMapName.size())
-				{
-					Ref<Asset> asset = AssetManager::GetAsset<Environment>(p);
-					if (asset->IsValid())
-						component.SceneEnvironment = asset->Handle;
-				}
-				else
-					environmentMapName = "Aurora Default";
-			}
-			ImGui::PopStyleColor();			
-
-			ImGui::NextColumn();
-
-			ImGuiUtils::PropertyFloat("LOD", component.Level, 0.05f, 0.0f, 10.0f);
-			ImGuiUtils::PropertyFloat("Intensity", component.Intensity, 0.05f, 0.01f, 10.0f);
-			ImGuiUtils::PropertyBool("Dynamic Sky", component.DynamicSky, "Generates a gpu generated skybox");
-			ImGuiUtils::PropertyFloat("Turbidity", component.TurbidityAzimuthInclination.x, 0.05f, 2.0f, 20.0f, "How turbid the sky is");
-			ImGuiUtils::PropertyFloat("Azimuth", component.TurbidityAzimuthInclination.y, 0.05f, 0.0f, 20.0f);
-			ImGuiUtils::PropertyFloat("Inclination", component.TurbidityAzimuthInclination.z, 0.05f, 0.0f, 20.0f, "How inclined the sun is");
-
-			ImGuiUtils::EndPropertyGrid();
-		},
-		[](SkyLightComponent& component) // Reset Function
-		{
-			environmentMapName = "Aurora Default";
-			component.SceneEnvironment = 0;
-			component.Level = 0.5f;
-			component.Intensity = 1.0f;
-			component.DynamicSky = false;
-			component.TurbidityAzimuthInclination = { 2.0f, 0.0f, 0.0f };
-		});
-
-		DrawComponent<StaticMeshComponent>("StaticMesh", entity, [](StaticMeshComponent& component)
-		{
-			if (ImGui::Button("Static Mesh Path"))
-			{
-				std::filesystem::path path = Utils::WindowsFileDialogs::OpenFileDialog("StaticMesh");
-				Ref<MeshSource> meshSource = MeshSource::Create(path);
-				component.StaticMesh = StaticMesh::Create(meshSource);
-			}
-		},
-		[](StaticMeshComponent& component)
-		{
-		});
-
-		DrawComponent<DirectionalLightComponent>("DirectionalLight", entity, [](DirectionalLightComponent& component)
-		{
-			ImGuiUtils::BeginPropertyGrid();
-
-			ImGuiUtils::ColorEdit3Control("Radiance", component.Radiance);
-			ImGuiUtils::PropertyFloat("Intensity", component.Intensity, 0.01f, 0.0f, 10.0f);
-
-			ImGuiUtils::EndPropertyGrid();
-		},
-		[](DirectionalLightComponent& component)
-		{
-			component.Radiance = { 1.0f, 1.0f, 1.0f };
-			component.Intensity = 1.0f;
-		});
-		
-		static std::string textFileName = "Aurora Default";
-
-		DrawComponent<TextComponent>("Text", entity, [](TextComponent& component)
-		{
-			ImGuiUtils::BeginPropertyGrid();
-
-			ImGui::Text("Font");
-
-			ImGui::NextColumn();
-
-			// TODO: Change to accept drag drop
-			float width = ImGui::GetContentRegionAvail().x;
-			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
-			if (ImGui::Button(textFileName.c_str(), { width, 25.0f }))
-			{
-				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("Font File (*.ttf)\0*.ttf\0");
-				textFileName = p.filename().string();
-
-				if (textFileName.size())
-				{
-					Ref<Asset> asset = AssetManager::GetAsset<Font>(p);
-					if (asset->IsValid())
-						component.FontHandle = asset->Handle;
-				}
-				else
-					textFileName = "Aurora Default";
-			}
-			ImGui::PopStyleColor();
-
-			ImGui::NextColumn();
-
-			if (ImGuiUtils::MultiLineText("Text", component.TextString))
-			{
-				component.TextHash = std::hash<std::string>()(component.TextString);
-			}
-			
-			ImGui::Separator();
-
-			ImGuiUtils::ColorEdit4Control("Color", component.Color);
-			ImGuiUtils::PropertyFloat("Line Spacing", component.LineSpacing, 0.05f, 0.0f, 30.0f);
-			ImGuiUtils::PropertyFloat("Max Width", component.MaxWidth, 0.01f, 0.0f, 30.0f);
-			ImGuiUtils::PropertyFloat("Kerning", component.Kerning, 0.01f, 0.0f, 30.0f);
-
-			ImGuiUtils::EndPropertyGrid();
-		},
-		[](TextComponent& component)
-		{
-			component.TextString = "";
-			component.TextHash = 0;
-			component.FontHandle = Font::GetDefaultFont()->Handle;
-			component.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-			component.LineSpacing = 0.0f;
-			component.Kerning = 0.0f;
-			component.MaxWidth = 10.0f;
-			textFileName = "Aurora Default";
-		});
-	}
-
-#pragma endregion
-
 	// TODO: NEED TO CHANGE SOME STUFF HERE FOR LATER
 #pragma region FileDialogs/Scene Helpers
 
 	void EditorLayer::NewScene()
 	{
+		SelectionManager::DeselectAll();
+
 		m_EditorScene->Clear();
 		m_EditorScene = nullptr;
 		m_ActiveScene = nullptr;
 
 		m_EditorScene = Scene::Create("New Scene"); // Creating new scene
-		m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		SetContextForSceneHeirarchyPanel(m_EditorScene);
+		m_PanelsLibrary->SetSceneContext(m_EditorScene);
 
 		m_ActiveScene = m_EditorScene;
 
-		m_EditorScenePath = std::filesystem::path();
+		m_SceneFilePath = std::string();
 		m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
+
+		if (m_ViewportRenderer)
+			m_ViewportRenderer->SetScene(m_ActiveScene.raw());
 	}
 
 	void EditorLayer::OpenScene()
@@ -1435,6 +625,12 @@ namespace Aurora {
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
+		if (!std::filesystem::exists(path))
+		{
+			AR_CORE_ERROR_TAG("EditorLayer", "Tried to open a scene that does not exist!");
+			return;
+		}
+
 		if (path.extension().string() != ".aurora")
 		{
 			AR_WARN_TAG("EditorLayer", "Could not load '{0}' - not an Aurora scene file!", path.filename().string());
@@ -1442,24 +638,35 @@ namespace Aurora {
 			return;
 		}
 
-		Ref<Scene> newScene = Scene::Create();
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
+		//else if (m_SceneState == SceneState::Simulate)
+			// TODO: HANDLE THIS CASE
+
+		Ref<Scene> newScene = Scene::Create("New Scene");
 		SceneSerializer serializer(newScene);
 
 		if (serializer.DeSerializeFromText(path.string()))
 		{
 			m_EditorScene = newScene;
-			SetContextForSceneHeirarchyPanel(m_EditorScene);
 
 			m_ActiveScene = m_EditorScene;
-			m_EditorScenePath = path;
-			m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 10000.0f);
+			m_SceneFilePath = path.string();
+			std::replace(m_SceneFilePath.begin(), m_SceneFilePath.end(), '\\', '/');
+
+			m_PanelsLibrary->SetSceneContext(m_EditorScene);
+
+			SelectionManager::DeselectAll();
+
+			if (m_ViewportRenderer)
+				m_ViewportRenderer->SetScene(m_ActiveScene.raw());
 		}
 	}
 
 	void EditorLayer::SaveScene()
 	{
-		if (!m_EditorScenePath.empty())
-			SerializeScene(m_ActiveScene, m_EditorScenePath);
+		if (!m_SceneFilePath.empty())
+			SerializeScene(m_ActiveScene, m_SceneFilePath);
 		else
 			SaveSceneAs();
 	}
@@ -1468,10 +675,17 @@ namespace Aurora {
 	{
 		std::filesystem::path filepath = Utils::WindowsFileDialogs::SaveFileDialog("Aurora Scene (*.aurora)\0*.aurora\0");
 
+		if (filepath.empty())
+			return;
+
+		if (!filepath.has_extension())
+			filepath += SceneSerializer::SceneExtension;
+
 		if (!filepath.empty())
 		{
 			SerializeScene(m_ActiveScene, filepath);
-			m_EditorScenePath = filepath;
+			m_SceneFilePath = filepath.string();
+			std::replace(m_SceneFilePath.begin(), m_SceneFilePath.end(), '\\', '/');
 		}
 	}
 
@@ -1483,13 +697,17 @@ namespace Aurora {
 
 	void EditorLayer::OnScenePlay()
 	{
-		m_SelectionContext = {};
+		SelectionManager::DeselectAll();
+
+		//m_SelectionContext = {};
+		//m_SceneHierarchyPanel->SetSelectedEntity({});
 
 		m_SceneState = SceneState::Play;
 
 		m_RuntimeScene = Scene::Create();
 		m_EditorScene->CopyTo(m_RuntimeScene);
 		m_RuntimeScene->OnRuntimeStart();
+		m_PanelsLibrary->SetSceneContext(m_RuntimeScene);
 		m_ActiveScene = m_RuntimeScene;
 	}
 
@@ -1500,14 +718,19 @@ namespace Aurora {
 
 	void EditorLayer::OnSceneStop()
 	{
-		m_SelectionContext = {};
+		SelectionManager::DeselectAll();
+
+		//m_SelectionContext = {};
+		//m_SceneHierarchyPanel->SetSelectedEntity({});
 
 		m_RuntimeScene->OnRuntimeStop();
 
 		m_SceneState = SceneState::Edit;
 		Input::SetCursorMode(CursorMode::Normal);
 
+		// Reset runtime scene
 		m_RuntimeScene = nullptr;
+		m_PanelsLibrary->SetSceneContext(m_EditorScene);
 		m_ActiveScene = m_EditorScene;
 	}
 
@@ -1562,66 +785,6 @@ namespace Aurora {
 		for (std::string name : contNames)
 		{
 			ImGui::Text("%s", name.c_str());
-		}
-
-		ImGui::End();
-	}
-
-	void EditorLayer::ShowShadersPanel()
-	{
-		ImGui::Begin("Shaders", &m_ShowShadersPanel);
-
-		constexpr float edgeOffset = 4.0f;
-		ImGuiUtils::ShiftCursorX(edgeOffset * 3.0f);
-		ImGuiUtils::ShiftCursorY(edgeOffset * 2.0f);
-
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - edgeOffset * 3.0f);
-
-		static std::string searchString;
-		ImGuiUtils::SearchBox(searchString);
-
-		ImGui::Spacing();
-		ImGui::Spacing();
-
-		constexpr ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
-			| ImGuiTreeNodeFlags_SpanAvailWidth
-			| ImGuiTreeNodeFlags_AllowItemOverlap
-			| ImGuiTreeNodeFlags_FramePadding;
-
-		for (Ref<Shader> shader : Shader::s_AllShaders)
-		{
-			const std::string& shaderName = shader->GetName();
-
-			if (!ImGuiUtils::IsMatchingSearch(shaderName, searchString))
-				continue;
-
-			constexpr float framePaddingX = 5.0f;
-			constexpr float framePaddingY = 5.0f; // affects height of the header
-
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
-			std::string name = fmt::format("{0}", shaderName);
-			const bool opened = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
-			ImGui::PopStyleVar(2);
-
-			ImGuiUtils::ShiftCursorY(-4.0f);
-
-			if(opened)
-			{
-				ImGui::Text("Type: %s", shader->GetTypeString().c_str());
-				ImGui::Text("Path: %s", shader->GetFilePath().string().c_str());
-
-				uint32_t lastTimeMod = shader->GetLastTimeModified();
-				if (lastTimeMod <= shader->GetCompileTimeThreshold())
-					ImGui::TextColored(ImVec4{ 0.8f, 0.2f, 0.3f, 1.0f }, "Last time modified: %u minutes", lastTimeMod);
-				else
-					ImGui::Text("Last time modified: %u minutes", lastTimeMod);
-
-				if (ImGui::Button("Reload"))
-					shader->Reload();
-
-				ImGui::TreePop();
-			}
 		}
 
 		ImGui::End();
@@ -1769,7 +932,7 @@ namespace Aurora {
 		size_t colonPos = str.find_first_of(':');
 		std::string timeString(str.substr(colonPos - 2, 13));
 
-		std::string finalName = "SandboxProject/Screenshots/" + m_Context->GetName() + "_" + timeString + ".png";
+		std::string finalName = "SandboxProject/Screenshots/" + m_ActiveScene->GetName() + "_" + timeString + ".png";
 		for (uint32_t i = 21; i < finalName.size(); i++)
 		{
 			if (finalName[i] == ' ' || finalName[i] == ':')
@@ -1863,6 +1026,8 @@ namespace Aurora {
 	{
 		if (ImGui::BeginMenuBar())
 		{
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, IM_COL32(0, 0, 0, 100));
+
 			if (ImGui::BeginMenu("File"))
 			{
 				if (ImGui::MenuItem("New", "Ctrl+N"))
@@ -1884,13 +1049,14 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("View"))
 			{
-				if (ImGui::MenuItem("Scene Hierarchy", nullptr, m_ShowSceneHierarchyPanel))
-					m_ShowSceneHierarchyPanel = !m_ShowSceneHierarchyPanel;
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Shaders", nullptr, m_ShowShadersPanel))
-					m_ShowShadersPanel = !m_ShowShadersPanel;
+				// TODO: Convert all panels to this! For now: SceneHierarchy and Shaders only...
+				{
+					for (auto& [id, panelSpec] : m_PanelsLibrary->GetPanels(PanelCategory::View))
+					{
+						if (ImGui::MenuItem(panelSpec.Name, nullptr, &panelSpec.IsOpen))
+							m_PanelsLibrary->Serialize();
+					}
+				}
 
 				ImGui::Separator();
 
@@ -1909,19 +1075,6 @@ namespace Aurora {
 
 				if (ImGui::MenuItem("Renderer Info", nullptr, m_ShowRendererVendorInfo))
 					m_ShowRendererVendorInfo = !m_ShowRendererVendorInfo;
-
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Options"))
-			{
-				if (ImGui::MenuItem("Settings...", nullptr, m_ShowSettingsUI))
-					m_ShowSettingsUI = !m_ShowSettingsUI;
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Exit...", nullptr, m_ShowCloseModal))
-					m_ShowCloseModal = !m_ShowCloseModal;
 
 				ImGui::EndMenu();
 			}
@@ -1950,6 +1103,19 @@ namespace Aurora {
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Options"))
+			{
+				if (ImGui::MenuItem("Settings...", nullptr, m_ShowSettingsUI))
+					m_ShowSettingsUI = !m_ShowSettingsUI;
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Exit...", nullptr, m_ShowCloseModal))
+					m_ShowCloseModal = !m_ShowCloseModal;
+
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("Help"))
 			{
 				if (ImGui::MenuItem("Editor Camera", nullptr, m_ShowEditorCameraHelpUI))
@@ -1957,6 +1123,8 @@ namespace Aurora {
 
 				ImGui::EndMenu();
 			}
+
+			ImGui::PopStyleColor();
 
 			ImGui::EndMenuBar();
 		}
@@ -1975,104 +1143,94 @@ namespace Aurora {
 		return 0.0f;
 	}
 
-	void EditorLayer::ManipulateGizmos()
+	void EditorLayer::DrawGizmos()
 	{
-		// Camera
-		// Editor Camera
-		const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-		const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
+		AR_PROFILE_FUNCTION();
 
-		// Runtime Camera
-		// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-		// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-		// const glm::mat4& cameraProjection = camera.GetProjection();
-		// glm::mat4 cameraView2 = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+		if (m_GizmoType == -1)
+			return;
 
-		// Entity transform
-		auto& tc = m_SelectionContext.GetComponent<TransformComponent>();
-		glm::mat4 transform = tc.GetTransform();
+		const std::vector<UUID>& selections = SelectionManager::GetSelections(SelectionContext::Scene);
 
-		// Snapping
-		bool snap = Input::IsKeyDown(KeyCode::LeftControl);
+		if (selections.size() == 0)
+			return;
+
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+		bool snapping = Input::IsKeyDown(KeyCode::LeftControl);
 
 		const float snapValue = GetSnapValue();
+		const float snapValues[] = { snapValue, snapValue, snapValue };
 
-		const float snapValues[3] = { snapValue, snapValue, snapValue };
-
-		if(ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-			nullptr, snap ? snapValues : nullptr) && !Input::IsKeyDown(KeyCode::LeftAlt))
+		if (selections.size() == 1)
 		{
-			glm::vec3 translation(0.0f), rotation(0.0f), scale(0.0f);
-			Math::DecomposeTransform(transform, translation, rotation, scale);
+			// Get first selection since there is only 1
+			Entity entity = m_ActiveScene->GetEntityWithUUID(selections[0]);
+			TransformComponent& tc = entity.Transform();
+			glm::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 
-			switch (m_GizmoType)
+			glm::mat4 projectionMatrix;
+			glm::mat4 viewMatrix;
+			if (m_SceneState == SceneState::Play && !m_EditorCameraInRuntime)
 			{
-			    case ImGuizmo::TRANSLATE:
-			    {
-					tc.Translation = translation;
-					break;
-			    }
-				case ImGuizmo::ROTATE:
+				Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+				SceneCamera& sceneCamera = cameraEntity.GetComponent<CameraComponent>().Camera;
+				projectionMatrix = sceneCamera.GetProjection();
+				viewMatrix = glm::inverse(m_ActiveScene->GetWorldSpaceTransformMatrix(cameraEntity));
+			}
+			else
+			{
+				projectionMatrix = m_EditorCamera.GetProjection();
+				viewMatrix = m_EditorCamera.GetViewMatrix();
+			}
+
+			if (ImGuizmo::Manipulate(
+				glm::value_ptr(viewMatrix),
+				glm::value_ptr(projectionMatrix),
+				(ImGuizmo::OPERATION)m_GizmoType,
+				ImGuizmo::MODE::LOCAL,
+				glm::value_ptr(transform),
+				nullptr,
+				snapping ? snapValues : nullptr))
+			{
+				// TODO: Get Parent Entity...
+
+				glm::vec3 Translation;
+				glm::quat Rotation;
+				glm::vec3 Scale;
+				Math::DecomposeTransform(transform, Translation, Rotation, Scale);
+
+				switch (m_GizmoType)
 				{
-					tc.Rotation += rotation - tc.Rotation;
-					break;
-				}
-				case ImGuizmo::SCALE:
-				{
-					tc.Scale = scale;
-					break;
+				    case ImGuizmo::OPERATION::TRANSLATE:
+				    {
+				    	tc.Translation = Translation;
+				    	break;
+				    }
+				    case ImGuizmo::OPERATION::ROTATE:
+				    {
+						// TODO: Try to do this with more precision by maybe storing the quaternion on the TransformComponent?
+				    	tc.Rotation += glm::eulerAngles(Rotation) - tc.Rotation;
+				    	break;
+				    }
+				    case ImGuizmo::OPERATION::SCALE:
+				    {
+				    	tc.Scale = Scale;
+				    	break;
+				    }
 				}
 			}
 		}
+		else
+		{
+			// TODO: Handle moving parented and child entities
+		}
 	}
 
-	void EditorLayer::ShowViewport()
+	void EditorLayer::DrawCentralBar()
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
-
-		m_ViewportRect = ImGuiUtils::GetWindowRect();
-
-		m_ViewportFocused = ImGui::IsWindowFocused();
-		m_ViewportHovered = ImGui::IsWindowHovered();
-
-		ImVec2 viewportOffset = ImGui::GetCursorPos();
-		m_ViewportSize = ImGui::GetContentRegionAvail();
-
-		m_ViewportWidth = (uint32_t)m_ViewportSize.x;
-		m_ViewportHeight = (uint32_t)m_ViewportSize.y;
-		m_EditorScene->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
-		if (m_RuntimeScene)
-			m_RuntimeScene->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
-		m_EditorCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-		m_ViewportRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-
-		void* textureID = (void*)(uint64_t)m_ViewportRenderer->GetFinalPassImage()->GetTextureID();
-		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
-		// NOTE: FOR DEBUGGING!
-		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
-		// ImGui::Image((void*)(uint64_t)Renderer::GetBRDFLutTexture()->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-		// ImGui::Image((void*)(uint64_t)m_Renderer2D->GetFinalImage()->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
-		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
-
-		ImGuiUtils::SetInputEnabled(!m_ViewportFocused || !m_ViewportHovered);
-
-		// Gizmos...
-		if (m_SelectionContext != Entity::nullEntity && m_GizmoType != -1 && m_ActiveScene != m_RuntimeScene)
-		{
-			float windowWidth = m_ViewportRect.Max.x - m_ViewportRect.Min.x;
-			float windowHeight = m_ViewportRect.Max.y - m_ViewportRect.Min.y;
-
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(m_ViewportRect.Min.x, m_ViewportRect.Min.y, windowWidth, windowHeight);
-
-			ManipulateGizmos();
-		}
-
 		// Viewport Scene Tools
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 0.0f });
@@ -2097,7 +1255,7 @@ namespace Aurora {
 			constexpr float desiredHeight = 26.0f + 5.0f;
 			ImRect background = ImGuiUtils::RectExpanded(ImGui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
 			ImGui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
-			
+
 			ImGui::BeginVertical("##viewportSceneControlsV", ImVec2{ backgroundWidth, ImGui::GetContentRegionAvail().y });
 			ImGui::Spring();
 			ImGui::BeginHorizontal("##viewportSceneControlsH", ImVec2{ backgroundWidth, ImGui::GetContentRegionAvail().y });
@@ -2169,9 +1327,53 @@ namespace Aurora {
 			ImGui::End();
 			ImGui::PopStyleVar(4);
 		}
+	}
+
+	void EditorLayer::ShowViewport()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
+
+		m_ViewportRect = ImGuiUtils::GetWindowRect();
+
+		m_ViewportFocused = ImGui::IsWindowFocused();
+		m_ViewportHovered = ImGui::IsWindowHovered();
+
+		ImVec2 viewportOffset = ImGui::GetCursorPos();
+		m_ViewportSize = ImGui::GetContentRegionAvail();
+
+		m_ViewportWidth = (uint32_t)m_ViewportSize.x;
+		m_ViewportHeight = (uint32_t)m_ViewportSize.y;
+		m_EditorScene->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		if (m_RuntimeScene)
+			m_RuntimeScene->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		m_EditorCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		m_ViewportRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
+		void* textureID = (void*)(uint64_t)m_ViewportRenderer->GetFinalPassImage()->GetTextureID();
+		ImGui::Image(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		// NOTE: FOR DEBUGGING!
+		// This displays the textures used in the editor if i ever want to display a texture pretty quick just change the textID
+		// ImGui::Image((void*)(uint64_t)Renderer::GetBRDFLutTexture()->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		// ImGui::Image((void*)(uint64_t)m_Renderer2D->GetFinalImage()->GetTextureID(), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		m_AllowViewportCameraEvents = (ImGuiUtils::IsMouseInRectRegion(m_ViewportRect, true) && m_ViewportFocused) || m_StartedRightClickInViewport;
+
+		ImGuiUtils::SetInputEnabled(!m_ViewportFocused || !m_ViewportHovered);
+
+		DrawCentralBar();
+
+		// Gizmos...
+		if (m_ShowGizmos && m_ActiveScene != m_RuntimeScene)
+		{
+			DrawGizmos();
+		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
+
+		m_PanelsLibrary->OnImGuiRender();
 
 		ImGui::End(); // Docking window
 	}
@@ -2209,7 +1411,9 @@ namespace Aurora {
 		if(ImGuiUtils::PropertySliderFloat("App Tick Delta", TickDelta, 0.0f, 5.0f, "%.3f", "Controls the delta that it takes to call the OnTick function"))
 			Application::GetApp().SetTickDeltaTime(TickDelta);
 
+		ImGuiUtils::PropertyBool("Show Gizmos", m_ShowGizmos);
 		ImGuiUtils::PropertyBool("Show Grid", m_ViewportRenderer->GetOptions().ShowGrid);
+		ImGuiUtils::PropertyBool("Show Bounding Boxes", m_ShowBoundingBoxes);
 		ImGuiUtils::PropertyBool("Show Icons", m_ShowIcons);
 		if (ImGuiUtils::PropertyBool("Allow gizmo flip", allowGizmoAxisFlip))
 			ImGuizmo::AllowAxisFlip(allowGizmoAxisFlip);
@@ -2300,6 +1504,11 @@ namespace Aurora {
 		}
 	}
 
+	void EditorLayer::OnEntityDeleted(Entity entity)
+	{
+		SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+	}
+
 #pragma endregion
 
 	void EditorLayer::OnImGuiRender()
@@ -2330,17 +1539,11 @@ namespace Aurora {
 			ImGui::ShowDebugLogWindow(&m_ShowDearImGuiDebugLogWindow);
 #endif
 
-		if (m_ShowSceneHierarchyPanel)
-			ShowSceneHierarchyPanel();
-
 		if(m_ShowRendererVendorInfo)
 			ShowRendererVendorInfoUI();
 
 		if (m_ShowRenderStatsUI)
 			ShowRendererStatsUI();
-
-		if (m_ShowShadersPanel)
-			ShowShadersPanel();
 
 		if (m_ShowMaterialsPanel)
 			ShowMaterialsPanel();

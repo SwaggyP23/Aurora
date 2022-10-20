@@ -6,18 +6,18 @@
 
 namespace Aurora {
 
-	Ref<Context> Context::Create(GLFWwindow* handle)
+	Ref<RenderContext> RenderContext::Create(GLFWwindow* handle)
 	{
-		return CreateRef<Context>(handle);
+		return CreateRef<RenderContext>(handle);
 	}
 
-	Context::Context(GLFWwindow* windowHandle)
+	RenderContext::RenderContext(GLFWwindow* windowHandle)
 		: m_WindowHandle(windowHandle)
 	{
 		AR_CORE_ASSERT(m_WindowHandle, "Window handle is null!");
 	}
 
-	void Context::Init()
+	void RenderContext::Init()
 	{
 		glfwMakeContextCurrent(m_WindowHandle);
 
@@ -27,17 +27,17 @@ namespace Aurora {
 		AR_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "OpenGL version is less that 4.5!");
 	}
 
-	void Context::Shutdown()
+	void RenderContext::Shutdown()
 	{
 		glfwTerminate();
 	}
 
-	void Context::SwapBuffers() const
+	void RenderContext::SwapBuffers() const
 	{
 		glfwSwapBuffers(m_WindowHandle);
 	}
 
-	void Context::PollEvents() const
+	void RenderContext::PollEvents() const
 	{
 		glfwPollEvents();
 	}

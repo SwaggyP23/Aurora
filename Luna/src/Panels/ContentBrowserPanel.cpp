@@ -2,6 +2,9 @@
 
 namespace Aurora {
 
-
+	Ref<ContentBrowserPanel> ContentBrowserPanel::Create()
+	{
+		return CreateRef<ContentBrowserPanel>();
+	}
 
 }

@@ -1,27 +1,19 @@
 Scene: StaticMeshTest
 Entities:
-  - Entity: 18329222051296809869
+  - Entity: 3443394849406975927
     TagComponent:
-      Tag: Skylight
+      Tag: Text
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SkyLightComponent:
-      EnvironmentMap: 2967176814482565397
-      LOD: 0.5
-      Intensity: 1
-      DynamicSky: false
-  - Entity: 14366245240961605469
-    TagComponent:
-      Tag: DirLight
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [2.33182526, -0.159999371, -0.484411597]
-      Scale: [1, 1, 1]
-    DirectionalLightComponent:
-      Radiance: [1, 0.999899983, 0.99992907]
-      Intensity: 1
+      Translation: [3.48186851, 0.00048828125, -5.86988688]
+      Rotation: [3.14159226, -0.84454453, 3.14159226]
+      Scale: [1.07099998, 1.07099998, 1.07099998]
+    TextComponent:
+      TextString: "Wassup Mate?\nMy name is Reda Fakih\nI play the piano!"
+      FontHandle: 0
+      Color: [1, 1, 1, 1]
+      LineSpacing: 0
+      Kerning: 0
+      MaxWidth: 10
   - Entity: 16779024522981357195
     TagComponent:
       Tag: Camera
@@ -39,17 +31,25 @@ Entities:
         OrthographicNear: -1
         OrthographicFar: 1
       Primary: true
-  - Entity: 3443394849406975927
+  - Entity: 14366245240961605469
     TagComponent:
-      Tag: Text
+      Tag: DirLight
     TransformComponent:
-      Translation: [-3.38794565, 0, -2.87585998]
-      Rotation: [0, 0.589779973, 0]
-      Scale: [1.19000006, 1.19000006, 1.19000006]
-    TextComponent:
-      TextString: "Wassup Mate?\nMy name is Reda Fakih\nI play the piano!"
-      FontHandle: 10155929711176871259
-      Color: [0, 1, 0.966359615, 1]
-      LineSpacing: 0
-      Kerning: 0
-      MaxWidth: 10
+      Translation: [0, 0, 0]
+      Rotation: [2.33182526, -0.159999371, -0.484411597]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Radiance: [1, 0.999899983, 0.99992907]
+      Intensity: 1
+  - Entity: 18329222051296809869
+    TagComponent:
+      Tag: Skylight
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SkyLightComponent:
+      EnvironmentMap: 2967176814482565397
+      LOD: 0.5
+      Intensity: 1
+      DynamicSky: false

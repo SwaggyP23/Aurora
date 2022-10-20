@@ -77,7 +77,7 @@ namespace Aurora {
 			CreateCentred();
 		}
 
-		m_Context = Context::Create(m_Window);
+		m_Context = RenderContext::Create(m_Window);
 		m_Context->Init();
 
 #ifdef AURORA_DEBUG

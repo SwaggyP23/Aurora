@@ -335,8 +335,7 @@ namespace Aurora {
             {
                 msdf_atlas::Workload([&glyphs = m_MSDFData->Glyphs, &config](int i, int threadNo) -> bool
                 {
-                    // TODO: Why is there 2: !! in the end there????
-                    uint64_t glyphSeed = (LCG_MULTIPLIER * (config.ColoringSeed ^ i) + LCG_INCREMENT) * !!config.ColoringSeed;
+                    uint64_t glyphSeed = (LCG_MULTIPLIER * (config.ColoringSeed ^ i) + LCG_INCREMENT) * config.ColoringSeed;
                     glyphs[i].edgeColoring(config.EdgeColoring, config.AngleThreshold, glyphSeed);
 
                     return true;

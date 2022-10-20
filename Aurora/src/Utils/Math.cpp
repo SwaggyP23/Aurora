@@ -8,7 +8,7 @@
 namespace Aurora::Math {
 
 	// My own making... and is faster with same result!
-	bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
+	bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale)
 	{
 		// Lets start with translation: it is equal to the elements of the last column, we get these and then 0 out that column
 		glm::mat4 Local(transform);
@@ -27,10 +27,7 @@ namespace Aurora::Math {
 			scale[i] = glm::length(glm::vec3(transform[i]));
 	
 		const glm::mat3 rotMatrix(glm::vec3(transform[0]) / scale[0], glm::vec3(transform[1]) / scale[1], glm::vec3(transform[2]) / scale[2]);
-		glm::quat rot = glm::quat_cast(rotMatrix);
-	
-		// TODO: When I start using quaternion rotation this extra step will probably not be needed
-		rotation = glm::eulerAngles(rot);
+		rotation = glm::quat_cast(rotMatrix);
 	
 		return true;
 	}

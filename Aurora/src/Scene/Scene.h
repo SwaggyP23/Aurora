@@ -45,6 +45,8 @@ namespace Aurora {
 
 		void CopyTo(Ref<Scene> target);
 
+		void SetEntityDestroyedCallback(const std::function<void(Entity)>& callback) { m_OnEntityDestroyedCallback = callback; }
+
 		Entity CreateEntityWithUUID(UUID id, const std::string& name = "");
 		Entity CreateEntity(const std::string& name = "");
 		Entity CopyEntity(Entity entity);
@@ -55,8 +57,11 @@ namespace Aurora {
 		// These are conveniance functions just in case
 		[[nodiscard]] Entity GetPrimaryCameraEntity();
 		[[nodiscard]] Entity GetEntityByName(const std::string& name);
+		[[nodiscard]] Entity TryGetEntityByName(const std::string& name);
+		[[nodiscard]] Entity GetEntityWithUUID(UUID id) const;
+		[[nodiscard]] Entity TryGetEntityWithUUID(UUID id) const;
 
-		[[nodiscard]] glm::mat4 GetWorldSpaceTransformMatrix(Entity entity);
+		[[nodiscard]] glm::mat4 GetWorldSpaceTransformMatrix(Entity entity) const;
 
 		template<typename... Args>
 		[[nodiscard]]
@@ -72,6 +77,9 @@ namespace Aurora {
 		virtual AssetType GetAssetType() const override { return GetStaticType(); }
 
 	private:
+		void SortEntites();
+
+	private:
 		std::string m_Name = "Untitled Scene";
 
 		entt::registry m_Registry;
@@ -83,6 +91,10 @@ namespace Aurora {
 		float m_EnvironmentLOD = 0.0f;
 
 		LightEnvironment m_LightEnvironment;
+
+		std::map<UUID, Entity> m_EntityIDMap;
+
+		std::function<void(Entity)> m_OnEntityDestroyedCallback;
 
 		friend class Entity;
 		friend class EditorLayer; // Should be SceneHierarchyPanel once they are split up into separate classes

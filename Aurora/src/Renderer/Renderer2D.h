@@ -74,7 +74,7 @@ namespace Aurora {
 
 		void DrawString(const std::string& string, const glm::vec3& position, float maxWidth, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawString(const std::string& string, const Ref<Font>& font, const glm::vec3& position, float maxWidth, const glm::vec4& color = glm::vec4(1.0f));
-		void DrawString(const std::string& string, const Ref<Font>& font, const glm::mat4& transform, float maxWidth, const glm::vec4& color = glm::vec4(1.0f), float lineHeightOffset = 0.0f, float kerningOffset = 0.0f);
+		void DrawString(const std::string& string, const Ref<Font>& font, const glm::mat4& transform, float maxWidth, const glm::vec4& color = glm::vec4(1.0f), float lineHeightOffset = 0.0f, float kerningOffset = 0.0f, float outLineWdith = 0.0f, const glm::vec4& outLineColor = glm::vec4(1.0f));
 
 		struct Statistics
 		{
@@ -127,8 +127,10 @@ namespace Aurora {
 		{
 			glm::vec3 Position;
 			glm::vec4 Color;
+			//glm::vec4 OutLineColor;
 			glm::vec2 TexCoord;
 			float TextureIndex;
+			//float OutLineWidth;
 		};
 
 		static const uint32_t MaxQuads = 10000;

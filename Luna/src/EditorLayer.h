@@ -1,8 +1,10 @@
 #pragma once
 #include <Aurora.h>
-#include <imgui/imgui_internal.h>
 
 #include "Editor/EditorResources.h"
+#include "Editor/EditorPanelLibrary.h"
+
+#include <imgui/imgui_internal.h>
 
 namespace Aurora {
 
@@ -28,34 +30,15 @@ namespace Aurora {
 		std::pair<float, float> GetMouseInViewportSpace();
 		std::pair<glm::vec3, glm::vec3> CastRay(const EditorCamera& camera, float mx, float my);
 
-	// Scene Hierarchy Panel
-	private:
-		void SetContextForSceneHeirarchyPanel(const Ref<Scene>& context); // The context for this panel is the scene since it displays the scene's contents
-		void ShowSceneHierarchyPanel();
-		void DrawEntityCreatePopupMenu(Entity entity);
-		void DrawEntityNode(Entity entity, const std::string& searchedString);
-		void DrawComponents(Entity entity);
-		void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float colomnWidth = 100.0f, float min = 0.0f, float max = 0.0f, float stepValue = 0.1f);
-
-		Ref<Scene> m_Context;
-		Entity m_SelectionContext;
-		Entity m_HoveredEntity;
-		ImRect m_SceneHierarchyTableRect;
-		bool m_ShowSceneHierarchyPanel = true;
-		bool m_ShowPropertiesPanel = true;
-		std::vector<Entity> m_SortedEntities;
-
 	// Renderer Info/Stats Panels
 	private:
 		void ShowRendererStatsUI(); // This will eventually be moved to become a panel that is optionally displayed and not mandatory
 		void ShowRendererVendorInfoUI();
 		//void ShowRendererOverlay(); // TODO: to be implemented later
-		void ShowShadersPanel();
 
 		bool m_ShowRendererVendorInfo = false;
 		bool m_ShowRenderStatsUI = true;
 		//bool m_ShowRendererOverlay = false; // TODO: to be implemented later
-		bool m_ShowShadersPanel = true;
 
 	// Material stuff...
 	private:
@@ -108,7 +91,7 @@ namespace Aurora {
 		void OnSceneSimulate(); // TODO: Implement when we have physics
 		void OnSceneStop();
 
-		std::filesystem::path m_EditorScenePath;
+		std::string m_SceneFilePath;
 
 	// Primary Panels for the editor
 	private:
@@ -118,15 +101,20 @@ namespace Aurora {
 		float GetSnapValue();
 		void ShowViewport();
 
-		void ManipulateGizmos();
+		void DrawGizmos();
+		void DrawCentralBar();
 
 		void ShowSettingsUI();
 		void ShowCloseModalUI();
+
+		void OnEntityDeleted(Entity entity);
 
 		bool m_ShowSettingsUI = false;
 		bool m_ShowCloseModal = false;
 
 	private:
+		Scope<EditorPanelsLibrary> m_PanelsLibrary;
+
 		EditorCamera m_EditorCamera;
 
 		Ref<Renderer2D> m_Renderer2D;
@@ -160,7 +148,9 @@ namespace Aurora {
 
 		SceneState m_SceneState = SceneState::Edit;
 
+		bool m_ShowGizmos = true;
 		bool m_ShowIcons = true;
+		bool m_ShowBoundingBoxes = false;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
