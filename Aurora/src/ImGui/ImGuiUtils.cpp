@@ -232,9 +232,9 @@ namespace Aurora {
 				drawlist->AddImage(textureID, rect.Min, rect.Max, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }, tintNormal);
 		}
 
-		void UnderLine(bool fullWidt, float offsetX, float offsetY)
+		void UnderLine(bool fullWidth, float offsetX, float offsetY)
 		{
-			if (fullWidt)
+			if (fullWidth)
 			{
 				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
 					ImGui::PushColumnsBackground();
@@ -242,11 +242,11 @@ namespace Aurora {
 					ImGui::TablePushBackgroundChannel();
 			}
 
-			const float width = fullWidt ? ImGui::GetWindowWidth() : ImGui::GetContentRegionAvail().x;
+			const float width = fullWidth ? ImGui::GetWindowWidth() : ImGui::GetContentRegionAvail().x;
 			const ImVec2 cursor = ImGui::GetCursorScreenPos();
 			ImGui::GetWindowDrawList()->AddLine(ImVec2{ cursor.x + offsetX, cursor.y + offsetY }, ImVec2{cursor.x + width, cursor.y + offsetY}, Theme::BackgroundDark, 1.0f);
 
-			if (fullWidt)
+			if (fullWidth)
 			{
 				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
 					ImGui::PopColumnsBackground();

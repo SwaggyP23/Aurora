@@ -14,24 +14,6 @@
 /*
  * The std::vector<uint32_t>s used are basically the byte buffers for the binaries, however spriv and shaderc dont use single 
  * uint8_t bytes rather they use "Words" of 4 bytes each.
- * 
- * NOTE: If you in your shader create a push_constant block and for some reason one of its members is not used throughout the
- * shader, for example:
- * 
- * layout(push_constant) uniform Mats
- * {
- *		float a;
- *		float b;
- * };
- * 
- * ... 
- * 
- * o_Color = vec4(b);
- * 
- * then the member "a" of the push_constant block will not be converted into an opengl uniform and it wont be found when calling
- * glGetUniformLocation(shaderID, name);
- * Therefore be careful of what members you are putting in the push_constant blocks and if you are using them or not!
- * 
  */
 
 namespace Aurora {
@@ -75,12 +57,12 @@ namespace Aurora {
 		ShaderUniform() = default;
 		ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset);
 
-		[[nodiscard]] const std::string& GetName() const { return m_Name; }
-		[[nodiscard]] ShaderUniformType GetUniformType() const { return m_Type; }
-		[[nodiscard]] uint32_t GetSize() const { return m_Size; }
-		[[nodiscard]] uint32_t GetOffset() const { return m_Offset; }
+		const std::string& GetName() const { return m_Name; }
+		ShaderUniformType GetUniformType() const { return m_Type; }
+		uint32_t GetSize() const { return m_Size; }
+		uint32_t GetOffset() const { return m_Offset; }
 
-		[[nodiscard]] static std::string UniformTypeToString(ShaderUniformType type);
+		static std::string UniformTypeToString(ShaderUniformType type);
 
 	private:
 		std::string m_Name;
@@ -120,18 +102,18 @@ namespace Aurora {
 		void Bind() const;
 		void UnBind() const;
 
-		[[nodiscard]] static Ref<Shader> Create(const std::string& filepath, ShaderType type = ShaderType::TwoStageVertFrag);
-		[[nodiscard]] static Ref<Shader> Create(const ShaderProperties& props);
+		static Ref<Shader> Create(const std::string& filepath, ShaderType type = ShaderType::TwoStageVertFrag);
+		static Ref<Shader> Create(const ShaderProperties& props);
 
-		void Reload();
+		bool Reload();
 		void Dispatch(uint32_t dimX, uint32_t dimY, uint32_t dimZ) const;
 
-		[[nodiscard]] size_t GetHash() const;
+		size_t GetHash() const;
 		// Returns last time modified of the asset path in minutes
-		[[nodiscard]] uint32_t GetLastTimeModified() const;
+		uint32_t GetLastTimeModified() const;
+		const std::string& GetShaderErrorMessage() const { return m_ShaderCompilationErrorMessage; };
 
 		// Setting uniforms...
-
 		void SetUniform(const std::string& fullname, float value) const;
 		void SetUniform(const std::string& fullname, int value) const;
 		void SetUniform(const std::string& fullname, uint32_t value) const;
@@ -144,18 +126,18 @@ namespace Aurora {
 		void SetUniform(const std::string& fullname, const glm::mat3& value) const;
 		void SetUniform(const std::string& fullname, const glm::mat4& value) const;
 
-		[[nodiscard]] inline bool IsCompute() const { return m_ShaderType == ShaderType::Compute; }
+		inline bool IsCompute() const { return m_ShaderType == ShaderType::Compute; }
 
-		[[nodiscard]] inline const std::string& GetName() const { return m_Name; }
-		[[nodiscard]] inline const std::filesystem::path& GetFilePath() const { return m_AssetPath; }
-		[[nodiscard]] const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
-		[[nodiscard]] std::string GetTypeString() const;
-		[[nodiscard]] inline static constexpr uint32_t GetCompileTimeThreshold() { return s_CompileTimeThreshold; }
+		inline const std::string& GetName() const { return m_Name; }
+		inline const std::filesystem::path& GetFilePath() const { return m_AssetPath; }
+		const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
+		inline bool CompilationFailed() const { return !m_ShaderCompilationErrorMessage.empty(); }
+		std::string GetTypeString() const;
+		inline static constexpr uint32_t GetCompileTimeThreshold() { return s_CompileTimeThreshold; }
 		
-		[[nodiscard]] inline const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
-		[[nodiscard]] inline const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
+		inline const std::unordered_map<std::string, ShaderPushBuffer>& GetShaderBuffers() const { return m_Buffers; }
+		inline const std::unordered_map<std::string, ShaderResourceDeclaration>& GetShaderResources() const { return m_Resources; }
 
-		// This is temporary untill i have an asset manager. It kind of acts as an asset manager lol having all the shaders
 		static std::vector<Ref<Shader>> AllShaders;
 
 	private:
@@ -163,8 +145,8 @@ namespace Aurora {
 		void LoadCompute(const std::string& source);
 		void CreateProgram();
 
-		void CompileOrGetVulkanBinary(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile);
-		void CompileOrGetOpenGLBinary(bool forceCompile);
+		bool CompileOrGetVulkanBinary(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile);
+		bool CompileOrGetOpenGLBinary(bool forceCompile);
 		void Reflect(ShaderStage type, const std::vector<uint32_t>& shaderData);
 
 		std::string PreprocessComputeSource(const std::string& source);
@@ -195,6 +177,7 @@ namespace Aurora {
 		uint32_t m_ShaderID = 0;
 
 		std::string m_Name;
+		std::string m_ShaderCompilationErrorMessage;
 		std::filesystem::path m_AssetPath;
 		ShaderType m_ShaderType = ShaderType::TwoStageVertFrag;
 
@@ -219,7 +202,7 @@ namespace Aurora {
 		ShaderLibrary() = default;
 		~ShaderLibrary() = default;
 
-		[[nodiscard]] static Scope<ShaderLibrary> Create();
+		static Scope<ShaderLibrary> Create();
 
 		// Adds an already created shader into the library
 		void Add(const Ref<Shader>& shader);
@@ -228,11 +211,11 @@ namespace Aurora {
 		Ref<Shader> Load(const std::string& filepath, ShaderType type = ShaderType::TwoStageVertFrag);
 		Ref<Shader> Load(const ShaderProperties& props); // Gives the option to specify name
 
-		[[nodiscard]] Ref<Shader> TryGet(const std::string& name) const;
-		[[nodiscard]] const Ref<Shader>& Get(const std::string& name) const;
+		Ref<Shader> TryGet(const std::string& name) const;
+		const Ref<Shader>& Get(const std::string& name) const;
 
-		[[nodiscard]] bool Exist(const std::string& name) const;
-		[[nodiscard]] bool ExistHash(const size_t hash) const;
+		bool Exist(const std::string& name) const;
+		bool ExistHash(const size_t hash) const;
 
 	private:
 		mutable std::map<size_t, Ref<Shader>> m_ShadersWithHash;

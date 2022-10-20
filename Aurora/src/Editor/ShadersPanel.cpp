@@ -54,14 +54,36 @@ namespace Aurora {
 			if (!ImGuiUtils::IsMatchingSearch(shaderName, searchString))
 				continue;
 
-			ImGui::PushID(ImGuiUtils::GenerateID());
+			ImGui::PushID(fmt::format("shader{0}", shaderName).c_str());
 
 			ImGuiUtils::PropertyStringReadOnly("Name", shaderName.c_str());
 			ImGuiUtils::PropertyStringReadOnly("- Path", shader->GetFilePath().string().c_str());
 			ImGuiUtils::PropertyStringReadOnly("- Type", shader->GetTypeString().c_str());
 			uint32_t lastTimeMod = shader->GetLastTimeModified();
 			ImGuiUtils::PropertyStringReadOnly("- Last Modified", (std::to_string(lastTimeMod) + " Minute(s) ago").c_str(), lastTimeMod <= Shader::GetCompileTimeThreshold());
-			// TODO: Add button...
+			
+			ImGuiUtils::ShiftCursor(10.0f, 9.0f);
+
+			if (ImGui::Button("Reload"))
+				shader->Reload();
+
+			bool compilationFailed = shader->CompilationFailed();
+			ImGui::NextColumn();
+			ImGuiUtils::ShiftCursorY(4.0f);
+
+			ImGui::PushItemWidth(-1);
+			if (!compilationFailed)
+				ImGui::InputText(fmt::format("##shader{0}compilationFailed", shaderName).c_str(), "", 0, ImGuiInputTextFlags_ReadOnly);
+			else
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(204, 51, 76.5, 255));
+				std::string message = shader->GetShaderErrorMessage();
+				ImGui::InputTextMultiline(fmt::format("##shader{0}compilationFailed", shaderName).c_str(), (char*)message.c_str(), message.size(), ImVec2{ 0, 0 }, ImGuiInputTextFlags_ReadOnly);
+				ImGui::PopStyleColor();
+			}
+			ImGui::PopItemWidth();
+
+			ImGui::NextColumn();
 			ImGui::Separator();
 
 			ImGui::PopID();
