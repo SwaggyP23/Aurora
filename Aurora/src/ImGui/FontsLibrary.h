@@ -1,8 +1,9 @@
 #pragma once
 
-#include <imgui/imgui.h>
-
 #include <unordered_map>
+
+typedef unsigned short ImWchar;
+struct ImFont;
 
 namespace Aurora {
 

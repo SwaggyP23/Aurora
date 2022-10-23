@@ -255,14 +255,18 @@ namespace Aurora {
 			auto meshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto entity : meshGroup)
 			{
-				auto [transform, staticMesh] = meshGroup.get<TransformComponent, StaticMeshComponent>(entity);
+				auto [transform, staticMeshComp] = meshGroup.get<TransformComponent, StaticMeshComponent>(entity);
 
-				if (staticMesh.StaticMesh)
+				if (AssetManager::IsAssetHandleValid(staticMeshComp.StaticMesh))
 				{
-					Entity e = Entity{ entity, this };
-					glm::mat4 transform = GetWorldSpaceTransformMatrix(e);
+					auto staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshComp.StaticMesh);
+					if (staticMesh && !staticMesh->IsFlagSet(AssetFlag::Missing))
+					{
+						Entity e = Entity{ entity, this };
+						glm::mat4 transform = GetWorldSpaceTransformMatrix(e);
 
-					renderer->SubmitStaticMesh(staticMesh.StaticMesh, staticMesh.MaterialTable, transform, nullptr);
+						renderer->SubmitStaticMesh(staticMesh, staticMeshComp.MaterialTable, transform, nullptr);
+					}
 				}
 			}
 		}
@@ -394,14 +398,18 @@ namespace Aurora {
 			auto meshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto entity : meshGroup)
 			{
-				auto [transform, staticMesh] = meshGroup.get<TransformComponent, StaticMeshComponent>(entity);
+				auto [transform, staticMeshComp] = meshGroup.get<TransformComponent, StaticMeshComponent>(entity);
 
-				if (staticMesh.StaticMesh)
+				if (AssetManager::IsAssetHandleValid(staticMeshComp.StaticMesh))
 				{
-					Entity e = Entity{ entity, this };
-					glm::mat4 transform = GetWorldSpaceTransformMatrix(e);
+					auto staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshComp.StaticMesh);
+					if (staticMesh && !staticMesh->IsFlagSet(AssetFlag::Missing))
+					{
+						Entity e = Entity{ entity, this };
+						glm::mat4 transform = GetWorldSpaceTransformMatrix(e);
 
-					renderer->SubmitStaticMesh(staticMesh.StaticMesh, staticMesh.MaterialTable, transform, nullptr);
+						renderer->SubmitStaticMesh(staticMesh, staticMeshComp.MaterialTable, transform, nullptr);
+					}
 				}
 			}
 		}

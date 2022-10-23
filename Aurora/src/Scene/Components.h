@@ -87,8 +87,7 @@ namespace Aurora {
 	// TODO: Change to use the assetHandle
 	struct StaticMeshComponent
 	{
-		Ref<StaticMesh> StaticMesh;
-		//AssetHandle StaticMesh; // TODO:
+		AssetHandle StaticMesh;
 		Ref<MaterialTable> MaterialTable = MaterialTable::Create();
 
 		StaticMeshComponent() = default;

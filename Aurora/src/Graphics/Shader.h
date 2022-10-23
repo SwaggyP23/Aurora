@@ -111,7 +111,6 @@ namespace Aurora {
 		size_t GetHash() const;
 		// Returns last time modified of the asset path in minutes
 		uint32_t GetLastTimeModified() const;
-		const std::string& GetShaderErrorMessage() const { return m_ShaderCompilationErrorMessage; };
 
 		// Setting uniforms...
 		void SetUniform(const std::string& fullname, float value) const;
@@ -131,7 +130,7 @@ namespace Aurora {
 		inline const std::string& GetName() const { return m_Name; }
 		inline const std::filesystem::path& GetFilePath() const { return m_AssetPath; }
 		const ShaderResourceDeclaration* GetShaderResource(const std::string& name) const;
-		inline bool CompilationFailed() const { return !m_ShaderCompilationErrorMessage.empty(); }
+		inline bool CompilationFailed() const { return m_CompilationFailed; }
 		std::string GetTypeString() const;
 		inline static constexpr uint32_t GetCompileTimeThreshold() { return s_CompileTimeThreshold; }
 		
@@ -177,9 +176,9 @@ namespace Aurora {
 		uint32_t m_ShaderID = 0;
 
 		std::string m_Name;
-		std::string m_ShaderCompilationErrorMessage;
 		std::filesystem::path m_AssetPath;
 		ShaderType m_ShaderType = ShaderType::TwoStageVertFrag;
+		bool m_CompilationFailed = false;
 
 		std::unordered_map<ShaderStage, std::string> m_OpenGLShaderSource; // OpenGL Source Code...
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;

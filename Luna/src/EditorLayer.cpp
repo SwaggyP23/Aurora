@@ -4,6 +4,7 @@
 
 #include "Editor/SceneHierarchyPanel.h"
 #include "Editor/ShadersPanel.h"
+#include "Editor/EditorConsolePanel.h"
 #include "Editor/EditorSelectionManager.h"
 
 #include "ImGui/ImGuiUtils.h"
@@ -53,8 +54,9 @@ namespace Aurora {
 
 		m_ViewportRenderer->SetLineWidth(m_LineWidth);
 
-		// TODO: Add the other panels...
 		m_PanelsLibrary->AddPanel<ShadersPanel>(PanelCategory::View, "ShadersPanel", "Shaders", false); // Not open by default
+		m_PanelsLibrary->AddPanel<EditorConsolePanel>(PanelCategory::View, "ConsolePanel", "Console", true);
+		AR_CONSOLE_LOG_TRACE("Hey I am Up! apw9uecna 0re9uvn awoieuvyb a9ery8vbq 98vuyb  ae0ru9vn aoireuvnaiur piunrpviun pun ailrhv apiruvn");
 
 		// TODO: Temporary untill Projects are a thing!
 		AssetManager::Init();
@@ -427,7 +429,7 @@ namespace Aurora {
 				Entity entity{ e, m_ActiveScene.raw() };
 				StaticMeshComponent& smc = entity.GetComponent<StaticMeshComponent>();
 
-				Ref<StaticMesh> staticMesh = smc.StaticMesh;
+				Ref<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(smc.StaticMesh);
 				if (!staticMesh)
 					continue;
 
@@ -452,7 +454,9 @@ namespace Aurora {
 						{
 							if (ray.IntersectsTriangle(triangle.V1.Position, triangle.V2.Position, triangle.V3.Position, t))
 							{
-								AR_WARN("INTERSECTION: {0}, t = {1}", subMesh.NodeName, t);
+								AR_CONSOLE_LOG_WARN("INTERSECTION: {0}, t = {1}vcfasvadvarvaervaocviuhaeoiawoiru hawe0i8vuber98vybwe0v8yebv98weybgce8ryvbwe8yc we87cg we08f hvbwociuehv08wrygc9e8yvgbe98ycgber9v8ybwec08ybv8y", subMesh.NodeName, t);
+								AR_CONSOLE_LOG_INFO("INTERSECTION: {0}, t = {1}", subMesh.NodeName, t);
+								AR_CONSOLE_LOG_ERROR("INTERSECTION: {0}, t = {1}", subMesh.NodeName, t);
 								selectionData.push_back({ entity, &subMesh, t });
 								break;
 							}
@@ -592,7 +596,6 @@ namespace Aurora {
 
 #pragma endregion
 
-	// TODO: NEED TO CHANGE SOME STUFF HERE FOR LATER
 #pragma region FileDialogs/Scene Helpers
 
 	void EditorLayer::NewScene()
@@ -699,9 +702,6 @@ namespace Aurora {
 	{
 		SelectionManager::DeselectAll();
 
-		//m_SelectionContext = {};
-		//m_SceneHierarchyPanel->SetSelectedEntity({});
-
 		m_SceneState = SceneState::Play;
 
 		m_RuntimeScene = Scene::Create();
@@ -719,9 +719,6 @@ namespace Aurora {
 	void EditorLayer::OnSceneStop()
 	{
 		SelectionManager::DeselectAll();
-
-		//m_SelectionContext = {};
-		//m_SceneHierarchyPanel->SetSelectedEntity({});
 
 		m_RuntimeScene->OnRuntimeStop();
 

@@ -16,13 +16,9 @@ namespace Aurora {
 		PauseButton = LoadTexture("Viewport/Pause.png");
 		StopButton = LoadTexture("Viewport/Stop.png");
 
-		ComponentIcon = LoadTexture("Icons/Settings.png");
 		TextureProperties cameraProps;
 		cameraProps.FlipOnLoad = true;
 		CameraIcon = LoadTexture("Icons/Camera.png", cameraProps);
-
-		// TODO: TEMP...
-		FIXME = LoadTexture("Error/FIXME.png");
 	}
 
 	void EditorResources::Shutdown()
@@ -38,11 +34,7 @@ namespace Aurora {
 		PauseButton.Reset();
 		StopButton.Reset();
 
-		ComponentIcon.Reset(); // TODO: Add icons to components...
 		CameraIcon.Reset();
-
-		// TODO: TEMP...
-		FIXME.Reset();
 	}
 
 	Ref<Texture2D> EditorResources::LoadTexture(const std::string& texturePath, const TextureProperties& props)

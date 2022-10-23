@@ -43,8 +43,16 @@ namespace Aurora {
 
 	bool MeshAssetSerializer::TryLoadData(const AssetMetaData& metadata, Ref<Asset>& asset) const
 	{
-		AR_CORE_ASSERT(false, "Not Implemented!");
-		return false;
+		asset = MeshSource::Create(AssetManager::GetFileSystemPathString(metadata));
+		if (!asset)
+		{
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+		asset->Handle = metadata.Handle;
+
+		return true;
 	}
 
 	void MaterialAssetSerializer::Serialize(const AssetMetaData& metadata, const Ref<Asset>& asset) const

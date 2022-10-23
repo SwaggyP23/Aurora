@@ -826,7 +826,7 @@ namespace Aurora {
 		});
 
 		// TODO: Remove once there is a drag drop
-		static std::string environmentMapName = "Aurora Default";
+		static std::string s_EnvironmentMapName = "Aurora Default";
 
 		Utils::DrawComponent<SkyLightComponent>("SkyLight", firstEntity, [](SkyLightComponent& component)
 		{
@@ -839,19 +839,19 @@ namespace Aurora {
 			// TODO: Change to accept drag drop
 			float width = ImGui::GetContentRegionAvail().x;
 			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
-			if (ImGui::Button(environmentMapName.c_str(), { width, 25.0f }))
+			if (ImGui::Button(s_EnvironmentMapName.c_str(), { width, 25.0f }))
 			{
 				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("HDR Image (*.hdr)\0*.hdr\0");
-				environmentMapName = p.filename().string();
+				s_EnvironmentMapName = p.filename().string();
 
-				if (environmentMapName.size())
+				if (s_EnvironmentMapName.size())
 				{
 					Ref<Asset> asset = AssetManager::GetAsset<Environment>(p);
 					if (asset->IsValid())
 						component.SceneEnvironment = asset->Handle;
 				}
 				else
-					environmentMapName = "Aurora Default";
+					s_EnvironmentMapName = "Aurora Default";
 			}
 			ImGui::PopStyleColor();
 
@@ -868,7 +868,7 @@ namespace Aurora {
 		},
 		[](SkyLightComponent& component) // Reset Function
 		{
-			environmentMapName = "Aurora Default";
+			s_EnvironmentMapName = "Aurora Default";
 			component.SceneEnvironment = 0;
 			component.Level = 0.5f;
 			component.Intensity = 1.0f;
@@ -876,17 +876,51 @@ namespace Aurora {
 			component.TurbidityAzimuthInclination = { 2.0f, 0.0f, 0.0f };
 		});
 
+		// TODO: Remove once there is Drag/Drop
+		static std::string s_StaticMeshName = "Aurora Default";
+
 		Utils::DrawComponent<StaticMeshComponent>("StaticMesh", firstEntity, [](StaticMeshComponent& component)
 		{
-			if (ImGui::Button("Static Mesh Path"))
+			ImGuiUtils::BeginPropertyGrid();
+
+			ImGui::Text("Static Mesh");
+
+			ImGui::NextColumn();
+
+			// TODO: Change to accept drag drop
+			float width = ImGui::GetContentRegionAvail().x;
+			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
+			if (ImGui::Button(s_StaticMeshName.c_str(), { width, 25.0f }))
 			{
-				std::filesystem::path path = Utils::WindowsFileDialogs::OpenFileDialog("StaticMesh");
-				Ref<MeshSource> meshSource = MeshSource::Create(path);
-				component.StaticMesh = StaticMesh::Create(meshSource);
+				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("StaticMesh");
+				s_StaticMeshName = p.filename().string();
+
+				if (s_StaticMeshName.size())
+				{
+					Ref<Asset> asset = AssetManager::GetAsset<StaticMesh>(p);
+					if (asset->IsValid())
+					{
+						component.StaticMesh = StaticMesh::Create(asset.As<MeshSource>())->Handle;
+					}
+				}
+				else
+					s_StaticMeshName = "Aurora Default";
 			}
+			ImGui::PopStyleColor();
+
+			ImGuiUtils::EndPropertyGrid();
+
+			//if (ImGui::Button("Static Mesh Path"))
+			//{
+			//	std::filesystem::path path = Utils::WindowsFileDialogs::OpenFileDialog("StaticMesh");
+			//	Ref<MeshSource> meshSource = MeshSource::Create(path);
+			//	component.StaticMesh = StaticMesh::Create(meshSource);
+			//}
 		},
 		[](StaticMeshComponent& component)
 		{
+			s_StaticMeshName = "Aurora Default";
+			component.StaticMesh = 0;
 		});
 
 		Utils::DrawComponent<DirectionalLightComponent>("DirectionalLight", firstEntity, [](DirectionalLightComponent& component)
@@ -905,7 +939,7 @@ namespace Aurora {
 		});
 
 		// TODO: Remove once there is a drag drop
-		static std::string textFileName = "Aurora Default";
+		static std::string s_TextFileName = "Aurora Default";
 
 		Utils::DrawComponent<TextComponent>("Text", firstEntity, [](TextComponent& component)
 		{
@@ -918,19 +952,19 @@ namespace Aurora {
 			// TODO: Change to accept drag drop
 			float width = ImGui::GetContentRegionAvail().x;
 			ImGui::PushStyleColor(ImGuiCol_Button, Theme::PropertyField);
-			if (ImGui::Button(textFileName.c_str(), { width, 25.0f }))
+			if (ImGui::Button(s_TextFileName.c_str(), { width, 25.0f }))
 			{
 				std::filesystem::path p = Utils::WindowsFileDialogs::OpenFileDialog("Font File (*.ttf)\0*.ttf\0");
-				textFileName = p.filename().string();
+				s_TextFileName = p.filename().string();
 
-				if (textFileName.size())
+				if (s_TextFileName.size())
 				{
 					Ref<Asset> asset = AssetManager::GetAsset<Font>(p);
 					if (asset->IsValid())
 						component.FontHandle = asset->Handle;
 				}
 				else
-					textFileName = "Aurora Default";
+					s_TextFileName = "Aurora Default";
 			}
 			ImGui::PopStyleColor();
 
@@ -961,7 +995,7 @@ namespace Aurora {
 			component.LineSpacing = 0.0f;
 			component.Kerning = 0.0f;
 			component.MaxWidth = 10.0f;
-			textFileName = "Aurora Default";
+			s_TextFileName = "Aurora Default";
 		});
 	}
 

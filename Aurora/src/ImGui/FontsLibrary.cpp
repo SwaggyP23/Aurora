@@ -1,6 +1,8 @@
 #include "Aurorapch.h"
 #include "FontsLibrary.h"
 
+#include <imgui/imgui.h>
+
 namespace Aurora {
 
 	void ImGuiFontsLibrary::SetDefaultFont(const std::string& fontName)

@@ -34,6 +34,7 @@ namespace Aurora { namespace Logger {
 
 		static const std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 		static const std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
+		static const std::shared_ptr<spdlog::logger>& GetConsoleLogger() { return s_EditorConsoleLogger; }
 
 		static bool HasTag(const std::string& tag) { return s_EnabledTags.find(tag) != s_EnabledTags.end(); }
 		static std::map<std::string, TagDetails>& EnabledTags() { return s_EnabledTags; }
@@ -75,6 +76,7 @@ namespace Aurora { namespace Logger {
 	private:
 		static std::shared_ptr<spdlog::logger> s_CoreLogger;
 		static std::shared_ptr<spdlog::logger> s_ClientLogger;
+		static std::shared_ptr<spdlog::logger> s_EditorConsoleLogger;
 
 		inline static std::map<std::string, TagDetails> s_EnabledTags;
 
@@ -159,6 +161,14 @@ namespace Aurora { namespace Logger {
     #define AR_ERROR(...)                   ::Aurora::Logger::Log::PrintMessage(::Aurora::Logger::Log::Type::Client, ::Aurora::Logger::Log::Level::Error, "", __VA_ARGS__)
     #define AR_CRITICAL(...)                ::Aurora::Logger::Log::PrintMessage(::Aurora::Logger::Log::Type::Client, ::Aurora::Logger::Log::Level::Fatal, "", __VA_ARGS__)
 
+	// Editor Console...
+	#define AR_CONSOLE_LOG_TRACE(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->trace(__VA_ARGS__)
+	#define AR_CONSOLE_LOG_INFO(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->info(__VA_ARGS__)
+	#define AR_CONSOLE_LOG_DEBUG(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->debug(__VA_ARGS__)
+	#define AR_CONSOLE_LOG_WARN(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->warn(__VA_ARGS__)
+	#define AR_CONSOLE_LOG_ERROR(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->error(__VA_ARGS__)
+	#define AR_CONSOLE_LOG_CRITICAL(...)    ::Aurora::Logger::Log::GetConsoleLogger()->critical(__VA_ARGS__)
+
 #else
 
     #define AR_CORE_TRACE_TAG(tag, ...)
@@ -188,5 +198,13 @@ namespace Aurora { namespace Logger {
     #define AR_WARN(...)
     #define AR_ERROR(...)
     #define AR_CRITICAL(...)
+
+	// Editor Console...
+	#define AR_CONSOLE_LOG_TRACE(...)	
+	#define AR_CONSOLE_LOG_INFO(...)	
+	#define AR_CONSOLE_LOG_DEBUG(...)	
+	#define AR_CONSOLE_LOG_WARN(...)	
+	#define AR_CONSOLE_LOG_ERROR(...)	
+	#define AR_CONSOLE_LOG_CRITICAL(...)
 
 #endif

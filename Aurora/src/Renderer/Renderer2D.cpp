@@ -118,7 +118,7 @@ namespace Aurora {
 				{ ShaderDataType::Float2, "a_TexCoord"     },
 				{ ShaderDataType::Float,  "a_TexIndex"     },
 				{ ShaderDataType::Float,  "a_TilingFactor" }
-				});
+			});
 			m_QuadVertexArray->AddVertexBuffer(m_QuadVertexBuffer);
 			m_QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
 
@@ -143,7 +143,7 @@ namespace Aurora {
 			m_LineVertexBuffer->SetLayout({
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float4, "a_Color"    }
-				});
+			});
 			m_LineVertexArray->AddVertexBuffer(m_LineVertexBuffer);
 			m_LineVertexArray->SetIndexBuffer(lineIndexBuffer);
 

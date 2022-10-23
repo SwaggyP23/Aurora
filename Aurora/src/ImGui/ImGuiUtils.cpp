@@ -302,6 +302,30 @@ namespace Aurora {
 			return returnState;
 		}
 
+		bool TableRowClickable(const char* id, float rowHeight)
+		{
+			ImGuiWindow* window = ImGui::GetCurrentWindow();
+			window->DC.CurrLineSize.y = rowHeight;
+			ImGui::TableNextRow(0, rowHeight);
+			window->DC.CurrLineTextBaseOffset = 3.0f;
+			ImGui::TableNextColumn();
+
+			const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
+			const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x, rowAreaMin.y + rowHeight };
+
+			ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
+
+			ImGuiButtonFlags flags = ImGuiButtonFlags_AllowItemOverlap | ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_PressedOnRelease;
+			bool isRowHovered;
+			bool isHeld;
+			bool isRowClicked = ImGui::ButtonBehavior(ImRect{ rowAreaMin, rowAreaMax }, ImGui::GetID(id), &isRowHovered, &isHeld, flags);
+
+			ImGui::SetItemAllowOverlap();
+			ImGui::PopClipRect();
+
+			return isRowClicked;
+		}
+
 		// Colors...
 		ImColor ColorWithMultiplierValue(const ImColor& color, float multi)
 		{

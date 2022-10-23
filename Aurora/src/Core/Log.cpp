@@ -1,8 +1,12 @@
 #include "Aurorapch.h"
 #include "Log.h"
 
+#include "Editor/EditorConsoleSink.h"
+
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
+
+#define AR_HAS_CONSOLE !AURORA_DIST
 
 namespace Aurora {
 
@@ -10,39 +14,65 @@ namespace Aurora {
 
 		std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
 		std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
+		std::shared_ptr<spdlog::logger> Log::s_EditorConsoleLogger;
 
 		// Takes about 1.3ms on average to initialize
 		void Log::Init() 
 		{
-			std::vector<spdlog::sink_ptr> auroraSinks;
-			auroraSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-			auroraSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/AURORA.log", true));
+			std::vector<spdlog::sink_ptr> auroraSinks =
+			{
+#if AR_HAS_CONSOLE
+				std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
+#endif
+				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/AURORA.log", true)
+			};
 
-			std::vector<spdlog::sink_ptr> appSinks;
-			appSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-			appSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/APP.log", true));
+			std::vector<spdlog::sink_ptr> appSinks =
+			{
+#if AR_HAS_CONSOLE
+				std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
+#endif
+				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/APP.log", true)
+			};
 
+			std::vector<spdlog::sink_ptr> editorSinks =
+			{
+#if AR_HAS_CONSOLE
+				// Create it with bufferCapacitiy == 1 so it flushes everytime there is a message
+				std::make_shared<EditorConsoleSink>(1),
+#endif
+				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/APP.log", true)
+			};
+
+#if AR_HAS_CONSOLE
 			auroraSinks[0]->set_pattern("%^[%T] %n(%l): %v%$");
-			auroraSinks[1]->set_pattern("[%T] [%l] %n: %v");
-
 			appSinks[0]->set_pattern("%^[%T] %n(%l): %v%$");
+			for (spdlog::sink_ptr sink : editorSinks)
+				sink->set_pattern("%^%v%$");
+#endif
+
+			// File sinks
+			auroraSinks[1]->set_pattern("[%T] [%l] %n: %v");
 			appSinks[1]->set_pattern("[%T] [%l] %n: %v");
 
 			s_CoreLogger = std::make_shared<spdlog::logger>("Aurora", begin(auroraSinks), end(auroraSinks));
 			spdlog::register_logger(s_CoreLogger);
 			s_CoreLogger->set_level(spdlog::level::trace);
-			s_CoreLogger->flush_on(spdlog::level::trace);
 
 			s_ClientLogger = std::make_shared<spdlog::logger>("Client", begin(appSinks), end(appSinks));
 			spdlog::register_logger(s_ClientLogger);
 			s_ClientLogger->set_level(spdlog::level::trace);
-			s_ClientLogger->flush_on(spdlog::level::trace);
+
+			s_EditorConsoleLogger = std::make_shared<spdlog::logger>("Console", begin(editorSinks), end(editorSinks));
+			spdlog::register_logger(s_EditorConsoleLogger);
+			s_EditorConsoleLogger->set_level(spdlog::level::trace);
 		}
 
 		void Log::ShutDown()
 		{
 			s_CoreLogger.reset();
 			s_ClientLogger.reset();
+			s_EditorConsoleLogger.reset();
 			spdlog::drop_all();
 		}
 	}

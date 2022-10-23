@@ -53,6 +53,15 @@ namespace Aurora {
 
 		bool IsWindowFocused(const char* windowName, bool checkRootWindow = true);
 
+		// Colors...
+		ImColor ColorWithMultiplierValue(const ImColor& color, float multi);
+
+		ImColor ColourWithMultipliedSaturation(const ImColor& color, float multiplier);
+
+		bool ColorEdit3Control(const char* label, glm::vec3& color, bool showAsWheel = true);
+
+		bool ColorEdit4Control(const char* label, glm::vec4& color, bool showAsWheel = true);
+
 		//////// DrawList Utils /////////
 		// This get the last items rect!
 		ImRect GetItemRect();
@@ -157,15 +166,69 @@ namespace Aurora {
 
 		bool IsMatchingSearch(const std::string& name, std::string_view searchQuery, bool caseSensitive = false, bool noWhiteSpaces = false, bool noUnderScores = false);
 
+		template<typename F>
+		void Table(const char* name, const char** columns, uint32_t columnCount, const ImVec2& size, const F& callback)
+		{
+			if (size.x == 0.0f || size.y == 0.0f)
+				return;
 
-		// Colors...
-		ImColor ColorWithMultiplierValue(const ImColor& color, float multi);
+			constexpr float edgeOffset = 4.0f;
 
-		ImColor ColourWithMultipliedSaturation(const ImColor& color, float multiplier);
+			ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 4.0f, 0.0f });
+			ImColor backgroundColor = ImColor(Theme::BackgroundDark);
+			const ImColor colRowAlt = ColorWithMultiplierValue(backgroundColor, 1.3f);
+			ImGui::PushStyleColor(ImGuiCol_TableRowBg, backgroundColor.Value);
+			ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, colRowAlt.Value);
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, backgroundColor.Value);
 
-		bool ColorEdit3Control(const char* label, glm::vec3& color, bool showAsWheel = true);
+			constexpr ImGuiTableFlags flags = ImGuiTableFlags_NoPadInnerX
+				| ImGuiTableFlags_Resizable
+				//| ImGuiTableFlags_Reorderable
+				| ImGuiTableFlags_ScrollY
+				| ImGuiTableFlags_RowBg;
 
-		bool ColorEdit4Control(const char* label, glm::vec4& color, bool showAsWheel = true);
+			if (!ImGui::BeginTable(name, columnCount, flags, size))
+				return;
+
+			const float cursorX = ImGui::GetCursorScreenPos().x;
+
+			for (uint32_t i = 0; i < columnCount; i++)
+				ImGui::TableSetupColumn(columns[i]);
+
+			{
+				ImU32 headerColor = ImGuiUtils::ColorWithMultiplierValue(Theme::AccentDimmed, 1.2f);
+				ImGui::PushStyleColor(ImGuiCol_HeaderHovered, headerColor);
+				ImGui::PushStyleColor(ImGuiCol_HeaderActive, headerColor);
+				ImGui::TableSetupScrollFreeze(ImGui::TableGetColumnCount(), 1);
+
+				ImGui::TableNextRow(ImGuiTableRowFlags_Headers, 22.0f);
+				for (uint32_t i = 0; i < columnCount; i++)
+				{
+					ImGui::TableSetColumnIndex(i);
+					const char* columnName = ImGui::TableGetColumnName(i);
+					ImGui::PushID(columnName);
+
+					ShiftCursor(edgeOffset * 3.0f, edgeOffset * 2.0f);
+					ImGui::TableHeader(columnName, 0, Theme::Background);
+					ShiftCursor(-edgeOffset * 3.0f, -edgeOffset * 2.0f);
+
+					ImGui::PopID();
+				}
+				ImGui::SetCursorScreenPos(ImVec2(cursorX, ImGui::GetCursorScreenPos().y));
+				UnderLine(true, 0.0f, 5.0f);
+
+				ImGui::PopStyleColor(2);
+			}
+
+			callback();
+
+			ImGui::EndTable();
+
+			ImGui::PopStyleColor(3);
+			ImGui::PopStyleVar();
+		}
+
+		bool TableRowClickable(const char* id, float rowHeight);
 
 		// UI...
 		bool PropertyGridHeader(const std::string& name, bool openByDefault = true);

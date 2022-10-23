@@ -72,15 +72,12 @@ namespace Aurora {
 			ImGuiUtils::ShiftCursorY(4.0f);
 
 			ImGui::PushItemWidth(-1);
-			if (!compilationFailed)
-				ImGui::InputText(fmt::format("##shader{0}compilationFailed", shaderName).c_str(), "", 0, ImGuiInputTextFlags_ReadOnly);
-			else
-			{
+			std::string message = compilationFailed ? "Compilation Error! Check Console for more info. Reverting to Old Shader!" : "";
+			if (compilationFailed)
 				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(204, 51, 76.5, 255));
-				std::string message = shader->GetShaderErrorMessage();
-				ImGui::InputTextMultiline(fmt::format("##shader{0}compilationFailed", shaderName).c_str(), (char*)message.c_str(), message.size(), ImVec2{ 0, 0 }, ImGuiInputTextFlags_ReadOnly);
+			ImGui::InputText(fmt::format("##shader{0}compilationFailed", shaderName).c_str(), (char*)message.c_str(), 0, ImGuiInputTextFlags_ReadOnly);
+			if (compilationFailed)
 				ImGui::PopStyleColor();
-			}
 			ImGui::PopItemWidth();
 
 			ImGui::NextColumn();

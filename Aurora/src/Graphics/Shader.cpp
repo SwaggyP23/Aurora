@@ -365,7 +365,6 @@ namespace Aurora {
 			glDeleteProgram(m_ShaderID);
 			m_ShaderID = 0;
 
-			m_ShaderCompilationErrorMessage.clear();
 			m_OpenGLShaderSource.clear();
 			m_OpenGLSPIRV.clear();
 			m_VulkanSPIRV.clear();
@@ -375,7 +374,15 @@ namespace Aurora {
 		}
 
 		std::string shaderFullSource = Utils::FileIO::ReadTextFile(m_AssetPath);
-		m_OpenGLShaderSource = SplitSource(shaderFullSource);
+
+		switch (m_ShaderType)
+		{
+			case ShaderType::TwoStageVertFrag:		m_OpenGLShaderSource = SplitSource(shaderFullSource); break;
+			case ShaderType::Compute:				m_OpenGLShaderSource[GL_COMPUTE_SHADER] = PreprocessComputeSource(shaderFullSource); break;
+			default:
+				AR_CORE_ASSERT(false, "Unknown shader type!");
+		}
+		//m_OpenGLShaderSource = SplitSource(shaderFullSource);
 
 		constexpr bool forceCompile = true;
 
@@ -383,9 +390,8 @@ namespace Aurora {
 		{
 			// NOTE: 
 			// Revert to old SPIR-V binaries and reflect and reload the program on those...
-			// Another approach could be that if the compilation fails i could revert and not call CreateProgram and thus not changine the loaded
-			// program however it is better to just reload the whole program and reflect on it again just in case the we want to see reflection info
-			AR_CORE_CRITICAL_TAG("Renderer", "Compilation failed! Reverting to old shader...");
+			// Another approach could be that if the compilation fails we could revert and not call CreateProgram and thus not changine the loaded
+			// program however it is better to just reload the whole program and reflect on it again just in case the we want to see reflection data
 			m_VulkanSPIRV = vulkanSPIR_VCopy;
 			m_OpenGLSPIRV = openGLSPIR_VCopy;
 
@@ -393,8 +399,13 @@ namespace Aurora {
 		}
 
 		CreateProgram();
-		AR_CORE_WARN_TAG("Renderer", "Reloading shader: {0} took {1} milliseconds", m_Name, timer.ElapsedMillis());
+		if (!failedCompilation)
+		{
+			AR_CONSOLE_LOG_INFO("Reloading shader: {0} took {1} milliseconds", m_Name, timer.ElapsedMillis());
+			AR_CORE_WARN_TAG("Renderer", "Reloading shader: {0} took {1} milliseconds", m_Name, timer.ElapsedMillis());
+		}
 
+		m_CompilationFailed = failedCompilation;
 		return failedCompilation;
 	}
 
@@ -501,7 +512,8 @@ namespace Aurora {
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, Utils::GLShaderTypeToShaderC(type), m_AssetPath.string().c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					m_ShaderCompilationErrorMessage = fmt::format("Conmpilation Error in Stage: {0}\n{1}", Utils::GLShaderTypeToString(type), result.GetErrorMessage());
+					AR_CONSOLE_LOG_ERROR("Compilation Error in Stage: {0}", Utils::GLShaderTypeToString(type));
+					AR_CONSOLE_LOG_ERROR("{0}", result.GetErrorMessage());
 					
 					return false;
 				}
@@ -609,7 +621,8 @@ namespace Aurora {
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(m_OpenGLShaderSource[type], Utils::GLShaderTypeToShaderC(type), m_AssetPath.string().c_str(), options);
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					m_ShaderCompilationErrorMessage = fmt::format("Conmpilation Error in Stage: {0}\n{1}", Utils::GLShaderTypeToString(type), result.GetErrorMessage());
+					AR_CONSOLE_LOG_ERROR("Compilation Error in Stage: {0}", Utils::GLShaderTypeToString(type));
+					AR_CONSOLE_LOG_ERROR("{0}", result.GetErrorMessage());
 
 					return false;
 				}

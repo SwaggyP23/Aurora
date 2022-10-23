@@ -123,6 +123,19 @@ namespace Aurora {
 			out << YAML::EndMap; // Circle Renderer Component
 		}
 
+		if (entity.HasComponent<StaticMeshComponent>())
+		{
+			const StaticMeshComponent& smc = entity.GetComponent<StaticMeshComponent>();
+
+			// TODO: For now only serializing the mesh Asset handle
+			out << YAML::Key << "StaticMeshComponent";
+			out << YAML::BeginMap; // Static Mesh Component
+
+			out << YAML::Key << "StaticMesh" << YAML::Value << smc.StaticMesh;
+
+			out << YAML::EndMap; // Static Mesh Component
+		}
+
 		if (entity.HasComponent<DirectionalLightComponent>())
 		{
 			const DirectionalLightComponent& dlc = entity.GetComponent<DirectionalLightComponent>();
@@ -315,6 +328,14 @@ namespace Aurora {
 
 					crc.Color = circleRendComp["Color"].as<glm::vec4>();
 					crc.Thickness = circleRendComp["Thickness"].as<float>();
+				}
+
+				YAML::Node staticMeshComp = entity["StaticMeshComponent"];
+				if (staticMeshComp)
+				{
+					StaticMeshComponent& smc = deserializedEntity.AddComponent<StaticMeshComponent>();
+
+					smc.StaticMesh = staticMeshComp["StaticMesh"].as<uint64_t>();
 				}
 
 				YAML::Node dirLightComponent = entity["DirectionalLightComponent"];
