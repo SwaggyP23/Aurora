@@ -3,7 +3,7 @@ include "Dependencies.lua"
 workspace "Aurora"
 
     architecture "x86_64"
-    startproject "Luna"
+    startproject "Aurora-Editor"
 
         configurations 
         {
@@ -32,7 +32,7 @@ group ""
 
 group "Core"
     include "Aurora"
-    include "Luna"
+    include "Aurora-Editor"
 group ""
 
 group "Runtime"

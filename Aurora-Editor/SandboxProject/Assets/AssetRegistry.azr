@@ -1,0 +1,310 @@
+Assets:
+  - Handle: 108789640031840605
+    FilePath: meshes/Source/CubeScene.gltf
+    Type: MeshSource
+  - Handle: 185663558121908173
+    FilePath: meshes/Source/Sponza/6772804448157695701.jpg
+    Type: Texture
+  - Handle: 259207997666927103
+    FilePath: environment/venice_dawn_1_4k.hdr
+    Type: EnvironmentMap
+  - Handle: 866214834897172677
+    FilePath: meshes/Source/Sponza/7815564343179553343.jpg
+    Type: Texture
+  - Handle: 946685075088169800
+    FilePath: meshes/Default/Capsule.fbx
+    Type: MeshSource
+  - Handle: 1351986300471261707
+    FilePath: meshes/Source/Sponza/11872827283454512094.jpg
+    Type: Texture
+  - Handle: 1442699104676685138
+    FilePath: meshes/Source/Sponza/715093869573992647.jpg
+    Type: Texture
+  - Handle: 1476733284856278283
+    FilePath: meshes/Source/Sponza/9288698199695299068.jpg
+    Type: Texture
+  - Handle: 1544494620387581060
+    FilePath: meshes/Source/Sponza/14267839433702832875.jpg
+    Type: Texture
+  - Handle: 1696155744665320410
+    FilePath: meshes/Source/ferrari old/Formula 1 mesh.fbx
+    Type: MeshSource
+  - Handle: 1767532864033611832
+    FilePath: meshes/Source/ferrari old/Substance SpecGloss/Right ones/formula1_DefaultMaterial_Glossiness.png
+    Type: Texture
+  - Handle: 1890565403502869391
+    FilePath: meshes/Source/ferrari old/Substance SpecGloss/Right ones/formula1_DefaultMaterial_Height.png
+    Type: Texture
+  - Handle: 2030513754862545146
+    FilePath: environment/pink_sunrise_4k.hdr
+    Type: EnvironmentMap
+  - Handle: 2222491858418793447
+    FilePath: textures/Qiyana2.png
+    Type: Texture
+  - Handle: 2324769768760114997
+    FilePath: environment/birchwood_4k.hdr
+    Type: EnvironmentMap
+  - Handle: 2394283486315976665
+    FilePath: meshes/Source/Akali/Akali_Base_TX_CM.png
+    Type: Texture
+  - Handle: 2632528293736684415
+    FilePath: meshes/Source/Sponza/2411100444841994089.jpg
+    Type: Texture
+  - Handle: 2732276545506805110
+    FilePath: meshes/Source/Sponza/5061699253647017043.png
+    Type: Texture
+  - Handle: 2863872270202441544
+    FilePath: meshes/Source/Sponza/17876391417123941155.jpg
+    Type: Texture
+  - Handle: 2967176814482565397
+    FilePath: environment/rooitou_park_4k.hdr
+    Type: EnvironmentMap
+  - Handle: 3319283811087279847
+    FilePath: meshes/Source/Sponza/12501374198249454378.jpg
+    Type: Texture
+  - Handle: 3624050231935142146
+    FilePath: meshes/Source/Sponza/8481240838833932244.jpg
+    Type: Texture
+  - Handle: 3624997737852441888
+    FilePath: meshes/Source/Sponza/2051777328469649772.jpg
+    Type: Texture
+  - Handle: 3933598710721225756
+    FilePath: meshes/Source/Sponza/8747919177698443163.jpg
+    Type: Texture
+  - Handle: 3943488173017806799
+    FilePath: meshes/Source/Sponza/5792855332885324923.jpg
+    Type: Texture
+  - Handle: 4091169281543395895
+    FilePath: meshes/Source/ferrari old/Substance SpecGloss/Right ones/formula1_DefaultMaterial_Specular.png
+    Type: Texture
+  - Handle: 4364934254822604030
+    FilePath: meshes/Source/Bloom/BloomText.glb
+    Type: MeshSource
+  - Handle: 4833570553007212103
+    FilePath: meshes/Source/Sponza/15722799267630235092.jpg
+    Type: Texture
+  - Handle: 5075118508170008266
+    FilePath: meshes/Source/Sponza/3827035219084910048.jpg
+    Type: Texture
+  - Handle: 5214539198784039756
+    FilePath: meshes/Source/Sponza/6667038893015345571.jpg
+    Type: Texture
+  - Handle: 5787319384584676425
+    FilePath: meshes/Default/Plane.fbx
+    Type: MeshSource
+  - Handle: 5831983396990133917
+    FilePath: meshes/Source/Sponza/1219024358953944284.jpg
+    Type: Texture
+  - Handle: 5949881861678008400
+    FilePath: meshes/Source/Sponza/15295713303328085182.jpg
+    Type: Texture
+  - Handle: 6103888031182807036
+    FilePath: meshes/Source/Sponza/13196865903111448057.jpg
+    Type: Texture
+  - Handle: 6328776336227855838
+    FilePath: meshes/Source/Ahri/Ahri_Skin15_TX_CM.png
+    Type: Texture
+  - Handle: 6403760504114829076
+    FilePath: meshes/Source/Sponza/2185409758123873465.jpg
+    Type: Texture
+  - Handle: 6646434804537771146
+    FilePath: meshes/Source/Sponza/14170708867020035030.jpg
+    Type: Texture
+  - Handle: 6831858560466842813
+    FilePath: meshes/Source/Sponza/3371964815757888145.jpg
+    Type: Texture
+  - Handle: 6902381071270699491
+    FilePath: meshes/Source/TestScene.gltf
+    Type: MeshSource
+  - Handle: 7001117736519523089
+    FilePath: meshes/Source/Sponza/4675343432951571524.jpg
+    Type: Texture
+  - Handle: 7020509971870999729
+    FilePath: meshes/Default/Cylinder.fbx
+    Type: MeshSource
+  - Handle: 7082613775838471154
+    FilePath: meshes/Source/Sponza/17556969131407844942.jpg
+    Type: Texture
+  - Handle: 7355181130897472440
+    FilePath: meshes/Source/Sponza/13982482287905699490.jpg
+    Type: Texture
+  - Handle: 7472458101088540440
+    FilePath: meshes/Source/Sponza/8783994986360286082.jpg
+    Type: Texture
+  - Handle: 7832852137066987029
+    FilePath: meshes/Source/Sponza/3628158980083700836.jpg
+    Type: Texture
+  - Handle: 7917145722701837967
+    FilePath: meshes/Source/Sponza/4871783166746854860.jpg
+    Type: Texture
+  - Handle: 8250742905266618925
+    FilePath: meshes/Source/Sponza/2969916736137545357.jpg
+    Type: Texture
+  - Handle: 8278187109238813054
+    FilePath: meshes/Source/Sponza/7056944414013900257.jpg
+    Type: Texture
+  - Handle: 8342092856318552249
+    FilePath: meshes/Source/Sponza/11474523244911310074.jpg
+    Type: Texture
+  - Handle: 8347408160745250206
+    FilePath: meshes/Source/Sponza/white.png
+    Type: Texture
+  - Handle: 8412012727222488070
+    FilePath: meshes/Source/Sponza/14650633544276105767.jpg
+    Type: Texture
+  - Handle: 8482352237514151361
+    FilePath: meshes/Source/Sponza/7441062115984513793.jpg
+    Type: Texture
+  - Handle: 8665968717943520239
+    FilePath: meshes/Default/Sphere.fbx
+    Type: MeshSource
+  - Handle: 8788576823608072631
+    FilePath: meshes/Source/Sponza/10381718147657362067.jpg
+    Type: Texture
+  - Handle: 8880043086791268033
+    FilePath: meshes/Source/Sponza/16299174074766089871.jpg
+    Type: Texture
+  - Handle: 9065763550145838802
+    FilePath: meshes/Source/Sponza/11490520546946913238.jpg
+    Type: Texture
+  - Handle: 9096979575278257089
+    FilePath: meshes/Source/Sponza/8051790464816141987.jpg
+    Type: Texture
+  - Handle: 9109446043022714454
+    FilePath: meshes/Source/stormtrooper/Stormtrooper_D.png
+    Type: Texture
+  - Handle: 9124186592103073125
+    FilePath: meshes/Source/Sponza/332936164838540657.jpg
+    Type: Texture
+  - Handle: 9190707212215153036
+    FilePath: meshes/Source/Sponza/2775690330959970771.jpg
+    Type: Texture
+  - Handle: 9573847975344031097
+    FilePath: meshes/Source/Sponza/7645212358685992005.jpg
+    Type: Texture
+  - Handle: 9582987004390428966
+    FilePath: meshes/Source/Sponza/16885566240357350108.jpg
+    Type: Texture
+  - Handle: 9760702205738527241
+    FilePath: meshes/Source/Sponza/4975155472559461469.jpg
+    Type: Texture
+  - Handle: 10263001444302798680
+    FilePath: meshes/Source/Sponza/8773302468495022225.jpg
+    Type: Texture
+  - Handle: 10274742459400356253
+    FilePath: meshes/Source/Sponza/16275776544635328252.png
+    Type: Texture
+  - Handle: 10480315806595526167
+    FilePath: meshes/Source/Sponza/11968150294050148237.jpg
+    Type: Texture
+  - Handle: 10728032475024168559
+    FilePath: meshes/Default/Cube.fbx
+    Type: MeshSource
+  - Handle: 11006846441384714219
+    FilePath: meshes/Source/Sponza/4910669866631290573.jpg
+    Type: Texture
+  - Handle: 11244122296922384897
+    FilePath: meshes/Source/Sponza/8750083169368950601.jpg
+    Type: Texture
+  - Handle: 11342816934565534678
+    FilePath: meshes/Source/Sponza/10388182081421875623.jpg
+    Type: Texture
+  - Handle: 11867157922772462376
+    FilePath: meshes/Source/Sponza/2299742237651021498.jpg
+    Type: Texture
+  - Handle: 12160591340945080399
+    FilePath: meshes/Source/ferrari old/Substance SpecGloss/Right ones/formula1_DefaultMaterial_Diffuse.png
+    Type: Texture
+  - Handle: 12316000708184669238
+    FilePath: meshes/Source/dragon/dragon future.dae
+    Type: MeshSource
+  - Handle: 12423619303847466532
+    FilePath: meshes/Source/Akali/Akali_Base_Prop_TX_CM.png
+    Type: Texture
+  - Handle: 12820921510881145452
+    FilePath: meshes/Source/Sponza/6593109234861095314.jpg
+    Type: Texture
+  - Handle: 12889073009925444631
+    FilePath: meshes/Source/Sponza/2374361008830720677.jpg
+    Type: Texture
+  - Handle: 12924328135611540596
+    FilePath: meshes/Source/dragon/re Dragon Diffuse.jpg
+    Type: Texture
+  - Handle: 12988373837513651254
+    FilePath: meshes/Source/Sponza/7268504077753552595.jpg
+    Type: Texture
+  - Handle: 13478489341605219054
+    FilePath: meshes/Source/Akali/Akali_Base_Weapon_TX_CM.png
+    Type: Texture
+  - Handle: 13610987680811066932
+    FilePath: meshes/Source/Sponza/4601176305987539675.jpg
+    Type: Texture
+  - Handle: 13779361013841787113
+    FilePath: meshes/Source/Sponza/6151467286084645207.jpg
+    Type: Texture
+  - Handle: 14128375042933733331
+    FilePath: meshes/Source/Ahri/Ahri KDA.obj
+    Type: MeshSource
+  - Handle: 14173003846971837997
+    FilePath: meshes/Source/Sponza/5823059166183034438.jpg
+    Type: Texture
+  - Handle: 14342020203401203653
+    FilePath: meshes/Default/Cone.fbx
+    Type: MeshSource
+  - Handle: 14478093086780687511
+    FilePath: meshes/Source/Sponza/4477655471536070370.jpg
+    Type: Texture
+  - Handle: 14502260215720414159
+    FilePath: meshes/Source/Sponza/8006627369776289000.png
+    Type: Texture
+  - Handle: 14507339725785807620
+    FilePath: meshes/Source/ferrari old/Substance SpecGloss/Right ones/formula1_DefaultMaterial_Normal.png
+    Type: Texture
+  - Handle: 14560301545857607693
+    FilePath: meshes/Default/Torus.fbx
+    Type: MeshSource
+  - Handle: 14623870141449417212
+    FilePath: meshes/Source/Akali/Akali.obj
+    Type: MeshSource
+  - Handle: 14646020790930576587
+    FilePath: meshes/Source/Ahri/Ahri_Skin15_tAILS_TX_CM.png
+    Type: Texture
+  - Handle: 14782710514717092928
+    FilePath: environment/dikhololo_night_4k.hdr
+    Type: EnvironmentMap
+  - Handle: 15154214329496354114
+    FilePath: meshes/Source/stormtrooper/stormtrooper.gltf
+    Type: MeshSource
+  - Handle: 15413741219514700704
+    FilePath: meshes/Source/Sponza/9916269861720640319.jpg
+    Type: Texture
+  - Handle: 15472393887820203786
+    FilePath: meshes/Source/Sponza/6047387724914829168.jpg
+    Type: Texture
+  - Handle: 15502892449244645347
+    FilePath: meshes/Source/Sponza/8114461559286000061.jpg
+    Type: Texture
+  - Handle: 16638368946638023160
+    FilePath: meshes/Source/Sponza/Sponza.gltf
+    Type: MeshSource
+  - Handle: 17080598845375151305
+    FilePath: meshes/Source/Sponza/466164707995436622.jpg
+    Type: Texture
+  - Handle: 17145199867684400625
+    FilePath: meshes/Source/Sponza/755318871556304029.jpg
+    Type: Texture
+  - Handle: 17175987218269838426
+    FilePath: meshes/Source/Sponza/759203620573749278.jpg
+    Type: Texture
+  - Handle: 17193346794837414210
+    FilePath: meshes/Source/Sponza/13824894030729245199.jpg
+    Type: Texture
+  - Handle: 18027694057149568184
+    FilePath: meshes/Source/Sponza/3455394979645218238.jpg
+    Type: Texture
+  - Handle: 18186752354737326094
+    FilePath: meshes/Source/Sponza/14118779221266351425.jpg
+    Type: Texture
+  - Handle: 18362170371624990681
+    FilePath: meshes/Source/Sponza/8503262930880235456.jpg
+    Type: Texture

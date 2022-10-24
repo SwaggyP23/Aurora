@@ -9,9 +9,9 @@ Aurora.vcxproj
 Aurora.vcxproj.user
 Aurora.vcxproj.filters
 
-Luna.vcxproj
-Luna.vcxproj.user
-Luna.vcxproj.filters
+Aurora-Editor.vcxproj
+Aurora-Editor.vcxproj.user
+Aurora-Editor.vcxproj.filters
 
 Aurora-Runtime.vcxproj
 Aurora-Runtime.vcxproj.user

@@ -1,0 +1,30 @@
+// For now this is just for reference but it will be used later down the line as an include file
+
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 ViewProjectionMatrix;
+	mat4 InverseViewProjectionMatrix;
+	mat4 ProjectionMatrix;
+	mat4 InverseProjectionMatrix;
+	mat4 ViewMatrix;
+	mat4 InverseViewMatrix;
+	float NearClip;
+	float FarClip;
+	float FOV; // Radians
+	float Padding0;
+} u_Camera;
+
+layout(std140, binding = 1) uniform ScreenData
+{
+	vec2 InvFullResolution;
+    vec2 FullResolution;
+	vec2 InvHalfResolution;
+    vec2 HalfResolution;
+} u_ScreenData;
+
+layout(std140, binding = 2) uniform SceneData
+{
+	DirectionalLight DirectionalLights;
+	vec3 CameraPosition; // Offset = 32
+	float EnvironmentMapIntensity;
+} u_Scene;
