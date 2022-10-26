@@ -106,6 +106,7 @@ namespace Aurora {
 		static Ref<Shader> Create(const ShaderProperties& props);
 
 		bool Reload();
+		// TODO: Maybe move into Renderer since it should be the one responsible for dispatching compute shaders to do work!
 		void Dispatch(uint32_t dimX, uint32_t dimY, uint32_t dimZ) const;
 
 		size_t GetHash() const;

@@ -17,12 +17,6 @@ namespace Aurora {
 		return CreateRef<ShadersPanel>();
 	}
 
-	// TODO: Change to the following...
-	// - Name:
-	// - Path:
-	// - Type:
-	// - LastTimeModified:
-	// - Reload:?
 	void ShadersPanel::OnImGuiRender(bool& isOpen)
 	{
 		ImGui::Begin("Shaders", &isOpen);

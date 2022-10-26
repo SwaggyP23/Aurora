@@ -36,11 +36,11 @@ namespace Aurora {
 	{
 	public:
 		ContentBrowserPanel() = default;
-		virtual ~ContentBrowserPanel() = default;
+		virtual ~ContentBrowserPanel() = default; 
 
 		static Ref<ContentBrowserPanel> Create();
 
-		virtual void OnImGuiRender(bool& isOpen) override {}
+		virtual void OnImGuiRender(bool& isOpen) override;
 		virtual void OnEvent(Event& e) override {}
 
 	private:

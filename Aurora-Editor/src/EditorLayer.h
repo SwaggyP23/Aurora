@@ -102,6 +102,7 @@ namespace Aurora {
 		void ShowViewport();
 
 		void DrawGizmos();
+		void DrawGizmosToolBar();
 		void DrawCentralBar();
 
 		void ShowSettingsUI();

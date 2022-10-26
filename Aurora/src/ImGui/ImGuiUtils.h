@@ -7,9 +7,21 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 
-// TODO: Refactor into a corresponding cpp file
-
 namespace Aurora {
+
+	struct ImGuiScopedStyle
+	{
+		ImGuiScopedStyle(ImGuiStyleVar var, float value) { ImGui::PushStyleVar(var, value); }
+		ImGuiScopedStyle(ImGuiStyleVar var, const ImVec2& value) { ImGui::PushStyleVar(var, value); }
+		~ImGuiScopedStyle() { ImGui::PopStyleVar(); }
+	};
+
+	struct ImGuiScopedColor
+	{
+		ImGuiScopedColor(ImGuiCol var, const ImVec4& value) { ImGui::PushStyleColor(var, value); }
+		ImGuiScopedColor(ImGuiCol var, const ImU32& value) { ImGui::PushStyleColor(var, value); }
+		~ImGuiScopedColor() { ImGui::PopStyleColor(); }
+	};
 
 	namespace ImGuiUtils {
 

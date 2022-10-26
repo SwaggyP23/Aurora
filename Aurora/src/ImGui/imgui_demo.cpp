@@ -6569,7 +6569,8 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
                 
                 ImGui::PushID(i);
 
-                ImGuiUtils::ColorEdit4Control(name, glm::vec4(style.Colors[i].x, style.Colors[i].y, style.Colors[i].z, style.Colors[i].w));
+                glm::vec4 styleColors = { style.Colors[i].x, style.Colors[i].y, style.Colors[i].z, style.Colors[i].w };
+                ImGuiUtils::ColorEdit4Control(name, styleColors);
                 //ImGui::ColorEdit4("##color", (float*)&style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
                 if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
                 {

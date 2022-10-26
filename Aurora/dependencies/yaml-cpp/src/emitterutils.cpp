@@ -222,8 +222,8 @@ std::pair<uint16_t, uint16_t> EncodeUTF16SurrogatePair(int codePoint) {
   const uint32_t leadOffset = 0xD800 - (0x10000 >> 10);
 
   return {
-    leadOffset | (codePoint >> 10),
-    0xDC00 | (codePoint & 0x3FF),
+    (uint16_t)(leadOffset | (codePoint >> 10)),
+    (uint16_t)(0xDC00 | (codePoint & 0x3FF)),
   };
 }
 

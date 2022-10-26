@@ -161,14 +161,6 @@ namespace Aurora { namespace Logger {
     #define AR_ERROR(...)                   ::Aurora::Logger::Log::PrintMessage(::Aurora::Logger::Log::Type::Client, ::Aurora::Logger::Log::Level::Error, "", __VA_ARGS__)
     #define AR_CRITICAL(...)                ::Aurora::Logger::Log::PrintMessage(::Aurora::Logger::Log::Type::Client, ::Aurora::Logger::Log::Level::Fatal, "", __VA_ARGS__)
 
-	// Editor Console...
-	#define AR_CONSOLE_LOG_TRACE(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->trace(__VA_ARGS__)
-	#define AR_CONSOLE_LOG_INFO(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->info(__VA_ARGS__)
-	#define AR_CONSOLE_LOG_DEBUG(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->debug(__VA_ARGS__)
-	#define AR_CONSOLE_LOG_WARN(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->warn(__VA_ARGS__)
-	#define AR_CONSOLE_LOG_ERROR(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->error(__VA_ARGS__)
-	#define AR_CONSOLE_LOG_CRITICAL(...)    ::Aurora::Logger::Log::GetConsoleLogger()->critical(__VA_ARGS__)
-
 #else
 
     #define AR_CORE_TRACE_TAG(tag, ...)
@@ -199,12 +191,12 @@ namespace Aurora { namespace Logger {
     #define AR_ERROR(...)
     #define AR_CRITICAL(...)
 
-	// Editor Console...
-	#define AR_CONSOLE_LOG_TRACE(...)	
-	#define AR_CONSOLE_LOG_INFO(...)	
-	#define AR_CONSOLE_LOG_DEBUG(...)	
-	#define AR_CONSOLE_LOG_WARN(...)	
-	#define AR_CONSOLE_LOG_ERROR(...)	
-	#define AR_CONSOLE_LOG_CRITICAL(...)
-
 #endif
+
+// Editor Console...
+#define AR_CONSOLE_LOG_TRACE(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->trace(__VA_ARGS__)
+#define AR_CONSOLE_LOG_INFO(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->info(__VA_ARGS__)
+#define AR_CONSOLE_LOG_DEBUG(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->debug(__VA_ARGS__)
+#define AR_CONSOLE_LOG_WARN(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->warn(__VA_ARGS__)
+#define AR_CONSOLE_LOG_ERROR(...)	    ::Aurora::Logger::Log::GetConsoleLogger()->error(__VA_ARGS__)
+#define AR_CONSOLE_LOG_CRITICAL(...)    ::Aurora::Logger::Log::GetConsoleLogger()->critical(__VA_ARGS__)

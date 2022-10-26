@@ -19,6 +19,11 @@ namespace Aurora {
 		TextureProperties cameraProps;
 		cameraProps.FlipOnLoad = true;
 		CameraIcon = LoadTexture("Icons/Camera.png", cameraProps);
+
+		// Gizmos...
+		TranslateIcon = LoadTexture("Viewport/MoveTool.png");
+		RotateIcon = LoadTexture("Viewport/RotateTool.png");
+		ScaleIcon = LoadTexture("Viewport/ScaleTool.png");
 	}
 
 	void EditorResources::Shutdown()
@@ -33,6 +38,11 @@ namespace Aurora {
 		SimulateButton.Reset();
 		PauseButton.Reset();
 		StopButton.Reset();
+
+		// Gizmos...
+		TranslateIcon.Reset();
+		RotateIcon.Reset();
+		ScaleIcon.Reset();
 
 		CameraIcon.Reset();
 	}

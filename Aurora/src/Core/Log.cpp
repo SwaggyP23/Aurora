@@ -21,39 +21,39 @@ namespace Aurora {
 		{
 			std::vector<spdlog::sink_ptr> auroraSinks =
 			{
+				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/AURORA.log", true)
 #if AR_HAS_CONSOLE
+				,
 				std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
 #endif
-				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/AURORA.log", true)
 			};
 
 			std::vector<spdlog::sink_ptr> appSinks =
 			{
-#if AR_HAS_CONSOLE
-				std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
-#endif
 				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/APP.log", true)
+#if AR_HAS_CONSOLE
+				,
+				std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
+#endif
 			};
 
 			std::vector<spdlog::sink_ptr> editorSinks =
 			{
-#if AR_HAS_CONSOLE
+				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/APP.log", true),
 				// Create it with bufferCapacitiy == 1 so it flushes everytime there is a message
 				std::make_shared<EditorConsoleSink>(1),
-#endif
-				std::make_shared<spdlog::sinks::basic_file_sink_mt>("../Aurora/LogDump/APP.log", true)
 			};
 
+			// File sinks
+			auroraSinks[0]->set_pattern("[%T] [%l] %n: %v");
+			appSinks[0]->set_pattern("[%T] [%l] %n: %v");
+
 #if AR_HAS_CONSOLE
-			auroraSinks[0]->set_pattern("%^[%T] %n(%l): %v%$");
-			appSinks[0]->set_pattern("%^[%T] %n(%l): %v%$");
+			auroraSinks[1]->set_pattern("%^[%T] %n(%l): %v%$");
+			appSinks[1]->set_pattern("%^[%T] %n(%l): %v%$");
+#endif
 			for (spdlog::sink_ptr sink : editorSinks)
 				sink->set_pattern("%^%v%$");
-#endif
-
-			// File sinks
-			auroraSinks[1]->set_pattern("[%T] [%l] %n: %v");
-			appSinks[1]->set_pattern("[%T] [%l] %n: %v");
 
 			s_CoreLogger = std::make_shared<spdlog::logger>("Aurora", begin(auroraSinks), end(auroraSinks));
 			spdlog::register_logger(s_CoreLogger);

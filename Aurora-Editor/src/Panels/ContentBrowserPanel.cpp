@@ -7,4 +7,13 @@ namespace Aurora {
 		return CreateRef<ContentBrowserPanel>();
 	}
 
+	void ContentBrowserPanel::OnImGuiRender(bool& isOpen)
+	{
+		ImGui::Begin("Content Browser", &isOpen);
+
+		ImGui::Text("9uvanreouivnhun");
+
+		ImGui::End();
+	}
+
 }

@@ -368,22 +368,24 @@ namespace Aurora {
 
 		Ref<Shader> equiRectToCubeShader = s_Data->ShaderLibrary->TryGet("EquirectToCubeMap");
 		Ref<CubeTexture> envUnfiltered = CubeTexture::Create(ImageFormat::RGBA32F, cubeMapSize, cubeMapSize, nullptr, cubeTextureProps);
-		Ref<Texture2D> envEquiRect = Texture2D::Create(filePath);
-		AR_CORE_ASSERT(envEquiRect->GetFormat() == ImageFormat::RGBA32F, "Texture should be HDR!");
-
-		// Dispatch compute shader to change from Equirect to CubeMap
 		{
-			AR_SCOPED_TIMER("LatLong to CubeMap stage");
-			AR_PROFILE_SCOPE("LatLong to CubeMap stage");
+			Ref<Texture2D> envEquiRect = Texture2D::Create(filePath);
+			AR_CORE_ASSERT(envEquiRect->GetFormat() == ImageFormat::RGBA32F, "Texture should be HDR!");
 
-			equiRectToCubeShader->Bind();
-			envEquiRect->Bind(0);
+			// Dispatch compute shader to change from Equirect to CubeMap
+			{
+				AR_SCOPED_TIMER("LatLong to CubeMap stage");
+				AR_PROFILE_SCOPE("LatLong to CubeMap stage");
 
-			glBindImageTexture(0, envUnfiltered->GetTextureID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-			equiRectToCubeShader->Dispatch(cubeMapSize / 32, cubeMapSize / 32, 6);
-			// Make sure the image is completely written to before accessing it again
-			glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-			glGenerateTextureMipmap(envUnfiltered->GetTextureID());
+				equiRectToCubeShader->Bind();
+				envEquiRect->Bind(0);
+
+				glBindImageTexture(0, envUnfiltered->GetTextureID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+				equiRectToCubeShader->Dispatch(cubeMapSize / 32, cubeMapSize / 32, 6);
+				// Make sure the image is completely written to before accessing it again
+				glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+				glGenerateTextureMipmap(envUnfiltered->GetTextureID());
+			}
 		}
 
 		Ref<Shader> envFilteringShader = s_Data->ShaderLibrary->TryGet("EnvironmentMipFilter");

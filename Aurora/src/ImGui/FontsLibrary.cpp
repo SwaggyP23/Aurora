@@ -17,14 +17,19 @@ namespace Aurora {
 		AR_CORE_ASSERT(false);
 	}
 
-	void ImGuiFontsLibrary::PushTemporaryFont(const std::string& fontName)
+	void ImGuiFontsLibrary::PushTemporaryFont(const std::string& fontName, float size)
 	{
 		AR_CORE_ASSERT(!m_PushedTemporaryFont);
 		m_PushedTemporaryFont = true;
 
 		if (m_Fonts.find(fontName) != m_Fonts.end())
 		{
+			ImFont* font = m_Fonts.at(fontName);
+			float fontSize = font->FontSize;
+			if(size != 0.0f)
+				font->FontSize = size;
 			ImGui::PushFont(m_Fonts.at(fontName));
+			font->FontSize = fontSize;
 
 			return;
 		}

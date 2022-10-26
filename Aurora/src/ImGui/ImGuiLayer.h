@@ -29,7 +29,7 @@ namespace Aurora {
 		ImGuiFontsLibrary m_FontsLibrary;
 
 		friend class SceneHierarchyPanel;
-		friend class EditorLayer; // The editor is build on ImGui so makes sense to be related to the ImGui layer
+		friend class EditorLayer;
 
 	};
 

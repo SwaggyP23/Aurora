@@ -5,6 +5,12 @@
 
 #include <unordered_map>
 
+/*
+ * Why does this exist? Since multiple editor panels and multiple engine systems rely on the currently selected entity, We cant just store the
+ * selection context inside the SceneHierarchyPanel since that will be a pain to always retrieve it and if it has children. So what the
+ * SelectionManager is just a Global entity State/Map of selected entities and it helps with providing a global way of getting the selected entity/ies
+ */
+
 namespace Aurora {
 
 	enum class SelectionContext
@@ -14,8 +20,6 @@ namespace Aurora {
 		ContentBrowser
 	};
 
-	// Since we have an EditorPanelsLibrary we cant handle the scene hierarchy selection context directly interacting with the scene hierarchy panel
-	// So we need to manage the selection context in some type of global state/map which is what this is
 	class SelectionManager
 	{
 	public:

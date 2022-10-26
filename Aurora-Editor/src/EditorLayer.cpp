@@ -6,6 +6,7 @@
 #include "Editor/ShadersPanel.h"
 #include "Editor/EditorConsolePanel.h"
 #include "Editor/EditorSelectionManager.h"
+#include "Panels/ContentBrowserPanel.h"
 
 #include "ImGui/ImGuiUtils.h"
 #include "ImGui/TreeNode.h"
@@ -56,6 +57,7 @@ namespace Aurora {
 
 		m_PanelsLibrary->AddPanel<ShadersPanel>(PanelCategory::View, "ShadersPanel", "Shaders", false); // Not open by default
 		m_PanelsLibrary->AddPanel<EditorConsolePanel>(PanelCategory::View, "ConsolePanel", "Console", true);
+		m_PanelsLibrary->AddPanel<ContentBrowserPanel>(PanelCategory::View, "ContentBrowserPanel", "Content Browser", true);
 		AR_CONSOLE_LOG_TRACE("Hey I am Up! apw9uecna 0re9uvn awoieuvyb a9ery8vbq 98vuyb  ae0ru9vn aoireuvnaiur piunrpviun pun ailrhv apiruvn");
 
 		// TODO: Temporary untill Projects are a thing!
@@ -313,7 +315,7 @@ namespace Aurora {
 					for (UUID entityID : selectedEntities)
 					{
 						Entity entityToBeDeleted = m_ActiveScene->GetEntityWithUUID(entityID);
-						// TODO: Maybe i dont need to get the uuid from the entity and pass it since the uuid should be the same in the selectionMap and the scene
+						// Could pass the uuid from the entity since the uuid should be the same in the selectionMap and the scene
 						SelectionManager::Deselect(SelectionContext::Scene, entityToBeDeleted.GetUUID());
 						m_EditorScene->DestroyEntity(entityToBeDeleted);
 					}
@@ -454,9 +456,7 @@ namespace Aurora {
 						{
 							if (ray.IntersectsTriangle(triangle.V1.Position, triangle.V2.Position, triangle.V3.Position, t))
 							{
-								AR_CONSOLE_LOG_WARN("INTERSECTION: {0}, t = {1}vcfasvadvarvaervaocviuhaeoiawoiru hawe0i8vuber98vybwe0v8yebv98weybgce8ryvbwe8yc we87cg we08f hvbwociuehv08wrygc9e8yvgbe98ycgber9v8ybwec08ybv8y", subMesh.NodeName, t);
 								AR_CONSOLE_LOG_INFO("INTERSECTION: {0}, t = {1}", subMesh.NodeName, t);
-								AR_CONSOLE_LOG_ERROR("INTERSECTION: {0}, t = {1}", subMesh.NodeName, t);
 								selectionData.push_back({ entity, &subMesh, t });
 								break;
 							}
@@ -540,18 +540,18 @@ namespace Aurora {
 		// TODO: Maybe only the selected mesh???
 		if (m_ShowBoundingBoxes)
 		{
-			//auto staticMeshEntities = m_ActiveScene->GetAllEntitiesWith<StaticMeshComponent>();
-			//for (auto e : staticMeshEntities)
-			//{
-			//	Entity entity{ e, m_ActiveScene.raw() };
-			//	glm::mat4 transform = entity.GetComponent<TransformComponent>().GetTransform();
-			//	Ref<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>(entity.GetComponent<StaticMeshComponent>().StaticMesh);
-			//	if (mesh)
-			//	{
-			//		const AABB& aabb = mesh->GetMeshSource()->GetBoundingBox();
-			//		m_Renderer2D->DrawAABB(aabb, transform);
-			//	}
-			//}
+			auto staticMeshEntities = m_ActiveScene->GetAllEntitiesWith<StaticMeshComponent>();
+			for (auto e : staticMeshEntities)
+			{
+				Entity entity{ e, m_ActiveScene.raw() };
+				glm::mat4 transform = entity.GetComponent<TransformComponent>().GetTransform();
+				Ref<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>(entity.GetComponent<StaticMeshComponent>().StaticMesh);
+				if (mesh)
+				{
+					const AABB& aabb = mesh->GetMeshSource()->GetBoundingBox();
+					m_Renderer2D->DrawAABB(aabb, transform);
+				}
+			}
 		}
 
 		if (m_ShowIcons)
@@ -1226,14 +1226,112 @@ namespace Aurora {
 		}
 	}
 
+	void EditorLayer::DrawGizmosToolBar()
+	{
+		// TODO: Maybe reduce the width and height of the overlay since it is kind of way too big, maybe try and fiddle with that after adding the 
+		// buttons since that might look better!
+		// Viewport Gizmo Tools
+		{
+			ImGuiScopedStyle itemSpacing(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 0.0f });
+			ImGuiScopedStyle windowBorderSize(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			ImGuiScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 8.0f);
+			ImGuiScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+
+			constexpr float buttonSize = 18.0f + 5.0f;
+			constexpr float edgeOffset = 4.0f;
+			constexpr float windowHeight = 32.0f; // ImGui does not allow for the window to be less than 32.0f pixels
+			constexpr float numberOfButtons = 3.0f;
+			constexpr float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) /** 2.0f*/;
+
+			float toolbarX = m_ViewportRect.Min.x + edgeOffset + numberOfButtons * buttonSize;
+			ImGui::SetNextWindowPos(ImVec2{ toolbarX - (backgroundWidth / 2.0f), m_ViewportRect.Min.y + edgeOffset });
+			ImGui::SetNextWindowSize(ImVec2{ backgroundWidth, windowHeight });
+			ImGui::SetNextWindowBgAlpha(0.0f);
+			ImGui::Begin("##viewportGizmoToolsControls", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+			// A hack to make icon panel appear smaller than minimum allowed by ImGui size
+			// Filling the background for the desired 26px height
+			constexpr float desiredHeight = 26.0f + 5.0f;
+			ImRect background = ImGuiUtils::RectExpanded(ImGui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+			ImGui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+
+			ImGui::BeginVertical("##viewportGizmoToolsControlsV", ImVec2{ backgroundWidth, ImGui::GetContentRegionAvail().y });
+			ImGui::Spring();
+			ImGui::BeginHorizontal("##viewportGizmoToolsControlsH", ImVec2{ backgroundWidth, ImGui::GetContentRegionAvail().y });
+			ImGui::Spring();
+
+			{
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ edgeOffset * 2.0f, 0.0f });
+
+				auto toolbarButton = [buttonSize](const Ref<Texture2D>& icon, const ImColor& tint, float paddingY = 0.0f) -> bool
+				{
+					const float height = std::min((float)icon->GetHeight(), buttonSize) - paddingY * 2.0f;
+					const float width = (float)icon->GetWidth() / (float)icon->GetHeight() * height;
+					const bool clicked = ImGui::InvisibleButton(ImGuiUtils::GenerateID(), ImVec2{ width, height });
+					ImGuiUtils::DrawButtonImage(icon, tint, tint, tint, ImGuiUtils::RectOffset(ImGuiUtils::GetItemRect(), 0.0f, paddingY));
+
+					return clicked;
+				};
+
+				ImColor tintColor = m_GizmoType == ImGuizmo::OPERATION::TRANSLATE ? Theme::AccentHighlighted : ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+				if (toolbarButton(EditorResources::TranslateIcon, tintColor))
+				{
+					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.5f);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1.0f, 1.0f });
+					ImGuiUtils::ToolTip("Translate");
+					ImGui::PopStyleVar(2);
+				}
+
+				tintColor = m_GizmoType == ImGuizmo::OPERATION::ROTATE ? Theme::AccentHighlighted : ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+				if (toolbarButton(EditorResources::RotateIcon, tintColor))
+				{
+					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.5f);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1.0f, 1.0f });
+					ImGuiUtils::ToolTip("Rotate");
+					ImGui::PopStyleVar(2);
+				}
+
+				tintColor = m_GizmoType == ImGuizmo::OPERATION::SCALE ? Theme::AccentHighlighted : ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+				if (toolbarButton(EditorResources::ScaleIcon, tintColor))
+				{
+					m_GizmoType = ImGuizmo::OPERATION::SCALE;
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.5f);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1.0f, 1.0f });
+					ImGuiUtils::ToolTip("Scale");
+					ImGui::PopStyleVar(2);
+				}
+
+				ImGui::PopStyleVar();
+			}
+
+			ImGui::Spring();
+			ImGui::EndHorizontal();
+			ImGui::Spring();
+			ImGui::EndVertical();
+
+			ImGui::End();
+		}
+	}
+
 	void EditorLayer::DrawCentralBar()
 	{
 		// Viewport Scene Tools
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 0.0f });
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+			ImGuiScopedStyle itemSpacing(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 0.0f });
+			ImGuiScopedStyle windowBorderSize(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			ImGuiScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 8.0f);
+			ImGuiScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 
 			constexpr float buttonSize = 18.0f + 5.0f;
 			constexpr float edgeOffset = 4.0f;
@@ -1257,6 +1355,7 @@ namespace Aurora {
 			ImGui::Spring();
 			ImGui::BeginHorizontal("##viewportSceneControlsH", ImVec2{ backgroundWidth, ImGui::GetContentRegionAvail().y });
 			ImGui::Spring();
+
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ edgeOffset * 2.0f, 0.0f });
 
@@ -1322,7 +1421,6 @@ namespace Aurora {
 			ImGui::EndVertical();
 
 			ImGui::End();
-			ImGui::PopStyleVar(4);
 		}
 	}
 
@@ -1359,6 +1457,7 @@ namespace Aurora {
 
 		ImGuiUtils::SetInputEnabled(!m_ViewportFocused || !m_ViewportHovered);
 
+		DrawGizmosToolBar();
 		DrawCentralBar();
 
 		// Gizmos...
@@ -1375,6 +1474,7 @@ namespace Aurora {
 		ImGui::End(); // Docking window
 	}
 
+	// TODO: The culling/depth/blend state will be removed when switching to vulkan since it does not have this much global state!
 	void EditorLayer::ShowSettingsUI()
 	{
 		static bool enableCulling = true;

@@ -1,10 +1,13 @@
 Panels:
   - ID: 3022346676
     Name: Scene Hierarchy
-    IsOpen: false
+    IsOpen: true
   - ID: 3707741425
     Name: Shaders
     IsOpen: false
   - ID: 294704440
     Name: Console
+    IsOpen: true
+  - ID: 2363868788
+    Name: Content Browser
     IsOpen: true

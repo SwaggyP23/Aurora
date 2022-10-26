@@ -23,7 +23,7 @@ namespace Aurora {
 		~ImGuiFontsLibrary() = default;
 
 		void SetDefaultFont(const std::string& fontName);
-		void PushTemporaryFont(const std::string& fontName);
+		void PushTemporaryFont(const std::string& fontName, float size = 0.0f);
 		void PopTemporaryFont();
 		void LoadFont(const FontSpecification& spec, bool default = false);
 
