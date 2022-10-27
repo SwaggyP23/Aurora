@@ -144,6 +144,9 @@
 #include "imgui_impl_opengl3_loader.h"
 #endif
 
+// Custom Loader in Aurora...
+#include <glad/glad.h>
+
 // Vertex arrays are not supported on ES2/WebGL1 unless Emscripten which uses an extension
 #ifndef IMGUI_IMPL_OPENGL_ES2
 #define IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY

@@ -19,13 +19,21 @@ project "ImGui"
         "imstb_rectpack.h",
         "imstb_textedit.h",
         "imstb_truetype.h",
+        "imgui_impl_opengl3.h",
         "imgui_impl_opengl3.cpp",
+        "imgui_impl_glfw.h",
         "imgui_impl_glfw.cpp"
+    }
+
+    defines
+    {
+        "IMGUI_IMPL_OPENGL_LOADER_CUSTOM"
     }
 
     includedirs
     {
-        "%{IncludeDir.GLFW}"
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Glad}"
     }
 
     filter "system:windows"
