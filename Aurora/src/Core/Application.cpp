@@ -38,7 +38,7 @@ namespace Aurora {
 		m_Window = Window::Create(windowSpec);
 
 		m_Window->Init();
-		m_Window->SetEventCallback([this](Event& e) {Application::OnEvent(e); });
+		m_Window->SetEventCallback([this](Event& e) { Application::OnEvent(e); });
 		if (specification.StartMaximized)
 			m_Window->Maximize();
 		else
@@ -156,7 +156,7 @@ namespace Aurora {
 						layer->OnUpdate(m_Timestep);
 				}
 
-				// Ticking the layers per second
+				// Ticking the layers per the specified tick threshhold
 				{
 					AR_PROFILE_SCOPE("Application Layer::OnTick");
 					AR_SCOPE_PERF("Application Layer::OnTick");
@@ -240,8 +240,8 @@ namespace Aurora {
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& e) { return Application::OnWindowClose(e); });
-		dispatcher.Dispatch<WindowMinimizeEvent>([this](WindowMinimizeEvent& e) {return Application::OnWindowMinimize(e); });
-		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) {return Application::OnWindowResize(e); });
+		dispatcher.Dispatch<WindowMinimizeEvent>([this](WindowMinimizeEvent& e) { return Application::OnWindowMinimize(e); });
+		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) { return Application::OnWindowResize(e); });
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{

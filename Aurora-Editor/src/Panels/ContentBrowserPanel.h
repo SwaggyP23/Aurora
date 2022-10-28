@@ -41,12 +41,15 @@ namespace Aurora {
 		static Ref<ContentBrowserPanel> Create();
 
 		virtual void OnImGuiRender(bool& isOpen) override;
-		virtual void OnEvent(Event& e) override {}
+		virtual void OnEvent(Event& e) override;
 
 	private:
-		void Refresh() {}
-		void GoUpADirectory() {}
-		void GoInADirectory() {}
+		void RenderMenu(const ImVec2& size);
+		void RenderBrowser(const ImVec2& size);
+
+		void Refresh();
+		void GoUpADirectory();
+		void GoInADirectory();
 
 	private:
 		std::vector<ContentBrowserItem> m_Items;

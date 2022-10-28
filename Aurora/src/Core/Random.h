@@ -24,89 +24,89 @@ namespace Aurora {
 		}
 
 		// Returns a 32-bit random number
-		[[nodiscard]] static uint32_t UInt32()
+		static uint32_t UInt32()
 		{
 			return s_Distribution32(s_RandomEngine32);
 		}
 
 		// Returns a random unsiged integer in the specified range
-		[[nodiscard]] static uint32_t UInt32(uint32_t min, uint32_t max)
+		static uint32_t UInt32(uint32_t min, uint32_t max)
 		{
 			// This should be a modulus and not multiplication since the random number generated is not in the 0 -> 1 range
 			return min + (s_Distribution32(s_RandomEngine32) % (max - min + 1));
 		}
 
 		// Returns a 64-bit random number
-		[[nodiscard]] static uint64_t UInt64()
+		static uint64_t UInt64()
 		{
 			return s_Distribution64(s_RandomEngine64);
 		}
 
 		// Returns a random unsiged long long in the specified range
-		[[nodiscard]] static uint64_t UInt64(uint64_t min, uint64_t max)
+		static uint64_t UInt64(uint64_t min, uint64_t max)
 		{
 			// This should be a modulus and not multiplication since the random number generated is not in the 0 -> 1 range
 			return min + (s_Distribution64(s_RandomEngine64) % (max - min + 1));
 		}
 		
 		// Returns a random float between 0 and 1
-		[[nodiscard]] static float Float()
+		static float Float()
 		{
 			return ((float)s_Distribution32(s_RandomEngine32) / (float)std::numeric_limits<uint32_t>::max());
 		}
 
 		// Returns a random double between 0 and 1
-		[[nodiscard]] static double Double()
+		static double Double()
 		{
 			return ((double)s_Distribution64(s_RandomEngine64) / (double)std::numeric_limits<uint64_t>::max());
 		}
 
 		// Returns a random float in the specified range
-		[[nodiscard]] static float Float(float min, float max)
+		static float Float(float min, float max)
 		{
 			// Unlike in the UInt() function, here we have to multiply since the generated float is in the 0 -> 1 range
 			return min + Float() * (max - min) + 1;
 		}
 
 		// Returns a random float in the specified range
-		[[nodiscard]] static double Double(double min, double max)
+		static double Double(double min, double max)
 		{
 			// Unlike in the UInt() function, here we have to multiply since the generated double is in the 0 -> 1 range
 			return min + Double() * (max - min) + 1;
 		}
 
 		// Returns a vec2 with 2 random floats
-		[[nodiscard]] static glm::vec2 Vec2()
+		static glm::vec2 Vec2()
 		{
 			return glm::vec2(Float(), Float());
 		}
 
 		// Returns a vec2 with 2 random floats in the specified range
-		[[nodiscard]] static glm::vec2 Vec2(float min, float max)
+		static glm::vec2 Vec2(float min, float max)
 		{
 			return glm::vec2(Float(min, max), Float(min, max));
 		}
 
 		// Returns a vec3 with 3 random floats
-		[[nodiscard]] static glm::vec3 Vec3()
+		static glm::vec3 Vec3()
 		{
 			return glm::vec3(Float(), Float(), Float());
 		}
 
 		// Returns a vec3 with 3 random floats in the specified range
-		[[nodiscard]] static glm::vec3 Vec3(float min, float max)
+		static glm::vec3 Vec3(float min, float max)
 		{
 			return glm::vec3(Float(min, max), Float(min, max), Float(min, max));
 		}
 
 		// Returns a vec4 with 4 random floats
-		[[nodiscard]] static glm::vec4 Vec4()
+		static glm::vec4 Vec4()
 		{
 			return glm::vec4(Float(), Float(), Float(), Float());
 		}
 
 		// Returns a vec4 with 4 random floats in the specified range
-		[[nodiscard]] static glm::vec4 Vec4(float min, float max)
+		static glm::vec4 Vec4(float min, float max)
 		{
 			return glm::vec4(Float(min, max), Float(min, max), Float(min, max), Float(min, max));
 		}

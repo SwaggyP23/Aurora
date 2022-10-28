@@ -338,7 +338,10 @@ namespace Aurora {
 
 		Entity cameraEntity = GetPrimaryCameraEntity();
 		if (!cameraEntity)
+		{
+			AR_CONSOLE_LOG_ERROR("Could not find a Camera Entity! Consider adding a camera first.");
 			return;
+		}
 
 		glm::mat4 cameraViewMatrix = glm::inverse(GetWorldSpaceTransformMatrix(cameraEntity));
 		AR_CORE_CHECK(cameraEntity != Entity::nullEntity, "Scene does not contain any cameras!");

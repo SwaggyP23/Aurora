@@ -29,10 +29,10 @@ namespace Aurora {
 		AR_FORCE_INLINE void Reset() { m_Start = HighResClock::now(); }
 
 		// Returns time in seconds
-		[[nodiscard]] AR_FORCE_INLINE float Elapsed() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f; }
+		AR_FORCE_INLINE float Elapsed() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f * 0.001f; }
 
 		// Returns time in milliseconds
-		[[nodiscard]] AR_FORCE_INLINE float ElapsedMillis() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f; }
+		AR_FORCE_INLINE float ElapsedMillis() { return std::chrono::duration_cast<MicroSeconds>(HighResClock::now() - m_Start).count() * 0.001f; }
 
 	private:
 		TimePoint<HighResClock> m_Start;
@@ -70,7 +70,7 @@ namespace Aurora {
 		}
 
 		void Clear() { m_PerFrameData.clear(); }
-		[[nodiscard]] const std::unordered_map<const char*, float>& GetPerFrameData() const { return m_PerFrameData; }
+		const std::unordered_map<const char*, float>& GetPerFrameData() const { return m_PerFrameData; }
 
 	private:
 		std::unordered_map<const char*, float> m_PerFrameData;

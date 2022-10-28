@@ -344,6 +344,18 @@ namespace Aurora {
 			m_Stats.DrawCalls++;
 		}
 
+		// Circles...
+		AR_CORE_ASSERT(m_CircleVertexBufferPtr >= m_CircleVertexBufferBase);
+		dataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase);
+		if (dataSize)
+		{
+			m_CircleVertexBuffer->SetData(m_CircleVertexBufferBase, dataSize);
+
+			Renderer::RenderGeometry(nullptr, nullptr, m_CircleMaterial, m_CircleVertexArray, m_CircleIndexCount);
+
+			m_Stats.DrawCalls++;
+		}
+
 		// Text...
 		AR_CORE_ASSERT(m_TextVertexBufferPtr >= m_TextVertexBufferBase);
 		dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase);
@@ -356,18 +368,6 @@ namespace Aurora {
 				m_FontTextureSlots[i]->Bind(i);
 
 			Renderer::RenderGeometry(nullptr, nullptr, m_TextMaterial, m_TextVertexArray, m_TextIndexCount);
-
-			m_Stats.DrawCalls++;
-		}
-
-		// Circles...
-		AR_CORE_ASSERT(m_CircleVertexBufferPtr >= m_CircleVertexBufferBase);
-		dataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase);
-		if (dataSize)
-		{
-			m_CircleVertexBuffer->SetData(m_CircleVertexBufferBase, dataSize);
-
-			Renderer::RenderGeometry(nullptr, nullptr, m_CircleMaterial, m_CircleVertexArray, m_CircleIndexCount);
 
 			m_Stats.DrawCalls++;
 		}

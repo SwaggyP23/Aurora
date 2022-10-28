@@ -6,7 +6,7 @@
  * As for the depth attachment for framebuffers, via this implementation, it is defaulted to use render buffers for the Depth/Stencil 
  * attachment and that is because these attachments are rarely to ever be directly read from therefore it is more optimized to attach them
  * as render buffers.
- * TODO: Currently I dont think i support pure Stencil Attachments, however I do support Depth/Stencil attachments
+ * TODO: Currently I dont think we support pure Stencil Attachments, however we do support Depth/Stencil attachments
  */
 
 #include "Core/Base.h"

@@ -113,21 +113,21 @@ namespace Aurora {
 		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties(), const std::string& path = "");
 		virtual ~Texture2D();
 
-		[[nodiscard]] static Ref<Texture2D> Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, const std::string& path = "");
-		[[nodiscard]] static Ref<Texture2D> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
-		[[nodiscard]] static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties(), const std::string& path = "");
+		static Ref<Texture2D> Create(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, const std::string& path = "");
+		static Ref<Texture2D> Create(const std::string& filePath, const TextureProperties& props = TextureProperties());
+		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& props = TextureProperties(), const std::string& path = "");
 
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void UnBind(uint32_t slot = 0) const override;
 
-		[[nodiscard]] inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
-		[[nodiscard]] inline virtual uint32_t GetWidth() const override { return m_Width; }
-		[[nodiscard]] inline virtual uint32_t GetHeight() const override { return m_Height; }
-		[[nodiscard]] virtual uint32_t GetMipCount() const override;
-		[[nodiscard]] inline virtual const std::filesystem::path& GetAssetPath() const override { return m_AssetPath; }
-		[[nodiscard]] inline virtual ImageFormat GetFormat() const override { return m_Format; }
-		[[nodiscard]] inline virtual bool IsLoaded() const override { return m_IsLoaded; }
-		[[nodiscard]] inline TextureProperties& GetTextureProperties() { return m_Properties; }
+		inline virtual uint32_t GetTextureID() const override { return m_TextureID; }
+		inline virtual uint32_t GetWidth() const override { return m_Width; }
+		inline virtual uint32_t GetHeight() const override { return m_Height; }
+		virtual uint32_t GetMipCount() const override;
+		inline virtual const std::filesystem::path& GetAssetPath() const override { return m_AssetPath; }
+		inline virtual ImageFormat GetFormat() const override { return m_Format; }
+		inline virtual bool IsLoaded() const override { return m_IsLoaded; }
+		inline TextureProperties& GetTextureProperties() { return m_Properties; }
 
 		bool operator==(const Ref<Texture2D>& other) const { return m_TextureID == other->m_TextureID; }
 
@@ -165,13 +165,13 @@ namespace Aurora {
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void UnBind(uint32_t slot = 0) const override;
 
-		[[nodiscard]] virtual uint32_t GetTextureID() const override { return m_TextureID; }
-		[[nodiscard]] virtual uint32_t GetWidth() const override { return m_Width; }
-		[[nodiscard]] virtual uint32_t GetHeight() const override { return m_Height; }
-		[[nodiscard]] virtual uint32_t GetMipCount() const override;
-		[[nodiscard]] virtual const std::filesystem::path& GetAssetPath() const override { return m_AssetPath; }
-		[[nodiscard]] virtual ImageFormat GetFormat() const override { return m_Format; }
-		[[nodiscard]] virtual bool IsLoaded() const override { return m_IsLoaded; }
+		virtual uint32_t GetTextureID() const override { return m_TextureID; }
+		virtual uint32_t GetWidth() const override { return m_Width; }
+		virtual uint32_t GetHeight() const override { return m_Height; }
+		virtual uint32_t GetMipCount() const override;
+		virtual const std::filesystem::path& GetAssetPath() const override { return m_AssetPath; }
+		virtual ImageFormat GetFormat() const override { return m_Format; }
+		virtual bool IsLoaded() const override { return m_IsLoaded; }
 
 		bool operator==(const Ref<CubeTexture>& other) const { return m_TextureID == other->m_TextureID; }
 

@@ -51,7 +51,7 @@ namespace Aurora {
 
 	void EditorConsolePanel::OnEvent(Event& e)
 	{
-		// TODO: Clearing onScenePlay??
+		// TODO: Clearing OnScenePlay??
 	}
 
 	void EditorConsolePanel::RenderMenu(const ImVec2& size)

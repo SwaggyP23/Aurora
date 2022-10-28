@@ -148,7 +148,7 @@ namespace Aurora {
 
 	};
 
-	// To be defined by user and then the name of the app is specified in the SandBox App when inheriting Application.
+	// To be defined by user
 	Application* CreateApplication(int argc, char** argv);
 
 }

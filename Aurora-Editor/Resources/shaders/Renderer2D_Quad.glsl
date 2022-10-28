@@ -10,7 +10,7 @@ layout(location = 4) in float a_TilingFactor;
 layout(std140, binding = 3) uniform Camera
 {
 	mat4 u_ViewProjMatrix;
-};	
+};
 
 struct VertexOutput
 {

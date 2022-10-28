@@ -365,16 +365,16 @@ namespace Aurora {
 		}
 
 		// TODO: This is for un parenting entities
-		if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
-		{
-			const ImGuiPayload* payLoad = ImGui::AcceptDragDropPayload("scene_entity_hierarchy_pay", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+		//if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
+		//{
+		//	const ImGuiPayload* payLoad = ImGui::AcceptDragDropPayload("scene_entity_hierarchy_pay", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
 
-			if (payLoad)
-			{
-			}
+		//	if (payLoad)
+		//	{
+		//	}
 
-			ImGui::EndDragDropTarget();
-		}
+		//	ImGui::EndDragDropTarget();
+		//}
 
 		if (m_ShowPropertiesPanel)
 		{
@@ -624,24 +624,24 @@ namespace Aurora {
 		}
 
 		// Drag/Drop...
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-		{
-			// Get the selected entities
-			// then
-			//ImGui::SetDragDropPayload("scene_entity_hierarchy_pay", &entity, sizeof(UUID));
+		//if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		//{
+		//	// Get the selected entities
+		//	// then
+		//	//ImGui::SetDragDropPayload("scene_entity_hierarchy_pay", &entity, sizeof(UUID));
 
-			ImGui::EndDragDropSource();
-		}
+		//	ImGui::EndDragDropSource();
+		//}
 
-		if (ImGui::BeginDragDropTarget())
-		{
-			const ImGuiPayload* payLoad = ImGui::AcceptDragDropPayload("scene_entity_hierarchy_pay", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+		//if (ImGui::BeginDragDropTarget())
+		//{
+		//	const ImGuiPayload* payLoad = ImGui::AcceptDragDropPayload("scene_entity_hierarchy_pay", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
 
-			if (payLoad)
-			{
-				// Parent Entities...
-			}
-		}
+		//	if (payLoad)
+		//	{
+		//		// Parent Entities...
+		//	}
+		//}
 
 		if (opened)
 		{
