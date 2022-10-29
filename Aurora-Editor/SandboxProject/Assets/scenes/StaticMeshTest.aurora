@@ -1,19 +1,27 @@
 Scene: StaticMeshTest
 Entities:
-  - Entity: 3443394849406975927
+  - Entity: 18329222051296809869
     TagComponent:
-      Tag: Text
+      Tag: Skylight
     TransformComponent:
-      Translation: [3.48186851, 0.00048828125, -5.86988688]
-      Rotation: [3.14159226, -0.84454453, 3.14159226]
-      Scale: [1.07099998, 1.07099998, 1.07099998]
-    TextComponent:
-      TextString: "Wassup Mate?\nMy name is Reda Fakih\nI play the piano!"
-      FontHandle: 0
-      Color: [1, 1, 1, 1]
-      LineSpacing: 0
-      Kerning: 0
-      MaxWidth: 10
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SkyLightComponent:
+      EnvironmentMap: 2967176814482565397
+      LOD: 0.5
+      Intensity: 1
+      DynamicSky: false
+  - Entity: 14366245240961605469
+    TagComponent:
+      Tag: DirLight
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [2.33182526, -0.159999371, -0.484411597]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Radiance: [1, 0.999899983, 0.99992907]
+      Intensity: 1
   - Entity: 16779024522981357195
     TagComponent:
       Tag: Camera
@@ -31,25 +39,17 @@ Entities:
         OrthographicNear: -1
         OrthographicFar: 1
       Primary: true
-  - Entity: 14366245240961605469
+  - Entity: 3443394849406975927
     TagComponent:
-      Tag: DirLight
+      Tag: Text
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [2.33182526, -0.159999371, -0.484411597]
-      Scale: [1, 1, 1]
-    DirectionalLightComponent:
-      Radiance: [1, 0.999899983, 0.99992907]
-      Intensity: 1
-  - Entity: 18329222051296809869
-    TagComponent:
-      Tag: Skylight
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SkyLightComponent:
-      EnvironmentMap: 2967176814482565397
-      LOD: 0.5
-      Intensity: 1
-      DynamicSky: false
+      Translation: [3.48186851, 0.00048828125, -5.86988688]
+      Rotation: [3.14159226, -0.84454453, 3.14159226]
+      Scale: [1.07099998, 1.07099998, 1.07099998]
+    TextComponent:
+      TextString: "Wassup Mate?\nMy name is Reda Fakih\nI play the piano!"
+      FontHandle: 0
+      Color: [0.666015327, 0.875168979, 0.150168076, 1]
+      LineSpacing: 0
+      Kerning: 0
+      MaxWidth: 10

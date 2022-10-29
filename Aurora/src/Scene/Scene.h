@@ -32,7 +32,7 @@ namespace Aurora {
 		Scene(const std::string& debugName);
 		virtual ~Scene();
 
-		[[nodiscard]] static Ref<Scene> Create(const std::string& debugName = "Scene");
+		static Ref<Scene> Create(const std::string& debugName = "Scene");
 
 		void OnRenderEditor(Ref<SceneRenderer> renderer, TimeStep ts, const EditorCamera& camera, glm::vec3& albedo, glm::vec3& controls);
 		void OnRenderRuntime(Ref<SceneRenderer> renderer, TimeStep ts);
@@ -52,16 +52,16 @@ namespace Aurora {
 		Entity CopyEntity(Entity entity);
 		void DestroyEntity(Entity entity);
 		void Clear();
-		[[nodiscard]] inline size_t Size() const { return m_Registry.size(); }
+		inline size_t Size() const { return m_Registry.size(); }
 
 		// These are conveniance functions just in case
-		[[nodiscard]] Entity GetPrimaryCameraEntity();
-		[[nodiscard]] Entity GetEntityByName(const std::string& name);
-		[[nodiscard]] Entity TryGetEntityByName(const std::string& name);
-		[[nodiscard]] Entity GetEntityWithUUID(UUID id) const;
-		[[nodiscard]] Entity TryGetEntityWithUUID(UUID id) const;
+		Entity GetPrimaryCameraEntity();
+		Entity GetEntityByName(const std::string& name);
+		Entity TryGetEntityByName(const std::string& name);
+		Entity GetEntityWithUUID(UUID id) const;
+		Entity TryGetEntityWithUUID(UUID id) const;
 
-		[[nodiscard]] glm::mat4 GetWorldSpaceTransformMatrix(Entity entity) const;
+		glm::mat4 GetWorldSpaceTransformMatrix(Entity entity) const;
 
 		template<typename... Args>
 		[[nodiscard]]
@@ -70,8 +70,8 @@ namespace Aurora {
 			return m_Registry.view<Args...>();
 		}
 
-		[[nodiscard]] inline const std::string& GetName() const { return m_Name; }
-		[[nodiscard]] inline std::string& GetName() { return m_Name; }
+		inline const std::string& GetName() const { return m_Name; }
+		inline std::string& GetName() { return m_Name; }
 
 		static AssetType GetStaticType() { return AssetType::Scene; }
 		virtual AssetType GetAssetType() const override { return GetStaticType(); }

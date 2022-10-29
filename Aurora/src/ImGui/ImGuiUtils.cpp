@@ -7,6 +7,98 @@
 #include <choc/text/choc_StringUtilities.h>
 #include <glm/gtc/type_ptr.hpp>
 
+namespace ImGui {
+
+	namespace Utils {
+
+		struct InputTextCallback_UserData
+		{
+			std::string* String;
+			ImGuiInputTextCallback ChainCallback;
+			void* ChainCallbackUserData;
+		};
+
+		static int InputTextCallback(ImGuiInputTextCallbackData* data)
+		{
+			InputTextCallback_UserData* user_data = (InputTextCallback_UserData*)data->UserData;
+			if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+			{
+				// Resize string callback
+				// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back to what we want.
+				std::string* str = user_data->String;
+				IM_ASSERT(data->Buf == str->c_str());
+				str->resize(data->BufTextLen);
+				data->Buf = (char*)str->c_str();
+			}
+			else if (user_data->ChainCallback)
+			{
+				// Forward to user callback, if any
+				data->UserData = user_data->ChainCallbackUserData;
+
+				return user_data->ChainCallback(data);
+			}
+
+			return 0;
+		}
+
+	}
+
+	bool DragFloat2(const char* label, glm::vec2& v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+	{
+		return DragFloat2(label, glm::value_ptr(v), v_speed, v_min, v_max, format, flags);
+	}
+
+	bool DragFloat3(const char* label, glm::vec3& v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+	{
+		return DragFloat4(label, glm::value_ptr(v), v_speed, v_min, v_max, format, flags);
+	}
+
+	bool DragFloat4(const char* label, glm::vec4& v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+	{
+		return DragFloat4(label, glm::value_ptr(v), v_speed, v_min, v_max, format, flags);
+	}
+
+	bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
+	{
+		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+		flags |= ImGuiInputTextFlags_CallbackResize;
+
+		Utils::InputTextCallback_UserData cb_user_data = {};
+		cb_user_data.String = str;
+		cb_user_data.ChainCallback = callback;
+		cb_user_data.ChainCallbackUserData = user_data;
+
+		return InputText(label, (char*)str->c_str(), str->capacity() + 1, flags, Utils::InputTextCallback, &cb_user_data);
+	}
+
+	bool InputTextMultiline(const char* label, std::string* str, const ImVec2& size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
+	{
+		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+		flags |= ImGuiInputTextFlags_CallbackResize;
+
+		Utils::InputTextCallback_UserData cb_user_data;
+		cb_user_data.String = str;
+		cb_user_data.ChainCallback = callback;
+		cb_user_data.ChainCallbackUserData = user_data;
+
+		return InputTextMultiline(label, (char*)str->c_str(), str->capacity() + 1, size, flags, Utils::InputTextCallback, &cb_user_data);
+	}
+
+	bool InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
+	{
+		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+		flags |= ImGuiInputTextFlags_CallbackResize;
+
+		Utils::InputTextCallback_UserData cb_user_data;
+		cb_user_data.String = str;
+		cb_user_data.ChainCallback = callback;
+		cb_user_data.ChainCallbackUserData = user_data;
+
+		return InputTextWithHint(label, hint, (char*)str->c_str(), str->capacity() + 1, flags, Utils::InputTextCallback, &cb_user_data);
+	}
+
+}
+
 namespace Aurora {
 
 	namespace ImGuiUtils {
@@ -18,10 +110,10 @@ namespace Aurora {
 		static char* s_MultiLineBuffer = nullptr;
 		static uint32_t s_MultiLineBufferSize = 1024 * 1024; // 1KB
 
-		// Taken from Hazel-dev
 		const char* GenerateID()
 		{
-			_itoa_s(s_Counter++, s_IDBuffer + 2, sizeof(s_IDBuffer) - 2, 16);
+			//_itoa_s(s_Counter++, s_IDBuffer + 2, sizeof(s_IDBuffer) - 2, 16);
+			sprintf_s(s_IDBuffer + 2, sizeof(s_IDBuffer) - 2, "%x", s_Counter++); // %x converts to hex (base 16)
 			return s_IDBuffer;
 		}
 
@@ -230,6 +322,18 @@ namespace Aurora {
 				drawlist->AddImage(textureID, rect.Min, rect.Max, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }, tintHovered);
 			else
 				drawlist->AddImage(textureID, rect.Min, rect.Max, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }, tintNormal);
+		}
+
+		void DrawButtonImage(const char* glyph, ImColor tintNormal, ImColor tintHovered, ImColor tintActive, ImRect rect)
+		{
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+			if (ImGui::IsItemActive())
+				drawList->AddText(rect.Min, tintActive, glyph);
+			else if(ImGui::IsItemHovered())
+				drawList->AddText(rect.Min, tintHovered, glyph);
+			else
+				drawList->AddText(rect.Min, tintNormal, glyph);
 		}
 
 		void UnderLine(bool fullWidth, float offsetX, float offsetY)
@@ -452,7 +556,7 @@ namespace Aurora {
 			s_IDBuffer[0] = '#';
 			s_IDBuffer[1] = '#';
 			memset(s_IDBuffer + 2, 0, 14);
-			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++); // %o converts to octal (base 8)
 
 			ImGui::PushItemWidth(-1);
 			if (isError)
@@ -484,7 +588,7 @@ namespace Aurora {
 			s_IDBuffer[0] = '#';
 			s_IDBuffer[1] = '#';
 			memset(s_IDBuffer + 2, 0, 14);
-			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++); // %o converts to octal (base 8)
 
 			ImGui::PushItemWidth(-1);
 			if (isErorr)

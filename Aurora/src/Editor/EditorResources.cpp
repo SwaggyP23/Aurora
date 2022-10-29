@@ -6,10 +6,7 @@ namespace Aurora {
 	void EditorResources::Init()
 	{
 		SearchIcon = LoadTexture("Icons/Search.png");
-		ClearIcon = LoadTexture("Icons/Clear.png");
 		GearIcon = LoadTexture("Icons/Gear.png");
-		CloseIcon = LoadTexture("Icons/Close.png");
-		ResetIcon = LoadTexture("Icons/Reset.png");
 
 		PlayButton = LoadTexture("Viewport/Play.png");
 		SimulateButton = LoadTexture("Viewport/Simulate.png");
@@ -29,10 +26,7 @@ namespace Aurora {
 	void EditorResources::Shutdown()
 	{
 		SearchIcon.Reset();
-		ClearIcon.Reset();
 		GearIcon.Reset();
-		CloseIcon.Reset();
-		ResetIcon.Reset();
 
 		PlayButton.Reset();
 		SimulateButton.Reset();

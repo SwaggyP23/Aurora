@@ -33,14 +33,14 @@ namespace Aurora {
 		// TODO: TEMPORARY
 		static void RenderCube(const glm::mat4& transform, Ref<Material> material);
 
-		[[nodiscard]] static const RendererProperties& GetRendererCapabilities();
-		[[nodiscard]] static const Scope<ShaderLibrary>& GetShaderLibrary();
+		static const RendererProperties& GetRendererCapabilities();
+		static const Scope<ShaderLibrary>& GetShaderLibrary();
 
-		[[nodiscard]] static const Ref<Texture2D>& GetWhiteTexture();
-		[[nodiscard]] static const Ref<Texture2D>& GetBlackTexture();
-		[[nodiscard]] static const Ref<Texture2D>& GetBRDFLutTexture();
-		[[nodiscard]] static const Ref<CubeTexture>& GetBlackCubeTexture();
-		[[nodiscard]] static const Ref<Environment>& GetBlackEnvironment();
+		static const Ref<Texture2D>& GetWhiteTexture();
+		static const Ref<Texture2D>& GetBlackTexture();
+		static const Ref<Texture2D>& GetBRDFLutTexture();
+		static const Ref<CubeTexture>& GetBlackCubeTexture();
+		static const Ref<Environment>& GetBlackEnvironment();
 
 		static void SetSceneEnvironment(Ref<SceneRenderer> sceneRenderer, Ref<Environment> environment);
 		static std::pair<Ref<CubeTexture>, Ref<CubeTexture>> CreateEnvironmentMap(const std::string& filePath);

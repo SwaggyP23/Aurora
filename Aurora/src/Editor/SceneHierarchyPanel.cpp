@@ -6,6 +6,7 @@
 #include "Core/Application.h"
 #include "Core/Input/Input.h"
 
+#include "ImGui/FontAwesome.h"
 #include "ImGui/ImGuiLayer.h"
 #include "ImGui/ImGuiUtils.h"
 
@@ -77,16 +78,14 @@ namespace Aurora {
 				if (typeid(T) != typeid(TransformComponent))
 				{
 					ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
-					void* textureID = (void*)(uint64_t)EditorResources::CloseIcon->GetTextureID();
-					if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 9.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
+					if (ImGui::Button(AR_ICON_TRASH, ImVec2{ lineHeight, lineHeight }))
 					{
 						ImGui::OpenPopup("ComponentSettings"); // This is also just an id and not a tag that will be rendered
 					}
 
 					ImGui::SameLine(contentRegionAvail.x - 1.5f * lineHeight);
 
-					textureID = (void*)(uint64_t)EditorResources::ResetIcon->GetTextureID();
-					if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 8.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
+					if (ImGui::Button(AR_ICON_REFRESH, ImVec2{ lineHeight, lineHeight }))
 					{
 						resetFunction(component);
 					}
@@ -98,8 +97,7 @@ namespace Aurora {
 				{
 					ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
 
-					void* textureID = (void*)(uint64_t)EditorResources::ResetIcon->GetTextureID();
-					if (ImGui::ImageButton(textureID, ImVec2{ lineHeight - 8.0f, lineHeight - 6.0f }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }))
+					if (ImGui::Button(AR_ICON_REFRESH, ImVec2{ lineHeight, lineHeight }))
 					{
 						resetFunction(component);
 					}

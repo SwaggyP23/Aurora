@@ -1,11 +1,24 @@
 #pragma once
 
 #include "Theme.h"
+#include "FontAwesome.h"
 #include "Editor/EditorResources.h"
 
 #include <glm/glm.hpp>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+
+namespace ImGui {
+
+	IMGUI_API bool DragFloat2(const char* label, glm::vec2& v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+	IMGUI_API bool DragFloat3(const char* label, glm::vec3& v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+	IMGUI_API bool DragFloat4(const char* label, glm::vec4& v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+
+	IMGUI_API bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr);
+	IMGUI_API bool InputTextMultiline(const char* label, std::string* str, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr);
+	IMGUI_API bool InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr);
+
+}
 
 namespace Aurora {
 
@@ -95,9 +108,11 @@ namespace Aurora {
 
 		void DrawButtonImage(const Ref<Texture2D>& texture, ImColor tintNormal, ImColor tintHovered, ImColor tintActive, ImRect rect);
 
+		void DrawButtonImage(const char* glyph, ImColor tintNormal, ImColor tintHovered, ImColor tintActive, ImRect rect);
+
 		void UnderLine(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f);
 
-		template<uint32_t BuffSize = 256, typename StringType>
+		template<std::size_t BuffSize = 256, typename StringType>
 		static bool SearchBox(StringType& searchString, const char* searchHint = "Search...")
 		{
 			PushID();
@@ -158,7 +173,7 @@ namespace Aurora {
 					modified = true;
 				}
 
-				DrawButtonImage(EditorResources::ClearIcon, 
+				DrawButtonImage(AR_ICON_TIMES_CIRCLE_O,
 					ImColor(255, 255, 255, 51),
 					ImColor(255, 255, 255, 171),
 					ImColor(255, 255, 255, 128),

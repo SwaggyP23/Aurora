@@ -88,25 +88,25 @@ namespace Aurora {
 
         void DumpVertexBuffer();
 
-        [[nodiscard]] std::vector<SubMesh>& GetSubMeshes() { return m_SubMeshes; }
-        [[nodiscard]] const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
+        std::vector<SubMesh>& GetSubMeshes() { return m_SubMeshes; }
+        const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
 
-        [[nodiscard]] const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
-        [[nodiscard]] const std::vector<Index>& GetIndices() const { return m_Indices; }
+        const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
+        const std::vector<Index>& GetIndices() const { return m_Indices; }
 
-        [[nodiscard]] bool IsSubmeshRigged(uint32_t submeshIndex) const { return m_SubMeshes[submeshIndex].IsRigged; }
+        bool IsSubmeshRigged(uint32_t submeshIndex) const { return m_SubMeshes[submeshIndex].IsRigged; }
 
-        [[nodiscard]] std::vector<Ref<Material>>& GetMaterials() { return m_Materials; }
-        [[nodiscard]] const std::vector<Ref<Material>>& GetMaterials() const { return m_Materials; }
-        [[nodiscard]] const std::filesystem::path& GetAssetPath() const { return m_AssetPath; }
+        std::vector<Ref<Material>>& GetMaterials() { return m_Materials; }
+        const std::vector<Ref<Material>>& GetMaterials() const { return m_Materials; }
+        const std::filesystem::path& GetAssetPath() const { return m_AssetPath; }
 
-        [[nodiscard]] const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
+        const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 
-        [[nodiscard]] Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
-        [[nodiscard]] Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
-        [[nodiscard]] Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
+        Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
+        Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
+        Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 
-        [[nodiscard]] const AABB& GetBoundingBox() const { return m_BoundingBox; }
+        const AABB& GetBoundingBox() const { return m_BoundingBox; }
 
         static AssetType GetStaticType() { return AssetType::MeshSource; }
         virtual AssetType GetAssetType() const override { return GetStaticType(); }
@@ -160,15 +160,15 @@ namespace Aurora {
         // Pass in an empty vector to set all submeshes of meshSource!
         void SetSubMeshes(const std::vector<uint32_t>& subMeshes);
 
-        [[nodiscard]] std::vector<uint32_t>& GetSubMeshes() { return m_SubMeshes; }
-        [[nodiscard]] const std::vector<uint32_t>& GetSubMeshes() const { return m_SubMeshes; }
+        std::vector<uint32_t>& GetSubMeshes() { return m_SubMeshes; }
+        const std::vector<uint32_t>& GetSubMeshes() const { return m_SubMeshes; }
 
         void SetMeshSource(Ref<MeshSource> meshSource) { m_MeshSource = meshSource; }
 
-        [[nodiscard]] Ref<MeshSource> GetMeshSource() { return m_MeshSource; }
-        [[nodiscard]] Ref<MeshSource> GetMeshSource() const { return m_MeshSource; }
+        Ref<MeshSource> GetMeshSource() { return m_MeshSource; }
+        Ref<MeshSource> GetMeshSource() const { return m_MeshSource; }
 
-        [[nodiscard]] const Ref<MaterialTable>& GetMaterials() const { return m_MaterialsTable; }
+        const Ref<MaterialTable>& GetMaterials() const { return m_MaterialsTable; }
 
         static AssetType GetStaticType() { return AssetType::StaticMesh; }
         virtual AssetType GetAssetType() const override { return GetStaticType(); }

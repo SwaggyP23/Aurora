@@ -2,6 +2,7 @@
 
 #include "AssetManager/AssetManager.h"
 
+#include "Editor/AuroraTODOPanel.h"
 #include "Editor/SceneHierarchyPanel.h"
 #include "Editor/ShadersPanel.h"
 #include "Editor/EditorConsolePanel.h"
@@ -58,7 +59,8 @@ namespace Aurora {
 		m_PanelsLibrary->AddPanel<ShadersPanel>(PanelCategory::View, "ShadersPanel", "Shaders", false); // Not open by default
 		m_PanelsLibrary->AddPanel<EditorConsolePanel>(PanelCategory::View, "ConsolePanel", "Console", true);
 		m_PanelsLibrary->AddPanel<ContentBrowserPanel>(PanelCategory::View, "ContentBrowserPanel", "Content Browser", true);
-		AR_CONSOLE_LOG_TRACE("Hey I am Up! apw9uecna 0re9uvn awoieuvyb a9ery8vbq 98vuyb  ae0ru9vn aoireuvnaiur piunrpviun pun ailrhv apiruvn");
+		m_PanelsLibrary->AddPanel<TODOPanel>(PanelCategory::View, "TODO", "TODO List", false);
+		AR_CONSOLE_LOG_TRACE("Hey I am Up!");
 
 		// TODO: Temporary untill Projects are a thing!
 		AssetManager::Init();

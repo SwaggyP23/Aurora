@@ -5,15 +5,15 @@
 
 namespace Aurora {
 
+	Scope<EditorPanelsLibrary> EditorPanelsLibrary::Create()
+	{
+		return CreateScope<EditorPanelsLibrary>();
+	}
+
 	EditorPanelsLibrary::~EditorPanelsLibrary()
 	{
 		for (auto& panelMap : m_Panels)
 			panelMap.clear();
-	}
-
-	Scope<EditorPanelsLibrary> EditorPanelsLibrary::Create()
-	{
-		return CreateScope<EditorPanelsLibrary>();
 	}
 
 	void EditorPanelsLibrary::OnImGuiRender()
@@ -60,7 +60,7 @@ namespace Aurora {
 
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Panels" << YAML::BeginSeq;;
+		out << YAML::Key << "Panels" << YAML::BeginSeq;
 		for (size_t category = 0; category < m_Panels.size(); category++)
 		{
 			for (auto& [id, panelSpec] : m_Panels[category])
@@ -98,9 +98,7 @@ namespace Aurora {
 		YAML::Node data = YAML::Load(strStream.str());
 		if (!data["Panels"])
 		{
-			AR_CORE_ERROR_TAG("EditorPanelsLibrary", "Faild to load EditorSettings.aeditor!");
-			// TODO:
-			//AR_CONSOLE_LOG_ERROR("Faild to load EditorSettings.aeditor!");
+			AR_CONSOLE_LOG_ERROR("[EditorPanelsLibrary] Failed to load EditorSettings.aeditor!");
 			return;
 		}
 
@@ -130,7 +128,7 @@ namespace Aurora {
 			}
 		}
 
-		AR_CORE_ERROR_TAG("EditorPanelsLibrary", "Did not find panel with str ID {0} for removing", strId);
+		AR_CONSOLE_LOG_ERROR("[EditorPanelsLibrary] Did not find panel with str ID {0} for removing", strId);
 	}
 
 	PanelSpecification* EditorPanelsLibrary::GetPanelSpec(uint32_t id)

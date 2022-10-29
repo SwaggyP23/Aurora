@@ -1,0 +1,55 @@
+TODOs:
+  - Importance: Urgent
+    TODO: "Bug in AssetManager, that Assets that are already loaded get the MetaData.IsDataLoaded set to true and probably serialized to true so if we want to load it\nagain, AssetManager thinks it has already been loaded and just takes it from the s_LoadedAssets.\nTODO: The asset should be cleand from s_LoadedAssets and its metaData should get reset when it gets unloaded"
+  - Importance: Urgent
+    TODO: Try out the Sparky AdvancedLighting PBR shader maybe that works better?
+  - Importance: Urgent
+    TODO: Scene Uniform buffer is not being set for some reason or it has some problems. Tho not sure!
+  - Importance: Urgent
+    TODO: Why is the 2D rendering not being displayed in runtime which is also currently not working?
+  - Importance: Urgent
+    TODO: ScreenShot system is not working currently. Maybe just yeet it ou of the engine?
+  - Importance: Urgent
+    TODO: "Once implementing a content browser, Add drag drop to the environment map component UI and add button to be able to remove the env map without resetting\nthe component"
+  - Importance: Urgent
+    TODO: "What if a shader had an array of sampler2D as in sampler2D texures[16] or sampler2DArray how would that be set inside materials??? maybe need to store a\nseparate map that has textures->slots->index into array"
+  - Importance: Urgent
+    TODO: Write Python scripts to download the vulkan SDK and check for debug libs
+  - Importance: Urgent
+    TODO: Add a Memory Manager
+  - Importance: WhenPossible
+    TODO: TextComponent text property is a bit not on the same level with the other properties!
+  - Importance: WhenPossible
+    TODO: Fix viewport UI scene Controls since it is a masacre over there
+  - Importance: WhenPossible
+    TODO: Add Scene Pausing and Stepping and Add a global variable state StepFrameCount that controls how many frames the StepButton steps in pause mode
+  - Importance: WhenPossible
+    TODO: Fix StaticMeshes and make them a separate thing than meshSources in the AssetImporter
+  - Importance: WhenPossible
+    TODO: DrawComponents in SceneHierarchyPanel needs to be reworked to accept a vector of UUIDs so that it works with RelationShipComponent
+  - Importance: WhenPossible
+    TODO: Add the filesystem watch event to asset manager so that we use the onAssetRename/Delete
+  - Importance: WhenPossible
+    TODO: Add a RelationShip component and add support for parenting entities
+  - Importance: WhenPossible
+    TODO: Add outline Coloring to the font rendering by maybe refering to the msdf github page and some of the docs and ask on discord
+  - Importance: WhenPossible
+    TODO: Make so that when a scene name is changed inside the editor, the file for the scene also gets its name changed according to the scene name
+  - Importance: WhenPossible
+    TODO: Implement something like a shaderpack, in my own way since i dont think i want to cache the reflection data since there is no need for that currently
+  - Importance: WhenPossible
+    TODO: Implement jump flood or just stencil testing outlining https://bgolus.medium.com/the-quest-for-very-wide-outlines-ba82ed442cd9
+  - Importance: WhenPossible
+    TODO: Maybe switch to FXAA from MSAA?
+  - Importance: WhenPossible
+    TODO: "Add the possibility to have a LIVE dynamic sky with  changing of the variables\n"
+  - Importance: WhenPossible
+    TODO: Switch to always render with instanced rendering which will make stuff way better
+  - Importance: WhenPossible
+    TODO: "Create a glsl custom glsl preprocessor to parse the shader file before compiling and to handle #include <> mainly since i will split up funtions and buffers into\nseparate files"
+  - Importance: WhenPossible
+    TODO: Custom TreeNode needs Reworking since the size of the displayed texture is messing with the treenode
+  - Importance: WhenPossible
+    TODO: Change TransformComponent rotation to use quaternions and euler
+  - Importance: WhenPossible
+    TODO: Prefabs??

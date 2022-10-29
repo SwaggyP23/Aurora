@@ -9,10 +9,7 @@ namespace Aurora {
 	{
 	public:
 		inline static Ref<Texture2D> SearchIcon = nullptr;
-		inline static Ref<Texture2D> ClearIcon = nullptr;
 		inline static Ref<Texture2D> GearIcon = nullptr;
-		inline static Ref<Texture2D> CloseIcon = nullptr;
-		inline static Ref<Texture2D> ResetIcon = nullptr;
 
 		inline static Ref<Texture2D> PlayButton = nullptr;
 		inline static Ref<Texture2D> SimulateButton = nullptr;

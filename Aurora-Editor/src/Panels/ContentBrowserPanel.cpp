@@ -34,21 +34,21 @@ namespace Aurora {
 
 		ImGui::BeginChild("Toolbar");
 
-		if (ImGui::Button("<-"))
+		if (ImGui::Button(AR_ICON_ARROW_LEFT))
 		{
 			AR_CONSOLE_LOG_INFO("Going up a directory");
 		}
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("->"))
+		if (ImGui::Button(AR_ICON_ARROW_RIGHT))
 		{
 			AR_CONSOLE_LOG_INFO("Going in a directory");
 		}
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("R"))
+		if (ImGui::Button(AR_ICON_REFRESH))
 		{
 			AR_CONSOLE_LOG_INFO("Refreshing the Current Path");
 		}

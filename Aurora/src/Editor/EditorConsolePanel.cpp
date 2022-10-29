@@ -2,13 +2,10 @@
 #include "EditorConsolePanel.h"
 
 #include "Core/Random.h"
+#include "ImGui/FontAwesome.h"
 #include "ImGui/ImGuiUtils.h"
 
 namespace Aurora {
-
-#define AR_CONSOLE_INFO_ICON_GLYPH u8"\uf05a"
-#define AR_CONSOLE_WARN_ICON_GLYPH u8"\uf071"
-#define AR_CONSOLE_ERROR_ICON_GLYPH u8"\uf06a"
 
 	EditorConsolePanel* EditorConsolePanel::s_Instance = nullptr;
 
@@ -71,21 +68,21 @@ namespace Aurora {
 			ImGui::SameLine(ImGui::GetContentRegionAvail().x - 110.0f, 0.0f);
 			ImVec4 textColor = (m_MessageLevelFilters & (int16_t)ConsoleMessageFlags::Info) ? s_InfoTint : style.Colors[ImGuiCol_TextDisabled];
 			ImGui::PushStyleColor(ImGuiCol_Text, textColor);
-			if(ImGui::Button(AR_CONSOLE_INFO_ICON_GLYPH, buttonSize))
+			if(ImGui::Button(AR_ICON_INFO_CIRCLE, buttonSize))
 				m_MessageLevelFilters ^= (int16_t)ConsoleMessageFlags::Info;
 			ImGui::PopStyleColor();
 
 			ImGui::SameLine();
 			textColor = (m_MessageLevelFilters & (int16_t)ConsoleMessageFlags::Warning) ? s_WarningTint : style.Colors[ImGuiCol_TextDisabled];
 			ImGui::PushStyleColor(ImGuiCol_Text, textColor);
-			if(ImGui::Button(AR_CONSOLE_WARN_ICON_GLYPH, buttonSize))
+			if(ImGui::Button(AR_ICON_EXCLAMATION_TRIANGLE, buttonSize))
 				m_MessageLevelFilters ^= (int16_t)ConsoleMessageFlags::Warning;
 			ImGui::PopStyleColor();
 
 			ImGui::SameLine();
 			textColor = (m_MessageLevelFilters & (int16_t)ConsoleMessageFlags::Error) ? s_ErrorTint : style.Colors[ImGuiCol_TextDisabled];
 			ImGui::PushStyleColor(ImGuiCol_Text, textColor);
-			if (ImGui::Button(AR_CONSOLE_ERROR_ICON_GLYPH, buttonSize))
+			if (ImGui::Button(AR_ICON_EXCLAMATION_CIRCLE, buttonSize))
 				m_MessageLevelFilters ^= (int16_t)ConsoleMessageFlags::Error;
 			ImGui::PopStyleColor();
 		}
