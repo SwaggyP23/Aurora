@@ -16,7 +16,6 @@ namespace Aurora {
 		std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
 		std::shared_ptr<spdlog::logger> Log::s_EditorConsoleLogger;
 
-		// Takes about 1.3ms on average to initialize
 		void Log::Init() 
 		{
 			std::vector<spdlog::sink_ptr> auroraSinks =

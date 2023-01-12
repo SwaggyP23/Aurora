@@ -7,19 +7,11 @@ namespace Aurora {
 	class SceneSerializer
 	{
 	public:
-		SceneSerializer(const Ref<Scene>& scene);
-
-		void SerializeToText(const std::string& filepath);
-		void SerializeToBinary(const std::string& filepath);
-
-		bool DeSerializeFromText(const std::string& filepath);
-		bool DeSerializeFromBinary(const std::string& filepath);
+		static void Serialize(const std::string& filepath, Ref<Scene> scene);
+		static bool DeSerialize(const std::string& filepath, Ref<Scene> scene);
 
 	public:
-		inline static std::string_view SceneExtension = ".aurora"; // TODO: Change to .ascene
-
-	private:
-		Ref<Scene> m_Scene;
+		inline static std::string_view SceneExtension = ".ascene";
 
 	};
 

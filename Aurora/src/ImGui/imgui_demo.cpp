@@ -6367,27 +6367,30 @@ void ImGui::ShowFontSelector(const char* label)
 //    return false;
 //}
 
-void ImGui::ShowStyleEditor(ImGuiStyle* ref)
+void ImGui::ShowStyleEditor(ImGuiStyle* ref, int* outThemeID)
 {
     using namespace Aurora;
     IMGUI_DEMO_MARKER("Tools/Style Editor");
     // You can pass in a reference ImGuiStyle structure to compare to, revert to and save to
     // (without a reference style pointer, we will use one compared locally as a reference)
     ImGuiStyle& style = ImGui::GetStyle();
-    static ImGuiStyle ref_saved_style;
+    // NOTE: These are useless since we are no longer using persistant storage to export/import imgui styles
+    //static ImGuiStyle ref_saved_style;
 
-    // Default to using internal storage as reference
-    static bool init = true;
-    if (init && ref == NULL)
-        ref_saved_style = style;
-    init = false;
-    if (ref == NULL)
-        ref = &ref_saved_style;
+    //// Default to using internal storage as reference
+    //static bool init = true;
+    //if (init && ref == NULL)
+    //    ref_saved_style = style;
+    //init = false;
+    //if (ref == NULL)
+    //    ref = &ref_saved_style;
+    if (ref == nullptr)
+        ref = &style;
 
     ImGuiUtils::BeginPropertyGrid(2/*, false*/);
 
     static const char* availableThemes[] = { "Luna", "Dark", "Light", "Classic" };
-    static int selectedThemeStyle = 0;
+    static int selectedThemeStyle = *outThemeID;
     if(ImGuiUtils::PropertyDropdown("Color Theme", availableThemes, 4, &selectedThemeStyle))
     {
         switch (selectedThemeStyle)
@@ -6398,6 +6401,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             case 3: ImGui::StyleColorsClassic(); break;
         }
     }
+    *outThemeID = selectedThemeStyle; // Set the theme id to be used in serialization
 
     // Simplified Settings (expose floating-pointer border sizes as boolean representing 0.0f or 1.0f)
     if(ImGuiUtils::PropertySliderFloat("FrameRounding", style.FrameRounding, 0.0f, 12.0f, "%.0f"))
@@ -6414,20 +6418,20 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
         style.PopupBorderSize = border ? 1.0f : 0.0f;
 
     // Save/Revert button
-    ImGuiUtils::ShiftCursor(10.0f, 9.0f);
-    ImGui::Text("Save/Revert");
-    ImGui::SameLine();
-    HelpMarker(
-        "Save/Revert in local non-persistent storage. Default Colors definition are not affected. "
-        "Use \"Export\" below to save them somewhere.");
+    //ImGuiUtils::ShiftCursor(10.0f, 9.0f);
+    //ImGui::Text("Save/Revert");
+    //ImGui::SameLine();
+    //HelpMarker(
+    //    "Save/Revert in local non-persistent storage. Default Colors definition are not affected. "
+    //    "Use \"Export\" below to save them somewhere.");
 
-    ImGui::NextColumn();
+    //ImGui::NextColumn();
 
-    if (ImGui::Button("Save Ref"))
-        *ref = ref_saved_style = style;
-    ImGui::SameLine();
-    if (ImGui::Button("Revert Ref"))
-        style = *ref;
+    //if (ImGui::Button("Save Ref"))
+    //    *ref = ref_saved_style = style;
+    //ImGui::SameLine();
+    //if (ImGui::Button("Revert Ref"))
+    //    style = *ref;
 
     ImGuiUtils::EndPropertyGrid();
     ImGui::Separator();
@@ -6522,32 +6526,97 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             ImGui::EndTabItem();
         }
 
+        if (ImGui::BeginTabItem("Rendering"))
+        {
+            ImGuiUtils::BeginPropertyGrid(2, false);
+
+            ImGuiUtils::PropertyBool("Anti-aliased Lines", style.AntiAliasedLines, "When disabling anti-aliasing lines, you'll probably want to disable borders in your style as well.");
+            ImGuiUtils::PropertyBool("Anti-aliased Lines use texture", style.AntiAliasedLinesUseTex, "Faster lines using texture data. Require backend to render with bilinear filtering (not point/nearest filtering).");
+            ImGuiUtils::PropertyBool("Anti-aliased fill", style.AntiAliasedFill);
+            ImGuiUtils::PropertyFloat("Curve Tessellation Tolerance", style.CurveTessellationTol, 0.02f, 0.10f, 10.0f);
+            if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
+
+            // When editing the "Circle Segment Max Error" value, draw a preview of its effect on auto-tessellated circles.
+            ImGuiUtils::PropertyFloat("Circle Tessellation Max Error", style.CircleTessellationMaxError, 0.005f, 0.10f, 5.0f, "When drawing circle primitives with \"num_segments == 0\" tesselation will be calculated automatically.");
+            if (ImGui::IsItemActive())
+            {
+                ImGui::SetNextWindowPos(ImGui::GetCursorScreenPos());
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted("(R = radius, N = number of segments)");
+                ImGui::Spacing();
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                const float min_widget_width = ImGui::CalcTextSize("N: MMM\nR: MMM").x;
+                for (int n = 0; n < 8; n++)
+                {
+                    const float RAD_MIN = 5.0f;
+                    const float RAD_MAX = 70.0f;
+                    const float rad = RAD_MIN + (RAD_MAX - RAD_MIN) * (float)n / (8.0f - 1.0f);
+
+                    ImGui::BeginGroup();
+
+                    ImGui::Text("R: %.f\nN: %d", rad, draw_list->_CalcCircleAutoSegmentCount(rad));
+
+                    const float canvas_width = IM_MAX(min_widget_width, rad * 2.0f);
+                    const float offset_x = floorf(canvas_width * 0.5f);
+                    const float offset_y = floorf(RAD_MAX);
+
+                    const ImVec2 p1 = ImGui::GetCursorScreenPos();
+                    draw_list->AddCircle(ImVec2(p1.x + offset_x, p1.y + offset_y), rad, ImGui::GetColorU32(ImGuiCol_Text));
+                    ImGui::Dummy(ImVec2(canvas_width, RAD_MAX * 2));
+
+                    /*
+                    const ImVec2 p2 = ImGui::GetCursorScreenPos();
+                    draw_list->AddCircleFilled(ImVec2(p2.x + offset_x, p2.y + offset_y), rad, ImGui::GetColorU32(ImGuiCol_Text));
+                    ImGui::Dummy(ImVec2(canvas_width, RAD_MAX * 2));
+                    */
+
+                    ImGui::EndGroup();
+                    ImGui::SameLine();
+                }
+                ImGui::EndTooltip();
+            }
+
+            ImGuiUtils::PropertyFloat("Global Alpha", style.Alpha, 0.005f, 0.20f, 1.0f); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
+            ImGuiUtils::PropertyFloat("Disabled Alpha", style.DisabledAlpha, 0.005f, 0.0f, 1.0f, "Additional alpha multiplier for disabled items (multiply over current value of Alpha).");
+
+            ImGuiUtils::EndPropertyGrid();
+            ImGui::EndTabItem();
+        }
+
         if (ImGui::BeginTabItem("Colors"))
         {
-            static int output_dest = 0;
-            static bool output_only_modified = true;
-            if (ImGui::Button("Export"))
-            {
-                if (output_dest == 0)
-                    ImGui::LogToClipboard();
-                else
-                    ImGui::LogToTTY();
-                ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;" IM_NEWLINE);
-                for (int i = 0; i < ImGuiCol_COUNT; i++)
-                {
-                    const ImVec4& col = style.Colors[i];
-                    const char* name = ImGui::GetStyleColorName(i);
-                    if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
-                        ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);" IM_NEWLINE,
-                            name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
-                }
-                ImGui::LogFinish();
-            }
-            ImGui::SameLine(); ImGui::SetNextItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0");
-            ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
+            ImGui::TextUnformatted("View the color values of different fields of the currently applied theme.");
 
-            static ImGuiTextFilter filter;
-            filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
+            //static int output_dest = 0;
+            //static bool output_only_modified = true;
+            //if (ImGui::Button("Export"))
+            //{
+            //    if (output_dest == 0)
+            //        ImGui::LogToClipboard();
+            //    else
+            //        ImGui::LogToTTY();
+            //    ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;" IM_NEWLINE);
+            //    for (int i = 0; i < ImGuiCol_COUNT; i++)
+            //    {
+            //        const ImVec4& col = style.Colors[i];
+            //        const char* name = ImGui::GetStyleColorName(i);
+            //        if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
+            //            ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);" IM_NEWLINE,
+            //                name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
+            //    }
+            //    ImGui::LogFinish();
+            //}
+            //ImGui::SameLine(); ImGui::SetNextItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0");
+            //ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
+
+            //static ImGuiTextFilter filter;
+            //filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
+
+            static std::string searchString;
+            ImGuiUtils::SearchBox(searchString, "Search for specific values...");
+
+            ImGui::Spacing();
+            ImGui::Spacing();
 
             //static ImGuiColorEditFlags alpha_flags = 0;
             //if (ImGui::RadioButton("Opaque", alpha_flags == ImGuiColorEditFlags_None))             { alpha_flags = ImGuiColorEditFlags_None; } ImGui::SameLine();
@@ -6564,7 +6633,10 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             for (int i = 0; i < ImGuiCol_COUNT; i++)
             {
                 const char* name = ImGui::GetStyleColorName(i);
-                if (!filter.PassFilter(name))
+                //if (!filter.PassFilter(name))
+                //    continue;
+
+                if (!ImGuiUtils::IsMatchingSearch(name, searchString))
                     continue;
                 
                 ImGui::PushID(i);
@@ -6615,63 +6687,6 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
 
         //    ImGui::EndTabItem();
         //}
-
-        if (ImGui::BeginTabItem("Rendering"))
-        {
-            ImGuiUtils::BeginPropertyGrid(2, false);
-
-            ImGuiUtils::PropertyBool("Anti-aliased Lines", style.AntiAliasedLines, "When disabling anti-aliasing lines, you'll probably want to disable borders in your style as well.");
-            ImGuiUtils::PropertyBool("Anti-aliased Lines use texture", style.AntiAliasedLinesUseTex, "Faster lines using texture data. Require backend to render with bilinear filtering (not point/nearest filtering).");
-            ImGuiUtils::PropertyBool("Anti-aliased fill", style.AntiAliasedFill);
-            ImGuiUtils::PropertyFloat("Curve Tessellation Tolerance", style.CurveTessellationTol, 0.02f, 0.10f, 10.0f);
-            if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
-
-            // When editing the "Circle Segment Max Error" value, draw a preview of its effect on auto-tessellated circles.
-            ImGuiUtils::PropertyFloat("Circle Tessellation Max Error", style.CircleTessellationMaxError, 0.005f, 0.10f, 5.0f, "When drawing circle primitives with \"num_segments == 0\" tesselation will be calculated automatically.");
-            if (ImGui::IsItemActive())
-            {
-                ImGui::SetNextWindowPos(ImGui::GetCursorScreenPos());
-                ImGui::BeginTooltip();
-                ImGui::TextUnformatted("(R = radius, N = number of segments)");
-                ImGui::Spacing();
-                ImDrawList* draw_list = ImGui::GetWindowDrawList();
-                const float min_widget_width = ImGui::CalcTextSize("N: MMM\nR: MMM").x;
-                for (int n = 0; n < 8; n++)
-                {
-                    const float RAD_MIN = 5.0f;
-                    const float RAD_MAX = 70.0f;
-                    const float rad = RAD_MIN + (RAD_MAX - RAD_MIN) * (float)n / (8.0f - 1.0f);
-
-                    ImGui::BeginGroup();
-
-                    ImGui::Text("R: %.f\nN: %d", rad, draw_list->_CalcCircleAutoSegmentCount(rad));
-
-                    const float canvas_width = IM_MAX(min_widget_width, rad * 2.0f);
-                    const float offset_x     = floorf(canvas_width * 0.5f);
-                    const float offset_y     = floorf(RAD_MAX);
-
-                    const ImVec2 p1 = ImGui::GetCursorScreenPos();
-                    draw_list->AddCircle(ImVec2(p1.x + offset_x, p1.y + offset_y), rad, ImGui::GetColorU32(ImGuiCol_Text));
-                    ImGui::Dummy(ImVec2(canvas_width, RAD_MAX * 2));
-
-                    /*
-                    const ImVec2 p2 = ImGui::GetCursorScreenPos();
-                    draw_list->AddCircleFilled(ImVec2(p2.x + offset_x, p2.y + offset_y), rad, ImGui::GetColorU32(ImGuiCol_Text));
-                    ImGui::Dummy(ImVec2(canvas_width, RAD_MAX * 2));
-                    */
-
-                    ImGui::EndGroup();
-                    ImGui::SameLine();
-                }
-                ImGui::EndTooltip();
-            }
-
-            ImGuiUtils::PropertyFloat("Global Alpha", style.Alpha, 0.005f, 0.20f, 1.0f); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
-            ImGuiUtils::PropertyFloat("Disabled Alpha", style.DisabledAlpha, 0.005f, 0.0f, 1.0f, "Additional alpha multiplier for disabled items (multiply over current value of Alpha).");
-
-            ImGuiUtils::EndPropertyGrid();
-            ImGui::EndTabItem();
-        }
 
         ImGui::EndTabBar();
     }

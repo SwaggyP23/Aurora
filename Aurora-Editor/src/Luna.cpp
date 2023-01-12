@@ -8,8 +8,8 @@ namespace Aurora {
 	class Luna : public Application
 	{
 	public:
-		Luna(const ApplicationSpecification& spec)
-			: Application(spec)
+		Luna(const ApplicationSpecification& spec, std::string_view projectPath)
+			: Application(spec), m_ProjectPath(projectPath)
 		{
 		}
 
@@ -18,10 +18,15 @@ namespace Aurora {
 			PushLayer(new EditorLayer());
 		}
 
+	private:
+		std::string m_ProjectPath;
+
 	};
 
 	Application* CreateApplication(int argc, char** argv)
 	{
+		std::string projectPath = "";
+
 		ApplicationSpecification specification;
 		specification.Name = "Aurora";
 		specification.WindowWidth = 1600;
@@ -33,7 +38,7 @@ namespace Aurora {
 		specification.RendererConfiguration.EnvironmentMapResolution = 1024;
 		specification.RendererConfiguration.IrradianceMapComputeSamples = 1024;
 
-		return new Luna(specification);
+		return new Luna(specification, projectPath);
 	}
 
 }

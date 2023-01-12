@@ -198,7 +198,10 @@ namespace Aurora {
 
 				if (ImGui::BeginPopupModal("DetailedPanel", &m_DetailedPanelOpen))
 				{
-					ImGui::InputTextMultiline(ImGuiUtils::GenerateID(), &m_Notes[indexToOpenDetailed].Description, ImGui::GetContentRegionAvail());
+					ImGui::TextWrapped(m_Notes[indexToOpenDetailed].Description.c_str());
+
+					// Maybe if we want to allow to copy paste the written notes we would have to use the InputText functions...?
+					//ImGui::InputTextMultiline(ImGuiUtils::GenerateID(), &m_Notes[indexToOpenDetailed].Description, ImGui::GetContentRegionAvail());
 
 					ImGui::EndPopup();
 				}
@@ -246,7 +249,6 @@ namespace Aurora {
 
 		std::ofstream ofStream("Config/TODOPanel.apanel");
 		ofStream << out.c_str();
-		ofStream.close();
 	}
 
 	void TODOPanel::Deserialize()

@@ -10,7 +10,64 @@ Panels:
     IsOpen: false
   - ID: 294704440
     Name: Console
-    IsOpen: true
+    IsOpen: false
   - ID: 2363868788
     Name: Content Browser
-    IsOpen: true
+    IsOpen: false
+  - ID: 3608307597
+    Name: Editor Style
+    IsOpen: false
+  - ID: 1929469704
+    Name: Settings
+    IsOpen: false
+DefaultFont: RobotoDefault
+StyleSettings:
+  Theme: Luna
+  FrameRounding: 2.5
+  WindowBorder: 1
+  FrameBorder: 1
+  PopupBorder: 1
+  WindowPadding: [8, 8]
+  FramePadding: [4, 3]
+  CellPadding: [4, 2]
+  ItemSpacing: [8, 4]
+  ItemInnerSpacing: [4, 4]
+  TouchExtraPadding: [0, 0]
+  IndentSpacing: 11
+  ScrollbarSize: 14
+  GrabMinSize: 12
+  WindowBorderSize: 1
+  ChildBorderSize: 1
+  PopupBorderSize: 1
+  FrameBorderSize: 1
+  TabBorderSize: 0
+  WindowRounding: 6
+  ChildRounding: 0
+  FrameRounding: 2.5
+  PopupRounding: 3
+  ScrollbarRounding: 9
+  GrabRounding: 0
+  LogSliderDeadzone: 4
+  TabRounding: 4
+  WindowTitleAlign: [0, 0.5]
+  WindowMenuButtonPosition: 0
+  ColorButtonPosition: 1
+  ButtonTextAlign: [0.5, 0.5]
+  SelectableTextAlign: [0, 0]
+  DisplaySafeAreaPadding: [3, 3]
+  AntiAliasedLines: true
+  AntiAliasedLinesUseTex: true
+  AntiAliasedFill: true
+  CurveTessellationTol: 1.25
+  CircleTessellationMaxError: 0.300000012
+  GlobalAlpha: 1
+  DisabledAlpha: 0.600000024
+ApplicationSettings:
+  AppTickDelta: 1
+  ShowGizmos: true
+  ShowIcons: true
+  ShowBoundingBoxes: false
+  ShowGrid: true
+  AllowGizmoAxisFlip: true
+  EnvironmentMapSize: 1024
+  IrradianceMapComputeSamples: 1024

@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO: Should depricate since this invalidates the concept of an Image class and a Texture class
+
 namespace Aurora {
 
 	namespace Utils {

@@ -11,6 +11,7 @@ namespace Aurora {
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			io.FontDefault = m_Fonts.at(fontName);
+			m_DefaultFont = fontName;
 			return;
 		}
 
@@ -63,7 +64,10 @@ namespace Aurora {
 		m_Fonts[spec.FontName] = font;
 
 		if (default)
+		{
 			io.FontDefault = font;
+			m_DefaultFont = spec.FontName;
+		}
 	}
 
 	ImFont* ImGuiFontsLibrary::GetFont(const std::string& fontName)

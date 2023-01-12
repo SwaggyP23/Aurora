@@ -64,7 +64,7 @@ namespace Aurora {
 		{ ".amaterial", AssetType::Material },
 
 		// Scene
-		{ ".ascene", AssetType::Scene       }, // TODO: Change scene file extension to be .ascene instead of .aurora
+		{ ".ascene", AssetType::Scene       },
 
 		// Fonts
 		{ ".afa", AssetType::Font           }, // TODO: Maybe change to be a texture since it is technically a texture?

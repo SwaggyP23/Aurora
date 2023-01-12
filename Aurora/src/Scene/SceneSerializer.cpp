@@ -192,12 +192,7 @@ namespace Aurora {
 		out << YAML::EndMap; // Entity
 	}
 
-	SceneSerializer::SceneSerializer(const Ref<Scene>& scene)
-		: m_Scene(scene)
-	{
-	}
-
-	void SceneSerializer::SerializeToText(const std::string& filepath)
+	void SceneSerializer::Serialize(const std::string& filepath, Ref<Scene> scene)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -205,13 +200,13 @@ namespace Aurora {
 
 		outPut << YAML::BeginMap;
 
-		outPut << YAML::Key << "Scene" << YAML::Value << m_Scene->GetName();
+		outPut << YAML::Key << "Scene" << YAML::Value << scene->GetName();
 		outPut << YAML::Key << "Entities";
 
 		outPut << YAML::Value << YAML::BeginSeq;
-		m_Scene->m_Registry.each([&](auto entityID)
+		scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene.raw() };
+			Entity entity = { entityID, scene.raw() };
 			if (!entity)
 				return;
 
@@ -232,12 +227,7 @@ namespace Aurora {
 		fout << outPut.c_str();
 	}
 
-	void SceneSerializer::SerializeToBinary(const std::string& filepath)
-	{
-		AR_CORE_ASSERT(false, "Not Implemented");
-	}
-
-	bool SceneSerializer::DeSerializeFromText(const std::string& filepath)
+	bool SceneSerializer::DeSerialize(const std::string& filepath, Ref<Scene> scene)
 	{
 		AR_PROFILE_FUNCTION();
 
@@ -256,7 +246,7 @@ namespace Aurora {
 		if (!data["Scene"])
 			return false;
 
-		std::string& sceneName = m_Scene->GetName();
+		std::string& sceneName = scene->GetName();
 		sceneName = data["Scene"].as<std::string>();
 		AR_CORE_TRACE_TAG("SceneSerializer", "Deserializing scene '{0}'", sceneName); // TODO: Display the UUID of the scene when that is a thing
 
@@ -276,7 +266,7 @@ namespace Aurora {
 
 				AR_CORE_TRACE_TAG("SceneSerializer", "Deserialized entity with ID: {0:#04x}, Name: {1}", uuid, entityName);
 
-				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, entityName);
+				Entity deserializedEntity = scene->CreateEntityWithUUID(uuid, entityName);
 
 				YAML::Node transform = entity["TransformComponent"];
 				if (transform)
@@ -399,13 +389,6 @@ namespace Aurora {
 		}
 
 		return true;
-	}
-
-	bool SceneSerializer::DeSerializeFromBinary(const std::string& filepath)
-	{
-		AR_CORE_ASSERT(false, "Not Implemented");
-
-		return false;
 	}
 
 }

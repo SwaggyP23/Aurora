@@ -65,6 +65,9 @@ namespace Aurora {
 		void SetGLFWCallbacks();
 		void ShutDown();
 
+		Window(const Window&) = delete;
+		Window& operator=(const Window&) = delete;
+
 	private:
 		GLFWwindow* m_Window;
 		GLFWcursor* m_ImGuiMouseCursors[9] = { 0 };
@@ -82,7 +85,7 @@ namespace Aurora {
 		WindowData m_Data;
 
 		Ref<RenderContext> m_Context;
-		float m_LastFrameTime = 0.0f;
+
 	};
 
 }

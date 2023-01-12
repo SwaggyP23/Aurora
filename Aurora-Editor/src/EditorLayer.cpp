@@ -3,10 +3,12 @@
 #include "AssetManager/AssetManager.h"
 
 #include "Editor/AuroraTODOPanel.h"
+#include "Editor/ApplicationSettingsPanel.h"
 #include "Editor/SceneHierarchyPanel.h"
 #include "Editor/ShadersPanel.h"
 #include "Editor/EditorConsolePanel.h"
 #include "Editor/EditorSelectionManager.h"
+#include "Editor/EditorStylePanel.h"
 #include "Panels/ContentBrowserPanel.h"
 
 #include "ImGui/ImGuiUtils.h"
@@ -19,11 +21,117 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/compatibility.hpp>
 
+#include <Choc/choc/text/choc_StringUtilities.h>
+
 #include <math.h>
 
 namespace Aurora {
 
+	// TODO: TEMPORARY
+	class CameraScript : public ScriptableEntity
+	{
+		virtual void OnUpdate(TimeStep ts) override
+		{
+			auto& translation = GetComponent<TransformComponent>().Translation;
+			auto& rotation = GetComponent<TransformComponent>().Rotation;
+
+			float speed = 10.0f;
+
+			if (Input::GetControllers().empty())
+			{
+				const auto& [x, y] = Input::GetMousePosition();
+				const glm::vec2& mouse{ x, y };
+				const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.002f;
+
+				if (Input::IsKeyDown(AR_KEY_LEFT_SHIFT))
+					speed *= 2.0f;
+				else if (Input::IsKeyDown(AR_KEY_LEFT_CONTROL))
+					speed *= 0.5f;
+
+				if (Input::IsKeyDown(AR_KEY_W))
+					translation.x += speed * ts;
+				else if (Input::IsKeyDown(AR_KEY_S))
+					translation.x -= speed * ts;
+				if (Input::IsKeyDown(AR_KEY_A))
+					translation.z -= speed * ts;
+				else if (Input::IsKeyDown(AR_KEY_D))
+					translation.z += speed * ts;
+				if (Input::IsKeyDown(AR_KEY_Q))
+					translation.y += speed * ts;
+				else if (Input::IsKeyDown(AR_KEY_E))
+					translation.y -= speed * ts;
+
+				if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT))
+				{
+					rotation.x += -delta.y;
+					rotation.y += delta.x;
+				}
+
+				m_InitialMousePosition = mouse;
+			}
+			else
+			{
+				const Controller* controller = Input::GetController(0);
+				if (Input::IsControllerPresent(controller->ID))
+				{
+					if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_BUTTON_A))
+						speed *= 2.0f;
+					else if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_BUTTON_B))
+						speed *= 0.5f;
+
+					float threshold = Input::GetControllerAxis(controller->ID, 3);
+					if (threshold > 0.2f || threshold < -0.2f)
+						translation.x += speed * ts * glm::abs(threshold) * (threshold > 0.0f ? -1 : 1);
+					threshold = Input::GetControllerAxis(controller->ID, 2);
+					if (threshold > 0.2f || threshold < -0.2f)
+						translation.z += speed * ts * glm::abs(threshold) * (threshold > 0.0f ? 1 : -1);
+
+					if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_LEFT_BUMPER))
+						translation.y += speed * ts;
+					else if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_RIGHT_BUMPER))
+						translation.y -= speed * ts;
+
+					float delta = Input::GetControllerAxis(controller->ID, 0);
+					if (delta > 0.15f || delta < -0.15f)
+						rotation.y += delta * ts;
+
+					delta = Input::GetControllerAxis(controller->ID, 1);
+					if (delta > 0.15f || delta < -0.15f)
+						rotation.z += -delta * ts;
+				}
+			}
+		}
+
+	private:
+		glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
+		
+	};
+
+	namespace Utils {
+
+		static void ReplaceToken(std::string& str, const char* firstToken, const std::string& value)
+		{
+			size_t pos = str.find(firstToken);
+			while (pos != std::string::npos)
+			{
+				size_t token = strlen(firstToken);
+				str.replace(pos, token, value);
+				pos += token;
+
+				pos = str.find(firstToken, pos);
+			}
+		}
+
+	}
+
 #pragma region EditorLayerMainMethods
+
+#define MAX_PROJECT_NAME_LENGTH 255
+#define MAX_PROJECT_FILEPATH_LENGTH 512
+
+	static char* s_ProjectNameBuffer = new char[MAX_PROJECT_NAME_LENGTH];
+	static char* s_OpenProjectFilePathBuffer = new char[MAX_PROJECT_FILEPATH_LENGTH];
+	static char* s_NewProjectFilePathBuffer = new char[MAX_PROJECT_FILEPATH_LENGTH];
 
 	// TODO: TEMPORARY
 	static glm::vec3 albedoColor = { 1.0f, 1.0f, 1.0f };
@@ -39,6 +147,10 @@ namespace Aurora {
 	void EditorLayer::OnAttach()
 	{
 		AR_PROFILE_FUNCTION();
+
+		memset(s_ProjectNameBuffer, 0, MAX_PROJECT_NAME_LENGTH);
+		memset(s_OpenProjectFilePathBuffer, 0, MAX_PROJECT_FILEPATH_LENGTH);
+		memset(s_NewProjectFilePathBuffer, 0, MAX_PROJECT_FILEPATH_LENGTH);
 
 		EditorResources::Init();
 		m_DisplayImage = Renderer::GetBlackTexture();
@@ -60,91 +172,15 @@ namespace Aurora {
 		m_PanelsLibrary->AddPanel<EditorConsolePanel>(PanelCategory::View, "ConsolePanel", "Console", true);
 		m_PanelsLibrary->AddPanel<ContentBrowserPanel>(PanelCategory::View, "ContentBrowserPanel", "Content Browser", true);
 		m_PanelsLibrary->AddPanel<TODOPanel>(PanelCategory::View, "TODO", "TODO List", false);
+		m_PanelsLibrary->AddPanel<EditorStylePanel>(PanelCategory::Edit, "EditorStyle", "Editor Style", false);
+		m_PanelsLibrary->AddPanel<ApplicationSettingsPanel>(PanelCategory::Edit, "ApplicationSettings", "Settings", false, m_ViewportRenderer.raw());
 		AR_CONSOLE_LOG_TRACE("Hey I am Up!");
 
 		// TODO: Temporary untill Projects are a thing!
 		AssetManager::Init();
 		m_PanelsLibrary->Deserialize();
 		// Default open scene for now...!
-		OpenScene("SandboxProject/Assets/scenes/StaticMeshTest.aurora");
-
-		// TODO: TEMPORARY
-		class CameraScript : public ScriptableEntity
-		{
-			virtual void OnUpdate(TimeStep ts) override
-			{
-				auto& translation = GetComponent<TransformComponent>().Translation;
-				auto& rotation = GetComponent<TransformComponent>().Rotation;
-
-				float speed = 10.0f;
-
-				if (Input::GetControllers().empty())
-				{
-					const auto& [x, y] = Input::GetMousePosition();
-					const glm::vec2& mouse{ x, y };
-					const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.002f;
-
-					if (Input::IsKeyDown(AR_KEY_LEFT_SHIFT))
-						speed *= 2.0f;
-					else if (Input::IsKeyDown(AR_KEY_LEFT_CONTROL))
-						speed *= 0.5f;
-
-					if (Input::IsKeyDown(AR_KEY_W))
-						translation.x += speed * ts;
-					else if (Input::IsKeyDown(AR_KEY_S))
-						translation.x -= speed * ts;
-					if (Input::IsKeyDown(AR_KEY_A))
-						translation.z -= speed * ts;
-					else if (Input::IsKeyDown(AR_KEY_D))
-						translation.z += speed * ts;
-					if (Input::IsKeyDown(AR_KEY_Q))
-						translation.y += speed * ts;
-					else if (Input::IsKeyDown(AR_KEY_E))
-						translation.y -= speed * ts;
-
-					if (Input::IsMouseButtonPressed(AR_MOUSE_BUTTON_RIGHT))
-					{
-						rotation.x += -delta.y;
-						rotation.y += delta.x;
-					}
-
-					m_InitialMousePosition = mouse;
-				}
-				else
-				{
-					const Controller* controller = Input::GetController(0);
-					if (Input::IsControllerPresent(controller->ID))
-					{
-						if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_BUTTON_A))
-							speed *= 2.0f;
-						else if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_BUTTON_B))
-							speed *= 0.5f;
-
-						float threshold = Input::GetControllerAxis(controller->ID, 3);
-						if (threshold > 0.2f || threshold < -0.2f)
-							translation.x += speed * ts * glm::abs(threshold) * (threshold > 0.0f ? -1 : 1);
-						threshold = Input::GetControllerAxis(controller->ID, 2);
-						if (threshold > 0.2f || threshold < -0.2f)
-							translation.z += speed * ts * glm::abs(threshold) * (threshold > 0.0f ? 1 : -1);
-
-						if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_LEFT_BUMPER))
-							translation.y += speed * ts;
-						else if (Input::IsControllerButtonPressed(controller->ID, (int)AR_GAMEPAD_RIGHT_BUMPER))
-							translation.y -= speed * ts;
-
-						float delta = Input::GetControllerAxis(controller->ID, 0);
-						if (delta > 0.15f || delta < -0.15f)
-							rotation.y += delta * ts;
-
-						delta = Input::GetControllerAxis(controller->ID, 1);
-						if (delta > 0.15f || delta < -0.15f)
-							rotation.z += -delta * ts;
-					}
-				}
-			}
-		private:
-			glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
-		};
+		OpenScene("SandboxProject/Assets/scenes/StaticMeshTest.ascene");
 
 		Entity cameraEntity = m_ActiveScene->GetEntityByName("Camera");
 		cameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraScript>();
@@ -504,7 +540,7 @@ namespace Aurora {
 		if (e.GetDroppedPathCount() == 1)
 		{
 			const std::filesystem::path& path = e.GetDroppedPaths().front();
-			if (path.extension().string() == ".aurora")
+			if (path.extension().string() == ".ascene")
 				OpenScene(path);
 		}
 
@@ -540,7 +576,7 @@ namespace Aurora {
 		}
 
 		// TODO: Maybe only the selected mesh???
-		if (m_ShowBoundingBoxes)
+		if (m_PanelsLibrary->GetPanel<ApplicationSettingsPanel>("ApplicationSettings")->ShowBoundingBoxes())
 		{
 			auto staticMeshEntities = m_ActiveScene->GetAllEntitiesWith<StaticMeshComponent>();
 			for (auto e : staticMeshEntities)
@@ -556,7 +592,7 @@ namespace Aurora {
 			}
 		}
 
-		if (m_ShowIcons)
+		if (m_PanelsLibrary->GetPanel<ApplicationSettingsPanel>("ApplicationSettings")->ShowIcons())
 		{
 			auto cameraView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
 			for (auto entity : cameraView)
@@ -600,6 +636,143 @@ namespace Aurora {
 
 #pragma region FileDialogs/Scene Helpers
 
+	void EditorLayer::CreateProject(const std::filesystem::path& filePath)
+	{
+		if (!std::filesystem::exists(filePath))
+			std::filesystem::create_directories(filePath);
+
+		std::filesystem::copy("Resources/NewProjectTemplate", filePath, std::filesystem::copy_options::recursive);
+		std::filesystem::path auroraRootDirectory = std::filesystem::absolute("./Resources").parent_path();
+		std::string auroraRootDirectoryString = auroraRootDirectory.string();
+
+		if (auroraRootDirectory.stem().string() == "Aurora-Editor")
+		{
+			auroraRootDirectoryString = auroraRootDirectory.parent_path().string();
+		}
+
+		std::replace(auroraRootDirectoryString.begin(), auroraRootDirectoryString.end(), '\\', '/');
+
+		// Project file...
+		{
+			std::ifstream ifStream(filePath / "Project.aproj");
+			std::stringstream strStream;
+			strStream << ifStream.rdbuf();
+			ifStream.close();
+
+			std::string str = strStream.str();
+			Utils::ReplaceToken(str, "$PROJECT_NAME$", s_ProjectNameBuffer);
+
+			std::ofstream ofStream(filePath / "Project.aproj");
+			ofStream << str;
+			ofStream.close();
+
+			std::string newProjectFileName = std::string(s_ProjectNameBuffer) + ".aproj";
+			std::filesystem::rename(filePath / "Project.aproj", filePath / newProjectFileName);
+		}
+
+		std::filesystem::create_directories(filePath / "Assets/Meshes/Source");
+		std::filesystem::create_directories(filePath / "Assets/Scenes");
+		std::filesystem::create_directories(filePath / "Assets/Textures");
+
+		OpenProject(filePath.string() + "/" + s_ProjectNameBuffer + ".aproj");
+	}
+
+	// TODO: Is this necessary?
+	void EditorLayer::OpenProject()
+	{
+		std::filesystem::path filepath = Utils::WindowsFileDialogs::OpenFileDialog("Aurora Project (*.aproj)\0*.aproj\0");
+
+		if (filepath.empty())
+			return;
+
+		// stash the filepath away. Actual opening of project is deffered until it is "safe" to do so.
+		strcpy_s(s_OpenProjectFilePathBuffer, MAX_PROJECT_FILEPATH_LENGTH, filepath.string().c_str());
+	}
+
+	void EditorLayer::OpenProject(const std::filesystem::path& filePath)
+	{
+		if (!std::filesystem::exists(filePath))
+		{
+			AR_CORE_ERROR("Tried to open a non-existing project at {0}", filePath);
+			memset(s_OpenProjectFilePathBuffer, 9, MAX_PROJECT_FILEPATH_LENGTH);
+			return;
+		}
+
+		if (Project::GetActiveProject())
+			CloseProject();
+
+		Ref<Project> project = Project::Create();
+		ProjectSerializer::Deserialize(filePath, project);
+		Project::SetActiveProject(project);
+
+		// TODO: Script assembly shit...
+
+		m_PanelsLibrary->OnProjectChanged(project);
+
+		bool hasScene = project->GetSpec().StartScene.empty();
+		if (hasScene)
+			hasScene = OpenScene(Project::GetAssetsDirectory() / project->GetSpec().StartScene);
+
+		if (!hasScene)
+			NewScene();
+
+		SelectionManager::DeselectAll();
+
+		m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 1000.0f);
+
+		memset(s_ProjectNameBuffer, 0, MAX_PROJECT_NAME_LENGTH);
+		memset(s_OpenProjectFilePathBuffer, 0, MAX_PROJECT_FILEPATH_LENGTH);
+		memset(s_NewProjectFilePathBuffer, 0, MAX_PROJECT_FILEPATH_LENGTH);
+	}
+
+	void EditorLayer::EmptyProject()
+	{
+		if (Project::GetActiveProject())
+			CloseProject();
+
+		Ref<Project> project = Project::Create();
+		Project::SetActiveProject(project);
+
+		m_PanelsLibrary->OnProjectChanged(project);
+
+		NewScene();
+
+		SelectionManager::DeselectAll();
+
+		m_EditorCamera = EditorCamera(45.0f, 1280.0f, 720.0f, 0.1f, 1000.0f);
+
+		memset(s_ProjectNameBuffer, 0, MAX_PROJECT_NAME_LENGTH);
+		memset(s_OpenProjectFilePathBuffer, 0, MAX_PROJECT_FILEPATH_LENGTH);
+		memset(s_NewProjectFilePathBuffer, 0, MAX_PROJECT_FILEPATH_LENGTH);
+	}
+
+	void EditorLayer::SaveProject()
+	{
+		if (!Project::GetActiveProject())
+			AR_CORE_ASSERT(false); // TODO: ??
+
+		Ref<Project>& project = Project::GetActiveProject();
+		ProjectSerializer::Serialize(project->GetSpec().ProjectDirectory + "/" + project->GetSpec().ProjectFileName, project);
+
+		m_PanelsLibrary->Serialize();
+	}
+
+	void EditorLayer::CloseProject(bool unloadProject)
+	{
+		SaveProject();
+
+		m_PanelsLibrary->SetSceneContext(nullptr);
+		m_ViewportRenderer->SetScene(nullptr);
+		m_RuntimeScene = nullptr;
+		m_ActiveScene = nullptr;
+
+		AR_CORE_ASSERT(m_EditorScene->GetRefCount() == 1, "Scene will not be destroyed after project is closed - something is still referencing it!");
+		m_EditorScene = nullptr;
+
+		if (unloadProject)
+			Project::SetActiveProject(nullptr);
+	}
+
 	void EditorLayer::NewScene()
 	{
 		SelectionManager::DeselectAll();
@@ -620,27 +793,29 @@ namespace Aurora {
 			m_ViewportRenderer->SetScene(m_ActiveScene.raw());
 	}
 
-	void EditorLayer::OpenScene()
+	bool EditorLayer::OpenScene()
 	{
-		std::filesystem::path filepath = Utils::WindowsFileDialogs::OpenFileDialog("Aurora Scene (*.aurora)\0*.aurora\0");
+		std::filesystem::path filepath = Utils::WindowsFileDialogs::OpenFileDialog("Aurora Scene (*.ascene)\0*.ascene\0");
 		
 		if (!filepath.empty())
-			OpenScene(filepath);
+			return OpenScene(filepath);
+
+		return false;
 	}
 
-	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	bool EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
 		if (!std::filesystem::exists(path))
 		{
 			AR_CORE_ERROR_TAG("EditorLayer", "Tried to open a scene that does not exist!");
-			return;
+			return false;
 		}
 
-		if (path.extension().string() != ".aurora")
+		if (path.extension().string() != ".ascene")
 		{
 			AR_WARN_TAG("EditorLayer", "Could not load '{0}' - not an Aurora scene file!", path.filename().string());
 			
-			return;
+			return false;
 		}
 
 		if (m_SceneState == SceneState::Play)
@@ -649,9 +824,7 @@ namespace Aurora {
 			// TODO: HANDLE THIS CASE
 
 		Ref<Scene> newScene = Scene::Create("New Scene");
-		SceneSerializer serializer(newScene);
-
-		if (serializer.DeSerializeFromText(path.string()))
+		if (SceneSerializer::DeSerialize(path.string(), newScene))
 		{
 			m_EditorScene = newScene;
 
@@ -666,6 +839,8 @@ namespace Aurora {
 			if (m_ViewportRenderer)
 				m_ViewportRenderer->SetScene(m_ActiveScene.raw());
 		}
+
+		return true;
 	}
 
 	void EditorLayer::SaveScene()
@@ -678,7 +853,7 @@ namespace Aurora {
 
 	void EditorLayer::SaveSceneAs()
 	{
-		std::filesystem::path filepath = Utils::WindowsFileDialogs::SaveFileDialog("Aurora Scene (*.aurora)\0*.aurora\0");
+		std::filesystem::path filepath = Utils::WindowsFileDialogs::SaveFileDialog("Aurora Scene (*.ascene)\0*.ascene\0");
 
 		if (filepath.empty())
 			return;
@@ -696,8 +871,7 @@ namespace Aurora {
 
 	void EditorLayer::SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path)
 	{
-		SceneSerializer serializer(scene);
-		serializer.SerializeToText(path.string());
+		SceneSerializer::Serialize(path.string(), scene);
 	}
 
 	void EditorLayer::OnScenePlay()
@@ -715,7 +889,7 @@ namespace Aurora {
 
 	void EditorLayer::OnSceneSimulate()
 	{
-
+		AR_CORE_ASSERT(false, "Not Implemented!");
 	}
 
 	void EditorLayer::OnSceneStop()
@@ -850,46 +1024,7 @@ namespace Aurora {
 
 #pragma endregion
 
-#pragma region EditingPanel
-
-	void EditorLayer::ShowEditPanelUI()
-	{
-		ImGui::Begin("Editor Style", &m_ShowEditingPanel);
-
-		if (ImGuiUtils::PropertyGridHeader("Fonts"))
-		{
-			ShowFontPickerUI();
-
-			ImGui::TreePop();
-		}
-
-		if (ImGuiUtils::PropertyGridHeader("Editor Style"))
-		{
-			ImGui::ShowStyleEditor();
-
-			ImGui::TreePop();
-		}
-
-		ImGui::End();
-	}
-
-	void EditorLayer::ShowFontPickerUI()
-	{
-
-		ImGuiFontsLibrary& fontsLib = Application::GetApp().GetImGuiLayer()->m_FontsLibrary;
-
-		ImGuiUtils::BeginPropertyGrid();
-
-		static const char* fonts[] = { "RobotoLarge", "RobotoBold", "RobotoDefault", "MochiyPopOne" };
-		static int selected = 2;
-		if (ImGuiUtils::PropertyDropdown("Available Fonts", fonts, 4, &selected))
-		{
-			fontsLib.SetDefaultFont(fonts[selected]);
-			AR_DEBUG("Selected int: {0}", selected);
-		}
-
-		ImGuiUtils::EndPropertyGrid();
-	}
+#pragma region Screenshot shit
 
 	void EditorLayer::ShowScreenshotPanel()
 	{
@@ -1048,7 +1183,7 @@ namespace Aurora {
 
 			if (ImGui::BeginMenu("View"))
 			{
-				// TODO: Convert all panels to this! For now: SceneHierarchy and Shaders only...
+				// TODO: Convert all panels to this!
 				{
 					for (auto& [id, panelSpec] : m_PanelsLibrary->GetPanels(PanelCategory::View))
 					{
@@ -1078,15 +1213,23 @@ namespace Aurora {
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Tools"))
+			if (ImGui::BeginMenu("Edit"))
 			{
+				// TODO: Convert all panels to this!
+				{
+					for (auto& [id, panelSpec] : m_PanelsLibrary->GetPanels(PanelCategory::Edit))
+					{
+						if (ImGui::MenuItem(panelSpec.Name, nullptr, &panelSpec.IsOpen))
+							m_PanelsLibrary->Serialize();
+					}
+				}
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Screenshot", nullptr, m_ShowScreenshotPanel))
 					m_ShowScreenshotPanel = !m_ShowScreenshotPanel;
 
 				ImGui::Separator();
-
-				if (ImGui::MenuItem("Editor Style", nullptr, m_ShowEditingPanel))
-					m_ShowEditingPanel = !m_ShowEditingPanel;
 
 				if (ImGui::MenuItem("ImGui StackTool", nullptr, m_ShowDearImGuiStackToolWindow))
 					m_ShowDearImGuiStackToolWindow = !m_ShowDearImGuiStackToolWindow;
@@ -1102,23 +1245,13 @@ namespace Aurora {
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Options"))
-			{
-				if (ImGui::MenuItem("Settings...", nullptr, m_ShowSettingsUI))
-					m_ShowSettingsUI = !m_ShowSettingsUI;
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Exit...", nullptr, m_ShowCloseModal))
-					m_ShowCloseModal = !m_ShowCloseModal;
-
-				ImGui::EndMenu();
-			}
-
 			if (ImGui::BeginMenu("Help"))
 			{
 				if (ImGui::MenuItem("Editor Camera", nullptr, m_ShowEditorCameraHelpUI))
 					m_ShowEditorCameraHelpUI = !m_ShowEditorCameraHelpUI;
+
+				if (ImGui::MenuItem("Exit...", nullptr, m_ShowCloseModal))
+					m_ShowCloseModal = !m_ShowCloseModal;
 
 				ImGui::EndMenu();
 			}
@@ -1463,7 +1596,7 @@ namespace Aurora {
 		DrawCentralBar();
 
 		// Gizmos...
-		if (m_ShowGizmos && m_ActiveScene != m_RuntimeScene)
+		if (m_PanelsLibrary->GetPanel<ApplicationSettingsPanel>("ApplicationSettings")->ShowGizmos() && m_ActiveScene != m_RuntimeScene)
 		{
 			DrawGizmos();
 		}
@@ -1474,102 +1607,6 @@ namespace Aurora {
 		m_PanelsLibrary->OnImGuiRender();
 
 		ImGui::End(); // Docking window
-	}
-
-	// TODO: The culling/depth/blend state will be removed when switching to vulkan since it does not have this much global state!
-	void EditorLayer::ShowSettingsUI()
-	{
-		static bool enableCulling = true;
-		static bool enableBlending = true;
-		static bool enableDepthTesting = true;
-		static bool allowGizmoAxisFlip = true;
-
-		static std::string cullOption = "Back";
-		static std::string depthOption = "Less";
-		static float TickDelta = 1.0f;
-
-		static const char* blendDesc = "Blending is the technique that allows and implements the \"Transparency\" within objects.";
-		static const char* cullingDesc = "Culling is used to specify to the renderer what face is not to be processed thus reducing processing time.";
-		static const char* depthDesc = "Depth testing is what allows for 3D objects to appear on the screen via a depth buffer.";
-		static const char* comparatorOptions[] =
-		{
-			// For padding
-			"None",
-			// Depth
-			"Never", "Equal", "NotEqual", "Less", "LessOrEqual", "Greater", "GreaterOrEqual", "Always",
-			// Blend
-			"OneZero", "SrcAlphaOneMinusSrcAlpha", "ZeroSrcAlpha",
-			// Cull
-			"Front", "Back", "FrontAndBack"
-		};
-
-		ImGui::Begin("Settings", &m_ShowSettingsUI);
-
-		ImGuiUtils::BeginPropertyGrid(2, false);
-
-		if(ImGuiUtils::PropertySliderFloat("App Tick Delta", TickDelta, 0.0f, 5.0f, "%.3f", "Controls the delta that it takes to call the OnTick function"))
-			Application::GetApp().SetTickDeltaTime(TickDelta);
-
-		ImGuiUtils::PropertyBool("Show Gizmos", m_ShowGizmos);
-		ImGuiUtils::PropertyBool("Show Grid", m_ViewportRenderer->GetOptions().ShowGrid);
-		ImGuiUtils::PropertyBool("Show Bounding Boxes", m_ShowBoundingBoxes);
-		ImGuiUtils::PropertyBool("Show Icons", m_ShowIcons);
-		if (ImGuiUtils::PropertyBool("Allow gizmo flip", allowGizmoAxisFlip))
-			ImGuizmo::AllowAxisFlip(allowGizmoAxisFlip);
-		
-		ImGuiUtils::EndPropertyGrid();
-
-		ImGui::PushID("RendererSettingsUI");
-		if (ImGuiUtils::PropertyGridHeader("Renderer", false))
-		{
-			ImGuiUtils::BeginPropertyGrid(2, false);
-
-			static const char* environmentMapSizesAndSamples[] = { "128", "256", "512", "1024", "2048", "4096" };
-			RendererConfig& rendererConfig = Renderer::GetConfig();
-			uint32_t currentSize = (uint32_t)glm::log2((float)rendererConfig.EnvironmentMapResolution) - 7;
-			if (ImGuiUtils::PropertyDropdown("EnvironmentMap Size", environmentMapSizesAndSamples, 6, (int*)&currentSize))
-			{
-				rendererConfig.EnvironmentMapResolution = (uint32_t)glm::pow(2, currentSize + 7);
-			}
-
-			uint32_t currentSamples = (uint32_t)glm::log2((float)rendererConfig.IrradianceMapComputeSamples) - 7;
-			if (ImGuiUtils::PropertyDropdown("IrradianceMap Compute Samples", environmentMapSizesAndSamples, 6, (int*)&currentSamples))
-			{
-				rendererConfig.IrradianceMapComputeSamples = (uint32_t)glm::pow(2, currentSamples + 7);
-			}
-
-			ImGuiUtils::PropertyBool("Enable Blending", enableBlending, blendDesc);
-
-			int currentOption = (int)Comparator::SrcAlphaOnceMinusSrcAlpha;
-			if (ImGuiUtils::PropertyDropdown("Blending Function", comparatorOptions, 3, &currentOption, blendDesc))
-			{
-				RenderCommand::SetCapabilityFunction(Capability::Blending, (Comparator)currentOption);
-			}
-
-			ImGuiUtils::PropertyBool("Enable Culling", enableCulling, cullingDesc);
-
-			currentOption = (int)Comparator::Back;
-			if (ImGuiUtils::PropertyDropdown("Culling Function", comparatorOptions, 3, &currentOption))
-			{
-				RenderCommand::SetCapabilityFunction(Capability::Culling, (Comparator)currentOption);
-			}
-
-			ImGuiUtils::PropertyBool("Enable Depth Testing", enableDepthTesting, depthDesc);
-
-			currentOption = (int)Comparator::Less;
-			if (ImGuiUtils::PropertyDropdown("Depth Function", comparatorOptions, 8, &currentOption))
-			{
-				RenderCommand::SetCapabilityFunction(Capability::DepthTesting, (Comparator)currentOption);
-			}
-
-			ImGuiUtils::EndPropertyGrid();
-			ImGui::TreePop();
-		}
-		else
-			ImGuiUtils::ShiftCursorY(-(ImGui::GetStyle().ItemSpacing.y + 1.0f));
-		ImGui::PopID();
-
-		ImGui::End();
 	}
 
 	void EditorLayer::ShowCloseModalUI()
@@ -1653,14 +1690,8 @@ namespace Aurora {
 		if (m_ShowScreenshotPanel)
 			ShowScreenshotPanel();
 
-		if (m_ShowEditingPanel)
-			ShowEditPanelUI();
-
 		if (m_ShowEditorCameraHelpUI)
 			ShowEditorCameraHelpUI();
-
-		if (m_ShowSettingsUI)
-			ShowSettingsUI();
 
 		if (m_ShowCloseModal)
 			ShowCloseModalUI();

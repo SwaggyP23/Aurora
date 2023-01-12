@@ -57,16 +57,11 @@ namespace Aurora {
 
 	// This is the main style editing panel and everything such as fonts and such child it
 	private:
-		void ShowEditPanelUI();
 		void ShowScreenshotPanel();
 		void TakeScreenShotOfOpenScene();
 
-		bool m_ShowEditingPanel = false;
 		bool m_ShowScreenshotPanel = false;
 		Ref<Texture2D> m_DisplayImage = nullptr;
-
-	private:
-		void ShowFontPickerUI();
 
 	// Help Panels and UI
 	private:
@@ -80,9 +75,16 @@ namespace Aurora {
 
 	// File Dialogs and Scene helper functions
 	private:
+		void CreateProject(const std::filesystem::path& filePath);
+		void OpenProject();
+		void OpenProject(const std::filesystem::path& filePath);
+		void EmptyProject();
+		void SaveProject();
+		void CloseProject(bool unloadProject = true);
+
 		void NewScene();
-		void OpenScene();
-		void OpenScene(const std::filesystem::path& path);
+		bool OpenScene();
+		bool OpenScene(const std::filesystem::path& path);
 		void SaveScene();
 		void SaveSceneAs();
 		void SerializeScene(const Ref<Scene>& scene, const std::filesystem::path& path);
@@ -105,12 +107,10 @@ namespace Aurora {
 		void DrawGizmosToolBar();
 		void DrawCentralBar();
 
-		void ShowSettingsUI();
 		void ShowCloseModalUI();
 
 		void OnEntityDeleted(Entity entity);
 
-		bool m_ShowSettingsUI = false;
 		bool m_ShowCloseModal = false;
 
 	private:
@@ -148,10 +148,6 @@ namespace Aurora {
 		};
 
 		SceneState m_SceneState = SceneState::Edit;
-
-		bool m_ShowGizmos = true;
-		bool m_ShowIcons = true;
-		bool m_ShowBoundingBoxes = false;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;

@@ -105,6 +105,7 @@ namespace Aurora {
 		[[nodiscard]] inline float GetFrameTime() const { return m_FrameTime; }
 		[[nodiscard]] inline TimeStep GetTimeStep() const { return m_Timestep; }
 		inline void SetTickDeltaTime(float delta) { m_TickDelta = delta; }
+		inline float GetTickDeltaTime() const { return m_TickDelta; }
 
 		[[nodiscard]] inline ImGuiLayer* GetImGuiLayer() const { return m_ImGuiLayer; }
 
@@ -120,6 +121,9 @@ namespace Aurora {
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnWindowMinimize(WindowMinimizeEvent& e);
+
+		Application(const Application&) = delete;
+		Application& operator=(const Application&) = delete;
 
 	private:
 		ApplicationSpecification m_Specification;

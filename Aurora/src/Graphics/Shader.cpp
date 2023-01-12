@@ -10,7 +10,7 @@
 #include <spirv-tools/libspirv.hpp>
 
 // Define as 1 if you want the shader to use std::fstream.
-#define AR_NO_USE_FILE_POINTER 0
+#define AR_NO_USE_FILE_POINTER 1
 
 // FOR DEBUGGING!!!!
 // Define if you want the shader dissassembly after compilation to print to console
@@ -382,7 +382,6 @@ namespace Aurora {
 			default:
 				AR_CORE_ASSERT(false, "Unknown shader type!");
 		}
-		//m_OpenGLShaderSource = SplitSource(shaderFullSource);
 
 		constexpr bool forceCompile = true;
 
@@ -409,6 +408,7 @@ namespace Aurora {
 		return failedCompilation;
 	}
 
+	// TODO: Move this function to be called by the renderer and not by the shader since this makes 0 sense, what if the shader is not compute?
 	void Shader::Dispatch(uint32_t dimX, uint32_t dimY, uint32_t dimZ) const
 	{
 		AR_CORE_ASSERT(m_ShaderType == ShaderType::Compute, "Shader has to be a compute shader in order to dispatch it!");
@@ -420,7 +420,7 @@ namespace Aurora {
 		// At this stage it contains split Vulkan source code
 		m_OpenGLShaderSource = SplitSource(source);
 
-		bool forceCompile = GetLastTimeModified() < 5 ? true : false;
+		bool forceCompile = GetLastTimeModified() < s_CompileTimeThreshold ? true : false;
 
 		{
 			Timer timer;
@@ -435,7 +435,7 @@ namespace Aurora {
 	{
 		m_OpenGLShaderSource[GL_COMPUTE_SHADER] = PreprocessComputeSource(source);
 
-		bool forceCompile = GetLastTimeModified() < 5 ? true : false;
+		bool forceCompile = GetLastTimeModified() < s_CompileTimeThreshold ? true : false;
 
 		{
 			Timer timer;

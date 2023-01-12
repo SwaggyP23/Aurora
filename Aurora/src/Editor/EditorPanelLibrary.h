@@ -22,6 +22,7 @@ namespace Aurora {
 	enum class PanelCategory
 	{
 		View = 0,
+		Edit = 1,
 		EnumSize
 	};
 
@@ -35,9 +36,9 @@ namespace Aurora {
 
 		void OnImGuiRender();
 		void OnEvent(Event& e);
+		void OnProjectChanged(Ref<Project> project);
 
 		void SetSceneContext(Ref<Scene> scene);
-		// TODO: Projects...
 
 		void Serialize();
 		void Deserialize();

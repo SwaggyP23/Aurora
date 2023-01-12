@@ -6,9 +6,65 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>
 
+#include <imgui/imgui.h>
+
 namespace YAML {
 
 	// Provided on the yaml-cpp wiki
+	template<>
+	struct convert<ImVec2>
+	{
+		static Node encode(const ImVec2& right)
+		{
+			Node node;
+			node.push_back(right.x);
+			node.push_back(right.y);
+			//node.SetStyle(EmitterStyle::Flow);
+
+			return node;
+		}
+
+		static bool decode(const Node& node, ImVec2& right)
+		{
+			if (!node.IsSequence() || node.size() != 2)
+				return false;
+
+			right.x = node[0].as<float>();
+			right.y = node[1].as<float>();
+
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<ImVec4>
+	{
+		static Node encode(const ImVec4& right)
+		{
+			Node node;
+			node.push_back(right.x);
+			node.push_back(right.y);
+			node.push_back(right.z);
+			node.push_back(right.w);
+			//node.SetStyle(EmitterStyle::Flow);
+
+			return node;
+		}
+
+		static bool decode(const Node& node, ImVec4& right)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+				return false;
+
+			right.x = node[0].as<float>();
+			right.y = node[1].as<float>();
+			right.z = node[2].as<float>();
+			right.w = node[3].as<float>();
+
+			return true;
+		}
+	};
+
 	template<>
 	struct convert<glm::vec2>
 	{
@@ -121,6 +177,22 @@ namespace YAML {
 }
 
 namespace Aurora {
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const ImVec2& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const ImVec4& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+
+		return out;
+	}
 
 	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
 	{

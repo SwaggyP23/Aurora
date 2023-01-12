@@ -1,6 +1,9 @@
 #include "Aurorapch.h"
 #include "EditorPanelLibrary.h"
 
+#include "EditorStylePanel.h"
+#include "ApplicationSettingsPanel.h"
+
 #include <yaml-cpp/yaml.h>
 
 namespace Aurora {
@@ -45,6 +48,19 @@ namespace Aurora {
 		}
 	}
 
+	void EditorPanelsLibrary::OnProjectChanged(Ref<Project> project)
+	{
+		for (auto& panelMap : m_Panels)
+		{
+			for (auto& [id, panelSpec] : panelMap)
+			{
+				panelSpec.Panel->OnProjectChanged(project);
+			}
+		}
+
+		Deserialize();
+	}
+
 	void EditorPanelsLibrary::SetSceneContext(Ref<Scene> scene)
 	{
 		for (auto& panelMap : m_Panels)
@@ -76,11 +92,13 @@ namespace Aurora {
 		}
 		out << YAML::EndSeq;
 
+		EditorStylePanel::Serialize(out);
+		ApplicationSettingsPanel::Serialize(out);
+
 		out << YAML::EndMap;
 
 		std::ofstream ofStream("Config/EditorSettings.aeditor");
 		ofStream << out.c_str();
-		ofStream.close();
 	}
 
 	void EditorPanelsLibrary::Deserialize()
@@ -98,7 +116,7 @@ namespace Aurora {
 		YAML::Node data = YAML::Load(strStream.str());
 		if (!data["Panels"])
 		{
-			AR_CONSOLE_LOG_ERROR("[EditorPanelsLibrary] Failed to load EditorSettings.aeditor!");
+			AR_CONSOLE_LOG_ERROR("[EditorPanelsLibrary]: Failed to load EditorSettings.aeditor!");
 			return;
 		}
 
@@ -112,6 +130,9 @@ namespace Aurora {
 			// Dont need to deserialize the name since it will be created by the panels themselves!
 			spec->IsOpen = panelNode["IsOpen"].as<bool>(spec->IsOpen);
 		}
+
+		EditorStylePanel::Deserialize(data);
+		ApplicationSettingsPanel::Deserialize(data);
 	}
 
 	void EditorPanelsLibrary::RemovePanel(const char* strId)

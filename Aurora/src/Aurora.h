@@ -17,6 +17,9 @@
 #include "ImGui/ImGuiLayer.h"
 #include "ImGui/ImGuizmo.h"
 
+#include "Projects/Project.h"
+#include "Projects/ProjectSerializer.h"
+
 #include "Scene/Scene.h"
 #include "Scene/SceneCamera.h"
 #include "Scene/SceneSerializer.h"

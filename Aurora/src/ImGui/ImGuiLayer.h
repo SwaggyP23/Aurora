@@ -30,6 +30,7 @@ namespace Aurora {
 
 		friend class SceneHierarchyPanel;
 		friend class EditorLayer;
+		friend class EditorStylePanel;
 
 	};
 

@@ -12,6 +12,7 @@ Extensions Used by Aurora:
 - .amaterial = arurora generated material file
 - .azr = aurora generated asset registry file
 - .aeditor = luna generated previous panel state save file
+- .aproj = Aurora project files
 
 // Images...
 - .hdr = environment maps

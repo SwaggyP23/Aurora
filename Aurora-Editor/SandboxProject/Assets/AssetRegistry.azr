@@ -137,6 +137,9 @@ Assets:
   - Handle: 7917145722701837967
     FilePath: meshes/Source/Sponza/4871783166746854860.jpg
     Type: Texture
+  - Handle: 8136226237091921714
+    FilePath: scenes/StaticMeshTest.ascene
+    Type: Scene
   - Handle: 8250742905266618925
     FilePath: meshes/Source/Sponza/2969916736137545357.jpg
     Type: Texture

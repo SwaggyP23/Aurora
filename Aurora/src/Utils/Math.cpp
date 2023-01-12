@@ -23,8 +23,12 @@ namespace Aurora::Math {
 		// Now onto rotation: Calculate the polar decomposition of Local to obtain rotation R and stretch S matrices:
 		// Local = RS
 	
-		for (int i = 0; i < 3; i++)
-			scale[i] = glm::length(glm::vec3(transform[i]));
+		//for (int i = 0; i < 3; i++)
+		//	scale[i] = glm::length(glm::vec3(transform[i]));
+
+		scale[0] = glm::length(glm::vec3(transform[0]));
+		scale[1] = glm::length(glm::vec3(transform[1]));
+		scale[2] = glm::length(glm::vec3(transform[2]));
 	
 		const glm::mat3 rotMatrix(glm::vec3(transform[0]) / scale[0], glm::vec3(transform[1]) / scale[1], glm::vec3(transform[2]) / scale[2]);
 		rotation = glm::quat_cast(rotMatrix);
